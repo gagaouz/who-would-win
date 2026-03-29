@@ -1,0 +1,660 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0B548A0C47BD3B6B380ED8BB /* WhoWouldWinApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 013FB097FCB0AB14AFB57840 /* WhoWouldWinApp.swift */; };
+		0C08355DAF4BF866D5F34278 /* AnimalCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDE33675DC9B9DD8513EA5BF /* AnimalCard.swift */; };
+		149CE35F92F84E2D610F742C /* WhoWouldWinUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A215AAB713FEBF59D462E77 /* WhoWouldWinUITests.swift */; };
+		17E09689D108AEE1B2F27946 /* AnimalSprite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 727F12B4BB51C3136BFC10E5 /* AnimalSprite.swift */; };
+		383B48E15780EBB442879E62 /* AnimalPickerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA55931F58BC53049F17E6A2 /* AnimalPickerViewModel.swift */; };
+		406F5AC5F64DCAA7CDA6FCA9 /* BattleServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150517DC8B8F3841C1A22A4C /* BattleServiceTests.swift */; };
+		4609C5F1947564E8BEDC304A /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 422F2CC30FBDD07C7B43C58C /* HomeView.swift */; };
+		5BD3076127E9A393550F0EA8 /* AnimalPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB4E7451B2F76F5C039E2A0C /* AnimalPickerView.swift */; };
+		639E6B854CA6C211629FA95A /* PixelText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9016C111757C577E50A5FCE4 /* PixelText.swift */; };
+		6D2867F023C324B2E004BE24 /* Animal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B83C1530265841A56DCF66 /* Animal.swift */; };
+		717DBB0EC27751EF30F67CCB /* Animals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27601EC62A522F7ECDAE7046 /* Animals.swift */; };
+		7F4D2E0C1BA4F829D4EB1D3D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A3FFFFF498728549FDD8222D /* Assets.xcassets */; };
+		84E3F6545561E882A9C62C22 /* PixelExplosion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62248CF5F064BAEC86EE95FE /* PixelExplosion.swift */; };
+		9905CC30B87E18819B1D1B65 /* BattleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F2061C501F2AEA84BC21963 /* BattleView.swift */; };
+		ACC41267360350B97A1A24BF /* BattleScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A02A9DBFDE39DD5CA1D3C82 /* BattleScene.swift */; };
+		BBD6EA9C1130BE0F2CA495B4 /* BattleViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEAED077984C4F478AE2DAA6 /* BattleViewModel.swift */; };
+		C3415902943C7266751D929C /* BattleService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4FAF6483F088BCCF3209900 /* BattleService.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* AnimalImageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C2D3E4F5A6B7C8D9E0F1A2 /* AnimalImageService.swift */; };
+		D17BEB9DFA2C3A2281789C43 /* PressStart2P-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BA8AA9999D7727D2E9E33E1C /* PressStart2P-Regular.ttf */; };
+		D212B446A34306543F1E2E6E /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200A43EC7701E932D8E8B0CE /* AudioManager.swift */; };
+		D85EB650D06A2AF6862941E9 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BDC18C0E579266056B7F5F /* AppConfig.swift */; };
+		E2523475AD472DC6CA4E511F /* BattleResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD8E8B415F4B58E4814DD2B7 /* BattleResult.swift */; };
+		F27C3D38A86DC144F1049B53 /* RetroButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FDCCDD0731E27BD7FC70E9C /* RetroButton.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		741F3AF7840769943EE0F9C0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F3453C55BE1162060D93DF4F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6BF8807AF12B88D17BFD60ED;
+			remoteInfo = WhoWouldWin;
+		};
+		8F2ECD862E778BE9617FF8E4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F3453C55BE1162060D93DF4F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6BF8807AF12B88D17BFD60ED;
+			remoteInfo = WhoWouldWin;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		013FB097FCB0AB14AFB57840 /* WhoWouldWinApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhoWouldWinApp.swift; sourceTree = "<group>"; };
+		0A02A9DBFDE39DD5CA1D3C82 /* BattleScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BattleScene.swift; sourceTree = "<group>"; };
+		150517DC8B8F3841C1A22A4C /* BattleServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BattleServiceTests.swift; sourceTree = "<group>"; };
+		200A43EC7701E932D8E8B0CE /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
+		2013964C0C4484C38D998055 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		27601EC62A522F7ECDAE7046 /* Animals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Animals.swift; sourceTree = "<group>"; };
+		2E6454CBB2CA3A1EC8C8A16D /* WhoWouldWinUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = WhoWouldWinUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		422F2CC30FBDD07C7B43C58C /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		4A215AAB713FEBF59D462E77 /* WhoWouldWinUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhoWouldWinUITests.swift; sourceTree = "<group>"; };
+		62248CF5F064BAEC86EE95FE /* PixelExplosion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PixelExplosion.swift; sourceTree = "<group>"; };
+		649295F279B537F7780244F3 /* WhoWouldWinTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = WhoWouldWinTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		65B83C1530265841A56DCF66 /* Animal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Animal.swift; sourceTree = "<group>"; };
+		6FDCCDD0731E27BD7FC70E9C /* RetroButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroButton.swift; sourceTree = "<group>"; };
+		727F12B4BB51C3136BFC10E5 /* AnimalSprite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimalSprite.swift; sourceTree = "<group>"; };
+		77BDC18C0E579266056B7F5F /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
+		9016C111757C577E50A5FCE4 /* PixelText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PixelText.swift; sourceTree = "<group>"; };
+		9F2061C501F2AEA84BC21963 /* BattleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BattleView.swift; sourceTree = "<group>"; };
+		A3FFFFF498728549FDD8222D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AD8E8B415F4B58E4814DD2B7 /* BattleResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BattleResult.swift; sourceTree = "<group>"; };
+		AEAED077984C4F478AE2DAA6 /* BattleViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BattleViewModel.swift; sourceTree = "<group>"; };
+		BA8AA9999D7727D2E9E33E1C /* PressStart2P-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PressStart2P-Regular.ttf"; sourceTree = "<group>"; };
+		BDE33675DC9B9DD8513EA5BF /* AnimalCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimalCard.swift; sourceTree = "<group>"; };
+		C4FAF6483F088BCCF3209900 /* BattleService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BattleService.swift; sourceTree = "<group>"; };
+		B1C2D3E4F5A6B7C8D9E0F1A2 /* AnimalImageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimalImageService.swift; sourceTree = "<group>"; };
+		CA55931F58BC53049F17E6A2 /* AnimalPickerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimalPickerViewModel.swift; sourceTree = "<group>"; };
+		CAAF8C94E94E4ECA5D745672 /* WhoWouldWin.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = WhoWouldWin.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CB4E7451B2F76F5C039E2A0C /* AnimalPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimalPickerView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		231711294077795776DBCA08 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				CB4E7451B2F76F5C039E2A0C /* AnimalPickerView.swift */,
+				9F2061C501F2AEA84BC21963 /* BattleView.swift */,
+				422F2CC30FBDD07C7B43C58C /* HomeView.swift */,
+				37376401B5CBA6B10C35DE91 /* Components */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		232F38CF4A0739DB8CFC81F6 /* WhoWouldWinTests */ = {
+			isa = PBXGroup;
+			children = (
+				150517DC8B8F3841C1A22A4C /* BattleServiceTests.swift */,
+			);
+			path = WhoWouldWinTests;
+			sourceTree = "<group>";
+		};
+		37376401B5CBA6B10C35DE91 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				BDE33675DC9B9DD8513EA5BF /* AnimalCard.swift */,
+				9016C111757C577E50A5FCE4 /* PixelText.swift */,
+				6FDCCDD0731E27BD7FC70E9C /* RetroButton.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		4705A831ACDD08FDFC0CBFA9 /* Data */ = {
+			isa = PBXGroup;
+			children = (
+				27601EC62A522F7ECDAE7046 /* Animals.swift */,
+			);
+			path = Data;
+			sourceTree = "<group>";
+		};
+		692047AA13BF71AED1DFB87C /* WhoWouldWinUITests */ = {
+			isa = PBXGroup;
+			children = (
+				4A215AAB713FEBF59D462E77 /* WhoWouldWinUITests.swift */,
+			);
+			path = WhoWouldWinUITests;
+			sourceTree = "<group>";
+		};
+		6AE2635BF27FFFEC2BEDE8CA /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				65B83C1530265841A56DCF66 /* Animal.swift */,
+				AD8E8B415F4B58E4814DD2B7 /* BattleResult.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		73D7F296030781C4ADF90895 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				77BDC18C0E579266056B7F5F /* AppConfig.swift */,
+				013FB097FCB0AB14AFB57840 /* WhoWouldWinApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		7A9107AEC985C72ACEF1752A /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				CA55931F58BC53049F17E6A2 /* AnimalPickerViewModel.swift */,
+				AEAED077984C4F478AE2DAA6 /* BattleViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		922C2FE768DE66E097A26968 /* SpriteKit */ = {
+			isa = PBXGroup;
+			children = (
+				727F12B4BB51C3136BFC10E5 /* AnimalSprite.swift */,
+				0A02A9DBFDE39DD5CA1D3C82 /* BattleScene.swift */,
+				62248CF5F064BAEC86EE95FE /* PixelExplosion.swift */,
+			);
+			path = SpriteKit;
+			sourceTree = "<group>";
+		};
+		A7395F816BAD6DA0954346CD /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				CAAF8C94E94E4ECA5D745672 /* WhoWouldWin.app */,
+				649295F279B537F7780244F3 /* WhoWouldWinTests.xctest */,
+				2E6454CBB2CA3A1EC8C8A16D /* WhoWouldWinUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		B58D566427EDC88E2E69E621 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				BA8AA9999D7727D2E9E33E1C /* PressStart2P-Regular.ttf */,
+			);
+			path = Fonts;
+			sourceTree = "<group>";
+		};
+		B85C635A2A5645ED7BF3744B /* Audio */ = {
+			isa = PBXGroup;
+			children = (
+				200A43EC7701E932D8E8B0CE /* AudioManager.swift */,
+			);
+			path = Audio;
+			sourceTree = "<group>";
+		};
+		C97185E236F1C5F2590D231C = {
+			isa = PBXGroup;
+			children = (
+				E05DF139D60981FBA62E000B /* WhoWouldWin */,
+				232F38CF4A0739DB8CFC81F6 /* WhoWouldWinTests */,
+				692047AA13BF71AED1DFB87C /* WhoWouldWinUITests */,
+				A7395F816BAD6DA0954346CD /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		E05DF139D60981FBA62E000B /* WhoWouldWin */ = {
+			isa = PBXGroup;
+			children = (
+				A3FFFFF498728549FDD8222D /* Assets.xcassets */,
+				2013964C0C4484C38D998055 /* Info.plist */,
+				73D7F296030781C4ADF90895 /* App */,
+				B85C635A2A5645ED7BF3744B /* Audio */,
+				4705A831ACDD08FDFC0CBFA9 /* Data */,
+				B58D566427EDC88E2E69E621 /* Fonts */,
+				6AE2635BF27FFFEC2BEDE8CA /* Models */,
+				E3F49B029C446A296F64B575 /* Services */,
+				922C2FE768DE66E097A26968 /* SpriteKit */,
+				7A9107AEC985C72ACEF1752A /* ViewModels */,
+				231711294077795776DBCA08 /* Views */,
+			);
+			path = WhoWouldWin;
+			sourceTree = "<group>";
+		};
+		E3F49B029C446A296F64B575 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				B1C2D3E4F5A6B7C8D9E0F1A2 /* AnimalImageService.swift */,
+				C4FAF6483F088BCCF3209900 /* BattleService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		09A848707DF59CBB808F4999 /* WhoWouldWinUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CE04BF7A0E172DDCE1BDE972 /* Build configuration list for PBXNativeTarget "WhoWouldWinUITests" */;
+			buildPhases = (
+				51CC690E53F36E5D66C3D6BF /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				3425593759DF7FDF16B82839 /* PBXTargetDependency */,
+			);
+			name = WhoWouldWinUITests;
+			packageProductDependencies = (
+			);
+			productName = WhoWouldWinUITests;
+			productReference = 2E6454CBB2CA3A1EC8C8A16D /* WhoWouldWinUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		6BF8807AF12B88D17BFD60ED /* WhoWouldWin */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = ACAC99AD0843F7CA2210D2A2 /* Build configuration list for PBXNativeTarget "WhoWouldWin" */;
+			buildPhases = (
+				7DABDE2BA2CE471E657A0321 /* Sources */,
+				CA9006900BC0C9D622536F5E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = WhoWouldWin;
+			packageProductDependencies = (
+			);
+			productName = WhoWouldWin;
+			productReference = CAAF8C94E94E4ECA5D745672 /* WhoWouldWin.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F94E8F7E91B48CDFAAFF3D26 /* WhoWouldWinTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9E6BCA526B58CA065EBFC7E4 /* Build configuration list for PBXNativeTarget "WhoWouldWinTests" */;
+			buildPhases = (
+				64DE66FF50F3E3CDBD4130C4 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				9506AD62F4D3FB938A690F4F /* PBXTargetDependency */,
+			);
+			name = WhoWouldWinTests;
+			packageProductDependencies = (
+			);
+			productName = WhoWouldWinTests;
+			productReference = 649295F279B537F7780244F3 /* WhoWouldWinTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F3453C55BE1162060D93DF4F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					09A848707DF59CBB808F4999 = {
+						TestTargetID = 6BF8807AF12B88D17BFD60ED;
+					};
+				};
+			};
+			buildConfigurationList = 8539CC7EAC8AED82D8D612EC /* Build configuration list for PBXProject "WhoWouldWin" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = C97185E236F1C5F2590D231C;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = A7395F816BAD6DA0954346CD /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				6BF8807AF12B88D17BFD60ED /* WhoWouldWin */,
+				F94E8F7E91B48CDFAAFF3D26 /* WhoWouldWinTests */,
+				09A848707DF59CBB808F4999 /* WhoWouldWinUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		CA9006900BC0C9D622536F5E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7F4D2E0C1BA4F829D4EB1D3D /* Assets.xcassets in Resources */,
+				D17BEB9DFA2C3A2281789C43 /* PressStart2P-Regular.ttf in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		51CC690E53F36E5D66C3D6BF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				149CE35F92F84E2D610F742C /* WhoWouldWinUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		64DE66FF50F3E3CDBD4130C4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				406F5AC5F64DCAA7CDA6FCA9 /* BattleServiceTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7DABDE2BA2CE471E657A0321 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6D2867F023C324B2E004BE24 /* Animal.swift in Sources */,
+				0C08355DAF4BF866D5F34278 /* AnimalCard.swift in Sources */,
+				5BD3076127E9A393550F0EA8 /* AnimalPickerView.swift in Sources */,
+				383B48E15780EBB442879E62 /* AnimalPickerViewModel.swift in Sources */,
+				17E09689D108AEE1B2F27946 /* AnimalSprite.swift in Sources */,
+				A1B2C3D4E5F6A7B8C9D0E1F2 /* AnimalImageService.swift in Sources */,
+				717DBB0EC27751EF30F67CCB /* Animals.swift in Sources */,
+				D85EB650D06A2AF6862941E9 /* AppConfig.swift in Sources */,
+				D212B446A34306543F1E2E6E /* AudioManager.swift in Sources */,
+				E2523475AD472DC6CA4E511F /* BattleResult.swift in Sources */,
+				ACC41267360350B97A1A24BF /* BattleScene.swift in Sources */,
+				C3415902943C7266751D929C /* BattleService.swift in Sources */,
+				9905CC30B87E18819B1D1B65 /* BattleView.swift in Sources */,
+				BBD6EA9C1130BE0F2CA495B4 /* BattleViewModel.swift in Sources */,
+				4609C5F1947564E8BEDC304A /* HomeView.swift in Sources */,
+				84E3F6545561E882A9C62C22 /* PixelExplosion.swift in Sources */,
+				639E6B854CA6C211629FA95A /* PixelText.swift in Sources */,
+				F27C3D38A86DC144F1049B53 /* RetroButton.swift in Sources */,
+				0B548A0C47BD3B6B380ED8BB /* WhoWouldWinApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		3425593759DF7FDF16B82839 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 6BF8807AF12B88D17BFD60ED /* WhoWouldWin */;
+			targetProxy = 741F3AF7840769943EE0F9C0 /* PBXContainerItemProxy */;
+		};
+		9506AD62F4D3FB938A690F4F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 6BF8807AF12B88D17BFD60ED /* WhoWouldWin */;
+			targetProxy = 8F2ECD862E778BE9617FF8E4 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		12B6D14AB17837F57AE93C5D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = WhoWouldWin/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.whowouldin.WhoWouldWin;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		468ECE62DA39B301EC00752C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.whowouldin.WhoWouldWinTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WhoWouldWin.app/WhoWouldWin";
+			};
+			name = Debug;
+		};
+		9CF3FCF4E0916DF67C2E8FBC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.whowouldin.WhoWouldWinUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = WhoWouldWin;
+			};
+			name = Release;
+		};
+		B1D2E73C926A7979238FB914 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.whowouldin.WhoWouldWinUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = WhoWouldWin;
+			};
+			name = Debug;
+		};
+		DFA8E5AD153FBAD4002C812B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.whowouldin.WhoWouldWin;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		E45ADA2138706FE71F71286C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = WhoWouldWin/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.whowouldin.WhoWouldWin;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		EBE5F33EA2D15EE579C25FB3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.whowouldin.WhoWouldWinTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WhoWouldWin.app/WhoWouldWin";
+			};
+			name = Release;
+		};
+		EF1E5965038153A05A40E2EB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.whowouldin.WhoWouldWin;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		8539CC7EAC8AED82D8D612EC /* Build configuration list for PBXProject "WhoWouldWin" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EF1E5965038153A05A40E2EB /* Debug */,
+				DFA8E5AD153FBAD4002C812B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		9E6BCA526B58CA065EBFC7E4 /* Build configuration list for PBXNativeTarget "WhoWouldWinTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				468ECE62DA39B301EC00752C /* Debug */,
+				EBE5F33EA2D15EE579C25FB3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		ACAC99AD0843F7CA2210D2A2 /* Build configuration list for PBXNativeTarget "WhoWouldWin" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				12B6D14AB17837F57AE93C5D /* Debug */,
+				E45ADA2138706FE71F71286C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		CE04BF7A0E172DDCE1BDE972 /* Build configuration list for PBXNativeTarget "WhoWouldWinUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B1D2E73C926A7979238FB914 /* Debug */,
+				9CF3FCF4E0916DF67C2E8FBC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F3453C55BE1162060D93DF4F /* Project object */;
+}

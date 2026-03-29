@@ -1,0 +1,81 @@
+name: WhoWouldWin
+options:
+  bundleIdPrefix: com.whowouldin
+  deploymentTarget:
+    iOS: "16.0"
+  xcodeVersion: "15"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    PRODUCT_BUNDLE_IDENTIFIER: com.whowouldin.WhoWouldWin
+    SWIFT_VERSION: 5.9
+    IPHONEOS_DEPLOYMENT_TARGET: "16.0"
+    TARGETED_DEVICE_FAMILY: "1,2"
+
+targets:
+  WhoWouldWin:
+    type: application
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources:
+      - path: WhoWouldWin
+        excludes:
+          - "**/.DS_Store"
+    resources:
+      - path: WhoWouldWin/Assets.xcassets
+      - path: WhoWouldWin/Fonts
+        optional: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.whowouldin.WhoWouldWin
+        INFOPLIST_FILE: WhoWouldWin/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    info:
+      path: WhoWouldWin/Info.plist
+      properties:
+        CFBundleDisplayName: "Who Would Win?"
+        UILaunchStoryboardName: ""
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UIAppFonts:
+          - PressStart2P-Regular.ttf
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: false
+          NSExceptionDomains:
+            localhost:
+              NSExceptionAllowsInsecureHTTPLoads: true
+              NSIncludesSubdomains: false
+        LSApplicationQueriesSchemes: []
+
+  WhoWouldWinTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources:
+      - path: WhoWouldWinTests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.whowouldin.WhoWouldWinTests
+    dependencies:
+      - target: WhoWouldWin
+
+  WhoWouldWinUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources:
+      - path: WhoWouldWinUITests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.whowouldin.WhoWouldWinUITests
+        TEST_TARGET_NAME: WhoWouldWin
+        GENERATE_INFOPLIST_FILE: YES
+    dependencies:
+      - target: WhoWouldWin
