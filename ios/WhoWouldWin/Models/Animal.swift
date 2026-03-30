@@ -28,4 +28,5 @@ enum AnimalCategory: String, CaseIterable, Sendable {
     case sea = "SEA"
     case air = "AIR"
     case insect = "BUGS"
+    case fantasy = "FANTASY"
 }

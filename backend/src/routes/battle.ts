@@ -7,16 +7,24 @@ const router = Router();
 
 // Whitelist of all valid animal IDs
 const VALID_ANIMALS = new Set<string>([
+  // Land
   'lion', 'tiger', 'grizzly_bear', 'wolf', 'elephant', 'rhinoceros',
   'hippopotamus', 'gorilla', 'cheetah', 'crocodile', 'komodo_dragon',
   'wolverine', 'honey_badger', 'giraffe', 'zebra', 'moose', 'boar',
-  'tarantula', 'scorpion', 'cobra', 'great_white_shark', 'orca',
-  'giant_squid', 'piranha', 'octopus', 'barracuda', 'electric_eel',
-  'hammerhead_shark', 'mantis_shrimp', 'blue_ringed_octopus', 'swordfish',
-  'coelacanth', 'bald_eagle', 'peregrine_falcon', 'harpy_eagle', 'barn_owl',
+  'tarantula', 'scorpion', 'cobra',
+  // Sea
+  'great_white_shark', 'orca', 'giant_squid', 'piranha', 'octopus',
+  'barracuda', 'electric_eel', 'hammerhead_shark', 'mantis_shrimp',
+  'blue_ringed_octopus', 'swordfish', 'coelacanth',
+  // Air
+  'bald_eagle', 'peregrine_falcon', 'harpy_eagle', 'barn_owl',
   'pterodactyl', 'hornet', 'dragonfly', 'albatross', 'pelican', 'crow',
+  // Bugs
   'army_ant', 'bombardier_beetle', 'bullet_ant', 'praying_mantis',
   'fire_ant', 'centipede', 'wasp', 'stag_beetle',
+  // Fantasy
+  'dragon', 'unicorn', 'griffin', 'kraken', 'minotaur', 'werewolf',
+  'hydra', 'phoenix', 'kitsune', 'basilisk', 'cerberus', 'leviathan',
 ]);
 
 // POST /api/battle

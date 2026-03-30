@@ -59,6 +59,20 @@ struct Animals {
     static let wasp = Animal(id: "wasp", name: "Wasp", emoji: "🐝", category: .insect, pixelColor: "#FFD700", size: 1)
     static let stag_beetle = Animal(id: "stag_beetle", name: "Stag Beetle", emoji: "🪲", category: .insect, pixelColor: "#3D2B1F", size: 1)
 
+    // MARK: - Fantasy (12)
+    static let dragon     = Animal(id: "dragon",     name: "Dragon",      emoji: "🐉", category: .fantasy, pixelColor: "#C40000", size: 5)
+    static let unicorn    = Animal(id: "unicorn",    name: "Unicorn",     emoji: "🦄", category: .fantasy, pixelColor: "#C77DFF", size: 4)
+    static let griffin    = Animal(id: "griffin",    name: "Griffin",     emoji: "🦁", category: .fantasy, pixelColor: "#D4A017", size: 4)
+    static let kraken     = Animal(id: "kraken",     name: "Kraken",      emoji: "🐙", category: .fantasy, pixelColor: "#1A1A5E", size: 5)
+    static let minotaur   = Animal(id: "minotaur",   name: "Minotaur",    emoji: "🐂", category: .fantasy, pixelColor: "#5C3317", size: 5)
+    static let werewolf   = Animal(id: "werewolf",   name: "Werewolf",    emoji: "🐺", category: .fantasy, pixelColor: "#4A4A6A", size: 4)
+    static let hydra      = Animal(id: "hydra",      name: "Hydra",       emoji: "🐲", category: .fantasy, pixelColor: "#2D6A4F", size: 5)
+    static let phoenix    = Animal(id: "phoenix",    name: "Phoenix",     emoji: "🔥", category: .fantasy, pixelColor: "#FF4500", size: 4)
+    static let kitsune    = Animal(id: "kitsune",    name: "Kitsune",     emoji: "🦊", category: .fantasy, pixelColor: "#FF8C00", size: 3)
+    static let basilisk   = Animal(id: "basilisk",   name: "Basilisk",    emoji: "🐍", category: .fantasy, pixelColor: "#556B2F", size: 3)
+    static let cerberus   = Animal(id: "cerberus",   name: "Cerberus",    emoji: "🐕", category: .fantasy, pixelColor: "#2F2F2F", size: 4)
+    static let leviathan  = Animal(id: "leviathan",  name: "Leviathan",   emoji: "🐋", category: .fantasy, pixelColor: "#003049", size: 5)
+
     // MARK: - All Animals
     static let all: [Animal] = [
         // Land
@@ -74,6 +88,9 @@ struct Animals {
         hornet, dragonfly, albatross, pelican, crow,
         // Insect/Small
         army_ant, bombardier_beetle, bullet_ant, praying_mantis, fire_ant,
-        centipede, wasp, stag_beetle
+        centipede, wasp, stag_beetle,
+        // Fantasy
+        dragon, unicorn, griffin, kraken, minotaur, werewolf,
+        hydra, phoenix, kitsune, basilisk, cerberus, leviathan
     ]
 }

@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Beast Clash — Animal vs Animal Battle Game</title>
+  <meta name="description" content="Who would win in a fight? Pick any two animals and let AI decide the ultimate animal battle. Dragon vs Lion? Kraken vs Great White? Find out in Beast Clash." />
+  <meta name="keywords" content="animal vs animal, who would win, beast clash, animal battle, animal fight, lion vs tiger, dragon vs unicorn" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Beast Clash — Animal vs Animal" />
+  <meta property="og:description" content="Pick any two animals. AI decides who wins. Now with Fantasy creatures." />
+  <meta property="og:url" content="https://animal-vs-animal.com" />
+  <meta property="og:type" content="website" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Beast Clash — Animal vs Animal" />
+  <meta name="twitter:description" content="Pick any two animals. AI decides who wins." />
+
+  <link rel="canonical" href="https://animal-vs-animal.com" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep:    #0E0B22;
+      --bg-mid:     #180B32;
+      --orange:     #FF5722;
+      --yellow:     #FFD60A;
+      --purple:     #C77DFF;
+      --cyan:       #00CFCF;
+      --gold:       #FFD700;
+      --text:       #FFFFFF;
+      --text-dim:   rgba(255,255,255,0.55);
+      --card:       rgba(255,255,255,0.06);
+      --border:     rgba(255,255,255,0.10);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, var(--bg-deep) 0%, var(--bg-mid) 50%, #0B1528 100%);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Stars ── */
+    .stars {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image:
+        radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 70% 15%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 45% 60%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 85% 45%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 10% 80%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 60% 85%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 30% 50%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 90% 70%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 55% 25%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 15% 45%, rgba(255,255,255,0.3) 0%, transparent 100%);
+    }
+
+    /* ── Layout ── */
+    .container { max-width: 860px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+    /* ── Nav ── */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 24px;
+      position: relative; z-index: 1;
+    }
+    .nav-logo { font-size: 15px; font-weight: 800; letter-spacing: 1px; color: var(--text-dim); }
+    .nav-logo span { color: var(--orange); }
+
+    /* ── Hero ── */
+    .hero {
+      text-align: center;
+      padding: 60px 24px 72px;
+      position: relative; z-index: 1;
+    }
+    .hero-eyebrow {
+      font-size: 12px; font-weight: 700; letter-spacing: 3px;
+      color: var(--text-dim); text-transform: uppercase; margin-bottom: 20px;
+    }
+    .hero-title {
+      font-size: clamp(48px, 10vw, 96px);
+      font-weight: 900; line-height: 1; letter-spacing: -2px;
+      margin-bottom: 8px;
+    }
+    .hero-title .beast { color: var(--text); }
+    .hero-title .clash {
+      color: var(--orange);
+      text-shadow: 0 0 40px rgba(255,87,34,0.6), 0 0 80px rgba(255,87,34,0.3);
+    }
+    .hero-tagline {
+      font-size: 15px; font-weight: 600; letter-spacing: 2px;
+      color: rgba(255,255,255,0.35); margin-bottom: 10px;
+    }
+    .hero-sub {
+      font-size: 13px; font-weight: 700; letter-spacing: 1.5px;
+      color: rgba(255,255,255,0.2); margin-bottom: 48px;
+    }
+    .battle-demo {
+      display: flex; align-items: center; justify-content: center;
+      gap: 16px; margin-bottom: 52px; flex-wrap: wrap;
+    }
+    .fighter-chip {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px 22px;
+      font-size: 28px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .fighter-chip span {
+      font-size: 14px; font-weight: 700; color: var(--text-dim); letter-spacing: 0.5px;
+    }
+    .vs-badge {
+      background: linear-gradient(135deg, var(--orange), var(--yellow));
+      border-radius: 50%; width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 900; color: #fff;
+      box-shadow: 0 4px 20px rgba(255,87,34,0.5);
+      flex-shrink: 0;
+    }
+    .cta-group { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+    .btn-appstore {
+      display: inline-flex; align-items: center; gap: 12px;
+      background: linear-gradient(135deg, var(--orange), var(--yellow));
+      color: #fff; text-decoration: none;
+      padding: 18px 36px; border-radius: 18px;
+      font-size: 17px; font-weight: 800;
+      box-shadow: 0 8px 30px rgba(255,87,34,0.45);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn-appstore:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(255,87,34,0.55); }
+    .btn-appstore .apple-icon { font-size: 22px; }
+    .store-note { font-size: 12px; color: var(--text-dim); }
+
+    /* ── Feature section ── */
+    .section { padding: 72px 0; }
+    .section-label {
+      text-align: center; font-size: 12px; font-weight: 700;
+      letter-spacing: 3px; color: var(--text-dim); text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .section-title {
+      text-align: center; font-size: clamp(28px, 5vw, 42px);
+      font-weight: 900; line-height: 1.1; margin-bottom: 52px;
+    }
+    .features {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .feature-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px 24px;
+    }
+    .feature-icon { font-size: 36px; margin-bottom: 14px; }
+    .feature-title { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+    .feature-desc { font-size: 14px; color: var(--text-dim); line-height: 1.6; }
+
+    /* ── Battle examples ── */
+    .battles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+    .battle-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 16px;
+      text-align: center;
+    }
+    .battle-matchup { font-size: 26px; margin-bottom: 8px; }
+    .battle-names { font-size: 12px; font-weight: 700; color: var(--text-dim); letter-spacing: 0.5px; }
+
+    /* ── Fantasy section ── */
+    .fantasy-section {
+      background: linear-gradient(135deg, rgba(59,16,103,0.4), rgba(26,5,53,0.6));
+      border: 1px solid rgba(199,125,255,0.25);
+      border-radius: 24px;
+      padding: 48px 40px;
+      text-align: center;
+      margin: 0 0 72px;
+    }
+    .fantasy-section h2 { font-size: clamp(24px, 4vw, 36px); font-weight: 900; margin-bottom: 12px; }
+    .fantasy-section h2 span {
+      background: linear-gradient(90deg, var(--purple), #E040FB);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .fantasy-section p { font-size: 15px; color: var(--text-dim); margin-bottom: 28px; line-height: 1.6; }
+    .fantasy-creatures {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 12px;
+    }
+    .creature-chip {
+      background: rgba(199,125,255,0.1);
+      border: 1px solid rgba(199,125,255,0.3);
+      border-radius: 12px;
+      padding: 10px 16px;
+      font-size: 15px;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .creature-chip span { font-size: 12px; font-weight: 600; color: rgba(199,125,255,0.8); }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 24px;
+      text-align: center;
+      position: relative; z-index: 1;
+    }
+    footer p { font-size: 13px; color: var(--text-dim); line-height: 1.8; }
+    footer a { color: var(--text-dim); text-decoration: underline; }
+    footer a:hover { color: var(--text); }
+    .footer-logo { font-size: 22px; font-weight: 900; margin-bottom: 12px; }
+    .footer-logo .clash { color: var(--orange); }
+  </style>
+</head>
+<body>
+  <div class="stars"></div>
+
+  <nav>
+    <div class="nav-logo">animal<span>-vs-</span>animal.com</div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <p class="hero-eyebrow">⚔️ The Ultimate Animal Battle Arena ⚔️</p>
+    <h1 class="hero-title">
+      <div class="beast">BEAST</div>
+      <div class="clash">CLASH</div>
+    </h1>
+    <p class="hero-tagline">who would win?</p>
+    <p class="hero-sub">⚔️ ANIMAL BATTLE ARENA ⚔️</p>
+
+    <div class="battle-demo">
+      <div class="fighter-chip">🦁 <span>LION</span></div>
+      <div class="vs-badge">VS</div>
+      <div class="fighter-chip">🐊 <span>CROCODILE</span></div>
+    </div>
+
+    <div class="cta-group">
+      <a href="https://apps.apple.com/app/beast-clash/id6746860046" class="btn-appstore">
+        <span class="apple-icon">🍎</span>
+        Download on the App Store
+      </a>
+      <p class="store-note">Free · iPhone &amp; iPad · iOS 16+</p>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <div class="container">
+    <section class="section">
+      <p class="section-label">Why kids love it</p>
+      <h2 class="section-title">Real science. Epic battles.<br/>AI-powered results.</h2>
+
+      <div class="features">
+        <div class="feature-card">
+          <div class="feature-icon">🤖</div>
+          <div class="feature-title">AI-Powered Outcomes</div>
+          <div class="feature-desc">Every battle is decided by AI using real animal biology — size, speed, venom, claws. No random numbers.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📖</div>
+          <div class="feature-title">Educational Narration</div>
+          <div class="feature-desc">Each result includes a detailed battle story and a fun science fact your kids will actually remember.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🦎</div>
+          <div class="feature-title">62 Animals</div>
+          <div class="feature-desc">Land, sea, air, bugs — plus 12 legendary fantasy creatures once you unlock the Fantasy Realm.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🎤</div>
+          <div class="feature-title">Voice Search</div>
+          <div class="feature-desc">Tap the mic and say any animal. Type anything you can dream up — wombat, quokka, T-Rex, you name it.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⚔️</div>
+          <div class="feature-title">Multi-Hit Battles</div>
+          <div class="feature-desc">Watch animated health bars drain in real time as each fighter lands 3 hits per round with critical strikes.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📵</div>
+          <div class="feature-title">Works Offline</div>
+          <div class="feature-desc">No signal? The app falls back to a local battle engine so the fun never stops on road trips.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Battle examples -->
+    <section class="section" style="padding-top: 0;">
+      <p class="section-label">Popular matchups</p>
+      <h2 class="section-title">Who would win?</h2>
+      <div class="battles">
+        <div class="battle-card">
+          <div class="battle-matchup">🦁⚔️🐯</div>
+          <div class="battle-names">Lion vs Tiger</div>
+        </div>
+        <div class="battle-card">
+          <div class="battle-matchup">🦈⚔️🐙</div>
+          <div class="battle-names">Great White vs Giant Squid</div>
+        </div>
+        <div class="battle-card">
+          <div class="battle-matchup">🐘⚔️🦏</div>
+          <div class="battle-names">Elephant vs Rhino</div>
+        </div>
+        <div class="battle-card">
+          <div class="battle-matchup">🐺⚔️🦍</div>
+          <div class="battle-names">Wolf vs Gorilla</div>
+        </div>
+        <div class="battle-card">
+          <div class="battle-matchup">🦅⚔️🐍</div>
+          <div class="battle-names">Eagle vs Cobra</div>
+        </div>
+        <div class="battle-card">
+          <div class="battle-matchup">🐊⚔️🦛</div>
+          <div class="battle-names">Crocodile vs Hippo</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Fantasy section -->
+    <div class="fantasy-section">
+      <p style="font-size:40px; margin-bottom:16px;">✨</p>
+      <h2><span>Fantasy Realm</span> — Now Unlockable</h2>
+      <p>Play 50 battles to unlock 12 legendary creatures for free — or grab the Fantasy Pack for instant access. Dragon vs Kraken? Unicorn vs Minotaur? Now you can find out.</p>
+      <div class="fantasy-creatures">
+        <div class="creature-chip">🐉 <span>Dragon</span></div>
+        <div class="creature-chip">🦄 <span>Unicorn</span></div>
+        <div class="creature-chip">🐙 <span>Kraken</span></div>
+        <div class="creature-chip">🐂 <span>Minotaur</span></div>
+        <div class="creature-chip">🐺 <span>Werewolf</span></div>
+        <div class="creature-chip">🔥 <span>Phoenix</span></div>
+        <div class="creature-chip">🐲 <span>Hydra</span></div>
+        <div class="creature-chip">🦊 <span>Kitsune</span></div>
+        <div class="creature-chip">🐍 <span>Basilisk</span></div>
+        <div class="creature-chip">🐕 <span>Cerberus</span></div>
+        <div class="creature-chip">🐋 <span>Leviathan</span></div>
+        <div class="creature-chip">🦁 <span>Griffin</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-logo">BEAST <span class="clash">CLASH</span></div>
+    <p>
+      The ultimate animal vs animal battle arena.<br />
+      <a href="/privacy.html">Privacy Policy</a> · <a href="/support.html">Support</a> · <a href="https://apps.apple.com/app/beast-clash/id6746860046">App Store</a>
+    </p>
+    <p style="margin-top: 16px; font-size: 12px; opacity: 0.4;">
+      © 2025 animal-vs-animal.com · Beast Clash
+    </p>
+  </footer>
+</body>
+</html>
