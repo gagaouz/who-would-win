@@ -15,6 +15,21 @@ export const MAX_NAME_LENGTH = 60;
 // apostrophes, hyphens, dots.  Everything else is stripped.
 const ALLOWED_CHARS = /[^\p{L}\p{N}\p{Emoji_Presentation}\p{Emoji}\s'\-\.]/gu;
 
+// Words that are never appropriate in a kids app — whole-word match only
+// (split on whitespace, check each token) to avoid the Scunthorpe problem.
+const BLOCKED_WORDS = new Set([
+  'penis','vagina','vulva','anus','anal','rectum','testicle','testicles',
+  'scrotum','breasts','nipple','nipples','clitoris','cock','dick','pussy',
+  'cunt','ass','asshole','fuck','shit','bitch','whore','slut','cum',
+  'semen','sperm','porn','porno','naked','nude','genitals','genitalia',
+  'erection','dildo','vibrator','condom','foreskin','butthole','tits',
+  'boobs','boner','jizz','wank','wanker','twat',
+]);
+
+function containsBlockedWord(s: string): boolean {
+  return s.toLowerCase().split(/\s+/).some(w => BLOCKED_WORDS.has(w));
+}
+
 // Phrases that look like prompt injection or jailbreak attempts
 const INJECTION_PATTERNS = [
   /ignore\s+(all\s+)?(previous|above|prior)\s+instructions?/i,
@@ -53,6 +68,11 @@ export function sanitizeName(raw: unknown): SanitizeResult {
   // Hard length cap BEFORE any other processing (don't even process huge strings)
   if (s.length > MAX_NAME_LENGTH * 4) {
     return { ok: false, value: '', error: `too long (max ${MAX_NAME_LENGTH} characters)` };
+  }
+
+  // Block inappropriate content for this kids app
+  if (containsBlockedWord(s)) {
+    return { ok: false, value: '', error: 'name is not allowed' };
   }
 
   // Check for prompt injection patterns on the raw string

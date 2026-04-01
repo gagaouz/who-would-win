@@ -1,7 +1,7 @@
 import Foundation
 import Combine
 
-class AnimalPickerViewModel: ObservableObject {
+final class AnimalPickerViewModel: ObservableObject {
     @Published var fighter1: Animal? = nil
     @Published var fighter2: Animal? = nil
     @Published var searchText: String = "" {
@@ -66,6 +66,7 @@ class AnimalPickerViewModel: ObservableObject {
         guard !searchText.trimmingCharacters(in: .whitespaces).isEmpty,
               filteredAnimals.isEmpty else { return nil }
         let name = searchText.trimmingCharacters(in: .whitespaces)
+        guard ContentFilter.isAppropriate(name) else { return nil }
         return Animal(
             id: name.lowercased().replacingOccurrences(of: " ", with: "_"),
             name: name.capitalized,
@@ -83,7 +84,7 @@ class AnimalPickerViewModel: ObservableObject {
     @MainActor
     func fetchCustomAnimalInfo() async {
         let name = searchText.trimmingCharacters(in: .whitespaces)
-        guard !name.isEmpty else { return }
+        guard !name.isEmpty, ContentFilter.isAppropriate(name) else { return }
 
         // Fetch emoji/category/color and image URL concurrently
         async let infoTask  = AnimalImageService.shared.fetchAnimalInfo(name: name)
