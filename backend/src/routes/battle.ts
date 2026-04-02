@@ -25,6 +25,16 @@ const VALID_ANIMALS = new Set<string>([
   // Fantasy
   'dragon', 'unicorn', 'griffin', 'kraken', 'minotaur', 'werewolf',
   'hydra', 'phoenix', 'kitsune', 'basilisk', 'cerberus', 'leviathan',
+  // Prehistoric
+  't_rex', 'triceratops', 'velociraptor', 'spinosaurus', 'megalodon',
+  'woolly_mammoth', 'saber_tooth_tiger', 'ankylosaurus', 'pteranodon',
+  'dire_wolf', 'therizinosaurus', 'dodo',
+  // Mythic
+  'thunderbird', 'manticore', 'sphinx', 'chimera', 'wyvern', 'kirin',
+  'roc', 'jackalope', 'baku', 'nue', 'ammit', 'peryton',
+  // Mount Olympus (cheat code)
+  'zeus', 'poseidon', 'hades', 'ares', 'athena', 'apollo',
+  'artemis', 'hermes', 'hephaestus', 'hercules', 'medusa', 'kronos',
 ]);
 
 // POST /api/battle
