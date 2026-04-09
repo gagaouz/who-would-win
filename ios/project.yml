@@ -12,6 +12,8 @@ settings:
     SWIFT_VERSION: 5.9
     IPHONEOS_DEPLOYMENT_TARGET: "16.0"
     TARGETED_DEVICE_FAMILY: "1,2"
+    DEVELOPMENT_TEAM: 8U69B876XS
+    CODE_SIGN_STYLE: Automatic
 
 targets:
   WhoWouldWin:
@@ -34,8 +36,10 @@ targets:
     info:
       path: WhoWouldWin/Info.plist
       properties:
-        CFBundleDisplayName: "Who Would Win?"
-        UILaunchStoryboardName: ""
+        CFBundleDisplayName: "Beast Clash"
+        UILaunchScreen: {}
+        NSMicrophoneUsageDescription: "Speak the name of any animal to search or add a custom fighter."
+        NSSpeechRecognitionUsageDescription: "Speak the name of any animal to search or add a custom fighter."
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
           - UIInterfaceOrientationPortraitUpsideDown

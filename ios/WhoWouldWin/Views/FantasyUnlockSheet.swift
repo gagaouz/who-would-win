@@ -16,14 +16,10 @@ struct FantasyUnlockSheet: View {
     var body: some View {
         ZStack {
             // Background
-            LinearGradient(
-                colors: [Color(hex: "#1A0535"), Color(hex: "#0E0B22"), Color(hex: "#110A28")],
-                startPoint: .topLeading, endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            Theme.mainBg.ignoresSafeArea()
 
             // Subtle star shimmer
-            StarFieldOverlay().ignoresSafeArea().allowsHitTesting(false)
+            SpreadStarField().ignoresSafeArea().allowsHitTesting(false)
 
             VStack(spacing: 0) {
                 // Close button
@@ -32,11 +28,11 @@ struct FantasyUnlockSheet: View {
                     Button { isPresented = false } label: {
                         ZStack {
                             Circle()
-                                .fill(Color.white.opacity(0.1))
+                                .fill(Theme.cardFill)
                                 .frame(width: 32, height: 32)
                             Image(systemName: "xmark")
                                 .font(.system(size: 13, weight: .bold))
-                                .foregroundColor(.white.opacity(0.6))
+                                .foregroundColor(Theme.textSecondary)
                         }
                     }
                     .buttonStyle(.plain)
@@ -65,7 +61,7 @@ struct FantasyUnlockSheet: View {
 
                             Text("12 legendary creatures await")
                                 .font(.system(size: 14, weight: .medium, design: .rounded))
-                                .foregroundColor(.white.opacity(0.55))
+                                .foregroundColor(Theme.textSecondary)
                         }
 
                         // Creature preview grid
@@ -83,20 +79,20 @@ struct FantasyUnlockSheet: View {
                                 VStack(alignment: .leading, spacing: 3) {
                                     Text("FREE PATH")
                                         .font(.system(size: 11, weight: .black, design: .rounded))
-                                        .foregroundColor(.white.opacity(0.4))
+                                        .foregroundColor(Theme.textTertiary)
                                         .tracking(1.5)
-                                    Text("Play 50 Battles")
+                                    Text("Play 250 Battles")
                                         .font(.system(size: 17, weight: .black, design: .rounded))
-                                        .foregroundColor(.white)
+                                        .foregroundColor(Theme.textPrimary)
                                 }
                                 Spacer()
                                 VStack(alignment: .trailing, spacing: 3) {
                                     Text("\(settings.totalBattleCount)")
                                         .font(.system(size: 22, weight: .black, design: .rounded))
                                         .foregroundColor(Theme.fantasyAccent)
-                                    Text("/ 50")
+                                    Text("/ 250")
                                         .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                        .foregroundColor(.white.opacity(0.4))
+                                        .foregroundColor(Theme.textTertiary)
                                 }
                             }
 
@@ -133,13 +129,13 @@ struct FantasyUnlockSheet: View {
                             if battlesRemaining > 0 {
                                 Text("\(battlesRemaining) more battle\(battlesRemaining == 1 ? "" : "s") to go!")
                                     .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                    .foregroundColor(.white.opacity(0.45))
+                                    .foregroundColor(Theme.textTertiary)
                             }
                         }
                         .padding(16)
                         .background(
                             RoundedRectangle(cornerRadius: 18)
-                                .fill(Color.white.opacity(0.06))
+                                .fill(Theme.cardFill)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 18)
                                         .stroke(Theme.fantasyAccent.opacity(0.25), lineWidth: 1.5)
@@ -148,12 +144,12 @@ struct FantasyUnlockSheet: View {
 
                         // OR divider
                         HStack(spacing: 12) {
-                            Rectangle().fill(Color.white.opacity(0.12)).frame(height: 1)
+                            Rectangle().fill(Theme.divider).frame(height: 1)
                             Text("OR UNLOCK NOW")
                                 .font(.system(size: 11, weight: .black, design: .rounded))
-                                .foregroundColor(.white.opacity(0.3))
+                                .foregroundColor(Theme.textTertiary)
                                 .tracking(1.5)
-                            Rectangle().fill(Color.white.opacity(0.12)).frame(height: 1)
+                            Rectangle().fill(Theme.divider).frame(height: 1)
                         }
 
                         // Paid CTA — Fantasy Pack
@@ -163,9 +159,12 @@ struct FantasyUnlockSheet: View {
                                     let ok = await store.purchase(product)
                                     if ok { isPresented = false }
                                 } else {
-                                    // ASC not configured yet — grant locally for testing
+                                    #if DEBUG
                                     settings.fantasyUnlocked = true
                                     isPresented = false
+                                    #else
+                                    await store.loadProducts()
+                                    #endif
                                 }
                             }
                         } label: {
@@ -212,7 +211,7 @@ struct FantasyUnlockSheet: View {
                                 .foregroundColor(Theme.gold)
                             Text("Also included in Premium subscription")
                                 .font(.system(size: 12, weight: .medium, design: .rounded))
-                                .foregroundColor(.white.opacity(0.4))
+                                .foregroundColor(Theme.textTertiary)
                         }
 
                         // Restore
@@ -221,7 +220,7 @@ struct FantasyUnlockSheet: View {
                         } label: {
                             Text("Restore Purchases")
                                 .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                .foregroundColor(.white.opacity(0.35))
+                                .foregroundColor(Theme.textTertiary)
                                 .underline()
                         }
                         .buttonStyle(.plain)
@@ -269,7 +268,7 @@ struct FantasyUnlockSheet: View {
                     }
                     Text(name)
                         .font(.system(size: 8, weight: .bold, design: .rounded))
-                        .foregroundColor(.white.opacity(0.4))
+                        .foregroundColor(Theme.textTertiary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
                 }
@@ -298,7 +297,7 @@ struct FantasyUnlockedBanner: View {
 
             Text("You've unlocked 12 legendary creatures!")
                 .font(.system(size: 13, weight: .semibold, design: .rounded))
-                .foregroundColor(.white.opacity(0.75))
+                .foregroundColor(Theme.textSecondary)
                 .multilineTextAlignment(.center)
         }
         .padding(.horizontal, 24)

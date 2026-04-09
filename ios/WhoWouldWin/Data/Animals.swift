@@ -62,16 +62,58 @@ struct Animals {
     // MARK: - Fantasy (12)
     static let dragon     = Animal(id: "dragon",     name: "Dragon",      emoji: "🐉", category: .fantasy, pixelColor: "#C40000", size: 5)
     static let unicorn    = Animal(id: "unicorn",    name: "Unicorn",     emoji: "🦄", category: .fantasy, pixelColor: "#C77DFF", size: 4)
-    static let griffin    = Animal(id: "griffin",    name: "Griffin",     emoji: "🦁", category: .fantasy, pixelColor: "#D4A017", size: 4)
-    static let kraken     = Animal(id: "kraken",     name: "Kraken",      emoji: "🐙", category: .fantasy, pixelColor: "#1A1A5E", size: 5)
-    static let minotaur   = Animal(id: "minotaur",   name: "Minotaur",    emoji: "🐂", category: .fantasy, pixelColor: "#5C3317", size: 5)
+    static let griffin    = Animal(id: "griffin",    name: "Griffin",     emoji: "🦅", category: .fantasy, pixelColor: "#D4A017", size: 4)
+    static let kraken     = Animal(id: "kraken",     name: "Kraken",      emoji: "🦑", category: .fantasy, pixelColor: "#1A1A5E", size: 5)
+    static let minotaur   = Animal(id: "minotaur",   name: "Minotaur",    emoji: "🐃", category: .fantasy, pixelColor: "#5C3317", size: 5)
     static let werewolf   = Animal(id: "werewolf",   name: "Werewolf",    emoji: "🐺", category: .fantasy, pixelColor: "#4A4A6A", size: 4)
     static let hydra      = Animal(id: "hydra",      name: "Hydra",       emoji: "🐲", category: .fantasy, pixelColor: "#2D6A4F", size: 5)
-    static let phoenix    = Animal(id: "phoenix",    name: "Phoenix",     emoji: "🔥", category: .fantasy, pixelColor: "#FF4500", size: 4)
+    static let phoenix    = Animal(id: "phoenix",    name: "Phoenix",     emoji: "🐦‍🔥", category: .fantasy, pixelColor: "#FF4500", size: 4)
     static let kitsune    = Animal(id: "kitsune",    name: "Kitsune",     emoji: "🦊", category: .fantasy, pixelColor: "#FF8C00", size: 3)
     static let basilisk   = Animal(id: "basilisk",   name: "Basilisk",    emoji: "🐍", category: .fantasy, pixelColor: "#556B2F", size: 3)
-    static let cerberus   = Animal(id: "cerberus",   name: "Cerberus",    emoji: "🐕", category: .fantasy, pixelColor: "#2F2F2F", size: 4)
+    static let cerberus   = Animal(id: "cerberus",   name: "Cerberus",    emoji: "🐕‍🦺", category: .fantasy, pixelColor: "#2F2F2F", size: 4)
     static let leviathan  = Animal(id: "leviathan",  name: "Leviathan",   emoji: "🐋", category: .fantasy, pixelColor: "#003049", size: 5)
+
+    // MARK: - Prehistoric Pack (12) — real extinct creatures, public domain
+    static let t_rex             = Animal(id: "t_rex",             name: "T-Rex",             emoji: "🦖", category: .prehistoric, pixelColor: "#7B5E3A", size: 5)
+    static let triceratops       = Animal(id: "triceratops",       name: "Triceratops",       emoji: "🦏", category: .prehistoric, pixelColor: "#6B8E5E", size: 5)
+    static let velociraptor      = Animal(id: "velociraptor",      name: "Velociraptor",      emoji: "🦎", category: .prehistoric, pixelColor: "#8A9A5B", size: 3)
+    static let spinosaurus       = Animal(id: "spinosaurus",       name: "Spinosaurus",       emoji: "🐊", category: .prehistoric, pixelColor: "#4A7C59", size: 5)
+    static let megalodon         = Animal(id: "megalodon",         name: "Megalodon",         emoji: "🦈", category: .prehistoric, pixelColor: "#5A7A8A", size: 5)
+    static let woolly_mammoth    = Animal(id: "woolly_mammoth",    name: "Woolly Mammoth",    emoji: "🦣", category: .prehistoric, pixelColor: "#8B6914", size: 5)
+    static let saber_tooth_tiger = Animal(id: "saber_tooth_tiger", name: "Saber-Tooth Tiger", emoji: "🐯", category: .prehistoric, pixelColor: "#D4A017", size: 4)
+    static let ankylosaurus      = Animal(id: "ankylosaurus",      name: "Ankylosaurus",      emoji: "🐢", category: .prehistoric, pixelColor: "#556B2F", size: 4)
+    static let pteranodon        = Animal(id: "pteranodon",        name: "Pteranodon",        emoji: "🦇", category: .prehistoric, pixelColor: "#8FBC8F", size: 4)
+    static let dire_wolf         = Animal(id: "dire_wolf",         name: "Dire Wolf",         emoji: "🐺", category: .prehistoric, pixelColor: "#5A5A7A", size: 3)
+    static let therizinosaurus   = Animal(id: "therizinosaurus",   name: "Therizinosaurus",   emoji: "🦕", category: .prehistoric, pixelColor: "#8B7355", size: 5)
+    static let dodo              = Animal(id: "dodo",              name: "Dodo",              emoji: "🦤", category: .prehistoric, pixelColor: "#C8A87A", size: 1)
+
+    // MARK: - Mythic Beasts Pack (12) — ancient public-domain mythology & folklore
+    static let thunderbird = Animal(id: "thunderbird", name: "Thunderbird", emoji: "🦅", category: .mythic, pixelColor: "#1A3A8A", size: 5)
+    static let manticore   = Animal(id: "manticore",   name: "Manticore",   emoji: "🦂", category: .mythic, pixelColor: "#C8500A", size: 5)
+    static let sphinx      = Animal(id: "sphinx",      name: "Sphinx",      emoji: "🦁", category: .mythic, pixelColor: "#D4A017", size: 4)
+    static let chimera     = Animal(id: "chimera",     name: "Chimera",     emoji: "🐐", category: .mythic, pixelColor: "#8B3A3A", size: 4)
+    static let wyvern      = Animal(id: "wyvern",      name: "Wyvern",      emoji: "🐉", category: .mythic, pixelColor: "#2D6A2D", size: 4)
+    static let kirin       = Animal(id: "kirin",       name: "Kirin",       emoji: "🐲", category: .mythic, pixelColor: "#A07850", size: 4)
+    static let roc         = Animal(id: "roc",         name: "Roc",         emoji: "🦢", category: .mythic, pixelColor: "#C8A000", size: 5)
+    static let jackalope   = Animal(id: "jackalope",   name: "Jackalope",   emoji: "🐇", category: .mythic, pixelColor: "#C8A87A", size: 2)
+    static let baku        = Animal(id: "baku",        name: "Baku",        emoji: "🐘", category: .mythic, pixelColor: "#6A4A8A", size: 4)
+    static let nue         = Animal(id: "nue",         name: "Nue",         emoji: "🐒", category: .mythic, pixelColor: "#3A3A5A", size: 3)
+    static let ammit       = Animal(id: "ammit",       name: "Ammit",       emoji: "🐊", category: .mythic, pixelColor: "#C8A000", size: 3)
+    static let peryton     = Animal(id: "peryton",     name: "Peryton",     emoji: "🦌", category: .mythic, pixelColor: "#2D6A4F", size: 3)
+
+    // MARK: - Mount Olympus (cheat-code only)
+    static let zeus        = Animal(id: "zeus",        name: "Zeus",        emoji: "⚡️", category: .olympus, pixelColor: "#FFD700", size: 5)
+    static let poseidon    = Animal(id: "poseidon",    name: "Poseidon",    emoji: "🔱", category: .olympus, pixelColor: "#1565C0", size: 5)
+    static let hades       = Animal(id: "hades",       name: "Hades",       emoji: "💀", category: .olympus, pixelColor: "#4A0E8F", size: 5)
+    static let ares        = Animal(id: "ares",        name: "Ares",        emoji: "🪖", category: .olympus, pixelColor: "#AA0000", size: 5)
+    static let athena      = Animal(id: "athena",      name: "Athena",      emoji: "🦉", category: .olympus, pixelColor: "#7E9EB5", size: 4)
+    static let apollo      = Animal(id: "apollo",      name: "Apollo",      emoji: "☀️", category: .olympus, pixelColor: "#FF9900", size: 4)
+    static let artemis     = Animal(id: "artemis",     name: "Artemis",     emoji: "🏹", category: .olympus, pixelColor: "#2D8A4E", size: 4)
+    static let hermes      = Animal(id: "hermes",      name: "Hermes",      emoji: "🪽", category: .olympus, pixelColor: "#B0C4DE", size: 4)
+    static let hephaestus  = Animal(id: "hephaestus",  name: "Hephaestus",  emoji: "🔥", category: .olympus, pixelColor: "#CC4400", size: 5)
+    static let hercules    = Animal(id: "hercules",    name: "Hercules",    emoji: "💪", category: .olympus, pixelColor: "#CD7F32", size: 5)
+    static let medusa      = Animal(id: "medusa",      name: "Medusa",      emoji: "🐍", category: .olympus, pixelColor: "#006400", size: 4)
+    static let kronos      = Animal(id: "kronos",      name: "Kronos",      emoji: "🌀", category: .olympus, pixelColor: "#2A0A5E", size: 5)
 
     // MARK: - All Animals
     static let all: [Animal] = [
@@ -91,6 +133,15 @@ struct Animals {
         centipede, wasp, stag_beetle,
         // Fantasy
         dragon, unicorn, griffin, kraken, minotaur, werewolf,
-        hydra, phoenix, kitsune, basilisk, cerberus, leviathan
+        hydra, phoenix, kitsune, basilisk, cerberus, leviathan,
+        // Prehistoric
+        t_rex, triceratops, velociraptor, spinosaurus, megalodon, woolly_mammoth,
+        saber_tooth_tiger, ankylosaurus, pteranodon, dire_wolf, therizinosaurus, dodo,
+        // Mythic
+        thunderbird, manticore, sphinx, chimera, wyvern, kirin,
+        roc, jackalope, baku, nue, ammit, peryton,
+        // Mount Olympus (hidden — cheat code only)
+        zeus, poseidon, hades, ares, athena, apollo,
+        artemis, hermes, hephaestus, hercules, medusa, kronos
     ]
 }

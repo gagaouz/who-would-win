@@ -4,13 +4,21 @@ struct AnimalPickerView: View {
     @StateObject private var viewModel = AnimalPickerViewModel()
     @Environment(\.dismiss) private var dismiss
     @ObservedObject private var settings = UserSettings.shared
+    @ObservedObject private var cheat = CheatState.shared
 
     @State private var navigateToBattle = false
     @State private var fightButtonGlowRadius: CGFloat = 10
     @State private var emptySlotPulse: CGFloat = 1.0
     @State private var showFantasyUnlockSheet = false
+    @State private var showPrehistoricUnlockSheet = false
+    @State private var showMythicUnlockSheet = false
+    @State private var showAdGateFailedAlert = false
     @FocusState private var searchFocused: Bool
     @StateObject private var speech = SpeechService()
+
+    // Cheat code: tap VS ×2 then FIGHTERS ×6
+    @State private var olympusCheatStep = 0
+    @State private var showOlympusReveal = false
 
     private let columns = [
         GridItem(.flexible(), spacing: 10),
@@ -25,7 +33,7 @@ struct AnimalPickerView: View {
     var body: some View {
         ZStack {
             Theme.mainBg.ignoresSafeArea()
-            StarFieldOverlay().ignoresSafeArea().allowsHitTesting(false)
+            SpreadStarField().ignoresSafeArea().allowsHitTesting(false)
 
             VStack(spacing: 0) {
 
@@ -38,7 +46,7 @@ struct AnimalPickerView: View {
                             Text("Back")
                                 .font(.system(size: 15, weight: .semibold, design: .rounded))
                         }
-                        .foregroundColor(.white.opacity(0.75))
+                        .foregroundColor(Theme.textSecondary)
                     }
                     .buttonStyle(.plain)
 
@@ -47,11 +55,12 @@ struct AnimalPickerView: View {
                     VStack(spacing: 2) {
                         Text("PICK YOUR")
                             .font(.system(size: 11, weight: .bold, design: .rounded))
-                            .foregroundColor(.white.opacity(0.45))
+                            .foregroundColor(Theme.textTertiary)
                             .tracking(2)
                         Text("FIGHTERS")
                             .font(.system(size: 18, weight: .black, design: .rounded))
-                            .foregroundColor(.white)
+                            .foregroundColor(cheat.olympusUnlocked ? Theme.olympusAccent : Theme.textPrimary)
+                            .onTapGesture { handleCheatFightersTap() }
                     }
 
                     Spacer()
@@ -77,19 +86,22 @@ struct AnimalPickerView: View {
                         onClear: { viewModel.clear(1) }
                     )
 
-                    // VS badge — sits between slots, no overlap
+                    // VS badge — sits between slots; also first trigger of cheat code
                     ZStack {
                         Circle()
                             .fill(LinearGradient(
-                                colors: [Theme.orange, Theme.yellow],
+                                colors: cheat.olympusUnlocked
+                                    ? [Theme.olympusAccent, Color(hex: "#B8860B")]
+                                    : [Theme.orange, Theme.yellow],
                                 startPoint: .topLeading, endPoint: .bottomTrailing
                             ))
                             .frame(width: 42, height: 42)
-                            .shadow(color: Theme.orange.opacity(0.55), radius: 8, x: 0, y: 3)
+                            .shadow(color: (cheat.olympusUnlocked ? Theme.olympusAccent : Theme.orange).opacity(0.55), radius: 8, x: 0, y: 3)
                         Text("VS")
                             .pixelText(size: 10, color: .white)
                     }
                     .fixedSize()
+                    .onTapGesture { handleCheatVSTap() }
 
                     FighterSlot(
                         animal: viewModel.fighter2,
@@ -106,11 +118,11 @@ struct AnimalPickerView: View {
                 HStack(spacing: 10) {
                     Image(systemName: "magnifyingglass")
                         .font(.system(size: 15, weight: .medium))
-                        .foregroundColor(.white.opacity(0.4))
+                        .foregroundColor(Theme.textTertiary)
 
                     TextField("Search or add any animal...", text: $viewModel.searchText)
                         .font(.system(size: 15, weight: .regular, design: .rounded))
-                        .foregroundColor(.white)
+                        .foregroundColor(Theme.textPrimary)
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)
                         .tint(Theme.orange)
@@ -122,7 +134,7 @@ struct AnimalPickerView: View {
                         Button(action: { viewModel.searchText = "" }) {
                             Image(systemName: "xmark.circle.fill")
                                 .font(.system(size: 15))
-                                .foregroundColor(.white.opacity(0.4))
+                                .foregroundColor(Theme.textTertiary)
                         }
                         .buttonStyle(.plain)
                     }
@@ -154,28 +166,46 @@ struct AnimalPickerView: View {
                 .padding(.vertical, 12)
                 .background(
                     RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.white.opacity(0.07))
+                        .fill(Theme.cardFill)
                         .overlay(RoundedRectangle(cornerRadius: 16)
-                            .stroke(Color.white.opacity(0.12), lineWidth: 1))
+                            .stroke(Theme.cardBorder, lineWidth: 1))
                 )
                 .padding(.horizontal, 20)
                 .padding(.bottom, 12)
                 .onChange(of: speech.transcript) { newValue in
-                    if !newValue.isEmpty { viewModel.searchText = newValue }
+                    guard !newValue.isEmpty else { return }
+                    viewModel.searchText = newValue
+                    // Stop immediately if the transcript already matches a built-in animal.
+                    let trimmed = newValue.trimmingCharacters(in: .whitespaces)
+                    let matched = Animals.all.contains { $0.name.localizedCaseInsensitiveContains(trimmed) }
+                    if matched { speech.stopListening() }
                 }
 
                 // Category pills
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
-                        ForEach(AnimalCategory.allCases, id: \.self) { category in
+                        ForEach(AnimalCategory.allCases.filter { $0 != .olympus || cheat.olympusUnlocked }, id: \.self) { category in
+                            let isLocked: Bool = {
+                                switch category {
+                                case .fantasy:     return !settings.isFantasyUnlocked
+                                case .prehistoric: return !settings.isPrehistoricUnlocked
+                                case .mythic:      return !settings.isMythicUnlocked
+                                default:           return false
+                                }
+                            }()
                             CategoryPill(
                                 category: category,
                                 isSelected: viewModel.selectedCategory == category,
-                                isLocked: category == .fantasy && !settings.isFantasyUnlocked
+                                isLocked: isLocked
                             ) {
-                                if category == .fantasy && !settings.isFantasyUnlocked {
+                                if isLocked {
                                     HapticsService.shared.tap()
-                                    showFantasyUnlockSheet = true
+                                    switch category {
+                                    case .fantasy:     showFantasyUnlockSheet = true
+                                    case .prehistoric: showPrehistoricUnlockSheet = true
+                                    case .mythic:      showMythicUnlockSheet = true
+                                    default: break
+                                    }
                                 } else {
                                     withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                         viewModel.selectedCategory = category
@@ -189,12 +219,20 @@ struct AnimalPickerView: View {
                 }
                 .padding(.bottom, 12)
 
-                // Animal grid
+                // Animal grid — hard-clipped by ScrollView bounds (no partial cards at bottom)
                 ScrollView {
                     LazyVGrid(columns: columns, spacing: 10) {
                         ForEach(viewModel.filteredAnimals) { animal in
                             let isSelected = viewModel.fighter1?.id == animal.id || viewModel.fighter2?.id == animal.id
-                            let isAnimalLocked = animal.category == .fantasy && !settings.isFantasyUnlocked
+                            let isAnimalLocked: Bool = {
+                                switch animal.category {
+                                case .fantasy:     return !settings.isFantasyUnlocked
+                                case .prehistoric: return !settings.isPrehistoricUnlocked
+                                case .mythic:      return !settings.isMythicUnlocked
+                                case .olympus:     return false  // already cheated in
+                                default:           return false
+                                }
+                            }()
                             AnimalCard(
                                 animal: animal,
                                 isSelected: isSelected,
@@ -203,7 +241,12 @@ struct AnimalPickerView: View {
                             ) {
                                 if isAnimalLocked {
                                     HapticsService.shared.tap()
-                                    showFantasyUnlockSheet = true
+                                    switch animal.category {
+                                    case .fantasy:     showFantasyUnlockSheet = true
+                                    case .prehistoric: showPrehistoricUnlockSheet = true
+                                    case .mythic:      showMythicUnlockSheet = true
+                                    default: break
+                                    }
                                 } else {
                                     HapticsService.shared.tap()
                                     withAnimation(.spring(response: 0.28, dampingFraction: 0.62)) {
@@ -220,11 +263,60 @@ struct AnimalPickerView: View {
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 4)
-                    .padding(.bottom, viewModel.customAnimal != nil ? 8 : 185)
+                    .padding(.bottom, 16)
+
+                    // Locked animal prompt
+                    if let locked = viewModel.lockedAnimal {
+                        HStack(spacing: 14) {
+                            Text("🔒")
+                                .font(.system(size: 28))
+                                .frame(width: 48, height: 48)
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(locked.name)
+                                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                                    .foregroundColor(Theme.textPrimary)
+                                Text("Unlock this pack to use \(locked.name)")
+                                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                                    .foregroundColor(Theme.textSecondary)
+                            }
+                            Spacer()
+                            Button("Unlock") {
+                                HapticsService.shared.tap()
+                                switch locked.category {
+                                case .fantasy:     showFantasyUnlockSheet = true
+                                case .prehistoric: showPrehistoricUnlockSheet = true
+                                case .mythic:      showMythicUnlockSheet = true
+                                default: break
+                                }
+                            }
+                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 8)
+                            .background(Capsule().fill(Theme.purple))
+                        }
+                        .padding(16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 18)
+                                .fill(Theme.cardFill)
+                                .overlay(RoundedRectangle(cornerRadius: 18)
+                                    .stroke(Theme.purple.opacity(0.4), lineWidth: 1.5))
+                        )
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 24)
+                    }
 
                     // Custom animal row
                     if let custom = viewModel.customAnimal {
-                        Button(action: { viewModel.selectAnimal(custom) }) {
+                        Button(action: {
+                            AdManager.shared.showRewardedAdForCustomCreature { granted in
+                                if granted {
+                                    viewModel.selectAnimal(custom)
+                                } else {
+                                    showAdGateFailedAlert = true
+                                }
+                            }
+                        }) {
                             HStack(spacing: 14) {
                                 Group {
                                     if let imageURL = viewModel.customAnimalImageURL {
@@ -246,10 +338,10 @@ struct AnimalPickerView: View {
                                 VStack(alignment: .leading, spacing: 3) {
                                     Text("Battle as \"\(custom.name)\"")
                                         .font(.system(size: 16, weight: .bold, design: .rounded))
-                                        .foregroundColor(.white)
+                                        .foregroundColor(Theme.textPrimary)
                                     Text("Custom animal")
                                         .font(.system(size: 12, weight: .medium, design: .rounded))
-                                        .foregroundColor(.white.opacity(0.5))
+                                        .foregroundColor(Theme.textSecondary)
                                 }
                                 Spacer()
                                 Image(systemName: "plus.circle.fill")
@@ -259,81 +351,94 @@ struct AnimalPickerView: View {
                             .padding(16)
                             .background(
                                 RoundedRectangle(cornerRadius: 18)
-                                    .fill(Color.white.opacity(0.07))
+                                    .fill(Theme.cardFill)
                                     .overlay(RoundedRectangle(cornerRadius: 18)
                                         .stroke(Theme.yellow.opacity(0.35), lineWidth: 1.5))
                             )
                             .padding(.horizontal, 20)
-                            .padding(.bottom, 130)
+                            .padding(.bottom, 24)
                         }
                         .buttonStyle(PressableButtonStyle())
+                        .alert("Ad Not Available", isPresented: $showAdGateFailedAlert) {
+                            Button("Remove Ads — $4.99") {
+                                Task {
+                                    if let product = await StoreKitManager.shared.removeAdsProduct {
+                                        _ = await StoreKitManager.shared.purchase(product)
+                                    }
+                                }
+                            }
+                            Button("Restore Purchases") {
+                                Task { await StoreKitManager.shared.restorePurchases() }
+                            }
+                            Button("Cancel", role: .cancel) {}
+                        } message: {
+                            Text("Watch a short ad to battle with your custom creature, or remove ads permanently for $4.99.")
+                        }
                     }
                 }
                 .scrollDismissesKeyboard(.immediately)
-            }
 
-            // Floating FIGHT button
-            VStack {
-                Spacer()
+                // FIGHT button — lives below ScrollView so cards are hard-clipped at the boundary
+                VStack(spacing: 0) {
+                    LinearGradient(
+                        colors: [Color.clear, Theme.bgDeep],
+                        startPoint: .top, endPoint: .bottom
+                    )
+                    .frame(height: 28)
+                    .allowsHitTesting(false)
 
-                LinearGradient(
-                    colors: [Color.clear, Theme.bgDeep.opacity(0.97)],
-                    startPoint: .top, endPoint: .bottom
-                )
-                .frame(height: 70)
-                .allowsHitTesting(false)
-
-                Button(action: {
-                    if bothSelected {
-                        HapticsService.shared.medium()
-                        navigateToBattle = true
-                    }
-                }) {
-                    HStack(spacing: 12) {
+                    Button(action: {
                         if bothSelected {
-                            Text("⚔️").font(.system(size: 22))
-                            Text("FIGHT!")
-                                .font(.system(size: 20, weight: .black, design: .rounded))
-                                .foregroundColor(.white)
-                            Text("⚔️").font(.system(size: 22))
-                        } else {
-                            Text("Pick 2 animals to fight")
-                                .font(.system(size: 16, weight: .semibold, design: .rounded))
-                                .foregroundColor(.white.opacity(0.35))
+                            HapticsService.shared.medium()
+                            navigateToBattle = true
                         }
+                    }) {
+                        HStack(spacing: 12) {
+                            if bothSelected {
+                                Text("⚔️").font(.system(size: 22))
+                                Text("FIGHT!")
+                                    .font(.system(size: 20, weight: .black, design: .rounded))
+                                    .foregroundColor(.white)
+                                Text("⚔️").font(.system(size: 22))
+                            } else {
+                                Text("Pick 2 animals to fight")
+                                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                                    .foregroundColor(Theme.textTertiary)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 64)
+                        .background(
+                            RoundedRectangle(cornerRadius: 22)
+                                .fill(
+                                    bothSelected
+                                        ? AnyShapeStyle(LinearGradient(
+                                            colors: [Theme.orange, Theme.yellow],
+                                            startPoint: .leading, endPoint: .trailing
+                                        ))
+                                        : AnyShapeStyle(Theme.cardFill)
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 22)
+                                        .stroke(
+                                            bothSelected ? Color.white.opacity(0.2) : Theme.cardBorder,
+                                            lineWidth: 1
+                                        )
+                                )
+                        )
+                        .shadow(
+                            color: bothSelected ? Theme.orange.opacity(0.6) : .clear,
+                            radius: bothSelected ? fightButtonGlowRadius : 0,
+                            x: 0, y: 6
+                        )
                     }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 64)
-                    .background(
-                        RoundedRectangle(cornerRadius: 22)
-                            .fill(
-                                bothSelected
-                                    ? AnyShapeStyle(LinearGradient(
-                                        colors: [Theme.orange, Theme.yellow],
-                                        startPoint: .leading, endPoint: .trailing
-                                    ))
-                                    : AnyShapeStyle(Color.white.opacity(0.08))
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 22)
-                                    .stroke(
-                                        bothSelected ? Color.white.opacity(0.2) : Color.white.opacity(0.1),
-                                        lineWidth: 1
-                                    )
-                            )
-                    )
-                    .shadow(
-                        color: bothSelected ? Theme.orange.opacity(0.6) : .clear,
-                        radius: bothSelected ? fightButtonGlowRadius : 0,
-                        x: 0, y: 6
-                    )
+                    .buttonStyle(PressableButtonStyle())
+                    .disabled(!bothSelected)
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 40)
+                    .animation(.easeInOut(duration: 0.3), value: bothSelected)
                 }
-                .buttonStyle(PressableButtonStyle())
-                .disabled(!bothSelected)
-                .padding(.horizontal, 24)
-                .padding(.bottom, 40)
-                .background(Theme.bgDeep.opacity(0.97))
-                .animation(.easeInOut(duration: 0.3), value: bothSelected)
+                .background(Theme.bgDeep)
             }
         }
         .navigationBarHidden(true)
@@ -345,7 +450,23 @@ struct AnimalPickerView: View {
         .sheet(isPresented: $showFantasyUnlockSheet) {
             FantasyUnlockSheet(isPresented: $showFantasyUnlockSheet)
         }
+        .sheet(isPresented: $showPrehistoricUnlockSheet) {
+            PrehistoricUnlockSheet(isPresented: $showPrehistoricUnlockSheet)
+        }
+        .sheet(isPresented: $showMythicUnlockSheet) {
+            MythicUnlockSheet(isPresented: $showMythicUnlockSheet)
+        }
         .onAppear { startPulseAnimations() }
+        // Olympus reveal overlay
+        .overlay {
+            if showOlympusReveal {
+                OlympusRevealOverlay {
+                    withAnimation(.easeOut(duration: 0.4)) { showOlympusReveal = false }
+                }
+                .transition(.opacity)
+            }
+        }
+        .animation(.easeInOut(duration: 0.35), value: showOlympusReveal)
     }
 
     private func startPulseAnimations() {
@@ -355,6 +476,133 @@ struct AnimalPickerView: View {
         withAnimation(.easeInOut(duration: 1.6).repeatForever(autoreverses: true)) {
             fightButtonGlowRadius = 22
         }
+    }
+
+    // MARK: - Cheat code: VS ×2 then FIGHTERS ×6
+
+    private func handleCheatVSTap() {
+        guard !cheat.olympusUnlocked else { return }
+        if olympusCheatStep < 2 {
+            olympusCheatStep += 1
+            HapticsService.shared.tap()
+        } else {
+            olympusCheatStep = 0  // tapping VS after already having 2 resets
+        }
+    }
+
+    private func handleCheatFightersTap() {
+        guard !cheat.olympusUnlocked else { return }
+        if olympusCheatStep >= 2 {
+            olympusCheatStep += 1
+            HapticsService.shared.tap()
+            if olympusCheatStep >= 8 {
+                triggerOlympusUnlock()
+            }
+        } else {
+            olympusCheatStep = 0
+        }
+    }
+
+    private func triggerOlympusUnlock() {
+        HapticsService.shared.medium()
+        cheat.olympusUnlocked = true
+        showOlympusReveal = true
+        // Auto-dismiss after 3.2 s
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.2) {
+            withAnimation(.easeOut(duration: 0.4)) { showOlympusReveal = false }
+        }
+        // Switch to Olympus tab
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                viewModel.selectedCategory = .olympus
+            }
+        }
+    }
+}
+
+// MARK: - Olympus Reveal Overlay
+
+struct OlympusRevealOverlay: View {
+    let onDismiss: () -> Void
+    @State private var lightningOpacity: Double = 0
+    @State private var textScale: CGFloat = 0.4
+    @State private var textOpacity: Double = 0
+    @State private var boltOffset: CGFloat = -60
+
+    var body: some View {
+        ZStack {
+            // Flash backdrop
+            Color.black.opacity(0.78)
+                .ignoresSafeArea()
+
+            // Gold rays
+            RadialGradient(
+                colors: [Theme.olympusAccent.opacity(0.45), Color.clear],
+                center: .center, startRadius: 0, endRadius: 300
+            )
+            .ignoresSafeArea()
+            .opacity(lightningOpacity)
+
+            VStack(spacing: 20) {
+                // Lightning bolts
+                HStack(spacing: 18) {
+                    Text("⚡️").font(.system(size: 44))
+                        .offset(y: boltOffset).opacity(lightningOpacity)
+                    Text("🏛️").font(.system(size: 64))
+                        .scaleEffect(textScale).opacity(textOpacity)
+                    Text("⚡️").font(.system(size: 44))
+                        .offset(y: boltOffset).opacity(lightningOpacity)
+                }
+
+                Text("MOUNT OLYMPUS")
+                    .font(.system(size: 28, weight: .black, design: .rounded))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Theme.olympusAccent, Color.white, Theme.olympusAccent],
+                            startPoint: .leading, endPoint: .trailing
+                        )
+                    )
+                    .shadow(color: Theme.olympusAccent.opacity(0.8), radius: 12)
+                    .scaleEffect(textScale)
+                    .opacity(textOpacity)
+
+                Text("UNLOCKED")
+                    .font(.system(size: 18, weight: .black, design: .rounded))
+                    .foregroundColor(Theme.olympusAccent)
+                    .tracking(6)
+                    .opacity(textOpacity)
+
+                Text("The gods have descended.\nChoose wisely.")
+                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                    .foregroundColor(.white.opacity(0.75))
+                    .multilineTextAlignment(.center)
+                    .opacity(textOpacity)
+
+                Button(action: onDismiss) {
+                    Text("Enter Olympus")
+                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                        .foregroundColor(Color(hex: "#0E0B22"))
+                        .padding(.horizontal, 28)
+                        .padding(.vertical, 12)
+                        .background(Capsule().fill(Theme.olympusAccent))
+                        .shadow(color: Theme.olympusAccent.opacity(0.6), radius: 10)
+                }
+                .buttonStyle(PressableButtonStyle())
+                .opacity(textOpacity)
+            }
+            .padding(32)
+        }
+        .onAppear {
+            withAnimation(.easeOut(duration: 0.25)) {
+                lightningOpacity = 1
+                boltOffset = 0
+            }
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.6).delay(0.15)) {
+                textScale = 1
+                textOpacity = 1
+            }
+        }
+        .onTapGesture { onDismiss() }
     }
 }
 
@@ -370,11 +618,11 @@ struct FighterSlot: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             RoundedRectangle(cornerRadius: 20)
-                .fill(Color.white.opacity(0.07))
+                .fill(Theme.cardFill)
                 .overlay(
                     RoundedRectangle(cornerRadius: 20)
                         .stroke(
-                            animal != nil ? accentColor.opacity(0.7) : Color.white.opacity(0.14),
+                            animal != nil ? accentColor.opacity(0.7) : Theme.cardBorder,
                             lineWidth: animal != nil ? 2 : 1
                         )
                 )
@@ -388,7 +636,15 @@ struct FighterSlot: View {
                         if let animal = animal {
                             VStack(spacing: 6) {
                                 Group {
-                                    if let url = animal.imageURL {
+                                    if let assetName = animal.creatureAssetName,
+                                       let img = UIImage(named: assetName) {
+                                        // Generated artwork for paid pack creatures
+                                        Image(uiImage: img)
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 50, height: 50)
+                                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                                    } else if let url = animal.imageURL {
                                         AsyncImage(url: url) { phase in
                                             switch phase {
                                             case .success(let img):
@@ -415,11 +671,11 @@ struct FighterSlot: View {
                             VStack(spacing: 8) {
                                 Text("?")
                                     .font(.system(size: 38, weight: .black, design: .rounded))
-                                    .foregroundColor(.white.opacity(0.2))
+                                    .foregroundColor(Theme.textTertiary)
                                     .scaleEffect(emptyPulseScale)
                                 Text(label)
                                     .font(.system(size: 10, weight: .semibold, design: .rounded))
-                                    .foregroundColor(.white.opacity(0.3))
+                                    .foregroundColor(Theme.textTertiary)
                                     .tracking(0.5)
                             }
                         }
@@ -475,11 +731,47 @@ struct CategoryPill: View {
             return LinearGradient(colors: [Color(hex: "#65A30D"), Color(hex: "#4d7c0f")], startPoint: .leading, endPoint: .trailing)
         case .fantasy:
             return LinearGradient(colors: [Color(hex: "#7B2FBE"), Color(hex: "#4A1080")], startPoint: .leading, endPoint: .trailing)
+        case .prehistoric:
+            return LinearGradient(colors: [Color(hex: "#C8820A"), Color(hex: "#8B5A0A")], startPoint: .leading, endPoint: .trailing)
+        case .mythic:
+            return LinearGradient(colors: [Color(hex: "#C0A000"), Color(hex: "#8B7500")], startPoint: .leading, endPoint: .trailing)
+        case .olympus:
+            return LinearGradient(colors: [Color(hex: "#FFD700"), Color(hex: "#B8860B"), Color(hex: "#FFD700")], startPoint: .leading, endPoint: .trailing)
         }
     }
 
+    // Unselected background — visible on both light and dark
+    private var unselectedBg: AnyShapeStyle {
+        AnyShapeStyle(Color(UIColor { trait in
+            trait.userInterfaceStyle == .light
+                ? UIColor(white: 0.0, alpha: 0.08)
+                : UIColor(white: 1.0, alpha: 0.10)
+        }))
+    }
+
+    // Unselected text — readable on both
+    private var unselectedTextColor: Color {
+        Color(UIColor { trait in
+            trait.userInterfaceStyle == .light
+                ? UIColor(white: 0.15, alpha: 1)
+                : UIColor(white: 1.0, alpha: 0.75)
+        })
+    }
+
+    // Unselected border
+    private var unselectedBorder: Color {
+        Color(UIColor { trait in
+            trait.userInterfaceStyle == .light
+                ? UIColor(white: 0.0, alpha: 0.18)
+                : UIColor(white: 1.0, alpha: 0.12)
+        })
+    }
+
     private var textColor: Color {
-        category == .all && isSelected ? Color(hex: "#0E0B22") : .white
+        if isSelected {
+            return category == .all ? Color(hex: "#0E0B22") : .white
+        }
+        return unselectedTextColor
     }
 
     var body: some View {
@@ -489,25 +781,25 @@ struct CategoryPill: View {
                     .font(.system(size: 13))
                 Text(Theme.categoryLabel(category))
                     .font(.system(size: 13, weight: .bold, design: .rounded))
-                    .foregroundColor(isSelected ? textColor : .white.opacity(0.7))
+                    .foregroundColor(textColor)
                 if isLocked {
                     Image(systemName: "lock.fill")
                         .font(.system(size: 10, weight: .bold))
-                        .foregroundColor(Theme.fantasyAccent.opacity(0.8))
+                        .foregroundColor(Theme.categoryAccent(category).opacity(0.9))
                 }
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 9)
             .background(
                 Capsule()
-                    .fill(isSelected ? AnyShapeStyle(selectedGradient) : AnyShapeStyle(Color.white.opacity(0.1)))
+                    .fill(isSelected ? AnyShapeStyle(selectedGradient) : unselectedBg)
             )
             .overlay(
                 Capsule()
                     .stroke(
                         isLocked
-                            ? Theme.fantasyAccent.opacity(0.4)
-                            : (isSelected ? Color.clear : Color.white.opacity(0.12)),
+                            ? Theme.categoryAccent(category).opacity(0.5)
+                            : (isSelected ? Color.clear : unselectedBorder),
                         lineWidth: isLocked ? 1.5 : 1
                     )
             )

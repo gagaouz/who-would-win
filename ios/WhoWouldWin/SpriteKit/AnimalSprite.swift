@@ -142,6 +142,31 @@ class AnimalSprite: SKNode {
         shadowNode.run(SKAction.fadeAlpha(to: 0.15, duration: 0.4))
     }
 
+    /// Knockback + white flash when a hit lands on this sprite.
+    /// `direction`:  +1 = pushed right (hit from left), -1 = pushed left (hit from right)
+    func playRecoil(direction: CGFloat) {
+        // Cancel any in-progress recoil
+        spriteNode.removeAction(forKey: "recoil")
+        spriteNode.removeAction(forKey: "hitFlash")
+
+        // Knockback then recover
+        let knockback = SKAction.moveBy(x: direction * 22, y: 4, duration: 0.10)
+        knockback.timingMode = .easeOut
+        let recover = SKAction.moveBy(x: -direction * 22, y: -4, duration: 0.22)
+        recover.timingMode = .easeIn
+        spriteNode.run(SKAction.sequence([knockback, recover]), withKey: "recoil")
+
+        // Brief white flash on impact
+        let flashOn  = SKAction.colorize(with: .white, colorBlendFactor: 0.85, duration: 0.04)
+        let flashOff = SKAction.colorize(with: .white, colorBlendFactor: 0.00, duration: 0.20)
+        spriteNode.run(SKAction.sequence([flashOn, flashOff]), withKey: "hitFlash")
+
+        // Scale pop
+        let pop    = SKAction.scale(to: 1.15, duration: 0.07)
+        let settle = SKAction.scale(to: 1.00, duration: 0.18)
+        spriteNode.run(SKAction.sequence([pop, settle]), withKey: "hitPop")
+    }
+
     // MARK: - Texture override
 
     /// Call this to override the emoji with a real image (e.g. AI-generated)

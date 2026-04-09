@@ -14,6 +14,7 @@ actor BattleService {
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
+        request.timeoutInterval = 15   // fail fast; offline fallback kicks in after 15 s
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
         let body: [String: String] = [

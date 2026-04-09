@@ -11,13 +11,16 @@ final class StoreKitManager: ObservableObject {
 
     // MARK: - Product IDs
 
-    static let removeAdsID      = "com.whowouldin.removeads"
-    static let premiumMonthlyID = "com.whowouldin.premium.monthly"
-    static let premiumAnnualID  = "com.whowouldin.premium.annual"
-    static let fantasyPackID    = "com.whowouldin.fantasypack"
+    static let removeAdsID       = "com.whowouldin.removeads"
+    static let premiumMonthlyID  = "com.whowouldin.premium.monthly"
+    static let premiumAnnualID   = "com.whowouldin.premium.annual"
+    static let fantasyPackID     = "com.whowouldin.fantasypack"
+    static let prehistoricPackID = "com.whowouldin.prehistoricpack"
+    static let mythicPackID      = "com.whowouldin.mythicpack"
 
     static let allProductIDs: Set<String> = [
-        removeAdsID, premiumMonthlyID, premiumAnnualID, fantasyPackID
+        removeAdsID, premiumMonthlyID, premiumAnnualID,
+        fantasyPackID, prehistoricPackID, mythicPackID
     ]
 
     // MARK: - Published state
@@ -31,6 +34,8 @@ final class StoreKitManager: ObservableObject {
     var premiumMonthlyProduct: Product? { products.first { $0.id == Self.premiumMonthlyID } }
     var premiumAnnualProduct:  Product? { products.first { $0.id == Self.premiumAnnualID } }
     var fantasyPackProduct:    Product? { products.first { $0.id == Self.fantasyPackID } }
+    var prehistoricPackProduct: Product? { products.first { $0.id == Self.prehistoricPackID } }
+    var mythicPackProduct:      Product? { products.first { $0.id == Self.mythicPackID } }
 
     // MARK: - Init
 
@@ -121,11 +126,17 @@ final class StoreKitManager: ObservableObject {
         case Self.removeAdsID:
             UserSettings.shared.hasRemovedAds = true
         case Self.premiumMonthlyID, Self.premiumAnnualID:
-            UserSettings.shared.isSubscribed    = true
-            UserSettings.shared.hasRemovedAds   = true  // premium also removes ads
-            UserSettings.shared.fantasyUnlocked = true  // premium includes fantasy
+            UserSettings.shared.isSubscribed        = true
+            UserSettings.shared.hasRemovedAds       = true  // premium removes ads
+            UserSettings.shared.fantasyUnlocked     = true  // premium unlocks all packs
+            UserSettings.shared.prehistoricUnlocked = true
+            UserSettings.shared.mythicUnlocked      = true
         case Self.fantasyPackID:
             UserSettings.shared.fantasyUnlocked = true
+        case Self.prehistoricPackID:
+            UserSettings.shared.prehistoricUnlocked = true
+        case Self.mythicPackID:
+            UserSettings.shared.mythicUnlocked = true
         default:
             break
         }

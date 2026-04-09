@@ -16,14 +16,26 @@ struct AnimalCard: View {
             ZStack(alignment: .topTrailing) {
                 // Card body
                 VStack(spacing: 5) {
-                    Text(animal.emoji)
-                        .font(.system(size: 40))
-                        .shadow(color: .black.opacity(0.25), radius: 3, x: 0, y: 2)
-                        .blur(radius: isLocked ? 3 : 0)
+                    // Show generated artwork for paid pack creatures, else emoji
+                    Group {
+                        if let assetName = animal.creatureAssetName,
+                           let img = UIImage(named: assetName) {
+                            Image(uiImage: img)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 44, height: 44)
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                        } else {
+                            Text(animal.emoji)
+                                .font(.system(size: 40))
+                        }
+                    }
+                    .shadow(color: .black.opacity(0.25), radius: 3, x: 0, y: 2)
+                    .blur(radius: isLocked ? 3 : 0)
 
                     Text(animal.name)
                         .font(.system(size: 10, weight: .bold, design: .rounded))
-                        .foregroundColor(isSelected ? accentColor : .white.opacity(0.88))
+                        .foregroundColor(isSelected ? accentColor : Theme.textPrimary)
                         .multilineTextAlignment(.center)
                         .lineLimit(2)
                         .minimumScaleFactor(0.65)

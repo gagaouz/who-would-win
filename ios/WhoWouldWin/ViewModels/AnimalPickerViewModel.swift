@@ -52,6 +52,8 @@ final class AnimalPickerViewModel: ObservableObject {
 
     var filteredAnimals: [Animal] {
         Animals.all.filter { animal in
+            // Olympus gods are hidden until the cheat code is entered this session
+            if animal.category == .olympus && !CheatState.shared.olympusUnlocked { return false }
             let categoryMatch = selectedCategory == .all || animal.category == selectedCategory
             let searchMatch = searchText.isEmpty || animal.name.localizedCaseInsensitiveContains(searchText)
             return categoryMatch && searchMatch
@@ -62,9 +64,18 @@ final class AnimalPickerViewModel: ObservableObject {
         fighter1 != nil && fighter2 != nil
     }
 
+    /// Returns a known-but-locked animal if the search text matches one the user hasn't unlocked.
+    /// Used to show an "unlock required" prompt instead of treating it as a custom animal.
+    var lockedAnimal: Animal? {
+        let trimmed = searchText.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty, filteredAnimals.isEmpty else { return nil }
+        return Animals.all.first { $0.name.localizedCaseInsensitiveCompare(trimmed) == .orderedSame }
+    }
+
     var customAnimal: Animal? {
         guard !searchText.trimmingCharacters(in: .whitespaces).isEmpty,
-              filteredAnimals.isEmpty else { return nil }
+              filteredAnimals.isEmpty,
+              lockedAnimal == nil else { return nil }
         let name = searchText.trimmingCharacters(in: .whitespaces)
         guard ContentFilter.isAppropriate(name) else { return nil }
         return Animal(
@@ -104,8 +115,10 @@ final class AnimalPickerViewModel: ObservableObject {
     // MARK: - Selection
 
     /// Convenience alias used by the custom-animal button in AnimalPickerView.
+    /// Clears search text after selection so the grid is immediately ready for the next pick.
     func selectAnimal(_ animal: Animal) {
         select(animal)
+        searchText = ""
     }
 
     /// Select an animal into the next available slot.

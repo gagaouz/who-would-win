@@ -70,19 +70,19 @@ const ANIMAL_NAMES: Record<string, string> = {
   thunderbird: 'Thunderbird', manticore: 'Manticore', sphinx: 'Sphinx',
   chimera: 'Chimera', wyvern: 'Wyvern', kirin: 'Kirin', roc: 'Roc',
   jackalope: 'Jackalope', baku: 'Baku', nue: 'Nue', ammit: 'Ammit', peryton: 'Peryton',
-  // Mount Olympus — names include divine context so Claude knows they are gods
-  zeus:       'Zeus (immortal King of the Greek Gods, master of lightning, omnipotent)',
-  poseidon:   'Poseidon (immortal God of the Sea, wields a divine trident, controls oceans and earthquakes)',
-  hades:      'Hades (immortal God of the Underworld, commands the dead, indestructible)',
-  ares:       'Ares (immortal God of War, the ultimate warrior, invincible in battle)',
-  athena:     'Athena (immortal Goddess of Wisdom and War, tactically unbeatable, divine armor)',
-  apollo:     'Apollo (immortal God of the Sun, supernatural speed and precision, never misses)',
-  artemis:    'Artemis (immortal Goddess of the Hunt, commands all wild animals, perfect aim)',
-  hermes:     'Hermes (immortal Messenger God, faster than any mortal being, divine agility)',
-  hephaestus: 'Hephaestus (immortal God of Fire and the Forge, impervious to heat, immense divine strength)',
-  hercules:   'Hercules (son of Zeus, performed 12 impossible labors, strength beyond any mortal or beast)',
-  medusa:     'Medusa (turns any mortal creature to stone with her gaze, virtually unstoppable)',
-  kronos:     'Kronos (ancient Titan God of Time, supreme primordial power, father of the Olympian gods)',
+  // Mount Olympus
+  zeus:       'Zeus',
+  poseidon:   'Poseidon',
+  hades:      'Hades',
+  ares:       'Ares',
+  athena:     'Athena',
+  apollo:     'Apollo',
+  artemis:    'Artemis',
+  hermes:     'Hermes',
+  hephaestus: 'Hephaestus',
+  hercules:   'Hercules',
+  medusa:     'Medusa',
+  kronos:     'Kronos',
 };
 
 export interface BattleResult {
@@ -94,14 +94,12 @@ export interface BattleResult {
 }
 
 const SYSTEM_PROMPT =
-  'You are the referee for "Who Would Win?" — an educational animal battle game. ' +
-  'For real animals, make scientifically accurate decisions based on biology, behavior, and ecology. ' +
-  'Consider: body size and mass, natural weapons (claws, teeth, venom, speed, strength), defensive adaptations, hunting behavior, and biological advantages. ' +
-  'For mythological creatures, legendary beings, and fantasy animals, use their established legendary abilities. ' +
-  'IMPORTANT: Greek gods and immortal deities (Zeus, Poseidon, Hades, Ares, Athena, Apollo, Artemis, Hermes, Hephaestus, Kronos, etc.) are omnipotent supernatural beings — they ALWAYS win decisively against any mortal animal or creature. Only a draw or loss is possible if they fight another god or deity of equal standing. ' +
-  'Hercules and Medusa, while not full Olympian gods, possess powers so far beyond any mortal animal that they win against all natural creatures. ' +
-  'Be exciting and kid-friendly. Describe the action like a nature documentary or epic myth, not a graphic fight. ' +
-  'Always respond with ONLY valid JSON matching the exact schema provided. No markdown, no explanation.';
+  'You are the referee for "Who Would Win?" — a fun educational game for kids. ' +
+  'For real animals, base decisions on biology: size, natural weapons, speed, venom, armor, hunting behavior. ' +
+  'For mythological and fantasy creatures, use their established legendary abilities from mythology and folklore. ' +
+  'For figures from Greek mythology like Zeus, Poseidon, Hades, Ares, Athena, Apollo, Artemis, Hermes, Hephaestus, Kronos (Olympian gods), Hercules, and Medusa — these are legendary mythological figures with extraordinary powers; they should win convincingly against any ordinary animal or creature based on their mythological abilities. Two mythological gods fighting each other can result in a win for either side or a draw. ' +
+  'Keep narration exciting and appropriate for children — like a myth retelling, not a graphic fight. ' +
+  'Always respond with ONLY valid JSON matching the exact schema. No markdown, no explanation outside the JSON.';
 
 function buildUserPrompt(fighter1Id: string, fighter2Id: string, fighter1Name?: string, fighter2Name?: string): string {
   const name1 = fighter1Name ?? ANIMAL_NAMES[fighter1Id] ?? fighter1Id;
@@ -111,7 +109,7 @@ function buildUserPrompt(fighter1Id: string, fighter2Id: string, fighter1Name?: 
   const isDeity2 = DEITY_IDS.has(fighter2Id);
 
   const deityNote = (isDeity1 || isDeity2)
-    ? `IMPORTANT: ${isDeity1 ? name1.split(' (')[0] : ''}${isDeity1 && isDeity2 ? ' and ' : ''}${isDeity2 ? name2.split(' (')[0] : ''} ${isDeity1 && isDeity2 ? 'are both' : 'is a'} Greek god/deity — immortal and omnipotent. ${isDeity1 && isDeity2 ? 'This is an epic clash between gods; either could win or draw.' : 'They will decisively defeat any mortal creature.'}\n\n`
+    ? `Note: ${[isDeity1 ? name1 : null, isDeity2 ? name2 : null].filter(Boolean).join(' and ')} ${isDeity1 && isDeity2 ? 'are legendary figures from Greek mythology with extraordinary divine powers. This is an epic clash; either could win.' : 'is a legendary figure from Greek mythology with extraordinary powers — use those mythological abilities when deciding the outcome.'}\n\n`
     : '';
 
   const customNote1 = !DEITY_IDS.has(fighter1Id) && !(fighter1Id in ANIMAL_NAMES) && fighter1Name
@@ -138,7 +136,7 @@ function buildUserPrompt(fighter1Id: string, fighter2Id: string, fighter1Name?: 
     `}\n\n` +
     `Rules:\n` +
     `- "winner" must be exactly: "${fighter1Id}", "${fighter2Id}", or "draw"\n` +
-    `- winnerHealthPercent: 10–90 (reflect how dominant the win was — gods should score 85–95)\n` +
+    `- winnerHealthPercent: 10–90 (higher = more dominant win)\n` +
     `- loserHealthPercent: 0–89, always strictly less than winnerHealthPercent\n` +
     `- Narration: exciting and appropriate for children\n` +
     `- Fun fact: accurate and interesting`
@@ -175,28 +173,20 @@ function validateResult(data: unknown, fighter1Id: string, fighter2Id: string): 
     throw new Error('funFact must be a non-empty string');
   }
 
-  const winnerHealthPercent = obj['winnerHealthPercent'];
-  if (
-    typeof winnerHealthPercent !== 'number' ||
-    winnerHealthPercent < 10 ||
-    winnerHealthPercent > 90
-  ) {
-    throw new Error(`winnerHealthPercent out of range: ${winnerHealthPercent}`);
+  const rawWinner = Number(obj['winnerHealthPercent']);
+  if (isNaN(rawWinner)) {
+    throw new Error(`winnerHealthPercent is not a number: ${obj['winnerHealthPercent']}`);
   }
+  const winnerHealthPercent = Math.min(90, Math.max(10, Math.round(rawWinner)));
 
-  const loserHealthPercent = obj['loserHealthPercent'];
-  if (
-    typeof loserHealthPercent !== 'number' ||
-    loserHealthPercent < 0 ||
-    loserHealthPercent > 90
-  ) {
-    throw new Error(`loserHealthPercent out of range: ${loserHealthPercent}`);
+  const rawLoser = Number(obj['loserHealthPercent']);
+  if (isNaN(rawLoser)) {
+    throw new Error(`loserHealthPercent is not a number: ${obj['loserHealthPercent']}`);
   }
-  // For non-draw fights the loser must have strictly less health than the winner
+  // Clamp loser, then ensure it's strictly less than winner for non-draws
+  let loserHealthPercent = Math.min(89, Math.max(0, Math.round(rawLoser)));
   if (winner !== 'draw' && loserHealthPercent >= winnerHealthPercent) {
-    throw new Error(
-      `loserHealthPercent (${loserHealthPercent}) must be less than winnerHealthPercent (${winnerHealthPercent})`
-    );
+    loserHealthPercent = Math.max(0, winnerHealthPercent - 1);
   }
 
   return {
@@ -218,7 +208,7 @@ async function callClaude(
 ): Promise<BattleResult> {
   const response = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 300,
+    max_tokens: 500,
     top_p: topP,
     system: SYSTEM_PROMPT,
     messages: [

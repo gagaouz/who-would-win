@@ -31,11 +31,17 @@ actor AnimalImageService {
         let key = name.lowercased()
         if let cached = urlCache[key] { return cached }
 
+        // Wikipedia first, then Pollinations. Both can theoretically return nil
+        // (Pollinations only if URL encoding fails, which is extremely unlikely).
+        // Fall back to a guaranteed-valid placeholder URL so callers always get a URL.
         let url: URL
         if let wikiURL = await wikipediaImageURL(for: name) {
             url = wikiURL
+        } else if let pollinationsURL = pollinationsURL(for: name) {
+            url = pollinationsURL
         } else {
-            url = pollinationsURL(for: name)
+            // Absolute last resort — static placeholder (encoding of name failed).
+            url = URL(string: "https://image.pollinations.ai/prompt/animal?width=512&height=512&nologo=true&model=flux-schnell&safe=true")!
         }
         urlCache[key] = url
         return url
@@ -116,7 +122,7 @@ actor AnimalImageService {
     /// safe=true enables Pollinations' built-in content filter (blocks NSFW).
     /// The prompt is deliberately generic — we only pass the name, never
     /// user-supplied adjectives — to avoid prompt injection via the search bar.
-    private func pollinationsURL(for name: String) -> URL {
+    private func pollinationsURL(for name: String) -> URL? {
         // Sanitise: keep only letters, numbers, spaces and common punctuation.
         // This prevents a user-typed "naked X" from leaking adjectives into the prompt.
         let safeName = name
@@ -133,7 +139,10 @@ actor AnimalImageService {
         let encoded = prompt.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed)
                       ?? safeName
         // safe=true → Pollinations content filter; model=flux-schnell → fast
-        return URL(string: "https://image.pollinations.ai/prompt/\(encoded)?width=512&height=512&nologo=true&model=flux-schnell&safe=true")!
+        guard let url = URL(string: "https://image.pollinations.ai/prompt/\(encoded)?width=512&height=512&nologo=true&model=flux-schnell&safe=true") else {
+            return nil
+        }
+        return url
     }
 
     /// Downloads image data from a URL and decodes it into a UIImage.

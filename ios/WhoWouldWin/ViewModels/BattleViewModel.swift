@@ -1,7 +1,7 @@
 import Foundation
 import Combine
 
-class BattleViewModel: ObservableObject {
+final class BattleViewModel: ObservableObject {
 
     // MARK: - Battle Phase
 
@@ -34,47 +34,59 @@ class BattleViewModel: ObservableObject {
 
     /// Main battle orchestration:
     /// 1. Stay in .intro for 2 seconds
-    /// 2. Transition to .animating
-    /// 3. Fire off API call AND wait for animation to finish simultaneously (async let)
-    /// 4. When BOTH complete → move to .revealing
-    /// 5. If API fails → use offline fallback from BattleService
-    /// 6. Run typewriter effect on narration
-    /// 7. → .complete
+    /// 2. Transition to .animating; fire API + animation simultaneously
+    /// 3. As soon as API returns, start typewriter (text pre-populates during animation)
+    /// 4. Wait for animation to finish → .revealing
+    /// 5. Wait for typewriter to finish → .complete
     @MainActor
     func startBattle() async {
-        // Step 1: Hold in intro briefly for dramatic effect
         phase = .intro
-        try? await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
-
-        // Step 2: Kick off animation
-        phase = .animating
         animationComplete = false
 
-        // Step 3: Fire API call and wait for animation simultaneously
-        async let apiResult: BattleResult? = fetchResultIgnoringErrors()
-        async let _: Void = waitForAnimation()
+        try? await Task.sleep(nanoseconds: 2_000_000_000)
+        guard !Task.isCancelled else { return }
 
-        // Await both — neither can proceed until both are done
-        let (fetchedResult, _) = await (apiResult, ())
+        phase = .animating
 
-        // Step 4: Pick result — use fetched or fall back
+        // Fire API and animation simultaneously.
+        // We can await them independently — both tasks run concurrently.
+        async let fetchTask: BattleResult? = fetchResultIgnoringErrors()
+        async let animTask: Void           = waitForAnimation()
+
+        // Consume API result first so typewriter can start early.
+        let fetchedResult = await fetchTask
+        guard !Task.isCancelled else { return }
+
         let result: BattleResult
-        if let fetchedResult {
-            result = fetchedResult
+        if let r = fetchedResult {
+            result = r
         } else {
             result = await BattleService.shared.generateFallbackResult(
                 fighter1: fighter1,
                 fighter2: fighter2
             )
         }
+        guard !Task.isCancelled else { return }
 
         battleResult = result
+
+        // Start typewriter NOW — text populates while animation is still running.
+        let typewriterTask = Task { @MainActor in
+            await self.startTypewriterEffect()
+        }
+
+        // Wait for animation.
+        await animTask
+        guard !Task.isCancelled else {
+            typewriterTask.cancel()
+            return
+        }
+
         phase = .revealing
 
-        // Step 6: Typewriter effect on narration
-        await startTypewriterEffect()
+        // Wait for typewriter to finish (may already be done).
+        await typewriterTask.value
 
-        // Step 7: Complete
         phase = .complete
     }
 
@@ -104,11 +116,16 @@ class BattleViewModel: ObservableObject {
     // MARK: - Rematch
 
     func rematch() {
+        // Resume any suspended animation continuation so the old startBattle()
+        // task can exit cleanly after its Task.isCancelled guard fires.
+        animationContinuation?.resume()
+        animationContinuation = nil
+
         phase = .intro
         battleResult = nil
         narrationDisplayed = ""
         animationComplete = false
-        animationContinuation = nil
+        errorMessage = nil
     }
 
     // MARK: - Private Helpers

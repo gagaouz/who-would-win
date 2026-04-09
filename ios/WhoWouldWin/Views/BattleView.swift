@@ -18,7 +18,6 @@ struct BattleView: View {
     @State private var resultsPanelOffset: CGFloat = 700
     @State private var winnerPhotoURL: URL? = nil
     @State private var showConfetti = false
-    @State private var showAdPrompt = false
 
     @State private var battleScene: BattleScene
     @State private var battleRound: Int = 0
@@ -76,20 +75,28 @@ struct BattleView: View {
         }
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
-        .task {
-            async let img1: UIImage? = fighter1.isCustom ? AnimalImageService.shared.image(for: fighter1) : nil
-            async let img2: UIImage? = fighter2.isCustom ? AnimalImageService.shared.image(for: fighter2) : nil
+        .task(id: battleRound) {
+            // Load best image for each fighter: pack-creature asset or custom photo.
+            async let img1: UIImage? = loadFighterImage(fighter1)
+            async let img2: UIImage? = loadFighterImage(fighter2)
             let (image1, image2) = await (img1, img2)
             if let img = image1 { battleScene.setFighterImage(img, forFighter: 1) }
             if let img = image2 { battleScene.setFighterImage(img, forFighter: 2) }
-        }
-        .task(id: battleRound) {
+
             battleScene.onAnimationComplete = {
                 Task { @MainActor in viewModel.animationDidComplete() }
             }
             await viewModel.startBattle()
         }
         .onChange(of: viewModel.phase) { newPhase in
+            // Belt-and-suspenders: explicitly kick off the scene if didMove(to:) didn't fire.
+            // One runloop tick delay lets SwiftUI mount the SpriteView before we call in.
+            if newPhase == .animating {
+                DispatchQueue.main.async {
+                    battleScene.beginBattle()
+                }
+            }
+
             if newPhase == .revealing, let result = viewModel.battleResult {
                 battleScene.setBattleResult(result)
 
@@ -126,15 +133,8 @@ struct BattleView: View {
                     }
                 }
 
-                if UserSettings.shared.shouldShowAd {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
-                        showAdPrompt = true
-                    }
-                }
+                // Ad will be shown when user taps Rematch or New Battle
             }
-        }
-        .sheet(isPresented: $showAdPrompt) {
-            AdPromptSheet(isPresented: $showAdPrompt)
         }
     }
 
@@ -157,13 +157,13 @@ struct BattleView: View {
 
                 HStack(alignment: .center, spacing: 0) {
                     fighterCard(animal: fighter1, accentColor: Theme.orange)
-                        .frame(width: geo.size.width * 0.42)
+                        .frame(width: geo.size.width * 0.38)
                         .offset(x: fighter1Offset)
 
                     Spacer()
 
                     Text("VS")
-                        .font(.custom("PressStart2P-Regular", size: 30))
+                        .font(.custom("PressStart2P-Regular", size: 26))
                         .foregroundColor(Theme.orange)
                         .shadow(color: Theme.orange.opacity(0.8), radius: 10, x: 0, y: 0)
                         .scaleEffect(vsScale)
@@ -172,7 +172,7 @@ struct BattleView: View {
                     Spacer()
 
                     fighterCard(animal: fighter2, accentColor: Theme.cyan)
-                        .frame(width: geo.size.width * 0.42)
+                        .frame(width: geo.size.width * 0.38)
                         .offset(x: fighter2Offset)
                 }
                 .padding(.horizontal, 12)
@@ -199,7 +199,16 @@ struct BattleView: View {
                     .frame(width: 96, height: 96)
                     .blur(radius: 14)
 
-                if let url = animal.imageURL {
+                if let assetName = animal.creatureAssetName,
+                   let img = UIImage(named: assetName) {
+                    // Generated artwork — paid pack creatures
+                    Image(uiImage: img)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 82, height: 82)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .overlay(RoundedRectangle(cornerRadius: 16).stroke(accentColor.opacity(0.5), lineWidth: 2))
+                } else if let url = animal.imageURL {
                     AsyncImage(url: url) { phase in
                         switch phase {
                         case .success(let img):
@@ -221,7 +230,7 @@ struct BattleView: View {
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
                 .minimumScaleFactor(0.65)
-                .shadow(color: accentColor.opacity(0.4), radius: 4, x: 0, y: 2)
+                .shadow(color: accentColor.opacity(0.3), radius: 4, x: 0, y: 2)
         }
         .padding(.vertical, 22)
         .padding(.horizontal, 10)
@@ -269,6 +278,7 @@ struct BattleView: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: UIScreen.main.bounds.height * 0.55)
                 .ignoresSafeArea(edges: .top)
+                .onAppear { battleScene.beginBattle() }
 
             battleProgressPanel
         }
@@ -276,27 +286,28 @@ struct BattleView: View {
     }
 
     private var battleProgressPanel: some View {
-        VStack(spacing: 20) {
-            Spacer()
+        let stats1 = AnimalStats.generate(for: fighter1)
+        let stats2 = AnimalStats.generate(for: fighter2)
 
-            // Turn indicator
+        return VStack(spacing: 0) {
+            // Fighter badges
             HStack(spacing: 14) {
                 fighterTurnBadge(name: fighter1.name, emoji: fighter1.emoji, color: Theme.orange)
-                Text("⚔️")
-                    .font(.system(size: 22))
+                Text("⚔️").font(.system(size: 22))
                 fighterTurnBadge(name: fighter2.name, emoji: fighter2.emoji, color: Theme.cyan)
             }
             .padding(.horizontal, 28)
+            .padding(.top, 14)
 
-            // Pulsing bar
-            RoundedRectangle(cornerRadius: 3)
-                .fill(LinearGradient(
-                    colors: [Theme.orange.opacity(0.6), Theme.yellow.opacity(0.6), Theme.cyan.opacity(0.6)],
-                    startPoint: .leading, endPoint: .trailing
-                ))
-                .frame(height: 3)
-                .frame(maxWidth: 200)
-                .opacity(0.55)
+            // Stat comparison bars
+            VStack(spacing: 7) {
+                statRow(label: "SPEED",   v1: stats1.speed,   v2: stats2.speed)
+                statRow(label: "POWER",   v1: stats1.power,   v2: stats2.power)
+                statRow(label: "AGILITY", v1: stats1.agility, v2: stats2.agility)
+                statRow(label: "DEFENSE", v1: stats1.defense, v2: stats2.defense)
+            }
+            .padding(.horizontal, 22)
+            .padding(.top, 14)
 
             Spacer()
         }
@@ -315,6 +326,46 @@ struct BattleView: View {
         .frame(maxWidth: .infinity)
     }
 
+    /// Head-to-head stat row: F1 bar fills from right, F2 bar fills from left.
+    private func statRow(label: String, v1: Int, v2: Int) -> some View {
+        HStack(spacing: 8) {
+            // F1 bar (orange, fills from right toward center)
+            GeometryReader { geo in
+                ZStack(alignment: .trailing) {
+                    Capsule().fill(Color.white.opacity(0.07))
+                    Capsule()
+                        .fill(LinearGradient(
+                            colors: [Theme.orange.opacity(0.5), Theme.orange],
+                            startPoint: .leading, endPoint: .trailing
+                        ))
+                        .frame(width: geo.size.width * CGFloat(v1) / 100)
+                }
+            }
+            .frame(height: 7)
+
+            Text(label)
+                .font(.system(size: 7, weight: .black, design: .rounded))
+                .foregroundColor(Theme.textSecondary)
+                .frame(width: 48)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+
+            // F2 bar (cyan, fills from left toward center)
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Color.white.opacity(0.07))
+                    Capsule()
+                        .fill(LinearGradient(
+                            colors: [Theme.cyan, Theme.cyan.opacity(0.5)],
+                            startPoint: .leading, endPoint: .trailing
+                        ))
+                        .frame(width: geo.size.width * CGFloat(v2) / 100)
+                }
+            }
+            .frame(height: 7)
+        }
+    }
+
     // MARK: - PHASE 3 & 4: Revealing / Complete
 
     private var revealingPhaseView: some View {
@@ -326,7 +377,12 @@ struct BattleView: View {
                     .ignoresSafeArea(edges: .top)
                     .overlay(
                         LinearGradient(
-                            colors: [.clear, Theme.bgDeep.opacity(0.6)],
+                            stops: [
+                                .init(color: Theme.bgDeep, location: 0.0),
+                                .init(color: Theme.bgDeep, location: 0.30),
+                                .init(color: .clear, location: 0.55),
+                                .init(color: Theme.bgDeep.opacity(0.7), location: 1.0)
+                            ],
                             startPoint: .top, endPoint: .bottom
                         )
                     )
@@ -352,12 +408,31 @@ struct BattleView: View {
                 let winnerAccent = result.winner == fighter1.id ? Theme.orange : Theme.cyan
 
                 VStack(spacing: 0) {
-                    // Drag pill
+                    // Drag pill — drag down to peek at the battle scene beneath
                     RoundedRectangle(cornerRadius: 3)
-                        .fill(Color.white.opacity(0.25))
+                        .fill(Theme.divider)
                         .frame(width: 40, height: 5)
                         .padding(.top, 14)
                         .padding(.bottom, 18)
+                        .gesture(
+                            DragGesture()
+                                .onChanged { value in
+                                    if value.translation.height > 0 {
+                                        resultsPanelOffset = value.translation.height
+                                    }
+                                }
+                                .onEnded { value in
+                                    if value.translation.height > 150 {
+                                        withAnimation(.spring(response: 0.4)) {
+                                            resultsPanelOffset = 700
+                                        }
+                                    } else {
+                                        withAnimation(.spring(response: 0.3)) {
+                                            resultsPanelOffset = 0
+                                        }
+                                    }
+                                }
+                        )
 
                     ScrollView(showsIndicators: false) {
                         VStack(spacing: 18) {
@@ -380,7 +455,7 @@ struct BattleView: View {
 
                                     Text("WINNER!")
                                         .font(.system(size: 13, weight: .bold, design: .rounded))
-                                        .foregroundColor(.white.opacity(0.55))
+                                        .foregroundColor(Theme.textSecondary)
                                         .tracking(3)
 
                                     Text(winnerAnimal.name.uppercased())
@@ -403,9 +478,9 @@ struct BattleView: View {
                                     case .success(let image):
                                         image
                                             .resizable()
-                                            .aspectRatio(contentMode: .fill)
+                                            .aspectRatio(contentMode: .fit)
                                             .frame(maxWidth: .infinity)
-                                            .frame(height: 170)
+                                            .frame(maxHeight: 240)
                                             .clipShape(RoundedRectangle(cornerRadius: 18))
                                             .overlay(
                                                 RoundedRectangle(cornerRadius: 18)
@@ -420,7 +495,7 @@ struct BattleView: View {
                                     case .empty:
                                         RoundedRectangle(cornerRadius: 18)
                                             .fill(Color.white.opacity(0.05))
-                                            .frame(maxWidth: .infinity).frame(height: 170)
+                                            .frame(maxWidth: .infinity).frame(height: 160)
                                             .overlay(ProgressView().tint(Theme.gold))
                                     @unknown default:
                                         EmptyView()
@@ -449,7 +524,7 @@ struct BattleView: View {
                             // Narration (typewriter)
                             Text(viewModel.narrationDisplayed)
                                 .font(.system(size: 16, weight: .regular, design: .rounded))
-                                .foregroundColor(.white.opacity(0.9))
+                                .foregroundColor(Theme.textPrimary)
                                 .multilineTextAlignment(.center)
                                 .lineSpacing(5)
                                 .padding(.horizontal, 4)
@@ -466,14 +541,14 @@ struct BattleView: View {
                                         Text(speech.isSpeaking ? "Stop" : "Read Aloud")
                                             .font(.system(size: 14, weight: .semibold, design: .rounded))
                                     }
-                                    .foregroundColor(speech.isSpeaking ? Theme.orange : .white.opacity(0.6))
+                                    .foregroundColor(speech.isSpeaking ? Theme.orange : Theme.textSecondary)
                                     .padding(.horizontal, 18)
                                     .padding(.vertical, 9)
                                     .background(
                                         Capsule()
-                                            .fill(speech.isSpeaking ? Theme.orange.opacity(0.15) : Color.white.opacity(0.08))
+                                            .fill(speech.isSpeaking ? Theme.orange.opacity(0.15) : Theme.cardFill)
                                             .overlay(Capsule().stroke(
-                                                speech.isSpeaking ? Theme.orange.opacity(0.4) : Color.white.opacity(0.15),
+                                                speech.isSpeaking ? Theme.orange.opacity(0.4) : Theme.cardBorder,
                                                 lineWidth: 1
                                             ))
                                     )
@@ -494,7 +569,7 @@ struct BattleView: View {
 
                                     Text(result.funFact)
                                         .font(.system(size: 14, weight: .medium, design: .rounded))
-                                        .foregroundColor(.white.opacity(0.85))
+                                        .foregroundColor(Theme.textPrimary)
                                         .multilineTextAlignment(.leading)
                                         .lineSpacing(4)
                                         .fixedSize(horizontal: false, vertical: true)
@@ -512,17 +587,21 @@ struct BattleView: View {
                             if viewModel.phase == .complete {
                                 VStack(spacing: 12) {
                                     Button {
-                                        showConfetti = false
-                                        battleRound += 1
-                                        battleScene.reset()
-                                        viewModel.rematch()
-                                        winnerPhotoURL = nil
-                                        withAnimation(.spring(response: 0.4)) {
-                                            resultsPanelOffset = 700
-                                            fighter1Offset = -420
-                                            fighter2Offset = 420
-                                            vsScale = 0.1
-                                            vsOpacity = 0
+                                        // Guard against double-tap while ad loads
+                                        guard !AdManager.shared.isShowingAd else { return }
+                                        AdManager.shared.showInterstitialIfNeeded {
+                                            showConfetti = false
+                                            battleRound += 1
+                                            battleScene.reset()
+                                            viewModel.rematch()
+                                            winnerPhotoURL = nil
+                                            withAnimation(.spring(response: 0.4)) {
+                                                resultsPanelOffset = 700
+                                                fighter1Offset = -420
+                                                fighter2Offset = 420
+                                                vsScale = 0.1
+                                                vsOpacity = 0
+                                            }
                                         }
                                     } label: {
                                         HStack(spacing: 8) {
@@ -543,25 +622,30 @@ struct BattleView: View {
                                         .shadow(color: Theme.orange.opacity(0.45), radius: 10, x: 0, y: 5)
                                     }
                                     .buttonStyle(PressableButtonStyle())
+                                    .disabled(AdManager.shared.isShowingAd)
 
                                     Button {
-                                        dismiss()
+                                        guard !AdManager.shared.isShowingAd else { return }
+                                        AdManager.shared.showInterstitialIfNeeded {
+                                            dismiss()
+                                        }
                                     } label: {
                                         HStack(spacing: 8) {
                                             Text("🐾")
                                             Text("NEW BATTLE")
                                                 .font(.system(size: 17, weight: .black, design: .rounded))
-                                                .foregroundColor(.white)
+                                                .foregroundColor(Theme.textPrimary)
                                         }
                                         .frame(maxWidth: .infinity)
                                         .frame(height: 56)
                                         .background(
                                             RoundedRectangle(cornerRadius: 18)
-                                                .fill(Color.white.opacity(0.09))
-                                                .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.white.opacity(0.22), lineWidth: 1.5))
+                                                .fill(Theme.cardFill)
+                                                .overlay(RoundedRectangle(cornerRadius: 18).stroke(Theme.cardBorder, lineWidth: 1.5))
                                         )
                                     }
                                     .buttonStyle(PressableButtonStyle())
+                                    .disabled(AdManager.shared.isShowingAd)
                                 }
                             }
                         }
@@ -580,7 +664,7 @@ struct BattleView: View {
                             topLeadingRadius: 30, bottomLeadingRadius: 0,
                             bottomTrailingRadius: 0, topTrailingRadius: 30
                         )
-                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                        .stroke(Theme.cardBorder, lineWidth: 1)
                     )
                 )
             }
@@ -660,7 +744,7 @@ struct AdPromptSheet: View {
     var body: some View {
         ZStack {
             Theme.mainBg.ignoresSafeArea()
-            StarFieldOverlay().ignoresSafeArea().allowsHitTesting(false)
+            SpreadStarField().ignoresSafeArea().allowsHitTesting(false)
 
             VStack(spacing: 0) {
                 Spacer()
@@ -671,12 +755,12 @@ struct AdPromptSheet: View {
 
                 Text("ENJOYING THE APP?")
                     .font(.system(size: 20, weight: .black, design: .rounded))
-                    .foregroundColor(.white)
+                    .foregroundColor(Theme.textPrimary)
                     .padding(.bottom, 8)
 
                 Text("Remove ads forever with a one-time purchase and keep the battles going!")
                     .font(.system(size: 15, weight: .medium, design: .rounded))
-                    .foregroundColor(.white.opacity(0.65))
+                    .foregroundColor(Theme.textSecondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
 
@@ -690,8 +774,12 @@ struct AdPromptSheet: View {
                                 let success = await store.purchase(product)
                                 if success { isPresented = false }
                             } else {
+                                #if DEBUG
                                 settings.hasRemovedAds = true
                                 isPresented = false
+                                #else
+                                await store.loadProducts()
+                                #endif
                             }
                         }
                     } label: {
@@ -716,7 +804,7 @@ struct AdPromptSheet: View {
                     Button { isPresented = false } label: {
                         Text("Not now")
                             .font(.system(size: 15, weight: .semibold, design: .rounded))
-                            .foregroundColor(.white.opacity(0.45))
+                            .foregroundColor(Theme.textTertiary)
                     }
                     .buttonStyle(.plain)
                 }
@@ -726,6 +814,23 @@ struct AdPromptSheet: View {
         }
         .presentationDetents([.medium])
         .presentationDragIndicator(.visible)
+    }
+}
+
+// MARK: - Fighter Image Loader
+
+extension BattleView {
+    /// Returns the best available UIImage for use in the SpriteKit battle scene.
+    /// Priority: pack-creature asset → custom photo → nil (falls back to emoji sprite).
+    func loadFighterImage(_ animal: Animal) async -> UIImage? {
+        if let assetName = animal.creatureAssetName,
+           let img = UIImage(named: assetName) {
+            return img
+        }
+        if animal.isCustom {
+            return await AnimalImageService.shared.image(for: animal)
+        }
+        return nil
     }
 }
 
