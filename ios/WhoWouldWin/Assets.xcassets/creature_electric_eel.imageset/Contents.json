@@ -1,0 +1,13 @@
+{
+  "images": [
+    {
+      "filename": "creature_electric_eel.png",
+      "idiom": "universal",
+      "scale": "1x"
+    }
+  ],
+  "info": {
+    "author": "xcode",
+    "version": 1
+  }
+}

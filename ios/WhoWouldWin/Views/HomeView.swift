@@ -163,12 +163,11 @@ struct HomeView: View {
         }
         .onAppear {
             if !hasSeenDisclaimer && !disclaimerShownThisSession {
-            showDisclaimer = true
-            disclaimerShownThisSession = true
-        }
+                showDisclaimer = true
+                disclaimerShownThisSession = true
+            }
             withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) { playPulse = true }
             withAnimation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true)) { titleGlow = true }
-            // Both animals share one bounce — always aligned
             withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) { animalBounce = -14 }
             withAnimation(.easeInOut(duration: 1.3).repeatForever(autoreverses: true)) { vsScale = 1.2 }
             pairTimer = Timer.scheduledTimer(withTimeInterval: 4.0, repeats: true) { _ in
@@ -192,7 +191,6 @@ struct HomeView: View {
 // MARK: - Spread Star Field (no clusters — evenly distributed)
 
 struct SpreadStarField: View {
-    // Hand-picked so no three dots are near each other in any quadrant
     private let stars: [(x: CGFloat, y: CGFloat, size: CGFloat, opacity: Double)] = [
         (0.08, 0.18), (0.25, 0.08), (0.45, 0.15), (0.62, 0.05), (0.80, 0.20),
         (0.93, 0.11), (0.15, 0.32), (0.38, 0.28), (0.57, 0.35), (0.74, 0.30),
@@ -261,7 +259,6 @@ struct DisclaimerSheet: View {
 
                 Spacer()
 
-                // Don't show again toggle
                 Button(action: { dontShowAgain.toggle() }) {
                     HStack(spacing: 10) {
                         Image(systemName: dontShowAgain ? "checkmark.square.fill" : "square")
@@ -384,72 +381,4 @@ struct HelpRow: View {
             Spacer()
         }
     }
-}
-
-// MARK: - Debug Menu Sheet (kept for dev use)
-
-struct DebugMenuSheet: View {
-    @Environment(\.dismiss) private var dismiss
-    @State private var backendURL: String = ""
-
-    var body: some View {
-        ZStack {
-            Theme.mainBg.ignoresSafeArea()
-
-            VStack(spacing: 0) {
-                Text("DEBUG MENU")
-                    .pixelText(size: 14, color: Theme.orange)
-                    .padding(.top, 32)
-                    .padding(.bottom, 24)
-
-                Divider().background(Color.white.opacity(0.1))
-
-                VStack(spacing: 16) {
-                    Button("Simulate API Success") { print("[DEBUG] Simulating API success") }
-                        .buttonStyle(GradientButtonStyle(
-                            gradient: LinearGradient(colors: [Color(hex: "#4ADE80"), Color(hex: "#22c55e")], startPoint: .leading, endPoint: .trailing),
-                            shadowColor: Color(hex: "#4ADE80"), height: 50
-                        ))
-
-                    Button("Simulate API Failure") { print("[DEBUG] Simulating API failure") }
-                        .buttonStyle(GradientButtonStyle(
-                            gradient: LinearGradient(colors: [Theme.red, Color(hex: "#dc2626")], startPoint: .leading, endPoint: .trailing),
-                            shadowColor: Theme.red, height: 50
-                        ))
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("OVERRIDE BACKEND URL")
-                            .font(.system(size: 11, weight: .semibold, design: .rounded))
-                            .foregroundColor(Theme.textTertiary)
-                            .tracking(1)
-
-                        TextField("https://...", text: $backendURL)
-                            .font(.system(.body, design: .monospaced))
-                            .foregroundColor(Theme.textPrimary)
-                            .padding(12)
-                            .background(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .fill(Theme.cardFill)
-                                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.cardBorder, lineWidth: 1))
-                            )
-                            .onSubmit { print("[DEBUG] Override backend URL: \(backendURL)") }
-                    }
-                    .padding(.horizontal, 24)
-                }
-                .padding(.top, 20).padding(.horizontal, 24)
-
-                Spacer()
-
-                Button("Close") { dismiss() }
-                    .font(.system(size: 15, weight: .semibold, design: .rounded))
-                    .foregroundColor(Theme.textSecondary)
-                    .padding(.bottom, 40)
-            }
-        }
-        .presentationDetents([.medium, .large])
-    }
-}
-
-#Preview {
-    HomeView()
 }
