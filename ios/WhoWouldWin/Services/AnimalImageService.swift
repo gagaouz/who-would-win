@@ -146,9 +146,13 @@ actor AnimalImageService {
     }
 
     /// Downloads image data from a URL and decodes it into a UIImage.
+    /// 12-second timeout — Pollinations.ai can be slow for AI-generated images,
+    /// but we don't want to block the battle intro screen indefinitely.
     private func downloadImage(from url: URL) async -> UIImage? {
         do {
-            let (data, response) = try await URLSession.shared.data(from: url)
+            var request = URLRequest(url: url)
+            request.timeoutInterval = 12
+            let (data, response) = try await URLSession.shared.data(for: request)
             guard let http = response as? HTTPURLResponse,
                   (200...299).contains(http.statusCode) else { return nil }
             return UIImage(data: data)

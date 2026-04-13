@@ -101,7 +101,19 @@ const SYSTEM_PROMPT =
   'Keep narration exciting and appropriate for children — like a myth retelling, not a graphic fight. ' +
   'Always respond with ONLY valid JSON matching the exact schema. No markdown, no explanation outside the JSON.';
 
-function buildUserPrompt(fighter1Id: string, fighter2Id: string, fighter1Name?: string, fighter2Name?: string): string {
+const ENVIRONMENT_DESCRIPTIONS: Record<string, string> = {
+  Grassland: 'open savanna with tall grass and a wide sky — neutral terrain with no water nearby',
+  Ocean:     'deep open ocean, fully submerged underwater — there is NO land, no shore, only sea',
+  Sky:       'high in the sky among the clouds — both fighters are airborne with no ground beneath them',
+  Arctic:    'a frozen tundra of ice and snow — bitterly cold, slippery, no vegetation',
+  Desert:    'a scorching hot desert with sand dunes and blazing sun — no water anywhere',
+  Jungle:    'dense tropical rainforest with thick trees, vines, and undergrowth — tight quarters, plenty of cover',
+  Volcano:   'the rocky rim of an erupting volcano surrounded by rivers of lava and falling ash — extreme heat',
+  Night:     'a dark wilderness at night under a full moon — low visibility, shadows everywhere',
+  Storm:     'a raging thunderstorm with lightning strikes, gale-force winds, and torrential rain',
+};
+
+function buildUserPrompt(fighter1Id: string, fighter2Id: string, fighter1Name?: string, fighter2Name?: string, environmentName?: string): string {
   const name1 = fighter1Name ?? ANIMAL_NAMES[fighter1Id] ?? fighter1Id;
   const name2 = fighter2Name ?? ANIMAL_NAMES[fighter2Id] ?? fighter2Id;
 
@@ -119,13 +131,20 @@ function buildUserPrompt(fighter1Id: string, fighter2Id: string, fighter1Name?: 
     ? `Note: "${fighter2Name}" is a user-defined fighter — assess its power based on everything you know about it (biology, mythology, fiction, pop culture, etc.).\n`
     : '';
 
+  const arenaDesc = environmentName && ENVIRONMENT_DESCRIPTIONS[environmentName]
+    ? ENVIRONMENT_DESCRIPTIONS[environmentName]
+    : null;
+  const arenaLine = arenaDesc
+    ? `ARENA: The battle takes place in the ${environmentName} — ${arenaDesc}. IMPORTANT: The entire fight happens here. Neither fighter teleports or moves to their home environment. The outcome must reflect the advantages and disadvantages of this specific arena.\n\n`
+    : `The battle takes place in a neutral environment — consider each fighter's natural strengths equally.\n\n`;
+
   return (
     `Two fighters are about to battle: ${name1} vs ${name2}.\n\n` +
     deityNote +
     customNote1 +
     customNote2 +
-    `Decide who would win in a direct encounter. Use all relevant knowledge: real biology, ecology, mythology, legendary abilities, or fictional lore — whatever applies to these specific fighters. ` +
-    `The battle takes place in a neutral environment unless one fighter's nature gives a clear advantage.\n\n` +
+    arenaLine +
+    `Decide who would win in this arena. Use all relevant knowledge: real biology, ecology, mythology, legendary abilities, or fictional lore — whatever applies to these specific fighters. ` +
     `Respond with ONLY a JSON object:\n\n` +
     `{\n` +
     `  "winner": "<${fighter1Id} or ${fighter2Id} or \\"draw\\">",\n` +
@@ -204,7 +223,8 @@ async function callClaude(
   fighter2Id: string,
   topP: number,
   fighter1Name?: string,
-  fighter2Name?: string
+  fighter2Name?: string,
+  environmentName?: string
 ): Promise<BattleResult> {
   const response = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
@@ -214,7 +234,7 @@ async function callClaude(
     messages: [
       {
         role: 'user',
-        content: buildUserPrompt(fighter1Id, fighter2Id, fighter1Name, fighter2Name),
+        content: buildUserPrompt(fighter1Id, fighter2Id, fighter1Name, fighter2Name, environmentName),
       },
     ],
   });
@@ -233,7 +253,8 @@ export async function getBattleResult(
   fighter1Id: string,
   fighter2Id: string,
   fighter1Name?: string,
-  fighter2Name?: string
+  fighter2Name?: string,
+  environmentName?: string
 ): Promise<BattleResult> {
   const client = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY,
@@ -241,14 +262,14 @@ export async function getBattleResult(
 
   // First attempt with top_p equivalent to temperature 0.8 (~0.95)
   try {
-    return await callClaude(client, fighter1Id, fighter2Id, 0.95, fighter1Name, fighter2Name);
+    return await callClaude(client, fighter1Id, fighter2Id, 0.95, fighter1Name, fighter2Name, environmentName);
   } catch (firstError) {
     console.warn('First attempt failed, retrying with lower top_p:', firstError);
   }
 
   // Retry once with a more deterministic top_p equivalent to temperature 0.3 (~0.7)
   try {
-    return await callClaude(client, fighter1Id, fighter2Id, 0.7, fighter1Name, fighter2Name);
+    return await callClaude(client, fighter1Id, fighter2Id, 0.7, fighter1Name, fighter2Name, environmentName);
   } catch (secondError) {
     console.error('Second attempt also failed:', secondError);
     throw new Error('Unable to generate a valid battle result after two attempts.');

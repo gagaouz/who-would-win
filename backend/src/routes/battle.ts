@@ -46,6 +46,7 @@ router.post('/battle', rateLimitMiddleware, async (req: Request, res: Response):
   const rawF2    = body['fighter2'];
   const rawF1Name = body['fighter1Name'];
   const rawF2Name = body['fighter2Name'];
+  const rawEnvName = body['environmentName'];
 
   if (typeof rawF1 !== 'string' || typeof rawF2 !== 'string') {
     res.status(400).json({ error: 'fighter1 and fighter2 must be strings.' });
@@ -103,8 +104,10 @@ router.post('/battle', rateLimitMiddleware, async (req: Request, res: Response):
   }
 
   // ── Call Claude ────────────────────────────────────────────────────────────
+  const environmentName = typeof rawEnvName === 'string' ? rawEnvName.trim().slice(0, 40) : undefined;
+
   try {
-    const result = await getBattleResult(fighter1, fighter2, fighter1Name, fighter2Name);
+    const result = await getBattleResult(fighter1, fighter2, fighter1Name, fighter2Name, environmentName);
     res.json(result);
   } catch (err) {
     console.error('Battle error:', err);

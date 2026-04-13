@@ -24,6 +24,21 @@ final class UserSettings: ObservableObject {
     @Published var fantasyUnlocked: Bool       { didSet { ud.set(fantasyUnlocked,       forKey: "iap.fantasy") } }
     @Published var prehistoricUnlocked: Bool   { didSet { ud.set(prehistoricUnlocked,   forKey: "iap.prehistoric") } }
     @Published var mythicUnlocked: Bool        { didSet { ud.set(mythicUnlocked,        forKey: "iap.mythic") } }
+    @Published var olympusUnlocked: Bool       { didSet { ud.set(olympusUnlocked,       forKey: "iap.olympus") } }
+    @Published var environmentsUnlocked: Bool  { didSet { ud.set(environmentsUnlocked,  forKey: "iap.environments") } }
+
+    // MARK: - Streak Tracking
+    @Published var currentStreak: Int  { didSet { ud.set(currentStreak,  forKey: "stat.streak") } }
+    @Published var longestStreak: Int  { didSet { ud.set(longestStreak,  forKey: "stat.longestStreak") } }
+
+    private var lastBattleDateInterval: Double {
+        get { ud.double(forKey: "stat.lastBattleDate") }
+        set { ud.set(newValue, forKey: "stat.lastBattleDate") }
+    }
+    private var lastBattleDate: Date? {
+        let t = lastBattleDateInterval
+        return t > 0 ? Date(timeIntervalSince1970: t) : nil
+    }
 
     private init() {
         soundEnabled     = ud.object(forKey: "pref.sound")      as? Bool ?? true
@@ -36,6 +51,10 @@ final class UserSettings: ObservableObject {
         fantasyUnlocked      = ud.bool(forKey: "iap.fantasy")
         prehistoricUnlocked  = ud.bool(forKey: "iap.prehistoric")
         mythicUnlocked       = ud.bool(forKey: "iap.mythic")
+        olympusUnlocked      = ud.bool(forKey: "iap.olympus")
+        environmentsUnlocked = ud.bool(forKey: "iap.environments")
+        currentStreak  = ud.integer(forKey: "stat.streak")
+        longestStreak  = ud.integer(forKey: "stat.longestStreak")
     }
 
     // MARK: - Helpers
@@ -43,6 +62,32 @@ final class UserSettings: ObservableObject {
     /// Call after every completed battle.
     func recordBattle() {
         totalBattleCount += 1
+        updateStreak()
+    }
+
+    private func updateStreak() {
+        let now = Date()
+        let calendar = Calendar.current
+
+        if let last = lastBattleDate {
+            if calendar.isDateInToday(last) {
+                // Already battled today — streak unchanged
+            } else if calendar.isDateInYesterday(last) {
+                // Consecutive day — extend streak
+                currentStreak += 1
+                if currentStreak > longestStreak { longestStreak = currentStreak }
+                lastBattleDateInterval = now.timeIntervalSince1970
+            } else {
+                // Gap — reset
+                currentStreak = 1
+                lastBattleDateInterval = now.timeIntervalSince1970
+            }
+        } else {
+            // First battle ever
+            currentStreak = 1
+            longestStreak = max(longestStreak, 1)
+            lastBattleDateInterval = now.timeIntervalSince1970
+        }
     }
 
     /// Returns true when an interstitial ad should be shown.
@@ -59,6 +104,7 @@ final class UserSettings: ObservableObject {
     static let fantasyBattleThreshold    = 250
     static let prehistoricBattleThreshold = 100
     static let mythicBattleThreshold      = 500
+    static let olympusBattleThreshold     = 10_000
 
     /// True if the user has access to fantasy creatures via IAP, subscription, or free milestone.
     var isFantasyUnlocked: Bool {
@@ -73,6 +119,16 @@ final class UserSettings: ObservableObject {
     /// True if the user has access to mythic creatures via IAP, subscription, or free milestone.
     var isMythicUnlocked: Bool {
         mythicUnlocked || isSubscribed || totalBattleCount >= Self.mythicBattleThreshold
+    }
+
+    /// True once all three packs are unlocked — reveals the Gods pack as available.
+    var isOlympusVisible: Bool {
+        isFantasyUnlocked && isPrehistoricUnlocked && isMythicUnlocked
+    }
+
+    /// True if the user has access to the Olympus gods (IAP or 10,000 battles).
+    var isOlympusUnlocked: Bool {
+        olympusUnlocked || totalBattleCount >= Self.olympusBattleThreshold
     }
 
     /// Progress toward the free fantasy unlock (0.0 – 1.0).
@@ -91,6 +147,11 @@ final class UserSettings: ObservableObject {
         return min(Double(totalBattleCount) / Double(Self.mythicBattleThreshold), 1.0)
     }
 
+    var olympusUnlockProgress: Double {
+        guard !isOlympusUnlocked else { return 1.0 }
+        return min(Double(totalBattleCount) / Double(Self.olympusBattleThreshold), 1.0)
+    }
+
     /// True the very first time each battle threshold is crossed (used to trigger celebrations).
     var justUnlockedFantasy: Bool {
         !fantasyUnlocked && !isSubscribed && totalBattleCount == Self.fantasyBattleThreshold
@@ -100,5 +161,24 @@ final class UserSettings: ObservableObject {
     }
     var justUnlockedMythic: Bool {
         !mythicUnlocked && !isSubscribed && totalBattleCount == Self.mythicBattleThreshold
+    }
+    var justUnlockedOlympus: Bool {
+        !olympusUnlocked && totalBattleCount == Self.olympusBattleThreshold
+    }
+
+    // MARK: - Environment Access
+
+    /// True if the user can access ALL environments (pack purchase or subscription).
+    var hasAllEnvironments: Bool {
+        environmentsUnlocked || isSubscribed
+    }
+
+    /// True if a specific environment is currently usable.
+    func isEnvironmentUnlocked(_ env: BattleEnvironment) -> Bool {
+        switch env.tier {
+        case .free:    return true
+        case .earned:  return hasAllEnvironments || (env.battleThreshold.map { totalBattleCount >= $0 } ?? false)
+        case .premium: return hasAllEnvironments
+        }
     }
 }

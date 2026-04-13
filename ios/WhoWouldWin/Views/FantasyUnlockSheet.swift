@@ -320,3 +320,54 @@ struct FantasyUnlockedBanner: View {
         }
     }
 }
+
+// MARK: - Olympus milestone banner (shown in BattleView at 10,000 battles)
+
+struct OlympusUnlockedBanner: View {
+    @Binding var isShowing: Bool
+
+    private let gold   = Color(hex: "#FFD700")
+    private let purple = Color(hex: "#4A0E8F")
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Text("⚡ MOUNT OLYMPUS UNLOCKED! ⚡")
+                .font(.system(size: 16, weight: .black, design: .rounded))
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [gold, Color(hex: "#FFF8DC"), gold],
+                        startPoint: .leading, endPoint: .trailing
+                    )
+                )
+                .shadow(color: gold.opacity(0.8), radius: 10, x: 0, y: 0)
+                .multilineTextAlignment(.center)
+
+            Text("10,000 battles — the gods await you!")
+                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                .foregroundColor(Color.white.opacity(0.65))
+                .multilineTextAlignment(.center)
+        }
+        .padding(.horizontal, 24)
+        .padding(.vertical, 18)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(
+                            LinearGradient(colors: [gold.opacity(0.7), purple.opacity(0.5)],
+                                           startPoint: .topLeading, endPoint: .bottomTrailing),
+                            lineWidth: 1.5
+                        )
+                )
+        )
+        .shadow(color: gold.opacity(0.35), radius: 18, x: 0, y: 6)
+        .padding(.horizontal, 28)
+        .transition(.move(edge: .top).combined(with: .opacity))
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) {
+                withAnimation(.easeOut(duration: 0.4)) { isShowing = false }
+            }
+        }
+    }
+}

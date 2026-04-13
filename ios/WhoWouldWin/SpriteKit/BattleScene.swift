@@ -35,9 +35,12 @@ class BattleScene: SKScene {
 
     // MARK: - Init
 
-    init(fighter1: Animal, fighter2: Animal, size: CGSize) {
+    let environment: BattleEnvironment
+
+    init(fighter1: Animal, fighter2: Animal, size: CGSize, environment: BattleEnvironment = .grassland) {
         self.fighter1Animal = fighter1
         self.fighter2Animal = fighter2
+        self.environment = environment
         super.init(size: size)
         self.scaleMode = .aspectFill
     }
@@ -58,6 +61,9 @@ class BattleScene: SKScene {
 
         setupBackground()
         setupStars()
+        setupArenaFloor()
+        setupEnvironmentElements()
+        setupFighterGlows()
         setupGround()
         setupHealthBars()
         setupSprites()
@@ -70,11 +76,13 @@ class BattleScene: SKScene {
     // MARK: - Background
 
     private func setupBackground() {
-        backgroundColor = UIColor(red: 0.04, green: 0.04, blue: 0.16, alpha: 1)
+        let topUI = UIColor(environment.bgTop)
+        let bottomUI = UIColor(environment.bgBottom)
+        backgroundColor = topUI
 
         let gradientNode = makeGradientNode(
-            topColor:    UIColor(red: 0.102, green: 0.039, blue: 0.18, alpha: 1),
-            bottomColor: UIColor(red: 0.039, green: 0.039, blue: 0.102, alpha: 1),
+            topColor:    topUI,
+            bottomColor: bottomUI,
             size: size
         )
         gradientNode.position = CGPoint(x: size.width / 2, y: size.height / 2)
@@ -103,7 +111,19 @@ class BattleScene: SKScene {
     // MARK: - Stars
 
     private func setupStars() {
-        for _ in 0..<30 {
+        // Night/storm/volcano get many bright stars; sky/ocean/grassland get few or none
+        let count: Int
+        switch environment {
+        case .night:   count = 55
+        case .storm:   count = 15
+        case .volcano: count = 20
+        case .arctic:  count = 22
+        case .desert:  count = 18
+        case .jungle:  count = 8
+        case .sky:     count = 6
+        default:       count = 14
+        }
+        for _ in 0..<count {
             let radius = CGFloat.random(in: 0.8...2.0)
             let star = SKShapeNode(circleOfRadius: radius)
             star.fillColor = .white
@@ -133,23 +153,337 @@ class BattleScene: SKScene {
 
     private func setupGround() {
         let groundY = size.height * 0.25
+        let accentUI = UIColor(environment.accentColor)
 
         let ground = SKShapeNode()
         let groundPath = CGMutablePath()
         groundPath.move(to: CGPoint(x: 0, y: groundY))
         groundPath.addLine(to: CGPoint(x: size.width, y: groundY))
         ground.path = groundPath
-        ground.strokeColor = UIColor(red: 0.4, green: 0.2, blue: 0.9, alpha: 0.9)
+        ground.strokeColor = accentUI.withAlphaComponent(0.9)
         ground.lineWidth = 2
         ground.zPosition = -2
         addChild(ground)
 
         let glow = SKShapeNode()
         glow.path = groundPath
-        glow.strokeColor = UIColor(red: 0.5, green: 0.3, blue: 1.0, alpha: 0.25)
+        glow.strokeColor = accentUI.withAlphaComponent(0.3)
         glow.lineWidth = 8
         glow.zPosition = -3
         addChild(glow)
+    }
+
+    // MARK: - Arena Floor
+
+    private func setupArenaFloor() {
+        let accentUI = UIColor(environment.accentColor)
+        let bgBottomUI = UIColor(environment.bgBottom)
+
+        // Tiled hex-dot grid on the floor area for depth
+        let floorY = size.height * 0.25
+        let cols = 14, rows = 3
+        let spacingX: CGFloat = size.width / CGFloat(cols)
+        let spacingY: CGFloat = 18
+        for row in 0..<rows {
+            for col in 0..<cols {
+                let offsetX: CGFloat = row % 2 == 0 ? 0 : spacingX / 2
+                let x = CGFloat(col) * spacingX + offsetX + spacingX / 2
+                let y = floorY - CGFloat(row + 1) * spacingY
+                guard y > 0 else { continue }
+                let dot = SKShapeNode(circleOfRadius: 1.2)
+                dot.fillColor = accentUI.withAlphaComponent(CGFloat.random(in: 0.10...0.25))
+                dot.strokeColor = .clear
+                dot.position = CGPoint(x: x, y: y)
+                dot.zPosition = -4
+                addChild(dot)
+            }
+        }
+
+        // Faint crowd silhouette band at very bottom
+        let bandHeight: CGFloat = size.height * 0.12
+        let crowdNode = makeGradientNode(
+            topColor:    bgBottomUI.withAlphaComponent(0.0),
+            bottomColor: bgBottomUI.withAlphaComponent(0.7),
+            size: CGSize(width: size.width, height: bandHeight)
+        )
+        crowdNode.position = CGPoint(x: size.width / 2, y: bandHeight / 2)
+        crowdNode.zPosition = -4
+        addChild(crowdNode)
+
+        // Scattered crowd bumps
+        for i in 0..<22 {
+            let cx = CGFloat(i) * (size.width / 22) + CGFloat.random(in: 0...12)
+            let ch = CGFloat.random(in: 6...18)
+            let bump = SKShapeNode(rectOf: CGSize(width: CGFloat.random(in: 5...14), height: ch),
+                                   cornerRadius: 3)
+            bump.fillColor = accentUI.withAlphaComponent(CGFloat.random(in: 0.20...0.45))
+            bump.strokeColor = .clear
+            bump.position = CGPoint(x: cx, y: ch / 2)
+            bump.zPosition = -3
+            addChild(bump)
+        }
+    }
+
+    // MARK: - Per-Environment Elements
+
+    private func setupEnvironmentElements() {
+        switch environment {
+        case .ocean:   setupOceanWaves()
+        case .sky:     setupSkyClouds()
+        case .arctic:  setupArcticSnow()
+        case .desert:  setupDesertDunes()
+        case .jungle:  setupJungleVines()
+        case .volcano: setupVolcanoEmbers()
+        case .night:   setupNightMoon()
+        case .storm:   setupStormRain()
+        case .grassland: break
+        }
+    }
+
+    private func setupOceanWaves() {
+        for i in 0..<3 {
+            let waveY = size.height * 0.18 - CGFloat(i) * 14
+            let wave = SKShapeNode()
+            let path = CGMutablePath()
+            let segments = 8
+            let segW = size.width / CGFloat(segments)
+            path.move(to: CGPoint(x: 0, y: waveY))
+            for s in 0...segments {
+                let px = CGFloat(s) * segW
+                let py = waveY + (s % 2 == 0 ? 6 : -6)
+                path.addLine(to: CGPoint(x: px, y: py))
+            }
+            wave.path = path
+            wave.strokeColor = UIColor(environment.accentColor).withAlphaComponent(0.25 - CGFloat(i) * 0.06)
+            wave.lineWidth = 1.5
+            wave.zPosition = -2
+            addChild(wave)
+            let shift = SKAction.repeatForever(SKAction.sequence([
+                SKAction.moveBy(x: 12, y: 0, duration: 1.4),
+                SKAction.moveBy(x: -12, y: 0, duration: 1.4)
+            ]))
+            wave.run(shift)
+        }
+    }
+
+    private func setupSkyClouds() {
+        let cloudPositions: [(CGFloat, CGFloat, CGFloat)] = [
+            (size.width * 0.15, size.height * 0.72, 1.0),
+            (size.width * 0.65, size.height * 0.80, 0.7),
+            (size.width * 0.88, size.height * 0.65, 0.55),
+        ]
+        for (cx, cy, scale) in cloudPositions {
+            let cloud = makeCloudNode(scale: scale)
+            cloud.position = CGPoint(x: cx, y: cy)
+            cloud.zPosition = -2
+            addChild(cloud)
+            let drift = SKAction.repeatForever(SKAction.sequence([
+                SKAction.moveBy(x: 18, y: 0, duration: 5.0),
+                SKAction.moveBy(x: -18, y: 0, duration: 5.0)
+            ]))
+            cloud.run(drift)
+        }
+    }
+
+    private func makeCloudNode(scale: CGFloat) -> SKNode {
+        let node = SKNode()
+        let radii: [(CGFloat, CGFloat, CGFloat)] = [(0, 0, 18), (-16, -4, 13), (16, -4, 13), (-8, 8, 10), (8, 8, 10)]
+        for (dx, dy, r) in radii {
+            let blob = SKShapeNode(circleOfRadius: r * scale)
+            blob.fillColor = UIColor.white.withAlphaComponent(0.10)
+            blob.strokeColor = UIColor.white.withAlphaComponent(0.06)
+            blob.lineWidth = 0.5
+            blob.position = CGPoint(x: dx * scale, y: dy * scale)
+            node.addChild(blob)
+        }
+        return node
+    }
+
+    private func setupArcticSnow() {
+        for _ in 0..<40 {
+            let flake = SKShapeNode(circleOfRadius: CGFloat.random(in: 0.8...2.2))
+            flake.fillColor = UIColor.white.withAlphaComponent(CGFloat.random(in: 0.4...0.85))
+            flake.strokeColor = .clear
+            flake.position = CGPoint(
+                x: CGFloat.random(in: 0...size.width),
+                y: CGFloat.random(in: 0...size.height)
+            )
+            flake.zPosition = -2
+            addChild(flake)
+            let fallDist = CGFloat.random(in: 40...100)
+            let dur = Double.random(in: 3.0...6.0)
+            let delay = Double.random(in: 0...4.0)
+            flake.run(SKAction.repeatForever(SKAction.sequence([
+                SKAction.wait(forDuration: delay),
+                SKAction.moveBy(x: CGFloat.random(in: -10...10), y: -fallDist, duration: dur),
+                SKAction.moveBy(x: 0, y: fallDist + size.height * 0.1, duration: 0)
+            ])))
+        }
+    }
+
+    private func setupDesertDunes() {
+        let duneColor = UIColor(environment.accentColor).withAlphaComponent(0.18)
+        let dune = SKShapeNode()
+        let path = CGMutablePath()
+        let baseY = size.height * 0.25
+        path.move(to: CGPoint(x: 0, y: 0))
+        path.addLine(to: CGPoint(x: 0, y: baseY * 0.7))
+        path.addQuadCurve(to: CGPoint(x: size.width * 0.5, y: baseY * 0.85),
+                          control: CGPoint(x: size.width * 0.25, y: baseY * 1.1))
+        path.addQuadCurve(to: CGPoint(x: size.width, y: baseY * 0.65),
+                          control: CGPoint(x: size.width * 0.75, y: baseY * 1.0))
+        path.addLine(to: CGPoint(x: size.width, y: 0))
+        path.closeSubpath()
+        dune.path = path
+        dune.fillColor = duneColor
+        dune.strokeColor = .clear
+        dune.zPosition = -3
+        addChild(dune)
+    }
+
+    private func setupJungleVines() {
+        let vineColor = UIColor(environment.accentColor).withAlphaComponent(0.22)
+        for side in [0, 1] {
+            let startX: CGFloat = side == 0 ? 0 : size.width
+            for i in 0..<3 {
+                let vine = SKShapeNode()
+                let path = CGMutablePath()
+                let topY = size.height * (0.55 + CGFloat(i) * 0.08)
+                let offsetX: CGFloat = side == 0 ? CGFloat(i * 10) : -CGFloat(i * 10)
+                path.move(to: CGPoint(x: startX + offsetX, y: topY))
+                for seg in 1...5 {
+                    let py = topY - CGFloat(seg) * 30
+                    let px = startX + offsetX + (side == 0 ? CGFloat(seg % 2 == 0 ? 8 : -4) : CGFloat(seg % 2 == 0 ? -8 : 4))
+                    path.addLine(to: CGPoint(x: px, y: py))
+                }
+                vine.path = path
+                vine.strokeColor = vineColor
+                vine.lineWidth = 1.5
+                vine.zPosition = -2
+                addChild(vine)
+            }
+        }
+    }
+
+    private func setupVolcanoEmbers() {
+        for _ in 0..<18 {
+            let ember = SKShapeNode(circleOfRadius: CGFloat.random(in: 1.0...2.5))
+            ember.fillColor = UIColor(red: 1.0, green: CGFloat.random(in: 0.3...0.7), blue: 0, alpha: 0.8)
+            ember.strokeColor = .clear
+            let startX = CGFloat.random(in: size.width * 0.3...size.width * 0.7)
+            let startY = CGFloat.random(in: 0...size.height * 0.2)
+            ember.position = CGPoint(x: startX, y: startY)
+            ember.zPosition = 1
+            addChild(ember)
+            let riseY = CGFloat.random(in: 80...200)
+            let dur = Double.random(in: 1.5...3.5)
+            let delay = Double.random(in: 0...3.0)
+            ember.run(SKAction.repeatForever(SKAction.sequence([
+                SKAction.wait(forDuration: delay),
+                SKAction.group([
+                    SKAction.moveBy(x: CGFloat.random(in: -20...20), y: riseY, duration: dur),
+                    SKAction.sequence([
+                        SKAction.fadeAlpha(to: 1.0, duration: dur * 0.3),
+                        SKAction.fadeAlpha(to: 0.0, duration: dur * 0.7)
+                    ])
+                ]),
+                SKAction.move(to: CGPoint(x: startX, y: startY), duration: 0),
+                SKAction.fadeAlpha(to: 0.8, duration: 0)
+            ])))
+        }
+    }
+
+    private func setupNightMoon() {
+        let moon = SKShapeNode(circleOfRadius: 22)
+        moon.fillColor = UIColor(white: 0.95, alpha: 0.85)
+        moon.strokeColor = UIColor(white: 1.0, alpha: 0.3)
+        moon.lineWidth = 2
+        moon.position = CGPoint(x: size.width * 0.82, y: size.height * 0.78)
+        moon.zPosition = -4
+        addChild(moon)
+        // Moon glow
+        let moonGlow = makeGlowNode(color: UIColor(white: 0.9, alpha: 0.15), radius: 50)
+        moonGlow.position = moon.position
+        moonGlow.zPosition = -5
+        addChild(moonGlow)
+        moon.run(SKAction.repeatForever(SKAction.sequence([
+            SKAction.fadeAlpha(to: 0.7, duration: 3.0),
+            SKAction.fadeAlpha(to: 0.85, duration: 3.0)
+        ])))
+    }
+
+    private func setupStormRain() {
+        for _ in 0..<35 {
+            let rain = SKShapeNode()
+            let path = CGMutablePath()
+            let len = CGFloat.random(in: 12...22)
+            path.move(to: .zero)
+            path.addLine(to: CGPoint(x: -len * 0.3, y: -len))
+            rain.path = path
+            rain.strokeColor = UIColor(white: 0.75, alpha: CGFloat.random(in: 0.25...0.5))
+            rain.lineWidth = 0.8
+            let startX = CGFloat.random(in: 0...size.width)
+            let startY = CGFloat.random(in: size.height * 0.25...size.height)
+            rain.position = CGPoint(x: startX, y: startY)
+            rain.zPosition = 1
+            addChild(rain)
+            let fallDist = CGFloat.random(in: 60...130)
+            let dur = Double.random(in: 0.5...1.0)
+            let delay = Double.random(in: 0...1.5)
+            rain.run(SKAction.repeatForever(SKAction.sequence([
+                SKAction.wait(forDuration: delay),
+                SKAction.moveBy(x: -fallDist * 0.3, y: -fallDist, duration: dur),
+                SKAction.move(to: CGPoint(x: startX, y: startY), duration: 0)
+            ])))
+        }
+    }
+
+    // MARK: - Fighter Glows
+
+    private func setupFighterGlows() {
+        // Orange bloom behind fighter 1
+        let glow1 = makeGlowNode(color: UIColor(red: 1.0, green: 0.34, blue: 0.13, alpha: 0.22),
+                                 radius: size.width * 0.32)
+        glow1.position = CGPoint(x: size.width * 0.22, y: size.height * 0.45)
+        glow1.zPosition = 0
+        addChild(glow1)
+
+        // Cyan bloom behind fighter 2
+        let glow2 = makeGlowNode(color: UIColor(red: 0.0, green: 0.81, blue: 0.81, alpha: 0.18),
+                                 radius: size.width * 0.32)
+        glow2.position = CGPoint(x: size.width * 0.78, y: size.height * 0.45)
+        glow2.zPosition = 0
+        addChild(glow2)
+
+        // Pulse each glow
+        let pulse = SKAction.sequence([
+            SKAction.fadeAlpha(to: 0.55, duration: 0.9),
+            SKAction.fadeAlpha(to: 1.0,  duration: 0.9)
+        ])
+        glow1.run(SKAction.repeatForever(pulse))
+        let pulse2 = SKAction.sequence([
+            SKAction.wait(forDuration: 0.45),
+            SKAction.fadeAlpha(to: 0.55, duration: 0.9),
+            SKAction.fadeAlpha(to: 1.0,  duration: 0.9)
+        ])
+        glow2.run(SKAction.repeatForever(pulse2))
+    }
+
+    private func makeGlowNode(color: UIColor, radius: CGFloat) -> SKSpriteNode {
+        let diameter = Int(radius * 2)
+        let renderer = UIGraphicsImageRenderer(size: CGSize(width: diameter, height: diameter))
+        let img = renderer.image { ctx in
+            let center = CGPoint(x: radius, y: radius)
+            let colors = [color.cgColor, color.withAlphaComponent(0).cgColor] as CFArray
+            let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(),
+                                      colors: colors, locations: [0, 1])!
+            ctx.cgContext.drawRadialGradient(gradient,
+                startCenter: center, startRadius: 0,
+                endCenter: center,   endRadius: radius,
+                options: [])
+        }
+        return SKSpriteNode(texture: SKTexture(image: img),
+                            size: CGSize(width: diameter, height: diameter))
     }
 
     // MARK: - Health Bars

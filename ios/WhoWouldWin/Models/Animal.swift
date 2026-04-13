@@ -50,6 +50,13 @@ struct AnimalStats {
     let agility: Int  // 0–100
     let defense: Int  // 0–100
 
+    /// Generates environment-adjusted stats. Calls the base generator then applies the
+    /// per-category multiplier for the chosen environment.
+    static func generate(for animal: Animal, environment: BattleEnvironment) -> AnimalStats {
+        let base = generate(for: animal)
+        return environment.multiplier(for: animal.category).apply(to: base)
+    }
+
     /// Generates deterministic stats for any animal based on its id + size + category.
     static func generate(for animal: Animal) -> AnimalStats {
         // Deterministic hash from id so the same animal always gets the same stats.

@@ -1,17 +1,22 @@
 import SwiftUI
 import SpriteKit
 import UIKit
+import StoreKit
 
 struct BattleView: View {
     let fighter1: Animal
     let fighter2: Animal
+    @State private var displayEnvironment: BattleEnvironment
     @StateObject private var viewModel: BattleViewModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.horizontalSizeClass) var sizeClass
+    private var isIPad: Bool { sizeClass == .regular }
+    private var introOffset: CGFloat { UIScreen.main.bounds.width * 1.1 }
 
     // MARK: - Animation State
 
-    @State private var fighter1Offset: CGFloat = -420
-    @State private var fighter2Offset: CGFloat = 420
+    @State private var fighter1Offset: CGFloat
+    @State private var fighter2Offset: CGFloat
     @State private var vsScale: CGFloat = 0.1
     @State private var vsOpacity: Double = 0
 
@@ -22,22 +27,34 @@ struct BattleView: View {
     @State private var battleScene: BattleScene
     @State private var battleRound: Int = 0
     @State private var showFantasyBanner = false
+    @State private var showOlympusBanner = false
+    @State private var showShareSheet = false
+    @State private var shareImage: UIImage? = nil
+    @State private var fighter1Image: UIImage? = nil
+    @State private var fighter2Image: UIImage? = nil
+    @State private var showArenaSheet = false
+    @Environment(\.requestReview) private var requestReview
 
     @StateObject private var speech = SpeechService()
 
     // MARK: - Init
 
-    init(fighter1: Animal, fighter2: Animal) {
+    init(fighter1: Animal, fighter2: Animal, environment: BattleEnvironment = .grassland) {
         self.fighter1 = fighter1
         self.fighter2 = fighter2
-        _viewModel = StateObject(wrappedValue: BattleViewModel(fighter1: fighter1, fighter2: fighter2))
+        _displayEnvironment = State(initialValue: environment)
+        let offscreen = UIScreen.main.bounds.width * 1.1
+        _fighter1Offset = State(initialValue: -offscreen)
+        _fighter2Offset = State(initialValue: offscreen)
+        _viewModel = StateObject(wrappedValue: BattleViewModel(fighter1: fighter1, fighter2: fighter2, environment: environment))
         _battleScene = State(initialValue: BattleScene(
             fighter1: fighter1,
             fighter2: fighter2,
             size: CGSize(
                 width: UIScreen.main.bounds.width,
                 height: UIScreen.main.bounds.height * 0.55
-            )
+            ),
+            environment: environment
         ))
     }
 
@@ -72,14 +89,40 @@ struct BattleView: View {
                 }
                 .allowsHitTesting(false)
             }
+
+            // Olympus unlock milestone banner
+            if showOlympusBanner {
+                VStack {
+                    OlympusUnlockedBanner(isShowing: $showOlympusBanner)
+                        .padding(.top, 60)
+                    Spacer()
+                }
+                .allowsHitTesting(false)
+            }
         }
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
+        .sheet(isPresented: $showShareSheet) {
+            if let img = shareImage {
+                BattleShareSheet(image: img)
+                    .presentationDetents([PresentationDetent.medium, PresentationDetent.large])
+            }
+        }
+        .sheet(isPresented: $showArenaSheet) {
+            ArenaPickerSheet(
+                isPresented: $showArenaSheet,
+                current: displayEnvironment
+            ) { newEnv in
+                switchArena(to: newEnv)
+            }
+        }
         .task(id: battleRound) {
             // Load best image for each fighter: pack-creature asset or custom photo.
             async let img1: UIImage? = loadFighterImage(fighter1)
             async let img2: UIImage? = loadFighterImage(fighter2)
             let (image1, image2) = await (img1, img2)
+            fighter1Image = image1
+            fighter2Image = image2
             if let img = image1 { battleScene.setFighterImage(img, forFighter: 1) }
             if let img = image2 { battleScene.setFighterImage(img, forFighter: 2) }
 
@@ -121,15 +164,33 @@ struct BattleView: View {
             // Record completed battle and check ad gate / fantasy milestone
             if newPhase == .complete {
                 let justHitMilestone = UserSettings.shared.justUnlockedFantasy
+                let justHitOlympus   = UserSettings.shared.justUnlockedOlympus
                 UserSettings.shared.recordBattle()
 
-                // Fantasy milestone celebration (fires once, the battle that crosses 50)
+                // Fantasy milestone celebration (fires once, the battle that crosses 250)
                 if justHitMilestone {
                     HapticsService.shared.success()
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
                         withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
                             showFantasyBanner = true
                         }
+                    }
+                }
+
+                // Olympus milestone celebration (fires once at 10,000)
+                if justHitOlympus {
+                    HapticsService.shared.success()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                        withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                            showOlympusBanner = true
+                        }
+                    }
+                }
+
+                // App Store review prompt — request after 5th battle
+                if UserSettings.shared.totalBattleCount == 5 {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                        requestReview()
                     }
                 }
 
@@ -142,7 +203,7 @@ struct BattleView: View {
 
     private var animatedBackground: some View {
         LinearGradient(
-            colors: [Theme.bgDeep, Theme.bgMid],
+            colors: [displayEnvironment.bgTop, displayEnvironment.bgBottom],
             startPoint: .topLeading, endPoint: .bottomTrailing
         )
         .ignoresSafeArea()
@@ -286,38 +347,95 @@ struct BattleView: View {
     }
 
     private var battleProgressPanel: some View {
-        let stats1 = AnimalStats.generate(for: fighter1)
-        let stats2 = AnimalStats.generate(for: fighter2)
+        // Use environment-adjusted stats so bars reflect the terrain effect
+        let stats1 = AnimalStats.generate(for: fighter1, environment: displayEnvironment)
+        let stats2 = AnimalStats.generate(for: fighter2, environment: displayEnvironment)
+        let strength1 = (stats1.power + stats1.defense) / 2
+        let strength2 = (stats2.power + stats2.defense) / 2
 
         return VStack(spacing: 0) {
-            // Fighter badges
-            HStack(spacing: 14) {
-                fighterTurnBadge(name: fighter1.name, emoji: fighter1.emoji, color: Theme.orange)
-                Text("⚔️").font(.system(size: 22))
-                fighterTurnBadge(name: fighter2.name, emoji: fighter2.emoji, color: Theme.cyan)
-            }
-            .padding(.horizontal, 28)
-            .padding(.top, 14)
+            // Environment badge + fighter badges row
+            VStack(spacing: 6) {
+                // Arena label
+                HStack(spacing: 5) {
+                    Text(displayEnvironment.emoji).font(.system(size: 13))
+                    Text(displayEnvironment.name.uppercased())
+                        .font(.system(size: 9, weight: .black, design: .rounded))
+                        .foregroundColor(displayEnvironment.accentColor)
+                        .tracking(1.5)
+                    Text("ARENA")
+                        .font(.system(size: 9, weight: .black, design: .rounded))
+                        .foregroundColor(displayEnvironment.accentColor.opacity(0.6))
+                        .tracking(1.5)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 5)
+                .background(
+                    Capsule()
+                        .fill(displayEnvironment.accentColor.opacity(0.12))
+                        .overlay(Capsule().stroke(displayEnvironment.accentColor.opacity(0.3), lineWidth: 1))
+                )
 
-            // Stat comparison bars
-            VStack(spacing: 7) {
-                statRow(label: "SPEED",   v1: stats1.speed,   v2: stats2.speed)
-                statRow(label: "POWER",   v1: stats1.power,   v2: stats2.power)
-                statRow(label: "AGILITY", v1: stats1.agility, v2: stats2.agility)
-                statRow(label: "DEFENSE", v1: stats1.defense, v2: stats2.defense)
+                HStack(spacing: 0) {
+                    fighterTurnBadge(animal: fighter1, image: fighter1Image, color: Theme.orange)
+                    Text("⚔️").font(.system(size: 24))
+                        .frame(width: 44)
+                    fighterTurnBadge(animal: fighter2, image: fighter2Image, color: Theme.cyan)
+                }
             }
-            .padding(.horizontal, 22)
+            .padding(.horizontal, 20)
             .padding(.top, 14)
+            .padding(.bottom, 12)
 
-            Spacer()
+            // Stat comparison card
+            VStack(spacing: 0) {
+                HStack {
+                    Rectangle()
+                        .fill(LinearGradient(colors: [.clear, Theme.orange.opacity(0.4)], startPoint: .leading, endPoint: .trailing))
+                        .frame(height: 1)
+                    Text("BATTLE STATS")
+                        .font(.system(size: 8, weight: .black, design: .rounded))
+                        .foregroundColor(Theme.textSecondary)
+                        .tracking(2)
+                        .padding(.horizontal, 10)
+                    Rectangle()
+                        .fill(LinearGradient(colors: [Theme.cyan.opacity(0.4), .clear], startPoint: .leading, endPoint: .trailing))
+                        .frame(height: 1)
+                }
+                .padding(.bottom, 10)
+
+                VStack(spacing: 9) {
+                    statRow(label: "SPEED",    v1: stats1.speed,   v2: stats2.speed)
+                    statRow(label: "POWER",    v1: stats1.power,   v2: stats2.power)
+                    statRow(label: "AGILITY",  v1: stats1.agility, v2: stats2.agility)
+                    statRow(label: "DEFENSE",  v1: stats1.defense, v2: stats2.defense)
+                    statRow(label: "STRENGTH", v1: strength1,      v2: strength2)
+                }
+            }
+            .padding(.horizontal, 18)
+            .padding(.vertical, 14)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color.white.opacity(0.04))
+                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.white.opacity(0.08), lineWidth: 1))
+            )
+            .padding(.horizontal, 16)
+            .padding(.bottom, 12)
         }
         .frame(maxWidth: .infinity)
     }
 
-    private func fighterTurnBadge(name: String, emoji: String, color: Color) -> some View {
+    private func fighterTurnBadge(animal: Animal, image: UIImage?, color: Color) -> some View {
         VStack(spacing: 4) {
-            Text(emoji).font(.system(size: 26))
-            Text(name.uppercased())
+            if let img = image {
+                Image(uiImage: img)
+                    .resizable().scaledToFill()
+                    .frame(width: 32, height: 32)
+                    .clipShape(RoundedRectangle(cornerRadius: 7))
+            } else {
+                Text(animal.emoji).font(.system(size: 26))
+            }
+            Text(animal.name.uppercased())
                 .font(.system(size: 9, weight: .black, design: .rounded))
                 .foregroundColor(color)
                 .lineLimit(1)
@@ -341,12 +459,12 @@ struct BattleView: View {
                         .frame(width: geo.size.width * CGFloat(v1) / 100)
                 }
             }
-            .frame(height: 7)
+            .frame(height: 9)
 
             Text(label)
                 .font(.system(size: 7, weight: .black, design: .rounded))
                 .foregroundColor(Theme.textSecondary)
-                .frame(width: 48)
+                .frame(width: 52)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
 
@@ -362,7 +480,7 @@ struct BattleView: View {
                         .frame(width: geo.size.width * CGFloat(v2) / 100)
                 }
             }
-            .frame(height: 7)
+            .frame(height: 9)
         }
     }
 
@@ -390,13 +508,18 @@ struct BattleView: View {
             }
             .ignoresSafeArea(edges: .top)
 
-            resultsCard
-                .offset(y: resultsPanelOffset)
-                .onAppear {
-                    withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                        resultsPanelOffset = 0
-                    }
+            HStack {
+                Spacer(minLength: 0)
+                resultsCard
+                    .frame(maxWidth: isIPad ? 720 : .infinity)
+                Spacer(minLength: 0)
+            }
+            .offset(y: resultsPanelOffset)
+            .onAppear {
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                    resultsPanelOffset = 0
                 }
+            }
         }
     }
 
@@ -470,6 +593,22 @@ struct BattleView: View {
                                         .shadow(color: winnerAccent.opacity(0.5), radius: 10, x: 0, y: 0)
                                 }
                             }
+
+                            // Environment badge
+                            HStack(spacing: 5) {
+                                Text(displayEnvironment.emoji).font(.system(size: 12))
+                                Text("\(displayEnvironment.name.uppercased()) ARENA")
+                                    .font(.system(size: 9, weight: .black, design: .rounded))
+                                    .foregroundColor(displayEnvironment.accentColor)
+                                    .tracking(1)
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 5)
+                            .background(
+                                Capsule()
+                                    .fill(displayEnvironment.accentColor.opacity(0.12))
+                                    .overlay(Capsule().stroke(displayEnvironment.accentColor.opacity(0.3), lineWidth: 1))
+                            )
 
                             // Winner photo
                             if !isDraw, let photoURL = winnerPhotoURL {
@@ -585,68 +724,7 @@ struct BattleView: View {
 
                             // Action buttons
                             if viewModel.phase == .complete {
-                                VStack(spacing: 12) {
-                                    Button {
-                                        // Guard against double-tap while ad loads
-                                        guard !AdManager.shared.isShowingAd else { return }
-                                        AdManager.shared.showInterstitialIfNeeded {
-                                            showConfetti = false
-                                            battleRound += 1
-                                            battleScene.reset()
-                                            viewModel.rematch()
-                                            winnerPhotoURL = nil
-                                            withAnimation(.spring(response: 0.4)) {
-                                                resultsPanelOffset = 700
-                                                fighter1Offset = -420
-                                                fighter2Offset = 420
-                                                vsScale = 0.1
-                                                vsOpacity = 0
-                                            }
-                                        }
-                                    } label: {
-                                        HStack(spacing: 8) {
-                                            Text("🔄")
-                                            Text("REMATCH!")
-                                                .font(.system(size: 17, weight: .black, design: .rounded))
-                                                .foregroundColor(.white)
-                                        }
-                                        .frame(maxWidth: .infinity)
-                                        .frame(height: 56)
-                                        .background(
-                                            RoundedRectangle(cornerRadius: 18)
-                                                .fill(LinearGradient(
-                                                    colors: [Theme.orange, Theme.yellow],
-                                                    startPoint: .leading, endPoint: .trailing
-                                                ))
-                                        )
-                                        .shadow(color: Theme.orange.opacity(0.45), radius: 10, x: 0, y: 5)
-                                    }
-                                    .buttonStyle(PressableButtonStyle())
-                                    .disabled(AdManager.shared.isShowingAd)
-
-                                    Button {
-                                        guard !AdManager.shared.isShowingAd else { return }
-                                        AdManager.shared.showInterstitialIfNeeded {
-                                            dismiss()
-                                        }
-                                    } label: {
-                                        HStack(spacing: 8) {
-                                            Text("🐾")
-                                            Text("NEW BATTLE")
-                                                .font(.system(size: 17, weight: .black, design: .rounded))
-                                                .foregroundColor(Theme.textPrimary)
-                                        }
-                                        .frame(maxWidth: .infinity)
-                                        .frame(height: 56)
-                                        .background(
-                                            RoundedRectangle(cornerRadius: 18)
-                                                .fill(Theme.cardFill)
-                                                .overlay(RoundedRectangle(cornerRadius: 18).stroke(Theme.cardBorder, lineWidth: 1.5))
-                                        )
-                                    }
-                                    .buttonStyle(PressableButtonStyle())
-                                    .disabled(AdManager.shared.isShowingAd)
-                                }
+                                resultActionButtons
                             }
                         }
                         .padding(.horizontal, 24)
@@ -668,6 +746,315 @@ struct BattleView: View {
                     )
                 )
             }
+        }
+    }
+
+    // MARK: - Result Action Buttons (extracted to avoid type-check timeout)
+
+    @ViewBuilder
+    private var resultActionButtons: some View {
+        VStack(spacing: 12) {
+            // Share button
+            if let result = viewModel.battleResult {
+                Button {
+                    HapticsService.shared.medium()
+                    shareImage = BattleShareCard.render(
+                        fighter1: fighter1,
+                        fighter2: fighter2,
+                        result: result,
+                        environment: displayEnvironment,
+                        image1: fighter1Image,
+                        image2: fighter2Image
+                    )
+if shareImage != nil { showShareSheet = true }
+                } label: {
+                    shareButtonLabel
+                }
+                .buttonStyle(PressableButtonStyle())
+            }
+
+            // Try New Arena — environment picker
+            Button {
+                HapticsService.shared.tap()
+                showArenaSheet = true
+            } label: {
+                HStack(spacing: 8) {
+                    Text(displayEnvironment.emoji).font(.system(size: 18))
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text("TRY NEW ARENA")
+                            .font(.system(size: 14, weight: .black, design: .rounded))
+                            .foregroundColor(.white)
+                        Text("Same fighters, different terrain")
+                            .font(.system(size: 11, weight: .medium, design: .rounded))
+                            .foregroundColor(.white.opacity(0.6))
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(.white.opacity(0.5))
+                }
+                .padding(.horizontal, 16)
+                .frame(maxWidth: .infinity)
+                .frame(height: 52)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(displayEnvironment.accentColor.opacity(0.15))
+                        .overlay(RoundedRectangle(cornerRadius: 16)
+                            .stroke(displayEnvironment.accentColor.opacity(0.4), lineWidth: 1.5))
+                )
+            }
+            .buttonStyle(PressableButtonStyle())
+
+            // Rematch
+            Button {
+                guard !AdManager.shared.isShowingAd else { return }
+                AdManager.shared.showInterstitialIfNeeded {
+                    showConfetti = false
+                    battleRound += 1
+                    battleScene.reset()
+                    viewModel.rematch()
+                    winnerPhotoURL = nil
+                    withAnimation(.spring(response: 0.4)) {
+                        resultsPanelOffset = 700
+                        fighter1Offset = -introOffset
+                        fighter2Offset = introOffset
+                        vsScale = 0.1
+                        vsOpacity = 0
+                    }
+                }
+            } label: {
+                HStack(spacing: 8) {
+                    Text("🔄")
+                    Text("REMATCH!")
+                        .font(.system(size: 17, weight: .black, design: .rounded))
+                        .foregroundColor(.white)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 56)
+                .background(
+                    RoundedRectangle(cornerRadius: 18)
+                        .fill(LinearGradient(
+                            colors: [Theme.orange, Theme.yellow],
+                            startPoint: .leading, endPoint: .trailing
+                        ))
+                )
+                .shadow(color: Theme.orange.opacity(0.45), radius: 10, x: 0, y: 5)
+            }
+            .buttonStyle(PressableButtonStyle())
+            .disabled(AdManager.shared.isShowingAd)
+
+            // New Battle
+            Button {
+                guard !AdManager.shared.isShowingAd else { return }
+                AdManager.shared.showInterstitialIfNeeded { dismiss() }
+            } label: {
+                HStack(spacing: 8) {
+                    Text("🐾")
+                    Text("NEW BATTLE")
+                        .font(.system(size: 17, weight: .black, design: .rounded))
+                        .foregroundColor(Theme.textPrimary)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 56)
+                .background(
+                    RoundedRectangle(cornerRadius: 18)
+                        .fill(Theme.cardFill)
+                        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Theme.cardBorder, lineWidth: 1.5))
+                )
+            }
+            .buttonStyle(PressableButtonStyle())
+            .disabled(AdManager.shared.isShowingAd)
+        }
+    }
+
+    // MARK: - Switch Arena
+
+    private func switchArena(to newEnv: BattleEnvironment) {
+        guard newEnv != displayEnvironment else { return }
+        viewModel.environment = newEnv
+        displayEnvironment = newEnv
+        battleScene = BattleScene(
+            fighter1: fighter1,
+            fighter2: fighter2,
+            size: CGSize(
+                width: UIScreen.main.bounds.width,
+                height: UIScreen.main.bounds.height * 0.55
+            ),
+            environment: newEnv
+        )
+        showConfetti = false
+        battleRound += 1
+        viewModel.rematch()
+        winnerPhotoURL = nil
+        withAnimation(.spring(response: 0.4)) {
+            resultsPanelOffset = 700
+            fighter1Offset = -420
+            fighter2Offset = 420
+            vsScale = 0.1
+            vsOpacity = 0
+        }
+    }
+
+    private var shareButtonLabel: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "square.and.arrow.up")
+                .font(.system(size: 16, weight: .bold))
+            Text("SHARE THIS BATTLE")
+                .font(.system(size: 16, weight: .black, design: .rounded))
+        }
+        .foregroundColor(.white)
+        .frame(maxWidth: .infinity)
+        .frame(height: 56)
+        .background(
+            RoundedRectangle(cornerRadius: 18)
+                .fill(LinearGradient(
+                    colors: [Theme.gold, Theme.orange],
+                    startPoint: .leading, endPoint: .trailing
+                ))
+                .overlay(RoundedRectangle(cornerRadius: 18)
+                    .stroke(Color.white.opacity(0.25), lineWidth: 1))
+        )
+        .shadow(color: Theme.gold.opacity(0.4), radius: 12, x: 0, y: 5)
+    }
+}
+
+// MARK: - Arena Picker Sheet
+
+struct ArenaPickerSheet: View {
+    @Binding var isPresented: Bool
+    let current: BattleEnvironment
+    let onSelect: (BattleEnvironment) -> Void
+
+    @ObservedObject private var settings = UserSettings.shared
+    @State private var selected: BattleEnvironment
+    @State private var showPackSheet = false
+
+    init(isPresented: Binding<Bool>, current: BattleEnvironment, onSelect: @escaping (BattleEnvironment) -> Void) {
+        self._isPresented = isPresented
+        self.current = current
+        self.onSelect = onSelect
+        self._selected = State(initialValue: current)
+    }
+
+    private let columns = [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())]
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Theme.mainBg.ignoresSafeArea()
+
+                VStack(spacing: 0) {
+                    // Header
+                    VStack(spacing: 4) {
+                        Text("CHOOSE YOUR ARENA")
+                            .font(.system(size: 18, weight: .black, design: .rounded))
+                            .foregroundColor(.white)
+                        Text("Same fighters — new battleground")
+                            .font(.system(size: 13, weight: .medium, design: .rounded))
+                            .foregroundColor(Theme.textSecondary)
+                    }
+                    .padding(.top, 24)
+                    .padding(.bottom, 20)
+
+                    // Environment grid
+                    LazyVGrid(columns: columns, spacing: 12) {
+                        ForEach(BattleEnvironment.allCases) { env in
+                            let isUnlocked = settings.isEnvironmentUnlocked(env)
+                            let isSel = env == selected
+                            let isCur = env == current
+
+                            Button {
+                                if isUnlocked {
+                                    selected = env
+                                    HapticsService.shared.tap()
+                                } else {
+                                    showPackSheet = true
+                                }
+                            } label: {
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 14)
+                                        .fill(isSel ? env.accentColor.opacity(0.25) : Color.white.opacity(0.06))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 14)
+                                                .stroke(
+                                                    isSel ? env.accentColor : Color.white.opacity(0.12),
+                                                    lineWidth: isSel ? 2 : 1
+                                                )
+                                        )
+
+                                    VStack(spacing: 5) {
+                                        Text(env.emoji)
+                                            .font(.system(size: 28))
+                                            .opacity(isUnlocked ? 1.0 : 0.4)
+                                        Text(env.name.uppercased())
+                                            .font(.system(size: 9, weight: .black, design: .rounded))
+                                            .foregroundColor(isSel ? env.accentColor : Theme.textSecondary)
+                                            .lineLimit(1)
+                                            .minimumScaleFactor(0.6)
+                                        if isCur {
+                                            Text("CURRENT")
+                                                .font(.system(size: 7, weight: .bold, design: .rounded))
+                                                .foregroundColor(env.accentColor.opacity(0.7))
+                                        }
+                                    }
+                                    .padding(.vertical, 12)
+                                    .padding(.horizontal, 6)
+
+                                    if !isUnlocked {
+                                        RoundedRectangle(cornerRadius: 14)
+                                            .fill(Color.black.opacity(0.45))
+                                        Image(systemName: "lock.fill")
+                                            .font(.system(size: 16, weight: .bold))
+                                            .foregroundColor(.white.opacity(0.7))
+                                    }
+                                }
+                            }
+                            .buttonStyle(PressableButtonStyle())
+                        }
+                    }
+                    .padding(.horizontal, 16)
+
+                    Spacer()
+
+                    // Confirm button
+                    Button {
+                        if selected != current {
+                            onSelect(selected)
+                        }
+                        isPresented = false
+                    } label: {
+                        HStack(spacing: 8) {
+                            Text(selected.emoji)
+                            Text(selected == current ? "STAY IN THIS ARENA" : "FIGHT IN \(selected.name.uppercased())!")
+                                .font(.system(size: 16, weight: .black, design: .rounded))
+                                .foregroundColor(.white)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 56)
+                        .background(
+                            RoundedRectangle(cornerRadius: 18)
+                                .fill(LinearGradient(
+                                    colors: [selected.accentColor, selected.accentColor.opacity(0.7)],
+                                    startPoint: .leading, endPoint: .trailing
+                                ))
+                        )
+                        .shadow(color: selected.accentColor.opacity(0.4), radius: 10, x: 0, y: 5)
+                    }
+                    .buttonStyle(PressableButtonStyle())
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 32)
+                }
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Cancel") { isPresented = false }
+                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                        .foregroundColor(Theme.textSecondary)
+                }
+            }
+        }
+        .sheet(isPresented: $showPackSheet) {
+            EnvironmentsPackSheet(isPresented: $showPackSheet)
         }
     }
 }

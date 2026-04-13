@@ -17,10 +17,13 @@ final class StoreKitManager: ObservableObject {
     static let fantasyPackID     = "com.whowouldin.fantasypack"
     static let prehistoricPackID = "com.whowouldin.prehistoricpack"
     static let mythicPackID      = "com.whowouldin.mythicpack"
+    static let olympusPackID      = "com.whowouldin.olympuspack"
+    static let environmentsPackID = "com.whowouldin.environmentspack"
 
     static let allProductIDs: Set<String> = [
         removeAdsID, premiumMonthlyID, premiumAnnualID,
-        fantasyPackID, prehistoricPackID, mythicPackID
+        fantasyPackID, prehistoricPackID, mythicPackID, olympusPackID,
+        environmentsPackID
     ]
 
     // MARK: - Published state
@@ -36,6 +39,8 @@ final class StoreKitManager: ObservableObject {
     var fantasyPackProduct:    Product? { products.first { $0.id == Self.fantasyPackID } }
     var prehistoricPackProduct: Product? { products.first { $0.id == Self.prehistoricPackID } }
     var mythicPackProduct:      Product? { products.first { $0.id == Self.mythicPackID } }
+    var olympusPackProduct:       Product? { products.first { $0.id == Self.olympusPackID } }
+    var environmentsPackProduct:  Product? { products.first { $0.id == Self.environmentsPackID } }
 
     // MARK: - Init
 
@@ -126,17 +131,22 @@ final class StoreKitManager: ObservableObject {
         case Self.removeAdsID:
             UserSettings.shared.hasRemovedAds = true
         case Self.premiumMonthlyID, Self.premiumAnnualID:
-            UserSettings.shared.isSubscribed        = true
-            UserSettings.shared.hasRemovedAds       = true  // premium removes ads
-            UserSettings.shared.fantasyUnlocked     = true  // premium unlocks all packs
-            UserSettings.shared.prehistoricUnlocked = true
-            UserSettings.shared.mythicUnlocked      = true
+            UserSettings.shared.isSubscribed         = true
+            UserSettings.shared.hasRemovedAds        = true  // premium removes ads
+            UserSettings.shared.fantasyUnlocked      = true  // premium unlocks all packs
+            UserSettings.shared.prehistoricUnlocked  = true
+            UserSettings.shared.mythicUnlocked       = true
+            UserSettings.shared.environmentsUnlocked = true  // premium unlocks all environments
         case Self.fantasyPackID:
             UserSettings.shared.fantasyUnlocked = true
         case Self.prehistoricPackID:
             UserSettings.shared.prehistoricUnlocked = true
         case Self.mythicPackID:
             UserSettings.shared.mythicUnlocked = true
+        case Self.olympusPackID:
+            UserSettings.shared.olympusUnlocked = true
+        case Self.environmentsPackID:
+            UserSettings.shared.environmentsUnlocked = true
         default:
             break
         }

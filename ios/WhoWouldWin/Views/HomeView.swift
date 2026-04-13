@@ -18,6 +18,9 @@ struct HomeView: View {
     ]
     @State private var pairIndex = 0
     @State private var pairTimer: Timer? = nil
+    @ObservedObject private var settings = UserSettings.shared
+    @Environment(\.horizontalSizeClass) var sizeClass
+    private var isIPad: Bool { sizeClass == .regular }
 
     var body: some View {
         NavigationStack {
@@ -34,116 +37,150 @@ struct HomeView: View {
                             showSettings = true
                         }) {
                             Image(systemName: "gearshape.fill")
-                                .font(.system(size: 18, weight: .semibold))
+                                .font(.system(size: isIPad ? 22 : 18, weight: .semibold))
                                 .foregroundColor(Theme.textSecondary)
-                                .frame(width: 40, height: 40)
+                                .frame(width: isIPad ? 50 : 40, height: isIPad ? 50 : 40)
                                 .background(Circle().fill(Theme.cardFill))
                         }
                         .buttonStyle(.plain)
                         .padding(.top, 8)
-                        .padding(.trailing, 20)
+                        .padding(.trailing, isIPad ? 32 : 20)
                     }
                     Spacer()
                 }
 
+                // Main content — centered with max width on iPad
                 VStack(spacing: 0) {
                     Spacer()
 
                     // Two hero animals — same bounce state so they're always level
                     HStack(alignment: .center, spacing: 0) {
                         Text(heroPairs[pairIndex].0)
-                            .font(.system(size: 80))
-                            .shadow(color: Theme.orange.opacity(0.4), radius: 12, x: 0, y: 0)
+                            .font(.system(size: isIPad ? 140 : 80))
+                            .shadow(color: Theme.orange.opacity(0.5), radius: isIPad ? 24 : 12, x: 0, y: 0)
                             .transition(.scale.combined(with: .opacity))
 
                         Spacer()
 
                         Text("⚡")
-                            .font(.system(size: 36))
+                            .font(.system(size: isIPad ? 64 : 36))
                             .scaleEffect(vsScale)
-                            .shadow(color: Theme.yellow.opacity(0.8), radius: 10, x: 0, y: 0)
+                            .shadow(color: Theme.yellow.opacity(0.9), radius: isIPad ? 18 : 10, x: 0, y: 0)
 
                         Spacer()
 
                         Text(heroPairs[pairIndex].1)
-                            .font(.system(size: 80))
-                            .shadow(color: Theme.cyan.opacity(0.4), radius: 12, x: 0, y: 0)
+                            .font(.system(size: isIPad ? 140 : 80))
+                            .shadow(color: Theme.cyan.opacity(0.5), radius: isIPad ? 24 : 12, x: 0, y: 0)
                             .transition(.scale.combined(with: .opacity))
                     }
-                    .padding(.horizontal, 40)
+                    .padding(.horizontal, isIPad ? 60 : 40)
                     .offset(y: animalBounce)
-                    .padding(.bottom, 28)
+                    .padding(.bottom, isIPad ? 40 : 28)
 
                     // Wild pixel-font title
-                    VStack(spacing: 10) {
-                        // "ANIMAL VS ANIMAL" in two lines for better fit
-                        VStack(spacing: 2) {
+                    VStack(spacing: isIPad ? 14 : 10) {
+                        VStack(spacing: isIPad ? 6 : 2) {
                             Text("ANIMAL")
-                                .font(.custom("PressStart2P-Regular", size: 28))
+                                .font(.custom("PressStart2P-Regular", size: isIPad ? 46 : 28))
                                 .foregroundStyle(
                                     LinearGradient(
                                         colors: [Theme.orange, Theme.yellow],
                                         startPoint: .leading, endPoint: .trailing
                                     )
                                 )
-                                .shadow(color: Theme.orange.opacity(titleGlow ? 0.9 : 0.4), radius: titleGlow ? 18 : 8, x: 0, y: 0)
+                                .shadow(color: Theme.orange.opacity(titleGlow ? 0.9 : 0.4), radius: titleGlow ? (isIPad ? 28 : 18) : (isIPad ? 14 : 8), x: 0, y: 0)
 
                             Text("VS ANIMAL")
-                                .font(.custom("PressStart2P-Regular", size: 22))
+                                .font(.custom("PressStart2P-Regular", size: isIPad ? 38 : 22))
                                 .foregroundStyle(
                                     LinearGradient(
                                         colors: [Theme.yellow, Theme.orange],
                                         startPoint: .leading, endPoint: .trailing
                                     )
                                 )
-                                .shadow(color: Theme.orange.opacity(titleGlow ? 0.8 : 0.3), radius: titleGlow ? 14 : 6, x: 0, y: 0)
+                                .shadow(color: Theme.orange.opacity(titleGlow ? 0.8 : 0.3), radius: titleGlow ? (isIPad ? 22 : 14) : (isIPad ? 10 : 6), x: 0, y: 0)
                         }
                         .multilineTextAlignment(.center)
 
                         Text("Who Would Win?")
-                            .font(.system(size: 16, weight: .semibold, design: .rounded))
+                            .font(.system(size: isIPad ? 22 : 16, weight: .semibold, design: .rounded))
                             .foregroundColor(Theme.textSecondary)
                             .tracking(1)
                     }
                     .padding(.horizontal, 16)
 
-                    Spacer().frame(height: 48)
+                    Spacer().frame(height: isIPad ? 36 : 24)
+
+                    // Streak badge (shows when 2+ day streak)
+                    if settings.currentStreak >= 2 {
+                        HStack(spacing: 8) {
+                            Text("🔥")
+                                .font(.system(size: isIPad ? 20 : 15))
+                            Text("\(settings.currentStreak) day streak!")
+                                .font(.system(size: isIPad ? 17 : 13, weight: .black, design: .rounded))
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        colors: [Theme.orange, Theme.yellow],
+                                        startPoint: .leading, endPoint: .trailing
+                                    )
+                                )
+                        }
+                        .padding(.horizontal, isIPad ? 22 : 16)
+                        .padding(.vertical, isIPad ? 12 : 8)
+                        .background(
+                            Capsule()
+                                .fill(Theme.orange.opacity(0.12))
+                                .overlay(Capsule().stroke(Theme.orange.opacity(0.3), lineWidth: 1))
+                        )
+                        .padding(.bottom, 10)
+                        .transition(.scale.combined(with: .opacity))
+                    }
+
+                    Spacer().frame(height: isIPad ? 32 : 24)
 
                     // Big PLAY button
                     NavigationLink(destination: AnimalPickerView()) {
-                        HStack(spacing: 10) {
-                            Text("⚔️").font(.system(size: 28))
+                        HStack(spacing: isIPad ? 16 : 10) {
+                            Text("⚔️").font(.system(size: isIPad ? 38 : 28))
                             Text("LET'S BATTLE!")
-                                .font(.system(size: 22, weight: .black, design: .rounded))
+                                .font(.system(size: isIPad ? 30 : 22, weight: .black, design: .rounded))
                                 .foregroundColor(.white)
-                            Text("⚔️").font(.system(size: 28))
+                            Text("⚔️").font(.system(size: isIPad ? 38 : 28))
                         }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 100)
+                        .frame(maxWidth: isIPad ? 580 : .infinity)
+                        .frame(height: isIPad ? 128 : 100)
                         .background(
-                            RoundedRectangle(cornerRadius: 28)
+                            RoundedRectangle(cornerRadius: isIPad ? 36 : 28)
                                 .fill(Theme.ctaGradient)
                         )
                         .overlay(
-                            RoundedRectangle(cornerRadius: 28)
+                            RoundedRectangle(cornerRadius: isIPad ? 36 : 28)
                                 .stroke(Color.white.opacity(0.25), lineWidth: 1.5)
                         )
                         .shadow(
                             color: Theme.orange.opacity(playPulse ? 0.75 : 0.4),
-                            radius: playPulse ? 32 : 16,
-                            x: 0, y: 10
+                            radius: playPulse ? (isIPad ? 48 : 32) : (isIPad ? 22 : 16),
+                            x: 0, y: isIPad ? 14 : 10
                         )
                         .scaleEffect(playPulse ? 1.025 : 1.0)
                     }
                     .buttonStyle(PressableButtonStyle())
-                    .padding(.horizontal, 28)
+                    .padding(.horizontal, isIPad ? 0 : 28)
 
-                    Spacer().frame(height: 28)
+                    // Pack journey nudge — shows until Olympus is unlocked
+                    if !settings.isOlympusUnlocked {
+                        PackJourneyNudge()
+                            .frame(maxWidth: isIPad ? 580 : .infinity)
+                            .padding(.top, 14)
+                    }
+
+                    Spacer().frame(height: isIPad ? 36 : 28)
 
                     Button(action: { showHelp = true }) {
                         HStack(spacing: 6) {
-                            Image(systemName: "questionmark.circle").font(.system(size: 15))
-                            Text("How to Play").font(.system(size: 15, weight: .semibold, design: .rounded))
+                            Image(systemName: "questionmark.circle").font(.system(size: isIPad ? 18 : 15))
+                            Text("How to Play").font(.system(size: isIPad ? 18 : 15, weight: .semibold, design: .rounded))
                         }
                         .foregroundColor(Theme.textSecondary)
                     }
@@ -152,12 +189,13 @@ struct HomeView: View {
                     Spacer()
 
                     Text("Just for fun — no real animals are harmed 🐾")
-                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                        .font(.system(size: isIPad ? 14 : 11, weight: .medium, design: .rounded))
                         .foregroundColor(Theme.textTertiary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 32)
                         .padding(.bottom, 24)
                 }
+                .frame(maxWidth: isIPad ? 720 : .infinity)
             }
             .navigationBarHidden(true)
         }
@@ -184,6 +222,138 @@ struct HomeView: View {
         .sheet(isPresented: $showSettings) { SettingsView() }
         .sheet(isPresented: $showDisclaimer) {
             DisclaimerSheet(hasSeenDisclaimer: $hasSeenDisclaimer)
+        }
+    }
+}
+
+// MARK: - Pack Journey Nudge
+
+private struct PackInfo {
+    let emoji: String
+    let label: String
+    let threshold: Int
+    let color: Color
+    let prevThreshold: Int
+}
+
+struct PackJourneyNudge: View {
+    @ObservedObject private var settings = UserSettings.shared
+
+    private let packs: [PackInfo] = [
+        PackInfo(emoji: "🦕", label: "DINOS",   threshold: 100,   color: Color(hex: "#FF6B2B"), prevThreshold: 0),
+        PackInfo(emoji: "🐉", label: "FANTASY",  threshold: 250,   color: Color(hex: "#9B5DE5"), prevThreshold: 100),
+        PackInfo(emoji: "🔱", label: "MYTHIC",   threshold: 500,   color: Color(hex: "#00CFCF"), prevThreshold: 250),
+        PackInfo(emoji: "⚡", label: "GODS",     threshold: 10_000, color: Color(hex: "#FFD700"), prevThreshold: 500),
+    ]
+
+    /// Before all 3 packs are earned: show DINOS / FANTASY / MYTHIC only (3 equal segments).
+    /// Once all 3 are earned (isOlympusVisible): reveal the GODS segment as the 4th.
+    private var visiblePacks: [PackInfo] {
+        settings.isOlympusVisible ? packs : Array(packs.prefix(3))
+    }
+
+    var body: some View {
+        let vp = visiblePacks
+        let count = vp.count
+        let gap: CGFloat = 3
+
+        VStack(spacing: 0) {
+            // Label row — one column per visible pack
+            HStack(spacing: 0) {
+                ForEach(vp.indices, id: \.self) { i in
+                    packLabel(vp[i])
+                        .frame(maxWidth: .infinity)
+                }
+            }
+            .padding(.bottom, 6)
+
+            // Segmented bar
+            GeometryReader { geo in
+                let totalGaps = CGFloat(count - 1) * gap
+                let segW = (geo.size.width - totalGaps) / CGFloat(count)
+                HStack(spacing: gap) {
+                    ForEach(vp.indices, id: \.self) { i in
+                        segmentBar(vp[i], width: segW)
+                    }
+                }
+            }
+            .frame(height: 10)
+
+            // Footer
+            HStack {
+                Text("⚔️ \(settings.totalBattleCount.formatted()) battles")
+                    .foregroundColor(Theme.textTertiary)
+                Spacer()
+                if settings.isOlympusVisible {
+                    Text("10,000 for ⚡ Gods")
+                        .foregroundColor(Color(hex: "#FFD700").opacity(0.6))
+                } else {
+                    let next = vp.first(where: { !isUnlocked($0) })
+                    if let next {
+                        Text("\(next.threshold) to unlock \(next.emoji) \(next.label)")
+                            .foregroundColor(next.color.opacity(0.7))
+                    }
+                }
+            }
+            .font(.system(size: 10, weight: .semibold, design: .rounded))
+            .padding(.top, 7)
+        }
+        .padding(.horizontal, 28)
+    }
+
+    @ViewBuilder
+    private func packLabel(_ pack: PackInfo) -> some View {
+        let unlocked = isUnlocked(pack)
+        VStack(spacing: 2) {
+            Text(pack.emoji)
+                .font(.system(size: 13))
+                .opacity(unlocked ? 1.0 : 0.35)
+                .shadow(color: unlocked ? pack.color.opacity(0.8) : .clear, radius: 6, x: 0, y: 0)
+            Text(pack.label)
+                .font(.system(size: 8, weight: .black, design: .rounded))
+                .foregroundColor(unlocked ? pack.color : Theme.textTertiary)
+                .tracking(0.5)
+        }
+    }
+
+    @ViewBuilder
+    private func segmentBar(_ pack: PackInfo, width: CGFloat) -> some View {
+        let fill = segmentFill(pack)
+        let unlocked = isUnlocked(pack)
+        ZStack(alignment: .leading) {
+            // Track
+            RoundedRectangle(cornerRadius: 5)
+                .fill(Color.white.opacity(0.08))
+                .frame(width: width, height: 10)
+            // Fill
+            RoundedRectangle(cornerRadius: 5)
+                .fill(
+                    unlocked
+                    ? LinearGradient(colors: [pack.color, pack.color.opacity(0.75)],
+                                     startPoint: .leading, endPoint: .trailing)
+                    : LinearGradient(colors: [pack.color.opacity(0.9), pack.color.opacity(0.55)],
+                                     startPoint: .leading, endPoint: .trailing)
+                )
+                .frame(width: width * CGFloat(fill), height: 10)
+                .shadow(color: pack.color.opacity(fill > 0 ? 0.5 : 0), radius: 4, x: 0, y: 0)
+                .animation(.spring(response: 0.5, dampingFraction: 0.8), value: fill)
+        }
+    }
+
+    private func segmentFill(_ pack: PackInfo) -> Double {
+        let b = settings.totalBattleCount
+        if b >= pack.threshold { return 1.0 }
+        if b <= pack.prevThreshold { return 0.0 }
+        return Double(b - pack.prevThreshold) / Double(pack.threshold - pack.prevThreshold)
+    }
+
+    private func isUnlocked(_ pack: PackInfo) -> Bool {
+        switch pack.label {
+        case "DINOS":   return settings.isPrehistoricUnlocked
+        case "FANTASY": return settings.isFantasyUnlocked
+        case "MYTHIC":  return settings.isMythicUnlocked
+        case "GODS":    return settings.isOlympusUnlocked
+        default:        return false
         }
     }
 }

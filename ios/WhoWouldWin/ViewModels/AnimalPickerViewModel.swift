@@ -17,6 +17,7 @@ final class AnimalPickerViewModel: ObservableObject {
         }
     }
     @Published var selectedCategory: AnimalCategory = .all
+    @Published var selectedEnvironment: BattleEnvironment = .grassland
 
     // Custom animal published state
     @Published var customAnimalEmoji: String = "🐾"
@@ -52,8 +53,10 @@ final class AnimalPickerViewModel: ObservableObject {
 
     var filteredAnimals: [Animal] {
         Animals.all.filter { animal in
-            // Olympus gods are hidden until the cheat code is entered this session
-            if animal.category == .olympus && !CheatState.shared.olympusUnlocked { return false }
+            // Olympus gods: visible via cheat code OR legitimate unlock
+            if animal.category == .olympus
+                && !CheatState.shared.olympusUnlocked
+                && !UserSettings.shared.isOlympusUnlocked { return false }
             let categoryMatch = selectedCategory == .all || animal.category == selectedCategory
             let searchMatch = searchText.isEmpty || animal.name.localizedCaseInsensitiveContains(searchText)
             return categoryMatch && searchMatch
@@ -156,6 +159,7 @@ final class AnimalPickerViewModel: ObservableObject {
         fighter2 = nil
         searchText = ""
         selectedCategory = .all
+        selectedEnvironment = .grassland
         customAnimalEmoji = "🐾"
         customAnimalCategory = .land
         customAnimalColor = "#888888"

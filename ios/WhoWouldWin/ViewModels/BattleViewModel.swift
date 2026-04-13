@@ -19,15 +19,17 @@ final class BattleViewModel: ObservableObject {
 
     let fighter1: Animal
     let fighter2: Animal
+    var environment: BattleEnvironment
 
     // Continuation used to signal when the SpriteKit animation finishes
     private var animationContinuation: CheckedContinuation<Void, Never>?
 
     // MARK: - Init
 
-    init(fighter1: Animal, fighter2: Animal) {
+    init(fighter1: Animal, fighter2: Animal, environment: BattleEnvironment = .grassland) {
         self.fighter1 = fighter1
         self.fighter2 = fighter2
+        self.environment = environment
     }
 
     // MARK: - Main Battle Flow
@@ -63,7 +65,8 @@ final class BattleViewModel: ObservableObject {
         } else {
             result = await BattleService.shared.generateFallbackResult(
                 fighter1: fighter1,
-                fighter2: fighter2
+                fighter2: fighter2,
+                environment: environment
             )
         }
         guard !Task.isCancelled else { return }
@@ -137,7 +140,8 @@ final class BattleViewModel: ObservableObject {
         do {
             let result = try await BattleService.shared.fetchBattleResult(
                 fighter1: fighter1,
-                fighter2: fighter2
+                fighter2: fighter2,
+                environment: environment
             )
             return result
         } catch let battleError as BattleError {

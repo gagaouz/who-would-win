@@ -7,7 +7,7 @@ actor BattleService {
 
     // MARK: - Network Battle
 
-    func fetchBattleResult(fighter1: Animal, fighter2: Animal) async throws -> BattleResult {
+    func fetchBattleResult(fighter1: Animal, fighter2: Animal, environment: BattleEnvironment = .grassland) async throws -> BattleResult {
         guard let url = URL(string: "\(AppConfig.backendBaseURL)/api/battle") else {
             throw BattleError.serverError
         }
@@ -21,7 +21,9 @@ actor BattleService {
             "fighter1": fighter1.id,
             "fighter2": fighter2.id,
             "fighter1Name": fighter1.name,
-            "fighter2Name": fighter2.name
+            "fighter2Name": fighter2.name,
+            "environment": environment.rawValue,
+            "environmentName": environment.name
         ]
         request.httpBody = try? JSONEncoder().encode(body)
 
@@ -68,8 +70,14 @@ actor BattleService {
     /// Determines winner based on size with some randomness.
     /// Larger size wins ~70% of matchups, 10% draw chance.
     /// Marks result with isOfflineFallback = true.
-    func generateFallbackResult(fighter1: Animal, fighter2: Animal) -> BattleResult {
+    func generateFallbackResult(fighter1: Animal, fighter2: Animal, environment: BattleEnvironment = .grassland) -> BattleResult {
         let roll = Double.random(in: 0..<1)
+
+        // Compute environment-adjusted total power for each fighter
+        let stats1 = AnimalStats.generate(for: fighter1, environment: environment)
+        let stats2 = AnimalStats.generate(for: fighter2, environment: environment)
+        let score1 = Double(stats1.speed + stats1.power + stats1.agility + stats1.defense)
+        let score2 = Double(stats2.speed + stats2.power + stats2.agility + stats2.defense)
 
         let winner: String
         let winnerAnimal: Animal
@@ -80,9 +88,11 @@ actor BattleService {
             winner = "draw"
             winnerAnimal = fighter1
             loserAnimal = fighter2
-        } else if fighter1.size == fighter2.size {
-            // Equal size: coin flip for the remaining 90%
-            if roll < 0.55 {
+        } else {
+            // Higher env-adjusted score wins 70% when different, coin flip when tied
+            let totalScore = score1 + score2
+            let p1WinChance = totalScore > 0 ? (score1 / totalScore * 0.6 + 0.2) : 0.5  // 0.2–0.8 range
+            if roll - 0.10 < (p1WinChance * 0.90) {
                 winner = fighter1.id
                 winnerAnimal = fighter1
                 loserAnimal = fighter2
@@ -90,20 +100,6 @@ actor BattleService {
                 winner = fighter2.id
                 winnerAnimal = fighter2
                 loserAnimal = fighter1
-            }
-        } else {
-            // Different sizes: larger wins 70% of the remaining 90%
-            let largerAnimal = fighter1.size > fighter2.size ? fighter1 : fighter2
-            let smallerAnimal = fighter1.size > fighter2.size ? fighter2 : fighter1
-            let largerWinThreshold = 0.10 + 0.90 * 0.70 // 73%
-            if roll < largerWinThreshold {
-                winner = largerAnimal.id
-                winnerAnimal = largerAnimal
-                loserAnimal = smallerAnimal
-            } else {
-                winner = smallerAnimal.id
-                winnerAnimal = smallerAnimal
-                loserAnimal = largerAnimal
             }
         }
 

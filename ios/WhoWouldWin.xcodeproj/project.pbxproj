@@ -29,6 +29,8 @@
 		84E3F6545561E882A9C62C22 /* PixelExplosion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62248CF5F064BAEC86EE95FE /* PixelExplosion.swift */; };
 		90CA5DFD07841367DB32FC06 /* StoreKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30AE66C4770C723948F9A5C4 /* StoreKitManager.swift */; };
 		9905CC30B87E18819B1D1B65 /* BattleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F2061C501F2AEA84BC21963 /* BattleView.swift */; };
+		AA1B2C3D4E5F6A7B8C9D0E04 /* OlympusUnlockSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1B2C3D4E5F6A7B8C9D0E03 /* OlympusUnlockSheet.swift */; };
+		AA1B2C3D4E5F6A7B8C9D0E02 /* BattleShareCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1B2C3D4E5F6A7B8C9D0E01 /* BattleShareCard.swift */; };
 		ACC41267360350B97A1A24BF /* BattleScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A02A9DBFDE39DD5CA1D3C82 /* BattleScene.swift */; };
 		BBD6EA9C1130BE0F2CA495B4 /* BattleViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEAED077984C4F478AE2DAA6 /* BattleViewModel.swift */; };
 		C3415902943C7266751D929C /* BattleService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4FAF6483F088BCCF3209900 /* BattleService.swift */; };
@@ -37,6 +39,7 @@
 		D6B53D1CF86AE200A36FE295 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12EA53AC6AECCFB1B5452AB5 /* SettingsView.swift */; };
 		D85EB650D06A2AF6862941E9 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BDC18C0E579266056B7F5F /* AppConfig.swift */; };
 		E2523475AD472DC6CA4E511F /* BattleResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD8E8B415F4B58E4814DD2B7 /* BattleResult.swift */; };
+		AABB1100CC2233445566CCDD /* BattleEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB1100CC2233445566AABB /* BattleEnvironment.swift */; };
 		EA7138C345A9935AE3882673 /* FantasyUnlockSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 325CCE6C8E0130871634B371 /* FantasyUnlockSheet.swift */; };
 		4C509DC261054C3B9097EF00 /* PrehistoricUnlockSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72DB697BEB884839AB139119 /* PrehistoricUnlockSheet.swift */; };
 		D3609EC5DDF844769B663DD0 /* MythicUnlockSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91384BB94EA4ACAB264E9AF /* MythicUnlockSheet.swift */; };
@@ -89,9 +92,12 @@
 		8DBB096815225FA7E94B3928 /* SpeechService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechService.swift; sourceTree = "<group>"; };
 		9016C111757C577E50A5FCE4 /* PixelText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PixelText.swift; sourceTree = "<group>"; };
 		9F2061C501F2AEA84BC21963 /* BattleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BattleView.swift; sourceTree = "<group>"; };
+		AA1B2C3D4E5F6A7B8C9D0E03 /* OlympusUnlockSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OlympusUnlockSheet.swift; sourceTree = "<group>"; };
+		AA1B2C3D4E5F6A7B8C9D0E01 /* BattleShareCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BattleShareCard.swift; sourceTree = "<group>"; };
 		A3FFFFF498728549FDD8222D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A639D610D59DB4AC55367070 /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
 		AD8E8B415F4B58E4814DD2B7 /* BattleResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BattleResult.swift; sourceTree = "<group>"; };
+		AABB1100CC2233445566AABB /* BattleEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BattleEnvironment.swift; sourceTree = "<group>"; };
 		AEAED077984C4F478AE2DAA6 /* BattleViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BattleViewModel.swift; sourceTree = "<group>"; };
 		BA8AA9999D7727D2E9E33E1C /* PressStart2P-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PressStart2P-Regular.ttf"; sourceTree = "<group>"; };
 		BDE33675DC9B9DD8513EA5BF /* AnimalCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimalCard.swift; sourceTree = "<group>"; };
@@ -125,6 +131,8 @@
 			children = (
 				CB4E7451B2F76F5C039E2A0C /* AnimalPickerView.swift */,
 				9F2061C501F2AEA84BC21963 /* BattleView.swift */,
+				AA1B2C3D4E5F6A7B8C9D0E03 /* OlympusUnlockSheet.swift */,
+				AA1B2C3D4E5F6A7B8C9D0E01 /* BattleShareCard.swift */,
 				325CCE6C8E0130871634B371 /* FantasyUnlockSheet.swift */,
 				72DB697BEB884839AB139119 /* PrehistoricUnlockSheet.swift */,
 				C91384BB94EA4ACAB264E9AF /* MythicUnlockSheet.swift */,
@@ -174,6 +182,7 @@
 			isa = PBXGroup;
 			children = (
 				65B83C1530265841A56DCF66 /* Animal.swift */,
+				AABB1100CC2233445566AABB /* BattleEnvironment.swift */,
 				AD8E8B415F4B58E4814DD2B7 /* BattleResult.swift */,
 			);
 			path = Models;
@@ -428,6 +437,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6D2867F023C324B2E004BE24 /* Animal.swift in Sources */,
+				AABB1100CC2233445566CCDD /* BattleEnvironment.swift in Sources */,
 				0C08355DAF4BF866D5F34278 /* AnimalCard.swift in Sources */,
 				107F5D9ED40C6443E879FAEB /* AnimalImageService.swift in Sources */,
 				CF001CF001CF001CF001CF00 /* ContentFilter.swift in Sources */,
@@ -441,6 +451,8 @@
 				ACC41267360350B97A1A24BF /* BattleScene.swift in Sources */,
 				C3415902943C7266751D929C /* BattleService.swift in Sources */,
 				9905CC30B87E18819B1D1B65 /* BattleView.swift in Sources */,
+				AA1B2C3D4E5F6A7B8C9D0E04 /* OlympusUnlockSheet.swift in Sources */,
+				AA1B2C3D4E5F6A7B8C9D0E02 /* BattleShareCard.swift in Sources */,
 				BBD6EA9C1130BE0F2CA495B4 /* BattleViewModel.swift in Sources */,
 				EA7138C345A9935AE3882673 /* FantasyUnlockSheet.swift in Sources */,
 				4C509DC261054C3B9097EF00 /* PrehistoricUnlockSheet.swift in Sources */,
