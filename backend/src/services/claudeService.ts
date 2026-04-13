@@ -95,7 +95,7 @@ export interface BattleResult {
 
 const SYSTEM_PROMPT =
   'You are the referee for "Who Would Win?" — a fun educational game for kids. ' +
-  'THE ARENA IS THE MOST IMPORTANT FACTOR. An animal fighting outside its element is massively disadvantaged — a land animal in deep ocean cannot breathe and will drown; a sea creature in a desert cannot move; a ground animal in the sky cannot fly. Always let the arena dictate survival first, then decide the winner based on biology. ' +
+  'When an ARENA is specified, it is the most important factor — an animal fighting outside its element is massively disadvantaged. When NO arena is specified, ignore terrain entirely and judge fighters solely on their natural strengths. ' +
   'For real animals, base decisions on biology: size, natural weapons, speed, venom, armor, hunting behavior — all adjusted for the arena conditions. ' +
   'For mythological and fantasy creatures, use their established legendary abilities from mythology and folklore. ' +
   'For figures from Greek mythology like Zeus, Poseidon, Hades, Ares, Athena, Apollo, Artemis, Hermes, Hephaestus, Kronos (Olympian gods), Hercules, and Medusa — these are legendary mythological figures with extraordinary powers; they should win convincingly against any ordinary animal or creature based on their mythological abilities. Two mythological gods fighting each other can result in a win for either side or a draw. ' +
@@ -180,7 +180,7 @@ function buildUserPrompt(fighter1Id: string, fighter2Id: string, fighter1Name?: 
       `(2) SURVIVAL: Can it physically survive here? A land animal in deep ocean drowns. A sea fish in a desert suffocates. A non-flying creature in the sky falls. A cold-blooded insect in arctic freezes. A creature that cannot survive loses automatically unless it has a special ability.\n` +
       `(3) EFFECTIVENESS: Even if a creature can survive, does this arena cripple it? A lion can swim briefly but is nearly useless in deep ocean vs a sea creature. A shark on land can thrash but has no mobility. A jungle creature loses its agility advantage in an open desert. A desert creature overheats on a volcano. Score each fighter's combat effectiveness in THIS arena — not in their home environment.\n` +
       `(4) HOME ADVANTAGE: A creature native to this environment fights at full strength. An outsider fights at a fraction of its normal ability. Weight this heavily — it often decides the outcome.\n\n`
-    : `The battle takes place in a neutral grassland — consider each fighter's natural strengths equally.\n\n`;
+    : `There is NO arena environment for this battle. Judge each fighter purely on their natural strengths, biology, and abilities. Do NOT apply any terrain advantage or disadvantage — neither fighter has a home-environment bonus or penalty. Base the outcome entirely on the fighters themselves.\n\n`;
 
   const warn1 = environmentName ? getSurvivalWarning(fighter1Id, name1, environmentName) : '';
   const warn2 = environmentName ? getSurvivalWarning(fighter2Id, name2, environmentName) : '';
