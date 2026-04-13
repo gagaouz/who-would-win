@@ -18,6 +18,7 @@ final class AnimalPickerViewModel: ObservableObject {
     }
     @Published var selectedCategory: AnimalCategory = .all
     @Published var selectedEnvironment: BattleEnvironment = .grassland
+    @Published var arenaEffectsEnabled: Bool = true
 
     // Custom animal published state
     @Published var customAnimalEmoji: String = "🐾"

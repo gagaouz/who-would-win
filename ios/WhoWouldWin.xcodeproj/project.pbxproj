@@ -30,6 +30,7 @@
 		90CA5DFD07841367DB32FC06 /* StoreKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30AE66C4770C723948F9A5C4 /* StoreKitManager.swift */; };
 		9905CC30B87E18819B1D1B65 /* BattleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F2061C501F2AEA84BC21963 /* BattleView.swift */; };
 		AA1B2C3D4E5F6A7B8C9D0E04 /* OlympusUnlockSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1B2C3D4E5F6A7B8C9D0E03 /* OlympusUnlockSheet.swift */; };
+		BB2C3D4E5F6A7B8C9D0E0F05 /* PreBattleSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB2C3D4E5F6A7B8C9D0E0F04 /* PreBattleSheet.swift */; };
 		AA1B2C3D4E5F6A7B8C9D0E02 /* BattleShareCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1B2C3D4E5F6A7B8C9D0E01 /* BattleShareCard.swift */; };
 		ACC41267360350B97A1A24BF /* BattleScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A02A9DBFDE39DD5CA1D3C82 /* BattleScene.swift */; };
 		BBD6EA9C1130BE0F2CA495B4 /* BattleViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEAED077984C4F478AE2DAA6 /* BattleViewModel.swift */; };
@@ -93,6 +94,7 @@
 		9016C111757C577E50A5FCE4 /* PixelText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PixelText.swift; sourceTree = "<group>"; };
 		9F2061C501F2AEA84BC21963 /* BattleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BattleView.swift; sourceTree = "<group>"; };
 		AA1B2C3D4E5F6A7B8C9D0E03 /* OlympusUnlockSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OlympusUnlockSheet.swift; sourceTree = "<group>"; };
+		BB2C3D4E5F6A7B8C9D0E0F04 /* PreBattleSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreBattleSheet.swift; sourceTree = "<group>"; };
 		AA1B2C3D4E5F6A7B8C9D0E01 /* BattleShareCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BattleShareCard.swift; sourceTree = "<group>"; };
 		A3FFFFF498728549FDD8222D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A639D610D59DB4AC55367070 /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
@@ -132,6 +134,7 @@
 				CB4E7451B2F76F5C039E2A0C /* AnimalPickerView.swift */,
 				9F2061C501F2AEA84BC21963 /* BattleView.swift */,
 				AA1B2C3D4E5F6A7B8C9D0E03 /* OlympusUnlockSheet.swift */,
+				BB2C3D4E5F6A7B8C9D0E0F04 /* PreBattleSheet.swift */,
 				AA1B2C3D4E5F6A7B8C9D0E01 /* BattleShareCard.swift */,
 				325CCE6C8E0130871634B371 /* FantasyUnlockSheet.swift */,
 				72DB697BEB884839AB139119 /* PrehistoricUnlockSheet.swift */,
@@ -452,6 +455,7 @@
 				C3415902943C7266751D929C /* BattleService.swift in Sources */,
 				9905CC30B87E18819B1D1B65 /* BattleView.swift in Sources */,
 				AA1B2C3D4E5F6A7B8C9D0E04 /* OlympusUnlockSheet.swift in Sources */,
+				BB2C3D4E5F6A7B8C9D0E0F05 /* PreBattleSheet.swift in Sources */,
 				AA1B2C3D4E5F6A7B8C9D0E02 /* BattleShareCard.swift in Sources */,
 				BBD6EA9C1130BE0F2CA495B4 /* BattleViewModel.swift in Sources */,
 				EA7138C345A9935AE3882673 /* FantasyUnlockSheet.swift in Sources */,

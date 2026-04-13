@@ -95,7 +95,8 @@ export interface BattleResult {
 
 const SYSTEM_PROMPT =
   'You are the referee for "Who Would Win?" — a fun educational game for kids. ' +
-  'For real animals, base decisions on biology: size, natural weapons, speed, venom, armor, hunting behavior. ' +
+  'THE ARENA IS THE MOST IMPORTANT FACTOR. An animal fighting outside its element is massively disadvantaged — a land animal in deep ocean cannot breathe and will drown; a sea creature in a desert cannot move; a ground animal in the sky cannot fly. Always let the arena dictate survival first, then decide the winner based on biology. ' +
+  'For real animals, base decisions on biology: size, natural weapons, speed, venom, armor, hunting behavior — all adjusted for the arena conditions. ' +
   'For mythological and fantasy creatures, use their established legendary abilities from mythology and folklore. ' +
   'For figures from Greek mythology like Zeus, Poseidon, Hades, Ares, Athena, Apollo, Artemis, Hermes, Hephaestus, Kronos (Olympian gods), Hercules, and Medusa — these are legendary mythological figures with extraordinary powers; they should win convincingly against any ordinary animal or creature based on their mythological abilities. Two mythological gods fighting each other can result in a win for either side or a draw. ' +
   'Keep narration exciting and appropriate for children — like a myth retelling, not a graphic fight. ' +
@@ -112,6 +113,44 @@ const ENVIRONMENT_DESCRIPTIONS: Record<string, string> = {
   Night:     'a dark wilderness at night under a full moon — low visibility, shadows everywhere',
   Storm:     'a raging thunderstorm with lightning strikes, gale-force winds, and torrential rain',
 };
+
+// Animals that are native to each element — used for survival warnings
+const SEA_ANIMALS = new Set([
+  'great_white_shark','orca','giant_squid','piranha','octopus','barracuda',
+  'electric_eel','hammerhead_shark','mantis_shrimp','blue_ringed_octopus',
+  'swordfish','coelacanth','megalodon','kraken','leviathan',
+]);
+const AIR_ANIMALS = new Set([
+  'bald_eagle','peregrine_falcon','harpy_eagle','barn_owl','pterodactyl',
+  'hornet','dragonfly','albatross','pelican','crow','thunderbird','roc','pteranodon',
+]);
+const LAND_ANIMALS = new Set(
+  Object.keys(ANIMAL_NAMES).filter(id => !SEA_ANIMALS.has(id) && !AIR_ANIMALS.has(id))
+);
+
+function getSurvivalWarning(id: string, name: string, environmentName: string): string {
+  const isSea  = SEA_ANIMALS.has(id);
+  const isAir  = AIR_ANIMALS.has(id);
+  const isLand = LAND_ANIMALS.has(id);
+
+  if (environmentName === 'Ocean') {
+    if (isLand) return `⚠️ SURVIVAL WARNING: ${name} is a land animal — it cannot breathe underwater and will drown in minutes. It is at an extreme, near-certain disadvantage in this arena.\n`;
+    if (isAir)  return `⚠️ SURVIVAL WARNING: ${name} is an air animal — it cannot breathe underwater and will drown in minutes. It is at an extreme disadvantage in this arena.\n`;
+  }
+  if (environmentName === 'Sky') {
+    if (isLand && !['dragon','griffin','wyvern','phoenix','thunderbird','roc'].includes(id))
+      return `⚠️ SURVIVAL WARNING: ${name} cannot fly — it will fall and is helpless in this airborne arena.\n`;
+    if (isSea)  return `⚠️ SURVIVAL WARNING: ${name} is an aquatic animal — it cannot fly and is helpless in a sky arena.\n`;
+  }
+  if (environmentName === 'Desert') {
+    if (isSea)  return `⚠️ SURVIVAL WARNING: ${name} is an aquatic animal — it cannot survive out of water in a desert and will quickly die from dehydration.\n`;
+  }
+  if (environmentName === 'Arctic') {
+    if (isSea && !['orca','great_white_shark','hammerhead_shark','megalodon'].includes(id))
+      return `⚠️ NOTE: ${name} is a warm-water sea animal and will struggle in freezing arctic conditions.\n`;
+  }
+  return '';
+}
 
 function buildUserPrompt(fighter1Id: string, fighter2Id: string, fighter1Name?: string, fighter2Name?: string, environmentName?: string): string {
   const name1 = fighter1Name ?? ANIMAL_NAMES[fighter1Id] ?? fighter1Id;
@@ -135,8 +174,16 @@ function buildUserPrompt(fighter1Id: string, fighter2Id: string, fighter1Name?: 
     ? ENVIRONMENT_DESCRIPTIONS[environmentName]
     : null;
   const arenaLine = arenaDesc
-    ? `ARENA: The battle takes place in the ${environmentName} — ${arenaDesc}. IMPORTANT: The entire fight happens here. Neither fighter teleports or moves to their home environment. The outcome must reflect the advantages and disadvantages of this specific arena.\n\n`
-    : `The battle takes place in a neutral environment — consider each fighter's natural strengths equally.\n\n`;
+    ? `ARENA: ${environmentName} — ${arenaDesc}.\n` +
+      `CRITICAL RULES — apply these to EVERY creature including custom, mythical, and fictional ones:\n` +
+      `(1) The entire fight stays here — neither fighter escapes to another environment.\n` +
+      `(2) SURVIVAL: Can it physically survive here? A land animal in deep ocean drowns. A sea fish in a desert suffocates. A non-flying creature in the sky falls. A cold-blooded insect in arctic freezes. A creature that cannot survive loses automatically unless it has a special ability.\n` +
+      `(3) EFFECTIVENESS: Even if a creature can survive, does this arena cripple it? A lion can swim briefly but is nearly useless in deep ocean vs a sea creature. A shark on land can thrash but has no mobility. A jungle creature loses its agility advantage in an open desert. A desert creature overheats on a volcano. Score each fighter's combat effectiveness in THIS arena — not in their home environment.\n` +
+      `(4) HOME ADVANTAGE: A creature native to this environment fights at full strength. An outsider fights at a fraction of its normal ability. Weight this heavily — it often decides the outcome.\n\n`
+    : `The battle takes place in a neutral grassland — consider each fighter's natural strengths equally.\n\n`;
+
+  const warn1 = environmentName ? getSurvivalWarning(fighter1Id, name1, environmentName) : '';
+  const warn2 = environmentName ? getSurvivalWarning(fighter2Id, name2, environmentName) : '';
 
   return (
     `Two fighters are about to battle: ${name1} vs ${name2}.\n\n` +
@@ -144,6 +191,9 @@ function buildUserPrompt(fighter1Id: string, fighter2Id: string, fighter1Name?: 
     customNote1 +
     customNote2 +
     arenaLine +
+    warn1 +
+    warn2 +
+    (warn1 || warn2 ? '\n' : '') +
     `Decide who would win in this arena. Use all relevant knowledge: real biology, ecology, mythology, legendary abilities, or fictional lore — whatever applies to these specific fighters. ` +
     `Respond with ONLY a JSON object:\n\n` +
     `{\n` +
@@ -217,6 +267,28 @@ function validateResult(data: unknown, fighter1Id: string, fighter2Id: string): 
   };
 }
 
+/**
+ * Builds a partial assistant prefill that commits Claude to the arena ruling
+ * before it generates JSON. Claude must continue from this voice — it cannot
+ * contradict what it has already "said".
+ */
+function buildArenaPrefill(
+  fighter1Id: string, fighter2Id: string,
+  name1: string, name2: string,
+  environmentName: string
+): string {
+  const warn1 = getSurvivalWarning(fighter1Id, name1, environmentName)
+    .replace(/⚠️ SURVIVAL WARNING: |⚠️ NOTE: /g, '').trim();
+  const warn2 = getSurvivalWarning(fighter2Id, name2, environmentName)
+    .replace(/⚠️ SURVIVAL WARNING: |⚠️ NOTE: /g, '').trim();
+
+  let prefill = `Arena: ${environmentName}. Survival & effectiveness check:\n`;
+  prefill += warn1 ? `- ${name1}: ${warn1}\n` : `- ${name1}: can function in this arena.\n`;
+  prefill += warn2 ? `- ${name2}: ${warn2}\n` : `- ${name2}: can function in this arena.\n`;
+  prefill += `Based on the arena conditions above, my ruling is:\n{`;
+  return prefill;
+}
+
 async function callClaude(
   client: Anthropic,
   fighter1Id: string,
@@ -226,17 +298,31 @@ async function callClaude(
   fighter2Name?: string,
   environmentName?: string
 ): Promise<BattleResult> {
+  const name1 = fighter1Name ?? ANIMAL_NAMES[fighter1Id] ?? fighter1Id;
+  const name2 = fighter2Name ?? ANIMAL_NAMES[fighter2Id] ?? fighter2Id;
+
+  // Prefill: force Claude to commit to the arena assessment before writing JSON.
+  // Claude cannot contradict its own prior turn, so this locks in the arena ruling.
+  const prefill = environmentName
+    ? buildArenaPrefill(fighter1Id, fighter2Id, name1, name2, environmentName)
+    : null;
+
+  const messages: Anthropic.MessageParam[] = [
+    {
+      role: 'user',
+      content: buildUserPrompt(fighter1Id, fighter2Id, fighter1Name, fighter2Name, environmentName),
+    },
+  ];
+  if (prefill) {
+    messages.push({ role: 'assistant', content: prefill });
+  }
+
   const response = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
     max_tokens: 500,
     top_p: topP,
     system: SYSTEM_PROMPT,
-    messages: [
-      {
-        role: 'user',
-        content: buildUserPrompt(fighter1Id, fighter2Id, fighter1Name, fighter2Name, environmentName),
-      },
-    ],
+    messages,
   });
 
   const block = response.content[0];
@@ -244,7 +330,9 @@ async function callClaude(
     throw new Error('Unexpected response format from Claude');
   }
 
-  const cleaned = stripMarkdownFences(block.text);
+  // The prefill ends with '{' — prepend it so the response is valid JSON.
+  const responseText = prefill ? '{' + block.text : block.text;
+  const cleaned = stripMarkdownFences(responseText);
   const parsed = JSON.parse(cleaned) as unknown;
   return validateResult(parsed, fighter1Id, fighter2Id);
 }

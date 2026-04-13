@@ -7,7 +7,7 @@ actor BattleService {
 
     // MARK: - Network Battle
 
-    func fetchBattleResult(fighter1: Animal, fighter2: Animal, environment: BattleEnvironment = .grassland) async throws -> BattleResult {
+    func fetchBattleResult(fighter1: Animal, fighter2: Animal, environment: BattleEnvironment = .grassland, arenaEffectsEnabled: Bool = true) async throws -> BattleResult {
         guard let url = URL(string: "\(AppConfig.backendBaseURL)/api/battle") else {
             throw BattleError.serverError
         }
@@ -17,14 +17,18 @@ actor BattleService {
         request.timeoutInterval = 15   // fail fast; offline fallback kicks in after 15 s
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        let body: [String: String] = [
+        var body: [String: String] = [
             "fighter1": fighter1.id,
             "fighter2": fighter2.id,
             "fighter1Name": fighter1.name,
             "fighter2Name": fighter2.name,
-            "environment": environment.rawValue,
-            "environmentName": environment.name
+            "environment": environment.rawValue
         ]
+        // Only send environmentName when arena effects are on — omitting it tells
+        // the backend to use neutral logic (no arena advantage/disadvantage).
+        if arenaEffectsEnabled {
+            body["environmentName"] = environment.name
+        }
         request.httpBody = try? JSONEncoder().encode(body)
 
         let data: Data

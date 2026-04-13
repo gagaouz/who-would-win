@@ -39,14 +39,14 @@ struct BattleView: View {
 
     // MARK: - Init
 
-    init(fighter1: Animal, fighter2: Animal, environment: BattleEnvironment = .grassland) {
+    init(fighter1: Animal, fighter2: Animal, environment: BattleEnvironment = .grassland, arenaEffectsEnabled: Bool = true) {
         self.fighter1 = fighter1
         self.fighter2 = fighter2
         _displayEnvironment = State(initialValue: environment)
         let offscreen = UIScreen.main.bounds.width * 1.1
         _fighter1Offset = State(initialValue: -offscreen)
         _fighter2Offset = State(initialValue: offscreen)
-        _viewModel = StateObject(wrappedValue: BattleViewModel(fighter1: fighter1, fighter2: fighter2, environment: environment))
+        _viewModel = StateObject(wrappedValue: BattleViewModel(fighter1: fighter1, fighter2: fighter2, environment: environment, arenaEffectsEnabled: arenaEffectsEnabled))
         _battleScene = State(initialValue: BattleScene(
             fighter1: fighter1,
             fighter2: fighter2,

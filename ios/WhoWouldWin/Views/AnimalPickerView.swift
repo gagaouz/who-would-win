@@ -11,6 +11,7 @@ struct AnimalPickerView: View {
     private var hPad: CGFloat { isIPad ? 28 : 20 }
 
     @State private var navigateToBattle = false
+    @State private var showPreBattleSheet = false
     @State private var fightButtonGlowRadius: CGFloat = 10
     @State private var emptySlotPulse: CGFloat = 1.0
     @State private var showFantasyUnlockSheet = false
@@ -24,8 +25,6 @@ struct AnimalPickerView: View {
     // Cheat code: tap VS ×2 then FIGHTERS ×6
     @State private var olympusCheatStep = 0
     @State private var showOlympusReveal = false
-    @State private var showEnvironmentsPackSheet = false
-    @State private var lockedEnvironmentForAd: BattleEnvironment? = nil
 
     private var standardColumns: [GridItem] {
         Array(repeating: GridItem(.flexible(), spacing: 10), count: isIPad ? 5 : 3)
@@ -334,21 +333,7 @@ struct AnimalPickerView: View {
                             }
                         }) {
                             HStack(spacing: 14) {
-                                Group {
-                                    if let imageURL = viewModel.customAnimalImageURL {
-                                        AsyncImage(url: imageURL) { phase in
-                                            if case .success(let img) = phase {
-                                                img.resizable().scaledToFill()
-                                            } else if case .failure = phase {
-                                                Text(viewModel.customAnimalEmoji).font(.system(size: 28))
-                                            } else {
-                                                ProgressView().tint(.white)
-                                            }
-                                        }
-                                    } else {
-                                        Text(viewModel.customAnimalEmoji).font(.system(size: 28))
-                                    }
-                                }
+                                customAnimalAvatar
                                 .frame(width: 48, height: 48)
                                 .clipShape(Circle())
                                 .background(Circle().fill(Color.white.opacity(0.1)))
@@ -396,23 +381,6 @@ struct AnimalPickerView: View {
                 }
                 .scrollDismissesKeyboard(.immediately)
 
-                // Environment picker — between animal grid and FIGHT button
-                EnvironmentPickerStrip(
-                    selected: $viewModel.selectedEnvironment,
-                    onLockedTap: { env in
-                        HapticsService.shared.tap()
-                        let settings = UserSettings.shared
-                        if env.tier == .earned {
-                            // Earned tier: offer to buy pack or wait
-                            showEnvironmentsPackSheet = true
-                        } else {
-                            // Premium tier: offer watch-ad or buy pack
-                            lockedEnvironmentForAd = env
-                        }
-                    }
-                )
-                .padding(.bottom, 6)
-
                 // FIGHT button — lives below ScrollView so cards are hard-clipped at the boundary
                 VStack(spacing: 0) {
                     LinearGradient(
@@ -425,7 +393,7 @@ struct AnimalPickerView: View {
                     Button(action: {
                         if bothSelected {
                             HapticsService.shared.medium()
-                            navigateToBattle = true
+                            showPreBattleSheet = true
                         }
                     }) {
                         HStack(spacing: 12) {
@@ -480,7 +448,21 @@ struct AnimalPickerView: View {
         .navigationBarHidden(true)
         .navigationDestination(isPresented: $navigateToBattle) {
             if let f1 = viewModel.fighter1, let f2 = viewModel.fighter2 {
-                BattleView(fighter1: f1, fighter2: f2, environment: viewModel.selectedEnvironment)
+                BattleView(fighter1: f1, fighter2: f2, environment: viewModel.selectedEnvironment, arenaEffectsEnabled: viewModel.arenaEffectsEnabled)
+            }
+        }
+        .sheet(isPresented: $showPreBattleSheet) {
+            if let f1 = viewModel.fighter1, let f2 = viewModel.fighter2 {
+                PreBattleSheet(
+                    fighter1: f1,
+                    fighter2: f2,
+                    isPresented: $showPreBattleSheet,
+                    selectedEnvironment: $viewModel.selectedEnvironment,
+                    arenaEffectsEnabled: $viewModel.arenaEffectsEnabled,
+                    onFight: { navigateToBattle = true }
+                )
+                .presentationDetents([.large])
+                .presentationDragIndicator(.hidden)
             }
         }
         .sheet(isPresented: $showFantasyUnlockSheet) {
@@ -494,39 +476,6 @@ struct AnimalPickerView: View {
         }
         .sheet(isPresented: $showOlympusUnlockSheet) {
             OlympusUnlockSheet(isPresented: $showOlympusUnlockSheet)
-        }
-        .sheet(isPresented: $showEnvironmentsPackSheet) {
-            EnvironmentsPackSheet(isPresented: $showEnvironmentsPackSheet)
-        }
-        .alert(
-            "Unlock \(lockedEnvironmentForAd?.name ?? "Arena")",
-            isPresented: Binding(
-                get: { lockedEnvironmentForAd != nil },
-                set: { if !$0 { lockedEnvironmentForAd = nil } }
-            )
-        ) {
-            Button("Watch Ad — Try Once") {
-                guard let env = lockedEnvironmentForAd else { return }
-                AdManager.shared.showRewardedAdForCustomCreature { granted in
-                    if granted {
-                        viewModel.selectedEnvironment = env
-                    }
-                    lockedEnvironmentForAd = nil
-                }
-            }
-            Button("Unlock All Arenas — $2.99") {
-                Task {
-                    if let product = await StoreKitManager.shared.environmentsPackProduct {
-                        _ = await StoreKitManager.shared.purchase(product)
-                    }
-                    lockedEnvironmentForAd = nil
-                }
-            }
-            Button("Cancel", role: .cancel) { lockedEnvironmentForAd = nil }
-        } message: {
-            if let env = lockedEnvironmentForAd {
-                Text("The \(env.name) arena is a premium environment. Watch a short ad for one free battle, or unlock all 9 arenas forever for $2.99.")
-            }
         }
         .onAppear { startPulseAnimations() }
         // Olympus reveal overlay
@@ -673,20 +622,12 @@ struct AnimalPickerView: View {
 
                 Spacer()
 
-                // Environment picker
-                EnvironmentPickerStrip(selected: $viewModel.selectedEnvironment, onLockedTap: { env in
-                    HapticsService.shared.tap()
-                    if env.tier == .earned { showEnvironmentsPackSheet = true }
-                    else { lockedEnvironmentForAd = env }
-                })
-                .padding(.bottom, 6)
-
                 // Fight button
                 VStack(spacing: 0) {
                     LinearGradient(colors: [Color.clear, Theme.bgDeep], startPoint: .top, endPoint: .bottom)
                         .frame(height: 20).allowsHitTesting(false)
                     Button(action: {
-                        if bothSelected { HapticsService.shared.medium(); navigateToBattle = true }
+                        if bothSelected { HapticsService.shared.medium(); showPreBattleSheet = true }
                     }) {
                         HStack(spacing: 12) {
                             if bothSelected {
@@ -829,6 +770,24 @@ struct AnimalPickerView: View {
                 }
             }
             .scrollDismissesKeyboard(.immediately)
+        }
+    }
+
+    // MARK: - Helpers
+
+    @ViewBuilder private var customAnimalAvatar: some View {
+        if let imageURL = viewModel.customAnimalImageURL {
+            AsyncImage(url: imageURL) { phase in
+                if case .success(let img) = phase {
+                    img.resizable().scaledToFill()
+                } else if case .failure = phase {
+                    Text(viewModel.customAnimalEmoji).font(.system(size: 28))
+                } else {
+                    ProgressView().tint(.white)
+                }
+            }
+        } else {
+            Text(viewModel.customAnimalEmoji).font(.system(size: 28))
         }
     }
 
