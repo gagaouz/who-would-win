@@ -8,6 +8,134 @@ const DEITY_IDS = new Set<string>([
   'artemis', 'hermes', 'hephaestus', 'hercules', 'medusa', 'kronos',
 ]);
 
+// ── Power Tier Table ──────────────────────────────────────────────────────────
+// Every built-in fighter gets a tier (1 = tiny bug, 10 = primordial god) and a
+// short profile blurb. These are injected into the prompt so Claude has
+// explicit grounding on weight class and capability rather than guessing from
+// the name alone. A ≥3 tier gap should decide the battle absent a hostile
+// arena. Custom/user fighters have no entry and fall through to Claude's own
+// knowledge.
+interface PowerProfile {
+  tier: number;          // 1–10
+  blurb: string;         // one sentence: weight/size + key capability
+}
+
+const POWER_PROFILES: Record<string, PowerProfile> = {
+  // ─── Land mammals / reptiles / insects (real) ───
+  lion:              { tier: 6, blurb: '~190 kg apex savanna predator with bone-crushing bite and pack coordination' },
+  tiger:             { tier: 6, blurb: '~260 kg solo ambush hunter, largest living cat, immense strength and claws' },
+  grizzly_bear:      { tier: 7, blurb: '~360 kg omnivore with devastating swipes, thick hide, and unmatched bite force for a mammal' },
+  wolf:              { tier: 4, blurb: '~45 kg pack hunter, exceptional endurance and bite but small solo' },
+  elephant:          { tier: 8, blurb: '~5,000 kg colossus — crushes most predators outright with sheer mass and tusks' },
+  rhinoceros:        { tier: 7, blurb: '~2,000 kg armored charger with a lethal horn, near-indestructible hide' },
+  hippopotamus:      { tier: 7, blurb: '~1,500 kg aggressive semi-aquatic with the largest jaws of any land mammal' },
+  gorilla:           { tier: 6, blurb: '~180 kg great ape with immense upper-body strength, ~10× human strength' },
+  cheetah:           { tier: 4, blurb: '~55 kg sprinter (110 km/h) but fragile; built for speed, not fighting' },
+  crocodile:         { tier: 7, blurb: '~500 kg ambush reptile with the strongest bite force on earth and armored scales' },
+  alligator:         { tier: 6, blurb: '~230 kg powerful semi-aquatic ambush predator with crushing bite (2,900 psi) and armored hide; dominant in water, slower on land' },
+  komodo_dragon:     { tier: 5, blurb: '~80 kg venomous reptile with serrated bite and bacteria-laden saliva' },
+  wolverine:         { tier: 4, blurb: '~15 kg mustelid, pound-for-pound among the strongest; kills prey many times its size' },
+  honey_badger:      { tier: 3, blurb: '~12 kg mustelid famous for fearlessness and tough hide but small' },
+  giraffe:           { tier: 5, blurb: '~1,200 kg herbivore with devastating hoof-kick' },
+  zebra:             { tier: 4, blurb: '~300 kg equine, dangerous kick but prey animal' },
+  moose:             { tier: 6, blurb: '~500 kg cervid with massive antlers and crushing hooves' },
+  boar:              { tier: 4, blurb: '~90 kg tusked charger, surprisingly deadly' },
+  tarantula:         { tier: 2, blurb: '~100 g spider with venomous bite, small scale' },
+  scorpion:          { tier: 2, blurb: '~50 g venomous arachnid with pincers and stinger' },
+  cobra:             { tier: 3, blurb: '~6 kg venomous snake, lethal neurotoxin bite' },
+
+  // ─── Sea (real) ───
+  great_white_shark: { tier: 8, blurb: '~1,100 kg apex ocean predator with serrated bite, completely dominant underwater' },
+  orca:              { tier: 9, blurb: '~5,500 kg apex ocean hunter, intelligent pack tactics, kills great whites' },
+  giant_squid:       { tier: 7, blurb: '~275 kg cephalopod with 10 m tentacles and beaked crushing bite' },
+  piranha:           { tier: 2, blurb: '~3 kg small fish; dangerous only in schools' },
+  octopus:           { tier: 3, blurb: '~15 kg intelligent cephalopod, no armor, pure agility' },
+  barracuda:         { tier: 4, blurb: '~50 kg torpedo-fast predator fish with razor teeth' },
+  electric_eel:      { tier: 4, blurb: '~20 kg fish delivering 600 V stunning shocks' },
+  hammerhead_shark:  { tier: 7, blurb: '~500 kg shark with wide head sensor array and powerful bite' },
+  mantis_shrimp:     { tier: 2, blurb: '~0.5 kg crustacean with punches that break aquarium glass (small scale)' },
+  blue_ringed_octopus:{ tier: 3, blurb: '~0.1 kg but carries enough tetrodotoxin to kill 20 humans' },
+  swordfish:         { tier: 5, blurb: '~650 kg billfish with a bladed rostrum, top ocean speeds' },
+  coelacanth:        { tier: 3, blurb: '~90 kg living-fossil fish, mostly defensive' },
+
+  // ─── Air (real) ───
+  bald_eagle:        { tier: 4, blurb: '~6 kg raptor, fierce talons but tiny vs land megafauna' },
+  peregrine_falcon:  { tier: 3, blurb: '~1 kg falcon, fastest diving bird (320 km/h) but small and fragile' },
+  harpy_eagle:       { tier: 4, blurb: '~9 kg largest eagle, crushing talon grip, apex of the canopy — but no match for ground megafauna or mythic beasts' },
+  barn_owl:          { tier: 2, blurb: '~0.5 kg silent nocturnal hunter of rodents' },
+  hornet:            { tier: 1, blurb: '~5 g insect, painful venom; tiny' },
+  dragonfly:         { tier: 1, blurb: '~1 g insect with fast flight, minuscule combat presence' },
+  albatross:         { tier: 2, blurb: '~10 kg seabird with enormous wingspan, not a fighter' },
+  pelican:           { tier: 2, blurb: '~10 kg fish-scooping bird, not built for combat' },
+  crow:              { tier: 2, blurb: '~1 kg clever corvid, opportunist not fighter' },
+
+  // ─── Insects / bugs ───
+  army_ant:          { tier: 1, blurb: '0.01 g individual; devastating only as a swarm' },
+  bombardier_beetle: { tier: 1, blurb: '~1 g beetle with boiling chemical spray; tiny' },
+  bullet_ant:        { tier: 1, blurb: '~0.03 g ant with the most painful insect sting; tiny' },
+  praying_mantis:    { tier: 1, blurb: '~5 g ambush predator with spiked forelegs; tiny' },
+  fire_ant:          { tier: 1, blurb: '~0.005 g individual, dangerous only in swarms' },
+  centipede:         { tier: 1, blurb: '~30 g venomous arthropod; small combat scale' },
+  wasp:              { tier: 1, blurb: '~0.1 g stinging insect; tiny' },
+  stag_beetle:       { tier: 1, blurb: '~5 g beetle with jaw pincers; tiny' },
+
+  // ─── Fantasy / mythic creatures ───
+  dragon:            { tier: 9, blurb: 'massive legendary fire-breathing winged reptile, armored scales — apex fantasy creature' },
+  unicorn:           { tier: 6, blurb: 'magical horned horse with enchanted horn and healing magic; combat-capable but not brutal' },
+  griffin:           { tier: 7, blurb: 'eagle-lion hybrid, lion-sized with eagle wings and talons — apex aerial-land hybrid' },
+  kraken:            { tier: 9, blurb: 'colossal legendary sea monster with ship-crushing tentacles — ocean-domain god' },
+  minotaur:          { tier: 6, blurb: 'bull-headed humanoid warrior with labyrinthine cunning and immense strength' },
+  werewolf:          { tier: 6, blurb: 'lycanthrope with enhanced strength, claws, regeneration — especially dangerous at night' },
+  hydra:             { tier: 9, blurb: 'massive multi-headed serpent with regenerating heads and venomous blood — a mortal-killer of legend' },
+  phoenix:           { tier: 8, blurb: 'immortal fire-bird that resurrects from its own ashes; firestorm breath' },
+  kitsune:           { tier: 6, blurb: 'nine-tailed fox spirit wielding illusion and elemental magic' },
+  basilisk:          { tier: 8, blurb: 'king of serpents, petrifying gaze and lethally venomous bite' },
+  cerberus:          { tier: 8, blurb: 'three-headed guardian hound of the underworld, unkillable by ordinary means' },
+  leviathan:         { tier: 9, blurb: 'biblical sea-serpent the size of a cruise ship, nigh-invincible' },
+
+  // ─── Prehistoric ───
+  t_rex:             { tier: 8, blurb: '~7,000 kg apex Cretaceous predator with bone-shearing bite (6× a lion\'s)' },
+  triceratops:       { tier: 7, blurb: '~8,000 kg horned dinosaur with massive frill and charging horns' },
+  velociraptor:      { tier: 5, blurb: '~15 kg feathered pack hunter with hyperextended sickle claws; agile but small' },
+  spinosaurus:       { tier: 8, blurb: '~7,500 kg semi-aquatic theropod, longer than T-Rex, dominant in water and land' },
+  megalodon:         { tier: 9, blurb: '~50,000 kg prehistoric shark (3× great white), largest predatory fish ever' },
+  woolly_mammoth:    { tier: 7, blurb: '~6,000 kg ice-age proboscidean with huge curved tusks' },
+  saber_tooth_tiger: { tier: 6, blurb: '~400 kg smilodon with 28 cm canines and powerful forelimbs' },
+  ankylosaurus:      { tier: 7, blurb: '~6,000 kg armored tank-dinosaur with a bone-crushing club tail' },
+  pteranodon:        { tier: 5, blurb: '~25 kg pterosaur with a 7 m wingspan, fragile close-range fighter' },
+  pterodactyl:       { tier: 3, blurb: '~5 kg small pterosaur, fragile' },
+  dire_wolf:         { tier: 5, blurb: '~80 kg prehistoric wolf, 25% larger than modern gray wolf' },
+  therizinosaurus:   { tier: 6, blurb: '~5,000 kg herbivorous theropod with 1 m scythe-claws' },
+  dodo:              { tier: 1, blurb: '~15 kg flightless bird famous for being defenseless' },
+
+  // ─── Mythic (upper tier) ───
+  thunderbird:       { tier: 9, blurb: 'giant Native American myth-bird that commands lightning and storms' },
+  manticore:         { tier: 7, blurb: 'lion-bodied beast with human face, bat wings, and venomous scorpion tail' },
+  sphinx:            { tier: 7, blurb: 'winged lion-bodied riddler with human head; magical and strong' },
+  chimera:           { tier: 8, blurb: 'lion-goat-serpent fusion that breathes fire; apex Greek myth beast' },
+  wyvern:            { tier: 7, blurb: 'smaller dragon cousin — two-legged flying reptile with venomous tail' },
+  kirin:             { tier: 7, blurb: 'Eastern celestial chimera-deer with elemental magic and near-invincibility' },
+  roc:               { tier: 8, blurb: 'mountain-sized legendary bird that carries off elephants in its talons' },
+  jackalope:         { tier: 3, blurb: 'folk-hybrid rabbit with antlers; mostly mischievous, not a heavy hitter' },
+  baku:              { tier: 6, blurb: 'Japanese chimera that devours nightmares; bear-sized and magical' },
+  nue:               { tier: 7, blurb: 'yōkai chimera with monkey head, tiger body, snake tail — vengeful storm-summoner' },
+  ammit:             { tier: 7, blurb: 'Egyptian soul-devourer — crocodile head, lion torso, hippo rear — devourer of hearts' },
+  peryton:           { tier: 5, blurb: 'winged stag of ill omen, larger than a horse; competent combatant' },
+};
+
+// Returns an explicit profile line for the fighter, or falls back to a generic
+// string for custom/unknown fighters so the model can still reason.
+function getPowerProfile(id: string, name: string): string {
+  const p = POWER_PROFILES[id];
+  if (p) {
+    return `${name} — TIER ${p.tier}/10 — ${p.blurb}`;
+  }
+  if (DEITY_IDS.has(id)) {
+    return `${name} — TIER 10/10 — Olympian god with divine powers; dominates all mortal creatures`;
+  }
+  return `${name} — tier unknown (custom/user-defined creature) — judge from your own knowledge of this creature\'s real-world or fictional abilities`;
+}
+
 // Mapping of animal IDs to human-readable display names
 const ANIMAL_NAMES: Record<string, string> = {
   lion: 'Lion',
@@ -20,6 +148,7 @@ const ANIMAL_NAMES: Record<string, string> = {
   gorilla: 'Gorilla',
   cheetah: 'Cheetah',
   crocodile: 'Crocodile',
+  alligator: 'Alligator',
   komodo_dragon: 'Komodo Dragon',
   wolverine: 'Wolverine',
   honey_badger: 'Honey Badger',
@@ -95,7 +224,8 @@ export interface BattleResult {
 
 const SYSTEM_PROMPT =
   'You are the referee for "Who Would Win?" — a fun educational game for kids. ' +
-  'When an ARENA is specified, it is the most important factor — an animal fighting outside its element is massively disadvantaged. When NO arena is specified, ignore terrain entirely and judge fighters solely on their natural strengths. ' +
+  'When an ARENA is specified, it is an important factor — an animal fighting outside its element is disadvantaged. When NO arena is specified, ignore terrain entirely and judge fighters solely on their natural strengths. ' +
+  'POWER TIERS: When a FIGHTER PROFILES section is provided, treat those tier numbers and blurbs as ground truth for size, weight, and capability. A 3-tier gap should be decisive — the higher-tier creature wins unless the arena strongly and specifically cripples it (e.g. a land mammal in deep open ocean vs a shark). A 4+ tier gap is almost never overcome by terrain alone. Never let a small raptor or small carnivore defeat a dragon, hydra, kraken, elephant, T-Rex, or Olympian god just because the arena is its home turf. Terrain can swing a close matchup; it cannot rewrite mass and lethality. ' +
   'For real animals, base decisions on biology: size, natural weapons, speed, venom, armor, hunting behavior — all adjusted for the arena conditions. ' +
   'For mythological and fantasy creatures, use their established legendary abilities from mythology and folklore. ' +
   'For figures from Greek mythology like Zeus, Poseidon, Hades, Ares, Athena, Apollo, Artemis, Hermes, Hephaestus, Kronos (Olympian gods), Hercules, and Medusa — these are legendary mythological figures with extraordinary powers; they should win convincingly against any ordinary animal or creature based on their mythological abilities. Two mythological gods fighting each other can result in a win for either side or a draw. ' +
@@ -152,9 +282,15 @@ function getSurvivalWarning(id: string, name: string, environmentName: string): 
   return '';
 }
 
-function buildUserPrompt(fighter1Id: string, fighter2Id: string, fighter1Name?: string, fighter2Name?: string, environmentName?: string): string {
+function buildUserPrompt(fighter1Id: string, fighter2Id: string, fighter1Name?: string, fighter2Name?: string, environmentName?: string, tournamentContext?: string): string {
   const name1 = fighter1Name ?? ANIMAL_NAMES[fighter1Id] ?? fighter1Id;
   const name2 = fighter2Name ?? ANIMAL_NAMES[fighter2Id] ?? fighter2Id;
+
+  // Tournament context: prepended as a single line so the narrator builds drama
+  // appropriate to the round (early rounds scrappier, finals epic). Optional.
+  const tournamentLine = tournamentContext
+    ? `TOURNAMENT CONTEXT: ${tournamentContext}\n\n`
+    : '';
 
   const isDeity1 = DEITY_IDS.has(fighter1Id);
   const isDeity2 = DEITY_IDS.has(fighter2Id);
@@ -185,8 +321,36 @@ function buildUserPrompt(fighter1Id: string, fighter2Id: string, fighter1Name?: 
   const warn1 = environmentName ? getSurvivalWarning(fighter1Id, name1, environmentName) : '';
   const warn2 = environmentName ? getSurvivalWarning(fighter2Id, name2, environmentName) : '';
 
+  // Tier profiles — ground truth on size and capability. Also compute the tier
+  // gap and emit an explicit guidance line when the gap is wide, so the model
+  // doesn't hand a kraken-vs-hawk matchup to the hawk just because it's in the sky.
+  const profile1 = getPowerProfile(fighter1Id, name1);
+  const profile2 = getPowerProfile(fighter2Id, name2);
+  const tier1 = POWER_PROFILES[fighter1Id]?.tier ?? (DEITY_IDS.has(fighter1Id) ? 10 : null);
+  const tier2 = POWER_PROFILES[fighter2Id]?.tier ?? (DEITY_IDS.has(fighter2Id) ? 10 : null);
+
+  let tierGapLine = '';
+  if (tier1 !== null && tier2 !== null) {
+    const gap = Math.abs(tier1 - tier2);
+    if (gap >= 4) {
+      const stronger = tier1 > tier2 ? name1 : name2;
+      tierGapLine = `TIER GAP: ${gap} tiers. ${stronger} is dramatically more powerful and should win decisively regardless of arena — terrain cannot overcome this gap.\n\n`;
+    } else if (gap === 3) {
+      const stronger = tier1 > tier2 ? name1 : name2;
+      tierGapLine = `TIER GAP: 3 tiers. ${stronger} has a decisive size/power advantage and should win unless the arena is catastrophically lethal to it specifically.\n\n`;
+    }
+  }
+
+  const profilesBlock =
+    `FIGHTER PROFILES (use these as ground truth for size, weight, and combat capability — do NOT upgrade a small creature past its tier):\n` +
+    `  • ${profile1}\n` +
+    `  • ${profile2}\n\n` +
+    tierGapLine;
+
   return (
+    tournamentLine +
     `Two fighters are about to battle: ${name1} vs ${name2}.\n\n` +
+    profilesBlock +
     deityNote +
     customNote1 +
     customNote2 +
@@ -296,7 +460,8 @@ async function callClaude(
   topP: number,
   fighter1Name?: string,
   fighter2Name?: string,
-  environmentName?: string
+  environmentName?: string,
+  tournamentContext?: string
 ): Promise<BattleResult> {
   const name1 = fighter1Name ?? ANIMAL_NAMES[fighter1Id] ?? fighter1Id;
   const name2 = fighter2Name ?? ANIMAL_NAMES[fighter2Id] ?? fighter2Id;
@@ -310,7 +475,7 @@ async function callClaude(
   const messages: Anthropic.MessageParam[] = [
     {
       role: 'user',
-      content: buildUserPrompt(fighter1Id, fighter2Id, fighter1Name, fighter2Name, environmentName),
+      content: buildUserPrompt(fighter1Id, fighter2Id, fighter1Name, fighter2Name, environmentName, tournamentContext),
     },
   ];
   if (prefill) {
@@ -337,12 +502,119 @@ async function callClaude(
   return validateResult(parsed, fighter1Id, fighter2Id);
 }
 
-export async function getBattleResult(
+// ── Quick Battle ─────────────────────────────────────────────────────────────
+// Lightweight prompt: just picks a winner using the same tier/profile logic.
+// Uses much fewer tokens than a full battle — ideal for tournament quick mode.
+
+function buildQuickUserPrompt(
+  fighter1Id: string, fighter2Id: string,
+  fighter1Name?: string, fighter2Name?: string,
+  environmentName?: string
+): string {
+  const name1 = fighter1Name ?? ANIMAL_NAMES[fighter1Id] ?? fighter1Id;
+  const name2 = fighter2Name ?? ANIMAL_NAMES[fighter2Id] ?? fighter2Id;
+
+  const profile1 = getPowerProfile(fighter1Id, name1);
+  const profile2 = getPowerProfile(fighter2Id, name2);
+  const tier1 = POWER_PROFILES[fighter1Id]?.tier ?? (DEITY_IDS.has(fighter1Id) ? 10 : null);
+  const tier2 = POWER_PROFILES[fighter2Id]?.tier ?? (DEITY_IDS.has(fighter2Id) ? 10 : null);
+
+  let tierGapLine = '';
+  if (tier1 !== null && tier2 !== null) {
+    const gap = Math.abs(tier1 - tier2);
+    if (gap >= 3) {
+      const stronger = tier1 > tier2 ? name1 : name2;
+      tierGapLine = `TIER GAP: ${gap} — ${stronger} is dramatically more powerful and should win.\n\n`;
+    }
+  }
+
+  const customNote1 = !DEITY_IDS.has(fighter1Id) && !(fighter1Id in ANIMAL_NAMES) && fighter1Name
+    ? `Note: "${fighter1Name}" is a user-defined fighter — judge from your own knowledge of it.\n`
+    : '';
+  const customNote2 = !DEITY_IDS.has(fighter2Id) && !(fighter2Id in ANIMAL_NAMES) && fighter2Name
+    ? `Note: "${fighter2Name}" is a user-defined fighter — judge from your own knowledge of it.\n`
+    : '';
+
+  const arenaDesc = environmentName && ENVIRONMENT_DESCRIPTIONS[environmentName]
+    ? `ARENA: ${environmentName} — ${ENVIRONMENT_DESCRIPTIONS[environmentName]}.\n`
+    : '';
+  const warn1 = environmentName ? getSurvivalWarning(fighter1Id, name1, environmentName) : '';
+  const warn2 = environmentName ? getSurvivalWarning(fighter2Id, name2, environmentName) : '';
+
+  const survivalBlock = (warn1 || warn2)
+    ? `SURVIVAL RULES — these override everything else:\n` +
+      (warn1 ? `❌ ${warn1}` : '') +
+      (warn2 ? `❌ ${warn2}` : '') +
+      `A creature that cannot survive the arena LOSES automatically.\n\n`
+    : '';
+
+  return (
+    `Quick battle decision: ${name1} vs ${name2}.\n\n` +
+    `FIGHTER PROFILES (ground truth — do not override with guesses):\n  • ${profile1}\n  • ${profile2}\n\n` +
+    tierGapLine +
+    customNote1 +
+    customNote2 +
+    arenaDesc +
+    survivalBlock +
+    `Pick the accurate winner based on biology, power tier, and arena. Respond with ONLY valid JSON — no markdown:\n` +
+    `{"winner":"<${fighter1Id} or ${fighter2Id}>","narration":"<one punchy sentence about the outcome>","funFact":"<one cool fact about the winner>","winnerHealthPercent":<10-90>,"loserHealthPercent":<0-40>}`
+  );
+}
+
+export async function getQuickBattleResult(
   fighter1Id: string,
   fighter2Id: string,
   fighter1Name?: string,
   fighter2Name?: string,
   environmentName?: string
+): Promise<BattleResult> {
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+  const response = await client.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 220,
+    top_p: 0.5,
+    system:
+      'You are the referee for "Who Would Win?" — a fun educational game for kids. ' +
+      'POWER TIERS: Treat tier numbers as absolute ground truth for size and power. A 3+ tier gap is decisive — the higher-tier creature wins. A 4+ tier gap is NEVER overcome by arena alone. ' +
+      'ARENA SURVIVAL: A land animal in deep ocean drowns and loses. A sea animal in a desert suffocates and loses. A non-flying creature in the sky falls and loses. These are automatic losses — do NOT let the out-of-element creature win. ' +
+      'ARENA EFFECTIVENESS: Even if a creature survives, apply a heavy penalty if it is outside its home environment. A lion in the ocean fights at ~10% effectiveness vs a shark at 100%. Weight this heavily. ' +
+      'Base results on real biology, size, and weapons — not random upsets. A bug cannot beat a crocodile. A beetle cannot beat an alligator. Small creatures lose to large ones unless venom, environment, or a massive tier gap says otherwise. ' +
+      'Never return a draw — always pick a winner. ' +
+      'Always respond with ONLY valid JSON. No markdown, no explanation outside the JSON.',
+    messages: [{ role: 'user', content: buildQuickUserPrompt(fighter1Id, fighter2Id, fighter1Name, fighter2Name, environmentName) }],
+  });
+
+  const block = response.content[0];
+  if (!block || block.type !== 'text') {
+    throw new Error('Unexpected response format from Claude (quick)');
+  }
+
+  const cleaned = stripMarkdownFences(block.text);
+  const parsed = JSON.parse(cleaned) as unknown;
+  const result = validateResult(parsed, fighter1Id, fighter2Id);
+
+  // Quick battles must always have a winner — break any draw randomly.
+  if (result.winner === 'draw') {
+    const winnerId = Math.random() < 0.5 ? fighter1Id : fighter2Id;
+    return {
+      ...result,
+      winner: winnerId,
+      winnerHealthPercent: Math.max(result.winnerHealthPercent, 55),
+      loserHealthPercent: Math.min(result.loserHealthPercent, 35),
+    };
+  }
+
+  return result;
+}
+
+export async function getBattleResult(
+  fighter1Id: string,
+  fighter2Id: string,
+  fighter1Name?: string,
+  fighter2Name?: string,
+  environmentName?: string,
+  tournamentContext?: string
 ): Promise<BattleResult> {
   const client = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY,
@@ -350,14 +622,14 @@ export async function getBattleResult(
 
   // First attempt with top_p equivalent to temperature 0.8 (~0.95)
   try {
-    return await callClaude(client, fighter1Id, fighter2Id, 0.95, fighter1Name, fighter2Name, environmentName);
+    return await callClaude(client, fighter1Id, fighter2Id, 0.95, fighter1Name, fighter2Name, environmentName, tournamentContext);
   } catch (firstError) {
     console.warn('First attempt failed, retrying with lower top_p:', firstError);
   }
 
   // Retry once with a more deterministic top_p equivalent to temperature 0.3 (~0.7)
   try {
-    return await callClaude(client, fighter1Id, fighter2Id, 0.7, fighter1Name, fighter2Name, environmentName);
+    return await callClaude(client, fighter1Id, fighter2Id, 0.7, fighter1Name, fighter2Name, environmentName, tournamentContext);
   } catch (secondError) {
     console.error('Second attempt also failed:', secondError);
     throw new Error('Unable to generate a valid battle result after two attempts.');
