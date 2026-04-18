@@ -1,6 +1,6 @@
 import Foundation
 
-struct Animal: Identifiable, Hashable, Sendable {
+struct Animal: Identifiable, Hashable, Sendable, Codable {
     let id: String          // snake_case, e.g. "lion"
     let name: String        // Display name, e.g. "Lion"
     let emoji: String       // Single emoji
@@ -30,7 +30,7 @@ struct Animal: Identifiable, Hashable, Sendable {
     }
 }
 
-enum AnimalCategory: String, CaseIterable, Sendable {
+enum AnimalCategory: String, CaseIterable, Sendable, Codable {
     case all        = "ALL"
     case land       = "LAND"
     case sea        = "SEA"

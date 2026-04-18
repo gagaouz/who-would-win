@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Security: HTTPS only. Cleartext traffic is blocked to all domains.
+  If debug-time localhost testing becomes necessary, add a <domain-config cleartextTrafficPermitted="true"> block
+  scoped to localhost ONLY, in a debug-specific resource override — never in main.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

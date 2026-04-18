@@ -1,0 +1,16 @@
+ios/
+web/
+skills/
+.agents/
+.claude/
+.git/
+*.py
+*.md
+.DS_Store
+netlify.toml
+skills-lock.json
+backend/node_modules/
+backend/dist/
+backend/.env
+backend/.env.*
+*.log

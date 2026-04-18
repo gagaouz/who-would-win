@@ -20,7 +20,7 @@ struct OlympusUnlockSheet: View {
 
     var body: some View {
         ZStack {
-            Theme.mainBg.ignoresSafeArea()
+            ScreenBackground(style: .unlock)
             SpreadStarField().ignoresSafeArea().allowsHitTesting(false)
 
             VStack(spacing: 0) {
@@ -29,10 +29,10 @@ struct OlympusUnlockSheet: View {
                     Spacer()
                     Button { isPresented = false } label: {
                         ZStack {
-                            Circle().fill(Theme.cardFill).frame(width: 32, height: 32)
+                            Circle().fill(.ultraThinMaterial).frame(width: 32, height: 32)
                             Image(systemName: "xmark")
                                 .font(.system(size: 13, weight: .bold))
-                                .foregroundColor(Theme.textSecondary)
+                                .foregroundColor(.white.opacity(0.7))
                         }
                     }
                     .buttonStyle(.plain)
@@ -45,12 +45,12 @@ struct OlympusUnlockSheet: View {
 
                         // Header
                         VStack(spacing: 8) {
-                            Text("⚡️")
-                                .font(.system(size: 72))
+                            Text("🏛️⚡️🏛️")
+                                .font(.system(size: 52))
                                 .shadow(color: gold.opacity(0.9), radius: 30, x: 0, y: 0)
 
                             Text("MOUNT OLYMPUS")
-                                .font(.system(size: 24, weight: .black, design: .rounded))
+                                .font(Theme.bungee(28))
                                 .foregroundStyle(LinearGradient(
                                     colors: [gold, Color(hex: "#FFF8DC"), gold],
                                     startPoint: .leading, endPoint: .trailing
@@ -59,11 +59,11 @@ struct OlympusUnlockSheet: View {
 
                             Text("The ultimate pack — 12 Greek gods and legends")
                                 .font(.system(size: 14, weight: .medium, design: .rounded))
-                                .foregroundColor(Theme.textSecondary)
+                                .foregroundColor(.white.opacity(0.7))
                                 .multilineTextAlignment(.center)
 
                             Text("YOU UNLOCKED ALL PACKS!")
-                                .font(.system(size: 11, weight: .black, design: .rounded))
+                                .font(Theme.bungee(11))
                                 .foregroundColor(gold)
                                 .tracking(1.5)
                                 .padding(.horizontal, 14)
@@ -88,21 +88,21 @@ struct OlympusUnlockSheet: View {
                             HStack {
                                 VStack(alignment: .leading, spacing: 3) {
                                     Text("FREE PATH")
-                                        .font(.system(size: 11, weight: .black, design: .rounded))
-                                        .foregroundColor(Theme.textTertiary)
+                                        .font(Theme.bungee(11))
+                                        .foregroundColor(.white.opacity(0.35))
                                         .tracking(1.5)
                                     Text("Play 10,000 Battles")
-                                        .font(.system(size: 17, weight: .black, design: .rounded))
-                                        .foregroundColor(Theme.textPrimary)
+                                        .font(Theme.bungee(17))
+                                        .foregroundColor(.white)
                                 }
                                 Spacer()
                                 VStack(alignment: .trailing, spacing: 3) {
                                     Text("\(settings.totalBattleCount)")
-                                        .font(.system(size: 22, weight: .black, design: .rounded))
+                                        .font(Theme.bungee(22))
                                         .foregroundColor(gold)
                                     Text("/ 10,000")
-                                        .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                        .foregroundColor(Theme.textTertiary)
+                                        .font(Theme.bungee(13))
+                                        .foregroundColor(.white.opacity(0.35))
                                 }
                             }
 
@@ -130,25 +130,35 @@ struct OlympusUnlockSheet: View {
 
                             if battlesRemaining > 0 {
                                 Text("\(battlesRemaining.formatted()) more battle\(battlesRemaining == 1 ? "" : "s") to go!")
-                                    .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                    .foregroundColor(Theme.textTertiary)
+                                    .font(Theme.bungee(13))
+                                    .foregroundColor(.white.opacity(0.35))
                             }
                         }
                         .padding(16)
                         .background(
                             RoundedRectangle(cornerRadius: 18)
-                                .fill(Theme.cardFill)
+                                .fill(.ultraThinMaterial)
                                 .overlay(RoundedRectangle(cornerRadius: 18)
-                                    .stroke(gold.opacity(0.25), lineWidth: 1.5))
+                                    .stroke(Color.white.opacity(0.2), lineWidth: 1.5))
+                        )
+
+                        // Coin unlock path
+                        CoinUnlockSection(
+                            cost: CoinStore.shared.olympusCost,
+                            accentColor: gold,
+                            onUnlock: {
+                                settings.olympusUnlocked = true
+                                isPresented = false
+                            }
                         )
 
                         HStack(spacing: 12) {
-                            Rectangle().fill(Theme.divider).frame(height: 1)
+                            Rectangle().fill(Color.white.opacity(0.2)).frame(height: 1)
                             Text("OR UNLOCK NOW")
-                                .font(.system(size: 11, weight: .black, design: .rounded))
-                                .foregroundColor(Theme.textTertiary)
+                                .font(Theme.bungee(11))
+                                .foregroundColor(.white.opacity(0.35))
                                 .tracking(1.5)
-                            Rectangle().fill(Theme.divider).frame(height: 1)
+                            Rectangle().fill(Color.white.opacity(0.2)).frame(height: 1)
                         }
 
                         // Purchase button
@@ -172,44 +182,28 @@ struct OlympusUnlockSheet: View {
                                 Text("⚡️").font(.system(size: 20))
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("Unlock Mount Olympus Pack")
-                                        .font(.system(size: 16, weight: .black, design: .rounded))
-                                        .foregroundColor(.white)
+                                        .font(Theme.bungee(14))
                                     Text(store.olympusPackProduct.map { $0.displayPrice } ?? "$19.99")
-                                        .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                        .foregroundColor(.white.opacity(0.7))
+                                        .font(Theme.bungee(12))
                                 }
                                 Spacer()
                                 if store.isPurchasing {
-                                    ProgressView().tint(.white)
+                                    ProgressView().tint(Color(hex: "#1A237E"))
                                 } else {
                                     Image(systemName: "chevron.right")
                                         .font(.system(size: 13, weight: .bold))
-                                        .foregroundColor(.white.opacity(0.5))
                                 }
                             }
-                            .padding(.horizontal, 20).padding(.vertical, 16)
-                            .background(
-                                RoundedRectangle(cornerRadius: 18)
-                                    .fill(LinearGradient(
-                                        colors: [purple, Color(hex: "#2A0A5E"), deep],
-                                        startPoint: .topLeading, endPoint: .bottomTrailing
-                                    ))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 18)
-                                            .stroke(gold.opacity(0.6), lineWidth: 1.5)
-                                    )
-                            )
-                            .shadow(color: gold.opacity(0.3), radius: 14, x: 0, y: 5)
                         }
-                        .buttonStyle(PressableButtonStyle())
+                        .buttonStyle(MegaButtonStyle(color: .gold, height: 58, cornerRadius: 18, fontSize: 17))
                         .disabled(store.isPurchasing)
 
                         Button {
                             Task { await store.restorePurchases() }
                         } label: {
                             Text("Restore Purchases")
-                                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                .foregroundColor(Theme.textTertiary)
+                                .font(Theme.bungee(13))
+                                .foregroundColor(.white.opacity(0.35))
                                 .underline()
                         }
                         .buttonStyle(.plain)
@@ -251,8 +245,8 @@ struct OlympusUnlockSheet: View {
                             .foregroundColor(gold.opacity(0.9))
                     }
                     Text(pair.1)
-                        .font(.system(size: 8, weight: .bold, design: .rounded))
-                        .foregroundColor(Theme.textTertiary)
+                        .font(Theme.bungee(8))
+                        .foregroundColor(.white.opacity(0.35))
                         .lineLimit(1).minimumScaleFactor(0.7)
                 }
                 .frame(maxWidth: .infinity)

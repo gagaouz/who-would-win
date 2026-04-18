@@ -19,11 +19,12 @@ final class StoreKitManager: ObservableObject {
     static let mythicPackID      = "com.whowouldin.mythicpack"
     static let olympusPackID      = "com.whowouldin.olympuspack"
     static let environmentsPackID = "com.whowouldin.environmentspack"
+    static let coins1000ID        = "com.whowouldin.coins1000"   // consumable: 1000 coins for $1.99
 
     static let allProductIDs: Set<String> = [
         removeAdsID, premiumMonthlyID, premiumAnnualID,
         fantasyPackID, prehistoricPackID, mythicPackID, olympusPackID,
-        environmentsPackID
+        environmentsPackID, coins1000ID
     ]
 
     // MARK: - Published state
@@ -41,6 +42,7 @@ final class StoreKitManager: ObservableObject {
     var mythicPackProduct:      Product? { products.first { $0.id == Self.mythicPackID } }
     var olympusPackProduct:       Product? { products.first { $0.id == Self.olympusPackID } }
     var environmentsPackProduct:  Product? { products.first { $0.id == Self.environmentsPackID } }
+    var coins1000Product:         Product? { products.first { $0.id == Self.coins1000ID } }
 
     // MARK: - Init
 
@@ -57,14 +59,27 @@ final class StoreKitManager: ObservableObject {
 
     // MARK: - Load products
 
+    /// Load products from App Store Connect. Retries on transient failures so
+    /// the reviewer / user doesn't end up with an empty Buy button because of
+    /// a flaky first network call.
     func loadProducts() async {
-        do {
-            let fetched = try await Product.products(for: Self.allProductIDs)
-            products = fetched.sorted { $0.price < $1.price }
-        } catch {
-            // Products not configured in ASC yet — that's fine for now
-            products = []
+        // Up to 4 attempts with growing backoff (≈ 0.5s, 1.5s, 4.5s)
+        for attempt in 0..<4 {
+            do {
+                let fetched = try await Product.products(for: Self.allProductIDs)
+                if !fetched.isEmpty {
+                    products = fetched.sorted { $0.price < $1.price }
+                    return
+                }
+            } catch {
+                // swallow and retry
+            }
+            if attempt < 3 {
+                try? await Task.sleep(nanoseconds: UInt64(0.5 * pow(3.0, Double(attempt)) * 1_000_000_000))
+            }
         }
+        // Give up silently — UI handles missing product by showing fallback text
+        // and triggering another reload when the user actually taps Buy.
     }
 
     // MARK: - Purchase
@@ -147,6 +162,9 @@ final class StoreKitManager: ObservableObject {
             UserSettings.shared.olympusUnlocked = true
         case Self.environmentsPackID:
             UserSettings.shared.environmentsUnlocked = true
+        case Self.coins1000ID:
+            // Consumable — award coins immediately.
+            await CoinStore.shared.awardCoinPurchase(1000)
         default:
             break
         }

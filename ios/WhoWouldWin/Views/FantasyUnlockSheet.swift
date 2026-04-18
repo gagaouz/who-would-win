@@ -16,7 +16,7 @@ struct FantasyUnlockSheet: View {
     var body: some View {
         ZStack {
             // Background
-            Theme.mainBg.ignoresSafeArea()
+            ScreenBackground(style: .unlock)
 
             // Subtle star shimmer
             SpreadStarField().ignoresSafeArea().allowsHitTesting(false)
@@ -28,11 +28,11 @@ struct FantasyUnlockSheet: View {
                     Button { isPresented = false } label: {
                         ZStack {
                             Circle()
-                                .fill(Theme.cardFill)
+                                .fill(.ultraThinMaterial)
                                 .frame(width: 32, height: 32)
                             Image(systemName: "xmark")
                                 .font(.system(size: 13, weight: .bold))
-                                .foregroundColor(Theme.textSecondary)
+                                .foregroundColor(.white.opacity(0.7))
                         }
                     }
                     .buttonStyle(.plain)
@@ -50,7 +50,7 @@ struct FantasyUnlockSheet: View {
                                 .shadow(color: Theme.fantasyAccent.opacity(0.7), radius: 20, x: 0, y: 0)
 
                             Text("FANTASY REALM")
-                                .font(.system(size: 24, weight: .black, design: .rounded))
+                                .font(Theme.bungee(24))
                                 .foregroundStyle(
                                     LinearGradient(
                                         colors: [Theme.fantasyAccent, Color(hex: "#E040FB"), Color(hex: "#C77DFF")],
@@ -60,8 +60,8 @@ struct FantasyUnlockSheet: View {
                                 .shadow(color: Theme.fantasyAccent.opacity(0.5), radius: 8, x: 0, y: 0)
 
                             Text("12 legendary creatures await")
-                                .font(.system(size: 14, weight: .medium, design: .rounded))
-                                .foregroundColor(Theme.textSecondary)
+                                .font(Theme.bungee(14))
+                                .foregroundColor(.white.opacity(0.7))
                         }
 
                         // Creature preview grid
@@ -78,21 +78,21 @@ struct FantasyUnlockSheet: View {
                             HStack {
                                 VStack(alignment: .leading, spacing: 3) {
                                     Text("FREE PATH")
-                                        .font(.system(size: 11, weight: .black, design: .rounded))
-                                        .foregroundColor(Theme.textTertiary)
+                                        .font(Theme.bungee(11))
+                                        .foregroundColor(.white.opacity(0.35))
                                         .tracking(1.5)
                                     Text("Play 250 Battles")
-                                        .font(.system(size: 17, weight: .black, design: .rounded))
-                                        .foregroundColor(Theme.textPrimary)
+                                        .font(Theme.bungee(17))
+                                        .foregroundColor(.white)
                                 }
                                 Spacer()
                                 VStack(alignment: .trailing, spacing: 3) {
                                     Text("\(settings.totalBattleCount)")
-                                        .font(.system(size: 22, weight: .black, design: .rounded))
+                                        .font(Theme.bungee(22))
                                         .foregroundColor(Theme.fantasyAccent)
                                     Text("/ 250")
-                                        .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                        .foregroundColor(Theme.textTertiary)
+                                        .font(Theme.bungee(13))
+                                        .foregroundColor(.white.opacity(0.35))
                                 }
                             }
 
@@ -128,28 +128,38 @@ struct FantasyUnlockSheet: View {
 
                             if battlesRemaining > 0 {
                                 Text("\(battlesRemaining) more battle\(battlesRemaining == 1 ? "" : "s") to go!")
-                                    .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                    .foregroundColor(Theme.textTertiary)
+                                    .font(Theme.bungee(13))
+                                    .foregroundColor(.white.opacity(0.35))
                             }
                         }
                         .padding(16)
                         .background(
                             RoundedRectangle(cornerRadius: 18)
-                                .fill(Theme.cardFill)
+                                .fill(.ultraThinMaterial)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 18)
-                                        .stroke(Theme.fantasyAccent.opacity(0.25), lineWidth: 1.5)
+                                        .stroke(Color.white.opacity(0.2), lineWidth: 1.5)
                                 )
+                        )
+
+                        // Coin unlock path
+                        CoinUnlockSection(
+                            cost: CoinStore.shared.fantasyCost,
+                            accentColor: Theme.fantasyAccent,
+                            onUnlock: {
+                                settings.fantasyUnlocked = true
+                                isPresented = false
+                            }
                         )
 
                         // OR divider
                         HStack(spacing: 12) {
-                            Rectangle().fill(Theme.divider).frame(height: 1)
+                            Rectangle().fill(Color.white.opacity(0.2)).frame(height: 1)
                             Text("OR UNLOCK NOW")
-                                .font(.system(size: 11, weight: .black, design: .rounded))
-                                .foregroundColor(Theme.textTertiary)
+                                .font(Theme.bungee(11))
+                                .foregroundColor(.white.opacity(0.35))
                                 .tracking(1.5)
-                            Rectangle().fill(Theme.divider).frame(height: 1)
+                            Rectangle().fill(Color.white.opacity(0.2)).frame(height: 1)
                         }
 
                         // Paid CTA — Fantasy Pack
@@ -173,35 +183,16 @@ struct FantasyUnlockSheet: View {
                                     .font(.system(size: 20))
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("Unlock Fantasy Pack")
-                                        .font(.system(size: 16, weight: .black, design: .rounded))
-                                        .foregroundColor(.white)
+                                        .font(Theme.bungee(14))
                                     Text(store.fantasyPackProduct.map { $0.displayPrice } ?? "$1.99")
-                                        .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                        .foregroundColor(.white.opacity(0.7))
+                                        .font(Theme.bungee(12))
                                 }
                                 Spacer()
                                 Image(systemName: "chevron.right")
                                     .font(.system(size: 13, weight: .bold))
-                                    .foregroundColor(.white.opacity(0.5))
                             }
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 16)
-                            .background(
-                                RoundedRectangle(cornerRadius: 18)
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [Color(hex: "#7B2FBE"), Color(hex: "#4A1080")],
-                                            startPoint: .leading, endPoint: .trailing
-                                        )
-                                    )
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 18)
-                                            .stroke(Theme.fantasyAccent.opacity(0.5), lineWidth: 1.5)
-                                    )
-                            )
-                            .shadow(color: Theme.fantasyAccent.opacity(0.35), radius: 12, x: 0, y: 5)
                         }
-                        .buttonStyle(PressableButtonStyle())
+                        .buttonStyle(MegaButtonStyle(color: .purple, height: 58, cornerRadius: 18, fontSize: 17))
                         .disabled(store.isPurchasing)
 
                         // Also included in Premium note
@@ -211,16 +202,17 @@ struct FantasyUnlockSheet: View {
                                 .foregroundColor(Theme.gold)
                             Text("Also included in Premium subscription")
                                 .font(.system(size: 12, weight: .medium, design: .rounded))
-                                .foregroundColor(Theme.textTertiary)
+                                .foregroundColor(.white.opacity(0.35))
                         }
 
                         // Restore
                         Button {
                             Task { await store.restorePurchases() }
                         } label: {
-                            Text("Restore Purchases")
-                                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                .foregroundColor(Theme.textTertiary)
+                            Text("RESTORE PURCHASES")
+                                .font(Theme.bungee(11))
+                                .tracking(1)
+                                .foregroundColor(.white.opacity(0.35))
                                 .underline()
                         }
                         .buttonStyle(.plain)
@@ -267,8 +259,8 @@ struct FantasyUnlockSheet: View {
                             .foregroundColor(.white.opacity(0.9))
                     }
                     Text(name)
-                        .font(.system(size: 8, weight: .bold, design: .rounded))
-                        .foregroundColor(Theme.textTertiary)
+                        .font(Theme.bungee(8))
+                        .foregroundColor(.white.opacity(0.35))
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
                 }
@@ -286,7 +278,7 @@ struct FantasyUnlockedBanner: View {
     var body: some View {
         VStack(spacing: 10) {
             Text("✨ FANTASY UNLOCKED! ✨")
-                .font(.system(size: 18, weight: .black, design: .rounded))
+                .font(Theme.bungee(18))
                 .foregroundStyle(
                     LinearGradient(
                         colors: [Theme.fantasyAccent, Color(hex: "#E040FB"), Theme.gold],
@@ -297,7 +289,7 @@ struct FantasyUnlockedBanner: View {
 
             Text("You've unlocked 12 legendary creatures!")
                 .font(.system(size: 13, weight: .semibold, design: .rounded))
-                .foregroundColor(Theme.textSecondary)
+                .foregroundColor(.white.opacity(0.7))
                 .multilineTextAlignment(.center)
         }
         .padding(.horizontal, 24)
@@ -321,6 +313,50 @@ struct FantasyUnlockedBanner: View {
     }
 }
 
+// MARK: - Tournament milestone banner (shown in BattleView at 30 battles)
+
+struct TournamentUnlockedBanner: View {
+    @Binding var isShowing: Bool
+
+    var body: some View {
+        VStack(spacing: 10) {
+            Text("🏆 TOURNAMENT MODE UNLOCKED! 🏆")
+                .font(Theme.bungee(16))
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [Theme.gold, Color(hex: "#FFF59D"), Theme.gold],
+                        startPoint: .leading, endPoint: .trailing
+                    )
+                )
+                .shadow(color: Theme.gold.opacity(0.6), radius: 8, x: 0, y: 0)
+                .multilineTextAlignment(.center)
+
+            Text("Build 4, 8, or 16-fighter brackets!")
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .foregroundColor(.white.opacity(0.7))
+                .multilineTextAlignment(.center)
+        }
+        .padding(.horizontal, 24)
+        .padding(.vertical, 18)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(Theme.gold.opacity(0.5), lineWidth: 1.5)
+                )
+        )
+        .shadow(color: Theme.gold.opacity(0.3), radius: 16, x: 0, y: 6)
+        .padding(.horizontal, 28)
+        .transition(.move(edge: .top).combined(with: .opacity))
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.5) {
+                withAnimation(.easeOut(duration: 0.4)) { isShowing = false }
+            }
+        }
+    }
+}
+
 // MARK: - Olympus milestone banner (shown in BattleView at 10,000 battles)
 
 struct OlympusUnlockedBanner: View {
@@ -332,7 +368,7 @@ struct OlympusUnlockedBanner: View {
     var body: some View {
         VStack(spacing: 8) {
             Text("⚡ MOUNT OLYMPUS UNLOCKED! ⚡")
-                .font(.system(size: 16, weight: .black, design: .rounded))
+                .font(Theme.bungee(16))
                 .foregroundStyle(
                     LinearGradient(
                         colors: [gold, Color(hex: "#FFF8DC"), gold],

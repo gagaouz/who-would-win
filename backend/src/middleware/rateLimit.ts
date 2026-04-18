@@ -15,7 +15,7 @@
 import { Request, Response, NextFunction } from 'express';
 
 const WINDOW_MS      = 60 * 60 * 1000; // 1 hour
-const MAX_REQUESTS   = 30;              // per IP per window
+const MAX_REQUESTS   = 50;              // per IP per window
 
 interface Entry { count: number; resetAt: number; }
 const store = new Map<string, Entry>();

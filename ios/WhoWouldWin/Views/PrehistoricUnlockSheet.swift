@@ -18,7 +18,7 @@ struct PrehistoricUnlockSheet: View {
 
     var body: some View {
         ZStack {
-            Theme.mainBg.ignoresSafeArea()
+            ScreenBackground(style: .unlock)
             SpreadStarField().ignoresSafeArea().allowsHitTesting(false)
 
             VStack(spacing: 0) {
@@ -27,10 +27,10 @@ struct PrehistoricUnlockSheet: View {
                     Spacer()
                     Button { isPresented = false } label: {
                         ZStack {
-                            Circle().fill(Theme.cardFill).frame(width: 32, height: 32)
+                            Circle().fill(.ultraThinMaterial).frame(width: 32, height: 32)
                             Image(systemName: "xmark")
                                 .font(.system(size: 13, weight: .bold))
-                                .foregroundColor(Theme.textSecondary)
+                                .foregroundColor(.white.opacity(0.7))
                         }
                     }
                     .buttonStyle(.plain)
@@ -48,7 +48,7 @@ struct PrehistoricUnlockSheet: View {
                                 .shadow(color: accent.opacity(0.7), radius: 20, x: 0, y: 0)
 
                             Text("PREHISTORIC PACK")
-                                .font(.system(size: 22, weight: .black, design: .rounded))
+                                .font(Theme.bungee(22))
                                 .foregroundStyle(LinearGradient(
                                     colors: [accent, Theme.yellow],
                                     startPoint: .leading, endPoint: .trailing
@@ -56,8 +56,8 @@ struct PrehistoricUnlockSheet: View {
                                 .shadow(color: accent.opacity(0.5), radius: 8, x: 0, y: 0)
 
                             Text("12 ancient titans of the prehistoric world")
-                                .font(.system(size: 14, weight: .medium, design: .rounded))
-                                .foregroundColor(Theme.textSecondary)
+                                .font(Theme.bungee(14))
+                                .foregroundColor(.white.opacity(0.7))
                                 .multilineTextAlignment(.center)
                         }
 
@@ -74,21 +74,21 @@ struct PrehistoricUnlockSheet: View {
                             HStack {
                                 VStack(alignment: .leading, spacing: 3) {
                                     Text("FREE PATH")
-                                        .font(.system(size: 11, weight: .black, design: .rounded))
-                                        .foregroundColor(Theme.textTertiary)
+                                        .font(Theme.bungee(11))
+                                        .foregroundColor(.white.opacity(0.35))
                                         .tracking(1.5)
                                     Text("Play 100 Battles")
-                                        .font(.system(size: 17, weight: .black, design: .rounded))
-                                        .foregroundColor(Theme.textPrimary)
+                                        .font(Theme.bungee(17))
+                                        .foregroundColor(.white)
                                 }
                                 Spacer()
                                 VStack(alignment: .trailing, spacing: 3) {
                                     Text("\(settings.totalBattleCount)")
-                                        .font(.system(size: 22, weight: .black, design: .rounded))
+                                        .font(Theme.bungee(22))
                                         .foregroundColor(accent)
                                     Text("/ 100")
-                                        .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                        .foregroundColor(Theme.textTertiary)
+                                        .font(Theme.bungee(13))
+                                        .foregroundColor(.white.opacity(0.35))
                                 }
                             }
 
@@ -116,25 +116,35 @@ struct PrehistoricUnlockSheet: View {
 
                             if battlesRemaining > 0 {
                                 Text("\(battlesRemaining) more battle\(battlesRemaining == 1 ? "" : "s") to go!")
-                                    .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                    .foregroundColor(Theme.textTertiary)
+                                    .font(Theme.bungee(13))
+                                    .foregroundColor(.white.opacity(0.35))
                             }
                         }
                         .padding(16)
                         .background(
                             RoundedRectangle(cornerRadius: 18)
-                                .fill(Theme.cardFill)
+                                .fill(.ultraThinMaterial)
                                 .overlay(RoundedRectangle(cornerRadius: 18)
-                                    .stroke(accent.opacity(0.25), lineWidth: 1.5))
+                                    .stroke(Color.white.opacity(0.2), lineWidth: 1.5))
+                        )
+
+                        // Coin unlock path
+                        CoinUnlockSection(
+                            cost: CoinStore.shared.prehistoricCost,
+                            accentColor: accent,
+                            onUnlock: {
+                                settings.prehistoricUnlocked = true
+                                isPresented = false
+                            }
                         )
 
                         HStack(spacing: 12) {
-                            Rectangle().fill(Theme.divider).frame(height: 1)
+                            Rectangle().fill(Color.white.opacity(0.2)).frame(height: 1)
                             Text("OR UNLOCK NOW")
-                                .font(.system(size: 11, weight: .black, design: .rounded))
-                                .foregroundColor(Theme.textTertiary)
+                                .font(Theme.bungee(11))
+                                .foregroundColor(.white.opacity(0.35))
                                 .tracking(1.5)
-                            Rectangle().fill(Theme.divider).frame(height: 1)
+                            Rectangle().fill(Color.white.opacity(0.2)).frame(height: 1)
                         }
 
                         // Purchase button
@@ -158,11 +168,9 @@ struct PrehistoricUnlockSheet: View {
                                 Text("🦖").font(.system(size: 20))
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("Unlock Prehistoric Pack")
-                                        .font(.system(size: 16, weight: .black, design: .rounded))
-                                        .foregroundColor(.white)
+                                        .font(Theme.bungee(14))
                                     Text(store.prehistoricPackProduct.map { $0.displayPrice } ?? "$1.99")
-                                        .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                        .foregroundColor(.white.opacity(0.7))
+                                        .font(Theme.bungee(12))
                                 }
                                 Spacer()
                                 if store.isPurchasing {
@@ -170,25 +178,17 @@ struct PrehistoricUnlockSheet: View {
                                 } else {
                                     Image(systemName: "chevron.right")
                                         .font(.system(size: 13, weight: .bold))
-                                        .foregroundColor(.white.opacity(0.5))
                                 }
                             }
-                            .padding(.horizontal, 20).padding(.vertical, 16)
-                            .background(
-                                RoundedRectangle(cornerRadius: 18)
-                                    .fill(LinearGradient(colors: [accent, deep], startPoint: .leading, endPoint: .trailing))
-                                    .overlay(RoundedRectangle(cornerRadius: 18).stroke(accent.opacity(0.5), lineWidth: 1.5))
-                            )
-                            .shadow(color: accent.opacity(0.35), radius: 12, x: 0, y: 5)
                         }
-                        .buttonStyle(PressableButtonStyle())
+                        .buttonStyle(MegaButtonStyle(color: .orange, height: 58, cornerRadius: 18, fontSize: 17))
                         .disabled(store.isPurchasing)
 
                         HStack(spacing: 6) {
                             Image(systemName: "crown.fill").font(.system(size: 11)).foregroundColor(Theme.gold)
                             Text("Also included in Premium subscription")
                                 .font(.system(size: 12, weight: .medium, design: .rounded))
-                                .foregroundColor(Theme.textTertiary)
+                                .foregroundColor(.white.opacity(0.35))
                         }
 
                         Button {
@@ -196,7 +196,7 @@ struct PrehistoricUnlockSheet: View {
                         } label: {
                             Text("Restore Purchases")
                                 .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                .foregroundColor(Theme.textTertiary)
+                                .foregroundColor(.white.opacity(0.35))
                                 .underline()
                         }
                         .buttonStyle(.plain)
@@ -238,8 +238,8 @@ struct PrehistoricUnlockSheet: View {
                             .foregroundColor(.white.opacity(0.9))
                     }
                     Text(pair.1)
-                        .font(.system(size: 8, weight: .bold, design: .rounded))
-                        .foregroundColor(Theme.textTertiary)
+                        .font(Theme.bungee(8))
+                        .foregroundColor(.white.opacity(0.35))
                         .lineLimit(1).minimumScaleFactor(0.7)
                 }
                 .frame(maxWidth: .infinity)

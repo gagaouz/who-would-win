@@ -34,15 +34,14 @@ struct Animals {
     static let hammerhead_shark = Animal(id: "hammerhead_shark", name: "Hammerhead Shark", emoji: "🦈", category: .sea, pixelColor: "#708090", size: 4)
     static let mantis_shrimp = Animal(id: "mantis_shrimp", name: "Mantis Shrimp", emoji: "🦐", category: .sea, pixelColor: "#FF1493", size: 1)
     static let blue_ringed_octopus = Animal(id: "blue_ringed_octopus", name: "Blue-ringed Octopus", emoji: "🐙", category: .sea, pixelColor: "#0000FF", size: 1)
-    static let swordfish = Animal(id: "swordfish", name: "Swordfish", emoji: "🐡", category: .sea, pixelColor: "#4169E1", size: 3)
+    static let swordfish = Animal(id: "swordfish", name: "Swordfish", emoji: "🐟", category: .sea, pixelColor: "#4169E1", size: 3)
     static let coelacanth = Animal(id: "coelacanth", name: "Coelacanth", emoji: "🐟", category: .sea, pixelColor: "#2E4057", size: 3)
 
-    // MARK: - Air (10)
+    // MARK: - Air (9)
     static let bald_eagle = Animal(id: "bald_eagle", name: "Bald Eagle", emoji: "🦅", category: .air, pixelColor: "#8B4513", size: 3)
     static let peregrine_falcon = Animal(id: "peregrine_falcon", name: "Peregrine Falcon", emoji: "🦅", category: .air, pixelColor: "#708090", size: 2)
     static let harpy_eagle = Animal(id: "harpy_eagle", name: "Harpy Eagle", emoji: "🦅", category: .air, pixelColor: "#696969", size: 3)
     static let barn_owl = Animal(id: "barn_owl", name: "Barn Owl", emoji: "🦉", category: .air, pixelColor: "#F5DEB3", size: 2)
-    static let pterodactyl = Animal(id: "pterodactyl", name: "Pterodactyl", emoji: "🦕", category: .air, pixelColor: "#8FBC8F", size: 4)
     static let hornet = Animal(id: "hornet", name: "Hornet", emoji: "🐝", category: .air, pixelColor: "#FFD700", size: 1)
     static let dragonfly = Animal(id: "dragonfly", name: "Dragonfly", emoji: "🪲", category: .air, pixelColor: "#00CED1", size: 1)
     static let albatross = Animal(id: "albatross", name: "Albatross", emoji: "🐦", category: .air, pixelColor: "#FFFAF0", size: 3)
@@ -51,7 +50,7 @@ struct Animals {
 
     // MARK: - Insect/Small (8)
     static let army_ant = Animal(id: "army_ant", name: "Army Ant", emoji: "🐜", category: .insect, pixelColor: "#8B4513", size: 1)
-    static let bombardier_beetle = Animal(id: "bombardier_beetle", name: "Bombardier Beetle", emoji: "🪲", category: .insect, pixelColor: "#228B22", size: 1)
+    static let bombardier_beetle = Animal(id: "bombardier_beetle", name: "Bombardier Beetle", emoji: "🐞", category: .insect, pixelColor: "#228B22", size: 1)
     static let bullet_ant = Animal(id: "bullet_ant", name: "Bullet Ant", emoji: "🐜", category: .insect, pixelColor: "#2F1B0E", size: 1)
     static let praying_mantis = Animal(id: "praying_mantis", name: "Praying Mantis", emoji: "🦗", category: .insect, pixelColor: "#228B22", size: 1)
     static let fire_ant = Animal(id: "fire_ant", name: "Fire Ant", emoji: "🐜", category: .insect, pixelColor: "#FF2400", size: 1)
@@ -73,7 +72,7 @@ struct Animals {
     static let cerberus   = Animal(id: "cerberus",   name: "Cerberus",    emoji: "🐕‍🦺", category: .fantasy, pixelColor: "#2F2F2F", size: 4)
     static let leviathan  = Animal(id: "leviathan",  name: "Leviathan",   emoji: "🐋", category: .fantasy, pixelColor: "#003049", size: 5)
 
-    // MARK: - Prehistoric Pack (12) — real extinct creatures, public domain
+    // MARK: - Prehistoric Pack (13) — real extinct creatures, public domain
     static let t_rex             = Animal(id: "t_rex",             name: "T-Rex",             emoji: "🦖", category: .prehistoric, pixelColor: "#7B5E3A", size: 5)
     static let triceratops       = Animal(id: "triceratops",       name: "Triceratops",       emoji: "🦏", category: .prehistoric, pixelColor: "#6B8E5E", size: 5)
     static let velociraptor      = Animal(id: "velociraptor",      name: "Velociraptor",      emoji: "🦎", category: .prehistoric, pixelColor: "#8A9A5B", size: 3)
@@ -83,6 +82,7 @@ struct Animals {
     static let saber_tooth_tiger = Animal(id: "saber_tooth_tiger", name: "Saber-Tooth Tiger", emoji: "🐯", category: .prehistoric, pixelColor: "#D4A017", size: 4)
     static let ankylosaurus      = Animal(id: "ankylosaurus",      name: "Ankylosaurus",      emoji: "🐢", category: .prehistoric, pixelColor: "#556B2F", size: 4)
     static let pteranodon        = Animal(id: "pteranodon",        name: "Pteranodon",        emoji: "🦇", category: .prehistoric, pixelColor: "#8FBC8F", size: 4)
+    static let pterodactyl       = Animal(id: "pterodactyl",       name: "Pterodactyl",       emoji: "🦕", category: .prehistoric, pixelColor: "#8FBC8F", size: 4)
     static let dire_wolf         = Animal(id: "dire_wolf",         name: "Dire Wolf",         emoji: "🐺", category: .prehistoric, pixelColor: "#5A5A7A", size: 3)
     static let therizinosaurus   = Animal(id: "therizinosaurus",   name: "Therizinosaurus",   emoji: "🦕", category: .prehistoric, pixelColor: "#8B7355", size: 5)
     static let dodo              = Animal(id: "dodo",              name: "Dodo",              emoji: "🦤", category: .prehistoric, pixelColor: "#C8A87A", size: 1)
@@ -126,7 +126,7 @@ struct Animals {
         electric_eel, hammerhead_shark, mantis_shrimp, blue_ringed_octopus,
         swordfish, coelacanth,
         // Air
-        bald_eagle, peregrine_falcon, harpy_eagle, barn_owl, pterodactyl,
+        bald_eagle, peregrine_falcon, harpy_eagle, barn_owl,
         hornet, dragonfly, albatross, pelican, crow,
         // Insect/Small
         army_ant, bombardier_beetle, bullet_ant, praying_mantis, fire_ant,
@@ -136,7 +136,8 @@ struct Animals {
         hydra, phoenix, kitsune, basilisk, cerberus, leviathan,
         // Prehistoric
         t_rex, triceratops, velociraptor, spinosaurus, megalodon, woolly_mammoth,
-        saber_tooth_tiger, ankylosaurus, pteranodon, dire_wolf, therizinosaurus, dodo,
+        saber_tooth_tiger, ankylosaurus, pteranodon, pterodactyl, dire_wolf,
+        therizinosaurus, dodo,
         // Mythic
         thunderbird, manticore, sphinx, chimera, wyvern, kirin,
         roc, jackalope, baku, nue, ammit, peryton,

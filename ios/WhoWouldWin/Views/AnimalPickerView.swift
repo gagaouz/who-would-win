@@ -18,9 +18,11 @@ struct AnimalPickerView: View {
     @State private var showPrehistoricUnlockSheet = false
     @State private var showMythicUnlockSheet = false
     @State private var showOlympusUnlockSheet = false
-    @State private var showAdGateFailedAlert = false
     @FocusState private var searchFocused: Bool
     @StateObject private var speech = SpeechService()
+    @ObservedObject private var coinStore = CoinStore.shared
+    @AppStorage("custom.hintShown") private var customHintShownCount: Int = 0
+    @AppStorage("custom.freeUsed") private var customFreeUsed: Bool = false
 
     // Cheat code: tap VS ×2 then FIGHTERS ×6
     @State private var olympusCheatStep = 0
@@ -38,7 +40,7 @@ struct AnimalPickerView: View {
     var body: some View {
         GeometryReader { geo in
         ZStack {
-            Theme.mainBg.ignoresSafeArea()
+            ScreenBackground(style: .home).ignoresSafeArea()
             SpreadStarField().ignoresSafeArea().allowsHitTesting(false)
 
             if isIPad && geo.size.width > geo.size.height {
@@ -52,10 +54,11 @@ struct AnimalPickerView: View {
                         HStack(spacing: 5) {
                             Image(systemName: "chevron.left")
                                 .font(.system(size: 14, weight: .bold))
-                            Text("Back")
-                                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                            Text("BACK")
+                                .font(Theme.bungee(12))
+                                .tracking(1)
                         }
-                        .foregroundColor(Theme.textSecondary)
+                        .foregroundColor(.white.opacity(0.6))
                     }
                     .buttonStyle(.plain)
 
@@ -63,23 +66,18 @@ struct AnimalPickerView: View {
 
                     VStack(spacing: 2) {
                         Text("PICK YOUR")
-                            .font(.system(size: 11, weight: .bold, design: .rounded))
-                            .foregroundColor(Theme.textTertiary)
+                            .font(Theme.bungee(11))
+                            .foregroundColor(.white.opacity(0.35))
                             .tracking(2)
                         Text("FIGHTERS")
-                            .font(.system(size: 18, weight: .black, design: .rounded))
-                            .foregroundColor(cheat.olympusUnlocked ? Theme.olympusAccent : Theme.textPrimary)
+                            .font(Theme.bungee(18))
+                            .foregroundColor(cheat.olympusUnlocked ? Theme.olympusAccent : .white)
                             .onTapGesture { handleCheatFightersTap() }
                     }
 
                     Spacer()
 
-                    // Balance spacer
-                    HStack(spacing: 5) {
-                        Image(systemName: "chevron.left").font(.system(size: 14, weight: .bold))
-                        Text("Back").font(.system(size: 15, weight: .semibold, design: .rounded))
-                    }
-                    .foregroundColor(.clear)
+                    CoinBadge(size: .compact)
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 12)
@@ -127,11 +125,11 @@ struct AnimalPickerView: View {
                 HStack(spacing: 10) {
                     Image(systemName: "magnifyingglass")
                         .font(.system(size: 15, weight: .medium))
-                        .foregroundColor(Theme.textTertiary)
+                        .foregroundColor(.white.opacity(0.35))
 
-                    TextField("Search or add any animal...", text: $viewModel.searchText)
+                    TextField("Search or create ANY creature...", text: $viewModel.searchText)
                         .font(.system(size: 15, weight: .regular, design: .rounded))
-                        .foregroundColor(Theme.textPrimary)
+                        .foregroundColor(.white)
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)
                         .tint(Theme.orange)
@@ -143,7 +141,7 @@ struct AnimalPickerView: View {
                         Button(action: { viewModel.searchText = "" }) {
                             Image(systemName: "xmark.circle.fill")
                                 .font(.system(size: 15))
-                                .foregroundColor(Theme.textTertiary)
+                                .foregroundColor(.white.opacity(0.35))
                         }
                         .buttonStyle(.plain)
                     }
@@ -175,9 +173,9 @@ struct AnimalPickerView: View {
                 .padding(.vertical, 12)
                 .background(
                     RoundedRectangle(cornerRadius: 16)
-                        .fill(Theme.cardFill)
+                        .fill(Color.white.opacity(0.12))
                         .overlay(RoundedRectangle(cornerRadius: 16)
-                            .stroke(Theme.cardBorder, lineWidth: 1))
+                            .stroke(Color.white.opacity(0.2), lineWidth: 1))
                 )
                 .padding(.horizontal, 20)
                 .padding(.bottom, 12)
@@ -187,7 +185,25 @@ struct AnimalPickerView: View {
                     // Stop immediately if the transcript already matches a built-in animal.
                     let trimmed = newValue.trimmingCharacters(in: .whitespaces)
                     let matched = Animals.all.contains { $0.name.localizedCaseInsensitiveContains(trimmed) }
-                    if matched { speech.stopListening() }
+                    if matched {
+                        speech.stopListening()
+                        AchievementTracker.shared.trackVoiceSearch()
+                    }
+                }
+
+                // Custom creature hint (shown first 3 visits)
+                if customHintShownCount < 3 && viewModel.searchText.isEmpty {
+                    HStack(spacing: 6) {
+                        Text("✨")
+                            .font(.system(size: 13))
+                        Text("Try typing 'Penguin', 'Hamster', or even your pet's name!")
+                            .font(.system(size: 12, weight: .medium, design: .rounded))
+                            .foregroundColor(Theme.yellow.opacity(0.9))
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 6)
+                    .onAppear { customHintShownCount += 1 }
+                    .transition(.opacity)
                 }
 
                 // Category pills
@@ -235,6 +251,16 @@ struct AnimalPickerView: View {
                 // Animal grid — hard-clipped by ScrollView bounds (no partial cards at bottom)
                 ScrollView {
                     LazyVGrid(columns: standardColumns, spacing: 10) {
+                        // Random pick — first cell in the grid when browsing (not searching)
+                        if viewModel.searchText.isEmpty {
+                            RandomPickCard {
+                                if let pick = randomUnlockedPick() {
+                                    withAnimation(.spring(response: 0.28, dampingFraction: 0.62)) {
+                                        viewModel.select(pick)
+                                    }
+                                }
+                            }
+                        }
                         ForEach(viewModel.filteredAnimals) { animal in
                             let isSelected = viewModel.fighter1?.id == animal.id || viewModel.fighter2?.id == animal.id
                             let isAnimalLocked: Bool = {
@@ -279,6 +305,23 @@ struct AnimalPickerView: View {
                     .padding(.top, 4)
                     .padding(.bottom, 16)
 
+                    // Empty state when search yields no results
+                    if viewModel.filteredAnimals.isEmpty && !viewModel.searchText.isEmpty {
+                        VStack(spacing: 12) {
+                            Text("🔍")
+                                .font(.system(size: 40))
+                            Text("No animals found")
+                                .font(.system(size: 16, weight: .bold, design: .rounded))
+                                .foregroundColor(.white)
+                            Text("Try a different search, or just type any creature name to battle with it!")
+                                .font(.system(size: 13, weight: .medium, design: .rounded))
+                                .foregroundColor(.white.opacity(0.6))
+                                .multilineTextAlignment(.center)
+                        }
+                        .padding(24)
+                        .frame(maxWidth: .infinity)
+                    }
+
                     // Locked animal prompt
                     if let locked = viewModel.lockedAnimal {
                         HStack(spacing: 14) {
@@ -288,10 +331,10 @@ struct AnimalPickerView: View {
                             VStack(alignment: .leading, spacing: 3) {
                                 Text(locked.name)
                                     .font(.system(size: 16, weight: .bold, design: .rounded))
-                                    .foregroundColor(Theme.textPrimary)
+                                    .foregroundColor(.white)
                                 Text("Unlock this pack to use \(locked.name)")
                                     .font(.system(size: 12, weight: .medium, design: .rounded))
-                                    .foregroundColor(Theme.textSecondary)
+                                    .foregroundColor(.white.opacity(0.6))
                             }
                             Spacer()
                             Button("Unlock") {
@@ -313,7 +356,7 @@ struct AnimalPickerView: View {
                         .padding(16)
                         .background(
                             RoundedRectangle(cornerRadius: 18)
-                                .fill(Theme.cardFill)
+                                .fill(Color.white.opacity(0.12))
                                 .overlay(RoundedRectangle(cornerRadius: 18)
                                     .stroke(Theme.purple.opacity(0.4), lineWidth: 1.5))
                         )
@@ -321,17 +364,11 @@ struct AnimalPickerView: View {
                         .padding(.bottom, 24)
                     }
 
-                    // Custom animal row
+                    // Custom animal row — free first use, then dual path: coins OR ad
                     if let custom = viewModel.customAnimal {
-                        Button(action: {
-                            AdManager.shared.showRewardedAdForCustomCreature { granted in
-                                if granted {
-                                    viewModel.selectAnimal(custom)
-                                } else {
-                                    showAdGateFailedAlert = true
-                                }
-                            }
-                        }) {
+                        let canAfford = coinStore.canAfford(CoinStore.shared.customCreatureCost)
+                        VStack(spacing: 8) {
+                            // Header
                             HStack(spacing: 14) {
                                 customAnimalAvatar
                                 .frame(width: 48, height: 48)
@@ -341,107 +378,186 @@ struct AnimalPickerView: View {
                                 VStack(alignment: .leading, spacing: 3) {
                                     Text("Battle as \"\(custom.name)\"")
                                         .font(.system(size: 16, weight: .bold, design: .rounded))
-                                        .foregroundColor(Theme.textPrimary)
-                                    Text("Custom animal")
+                                        .foregroundColor(.white)
+                                    Text(customFreeUsed ? "Choose how to unlock" : "First custom battle FREE!")
                                         .font(.system(size: 12, weight: .medium, design: .rounded))
-                                        .foregroundColor(Theme.textSecondary)
+                                        .foregroundColor(customFreeUsed ? .white.opacity(0.5) : Theme.neonGrn)
                                 }
                                 Spacer()
-                                Image(systemName: "plus.circle.fill")
-                                    .font(.system(size: 22))
-                                    .foregroundColor(Theme.yellow)
                             }
-                            .padding(16)
-                            .background(
-                                RoundedRectangle(cornerRadius: 18)
-                                    .fill(Theme.cardFill)
-                                    .overlay(RoundedRectangle(cornerRadius: 18)
-                                        .stroke(Theme.yellow.opacity(0.35), lineWidth: 1.5))
-                            )
-                            .padding(.horizontal, 20)
-                            .padding(.bottom, 24)
-                        }
-                        .buttonStyle(PressableButtonStyle())
-                        .alert("Ad Not Available", isPresented: $showAdGateFailedAlert) {
-                            Button("Remove Ads — $4.99") {
-                                Task {
-                                    if let product = await StoreKitManager.shared.removeAdsProduct {
-                                        _ = await StoreKitManager.shared.purchase(product)
+
+                            if !customFreeUsed {
+                                // Free first use — big green button
+                                Button {
+                                    customFreeUsed = true
+                                    viewModel.selectAnimal(custom)
+                                } label: {
+                                    HStack(spacing: 6) {
+                                        Text("✨").font(.system(size: 14))
+                                        Text("BATTLE FREE")
+                                            .font(.system(size: 15, weight: .black, design: .rounded))
                                     }
+                                    .foregroundColor(.white)
+                                    .frame(maxWidth: .infinity).frame(height: 42)
+                                    .background(RoundedRectangle(cornerRadius: 14)
+                                        .fill(LinearGradient(colors: [Theme.neonGrn, Theme.teal], startPoint: .leading, endPoint: .trailing)))
+                                    .shadow(color: Theme.neonGrn.opacity(0.4), radius: 8, y: 3)
+                                }
+                                .buttonStyle(PressableButtonStyle())
+                            } else {
+                                // Two buttons side by side
+                                HStack(spacing: 10) {
+                                    // Coin path
+                                    Button {
+                                        if coinStore.spend(CoinStore.shared.customCreatureCost) {
+                                            viewModel.selectAnimal(custom)
+                                        }
+                                    } label: {
+                                        HStack(spacing: 4) {
+                                            GoldCoin(size: 12)
+                                            Text("\(CoinStore.shared.customCreatureCost)")
+                                                .font(.system(size: 13, weight: .bold, design: .rounded))
+                                        }
+                                        .foregroundColor(canAfford ? Theme.gold : .white.opacity(0.35))
+                                        .frame(maxWidth: .infinity).frame(height: 38)
+                                        .background(RoundedRectangle(cornerRadius: 12)
+                                            .fill(canAfford ? Theme.gold.opacity(0.15) : Color.white.opacity(0.06))
+                                            .overlay(RoundedRectangle(cornerRadius: 12)
+                                                .stroke(canAfford ? Theme.gold.opacity(0.4) : Color.white.opacity(0.1), lineWidth: 1)))
+                                    }
+                                    .buttonStyle(PressableButtonStyle())
+                                    .disabled(!canAfford)
+                                    .opacity(canAfford ? 1.0 : 0.5)
+
+                                    // Ad path
+                                    Button {
+                                        AdManager.shared.showRewardedAdForCustomCreature { granted in
+                                            if granted { viewModel.selectAnimal(custom) }
+                                        }
+                                    } label: {
+                                        HStack(spacing: 4) {
+                                            Image(systemName: "play.rectangle.fill").font(.system(size: 12))
+                                            Text("Free Ad")
+                                                .font(.system(size: 13, weight: .bold, design: .rounded))
+                                        }
+                                        .foregroundColor(Theme.neonGrn)
+                                        .frame(maxWidth: .infinity).frame(height: 38)
+                                        .background(RoundedRectangle(cornerRadius: 12)
+                                            .fill(Theme.neonGrn.opacity(0.12))
+                                            .overlay(RoundedRectangle(cornerRadius: 12)
+                                                .stroke(Theme.neonGrn.opacity(0.35), lineWidth: 1)))
+                                    }
+                                    .buttonStyle(PressableButtonStyle())
+                                }
+
+                                // Buy coins shortcut when coin path is unaffordable
+                                if !canAfford {
+                                    BuyCoinsButton()
                                 }
                             }
-                            Button("Restore Purchases") {
-                                Task { await StoreKitManager.shared.restorePurchases() }
-                            }
-                            Button("Cancel", role: .cancel) {}
-                        } message: {
-                            Text("Watch a short ad to battle with your custom creature, or remove ads permanently for $4.99.")
                         }
+                        .padding(16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 18)
+                                .fill(Color.white.opacity(0.12))
+                                .overlay(RoundedRectangle(cornerRadius: 18)
+                                    .stroke(Theme.yellow.opacity(0.35), lineWidth: 1.5))
+                        )
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 24)
                     }
                 }
                 .scrollDismissesKeyboard(.immediately)
 
-                // FIGHT button — lives below ScrollView so cards are hard-clipped at the boundary
+                // Action buttons — lives below ScrollView so cards are hard-clipped at the boundary
                 VStack(spacing: 0) {
                     LinearGradient(
-                        colors: [Color.clear, Theme.bgDeep],
+                        colors: [Color.clear, Color.black.opacity(0.4)],
                         startPoint: .top, endPoint: .bottom
                     )
                     .frame(height: 28)
                     .allowsHitTesting(false)
 
-                    Button(action: {
-                        if bothSelected {
-                            HapticsService.shared.medium()
-                            showPreBattleSheet = true
-                        }
-                    }) {
+                    if bothSelected {
                         HStack(spacing: 12) {
-                            if bothSelected {
-                                Text("⚔️").font(.system(size: 22))
-                                Text("FIGHT!")
-                                    .font(.system(size: 20, weight: .black, design: .rounded))
-                                    .foregroundColor(.white)
-                                Text("⚔️").font(.system(size: 22))
-                            } else {
-                                Text("Pick 2 animals to fight")
-                                    .font(.system(size: 16, weight: .semibold, design: .rounded))
-                                    .foregroundColor(Theme.textTertiary)
-                            }
-                        }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 64)
-                        .background(
-                            RoundedRectangle(cornerRadius: 22)
-                                .fill(
-                                    bothSelected
-                                        ? AnyShapeStyle(LinearGradient(
+                            // Direct FIGHT — no arena effects
+                            Button(action: {
+                                HapticsService.shared.medium()
+                                viewModel.arenaEffectsEnabled = false
+                                viewModel.selectedEnvironment = .grassland
+                                navigateToBattle = true
+                            }) {
+                                HStack(spacing: 8) {
+                                    Text("⚔️").font(.system(size: 20))
+                                    Text("FIGHT")
+                                        .font(Theme.bungee(18))
+                                        .foregroundColor(.white)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 64)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 22)
+                                        .fill(LinearGradient(
                                             colors: [Theme.orange, Theme.yellow],
                                             startPoint: .leading, endPoint: .trailing
                                         ))
-                                        : AnyShapeStyle(Theme.cardFill)
+                                        .overlay(RoundedRectangle(cornerRadius: 22)
+                                            .stroke(Color.white.opacity(0.2), lineWidth: 1))
                                 )
-                                .overlay(
+                                .shadow(color: Theme.orange.opacity(0.6), radius: fightButtonGlowRadius, x: 0, y: 6)
+                            }
+                            .buttonStyle(PressableButtonStyle())
+
+                            // CHOOSE ARENA — opens sheet
+                            Button(action: {
+                                HapticsService.shared.tap()
+                                // If user explicitly chose the arena path, default effects ON —
+                                // the previous "FIGHT" (arenaless) battle may have left this
+                                // toggled off. User can still flip it off inside the sheet.
+                                viewModel.arenaEffectsEnabled = true
+                                showPreBattleSheet = true
+                            }) {
+                                HStack(spacing: 8) {
+                                    Text("🏟️").font(.system(size: 20))
+                                    Text("CHOOSE\nARENA")
+                                        .font(Theme.bungee(13))
+                                        .foregroundColor(Theme.orange)
+                                        .multilineTextAlignment(.center)
+                                        .lineSpacing(1)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 64)
+                                .background(
                                     RoundedRectangle(cornerRadius: 22)
-                                        .stroke(
-                                            bothSelected ? Color.white.opacity(0.2) : Theme.cardBorder,
-                                            lineWidth: 1
-                                        )
+                                        .fill(Color.white.opacity(0.12))
+                                        .overlay(RoundedRectangle(cornerRadius: 22)
+                                            .stroke(Theme.orange.opacity(0.5), lineWidth: 1.5))
                                 )
-                        )
-                        .shadow(
-                            color: bothSelected ? Theme.orange.opacity(0.6) : .clear,
-                            radius: bothSelected ? fightButtonGlowRadius : 0,
-                            x: 0, y: 6
-                        )
+                            }
+                            .buttonStyle(PressableButtonStyle())
+                        }
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 40)
+                        .transition(.opacity.combined(with: .scale(scale: 0.97)))
+                    } else {
+                        Text("Pick 2 animals to fight")
+                            .font(.system(size: 16, weight: .semibold, design: .rounded))
+                            .foregroundColor(.white.opacity(0.35))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 64)
+                            .background(
+                                RoundedRectangle(cornerRadius: 22)
+                                    .fill(Color.white.opacity(0.12))
+                                    .overlay(RoundedRectangle(cornerRadius: 22)
+                                        .stroke(Color.white.opacity(0.2), lineWidth: 1))
+                            )
+                            .padding(.horizontal, 24)
+                            .padding(.bottom, 40)
+                            .transition(.opacity)
                     }
-                    .buttonStyle(PressableButtonStyle())
-                    .disabled(!bothSelected)
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 40)
-                    .animation(.easeInOut(duration: 0.3), value: bothSelected)
                 }
-                .background(Theme.bgDeep)
+                .animation(.easeInOut(duration: 0.3), value: bothSelected)
+                .background(Color.black.opacity(0.4))
             }
             } // end else
         }
@@ -502,28 +618,23 @@ struct AnimalPickerView: View {
                     Button(action: { dismiss() }) {
                         HStack(spacing: 5) {
                             Image(systemName: "chevron.left").font(.system(size: 14, weight: .bold))
-                            Text("Back").font(.system(size: 15, weight: .semibold, design: .rounded))
+                            Text("BACK").font(Theme.bungee(12)).tracking(1)
                         }
-                        .foregroundColor(Theme.textSecondary)
+                        .foregroundColor(.white.opacity(0.6))
                     }
                     .buttonStyle(.plain)
                     Spacer()
                     VStack(spacing: 2) {
                         Text("PICK YOUR")
-                            .font(.system(size: 11, weight: .bold, design: .rounded))
-                            .foregroundColor(Theme.textTertiary).tracking(2)
+                            .font(Theme.bungee(11))
+                            .foregroundColor(.white.opacity(0.35)).tracking(2)
                         Text("FIGHTERS")
-                            .font(.system(size: 18, weight: .black, design: .rounded))
-                            .foregroundColor(cheat.olympusUnlocked ? Theme.olympusAccent : Theme.textPrimary)
+                            .font(Theme.bungee(18))
+                            .foregroundColor(cheat.olympusUnlocked ? Theme.olympusAccent : .white)
                             .onTapGesture { handleCheatFightersTap() }
                     }
                     Spacer()
-                    // Invisible balance
-                    HStack(spacing: 5) {
-                        Image(systemName: "chevron.left").font(.system(size: 14, weight: .bold))
-                        Text("Back").font(.system(size: 15, weight: .semibold, design: .rounded))
-                    }
-                    .foregroundColor(.clear)
+                    CoinBadge(size: .compact)
                 }
                 .padding(.horizontal, 20).padding(.top, 12).padding(.bottom, 18)
 
@@ -553,17 +664,17 @@ struct AnimalPickerView: View {
                 // Search bar
                 HStack(spacing: 10) {
                     Image(systemName: "magnifyingglass")
-                        .font(.system(size: 15, weight: .medium)).foregroundColor(Theme.textTertiary)
-                    TextField("Search or add any animal...", text: $viewModel.searchText)
+                        .font(.system(size: 15, weight: .medium)).foregroundColor(.white.opacity(0.35))
+                    TextField("Search or create ANY creature...", text: $viewModel.searchText)
                         .font(.system(size: 15, weight: .regular, design: .rounded))
-                        .foregroundColor(Theme.textPrimary).autocorrectionDisabled()
+                        .foregroundColor(.white).autocorrectionDisabled()
                         .textInputAutocapitalization(.never).tint(Theme.orange)
                         .focused($searchFocused).submitLabel(.done)
                         .onSubmit { searchFocused = false }
                     if !viewModel.searchText.isEmpty {
                         Button(action: { viewModel.searchText = "" }) {
                             Image(systemName: "xmark.circle.fill")
-                                .font(.system(size: 15)).foregroundColor(Theme.textTertiary)
+                                .font(.system(size: 15)).foregroundColor(.white.opacity(0.35))
                         }.buttonStyle(.plain)
                     }
                     Button(action: {
@@ -581,82 +692,119 @@ struct AnimalPickerView: View {
                     }.buttonStyle(.plain)
                 }
                 .padding(.horizontal, 14).padding(.vertical, 12)
-                .background(RoundedRectangle(cornerRadius: 16).fill(Theme.cardFill)
-                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.cardBorder, lineWidth: 1)))
+                .background(RoundedRectangle(cornerRadius: 16).fill(Color.white.opacity(0.12))
+                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.white.opacity(0.2), lineWidth: 1)))
                 .padding(.horizontal, 20).padding(.bottom, 12)
 
-                // Category pills
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(AnimalCategory.allCases.filter {
-                            $0 != .olympus || cheat.olympusUnlocked || settings.isOlympusVisible
-                        }, id: \.self) { category in
-                            let isLocked: Bool = {
+                // Category grid (iPad has room for a proper grid)
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
+                    ForEach(AnimalCategory.allCases.filter {
+                        $0 != .olympus || cheat.olympusUnlocked || settings.isOlympusVisible
+                    }, id: \.self) { category in
+                        let isLocked: Bool = {
+                            switch category {
+                            case .fantasy:     return !settings.isFantasyUnlocked
+                            case .prehistoric: return !settings.isPrehistoricUnlocked
+                            case .mythic:      return !settings.isMythicUnlocked
+                            case .olympus:     return !settings.isOlympusUnlocked && !cheat.olympusUnlocked
+                            default:           return false
+                            }
+                        }()
+                        CategoryPill(category: category, isSelected: viewModel.selectedCategory == category, isLocked: isLocked, enlarged: true) {
+                            if isLocked {
+                                HapticsService.shared.tap()
                                 switch category {
-                                case .fantasy:     return !settings.isFantasyUnlocked
-                                case .prehistoric: return !settings.isPrehistoricUnlocked
-                                case .mythic:      return !settings.isMythicUnlocked
-                                case .olympus:     return !settings.isOlympusUnlocked && !cheat.olympusUnlocked
-                                default:           return false
+                                case .fantasy:     showFantasyUnlockSheet = true
+                                case .prehistoric: showPrehistoricUnlockSheet = true
+                                case .mythic:      showMythicUnlockSheet = true
+                                case .olympus:     showOlympusUnlockSheet = true
+                                default: break
                                 }
-                            }()
-                            CategoryPill(category: category, isSelected: viewModel.selectedCategory == category, isLocked: isLocked) {
-                                if isLocked {
-                                    HapticsService.shared.tap()
-                                    switch category {
-                                    case .fantasy:     showFantasyUnlockSheet = true
-                                    case .prehistoric: showPrehistoricUnlockSheet = true
-                                    case .mythic:      showMythicUnlockSheet = true
-                                    case .olympus:     showOlympusUnlockSheet = true
-                                    default: break
-                                    }
-                                } else {
-                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { viewModel.selectedCategory = category }
-                                }
+                            } else {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { viewModel.selectedCategory = category }
                             }
                         }
                     }
-                    .padding(.horizontal, 20).padding(.vertical, 4)
                 }
+                .padding(.horizontal, 20)
                 .padding(.bottom, 12)
 
                 Spacer()
 
-                // Fight button
+                // Action buttons
                 VStack(spacing: 0) {
-                    LinearGradient(colors: [Color.clear, Theme.bgDeep], startPoint: .top, endPoint: .bottom)
+                    LinearGradient(colors: [Color.clear, Color.black.opacity(0.4)], startPoint: .top, endPoint: .bottom)
                         .frame(height: 20).allowsHitTesting(false)
-                    Button(action: {
-                        if bothSelected { HapticsService.shared.medium(); showPreBattleSheet = true }
-                    }) {
-                        HStack(spacing: 12) {
-                            if bothSelected {
-                                Text("⚔️").font(.system(size: 22))
-                                Text("FIGHT!").font(.system(size: 20, weight: .black, design: .rounded)).foregroundColor(.white)
-                                Text("⚔️").font(.system(size: 22))
-                            } else {
-                                Text("Pick 2 animals to fight")
-                                    .font(.system(size: 16, weight: .semibold, design: .rounded))
-                                    .foregroundColor(Theme.textTertiary)
+                    if bothSelected {
+                        VStack(spacing: 10) {
+                            // Direct FIGHT — no arena effects
+                            Button(action: {
+                                HapticsService.shared.medium()
+                                viewModel.arenaEffectsEnabled = false
+                                viewModel.selectedEnvironment = .grassland
+                                navigateToBattle = true
+                            }) {
+                                HStack(spacing: 8) {
+                                    Text("⚔️").font(.system(size: 20))
+                                    Text("FIGHT")
+                                        .font(Theme.bungee(18))
+                                        .foregroundColor(.white)
+                                    Text("⚔️").font(.system(size: 20))
+                                }
+                                .frame(maxWidth: .infinity).frame(height: 56)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 18)
+                                        .fill(LinearGradient(colors: [Theme.orange, Theme.yellow], startPoint: .leading, endPoint: .trailing))
+                                        .overlay(RoundedRectangle(cornerRadius: 18)
+                                            .stroke(Color.white.opacity(0.2), lineWidth: 1))
+                                )
+                                .shadow(color: Theme.orange.opacity(0.6), radius: fightButtonGlowRadius, x: 0, y: 6)
                             }
+                            .buttonStyle(PressableButtonStyle())
+
+                            // CHOOSE ARENA — opens sheet
+                            Button(action: {
+                                HapticsService.shared.tap()
+                                // Default arena effects ON when user explicitly picks the arena
+                                // path — prior arenaless FIGHT may have set this to false.
+                                viewModel.arenaEffectsEnabled = true
+                                showPreBattleSheet = true
+                            }) {
+                                HStack(spacing: 8) {
+                                    Text("🏟️").font(.system(size: 18))
+                                    Text("CHOOSE ARENA")
+                                        .font(.system(size: 14, weight: .black, design: .rounded))
+                                        .foregroundColor(Theme.orange)
+                                }
+                                .frame(maxWidth: .infinity).frame(height: 48)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 18)
+                                        .fill(Color.white.opacity(0.12))
+                                        .overlay(RoundedRectangle(cornerRadius: 18)
+                                            .stroke(Theme.orange.opacity(0.5), lineWidth: 1.5))
+                                )
+                            }
+                            .buttonStyle(PressableButtonStyle())
                         }
-                        .frame(maxWidth: .infinity).frame(height: 64)
-                        .background(
-                            RoundedRectangle(cornerRadius: 22)
-                                .fill(bothSelected
-                                    ? AnyShapeStyle(LinearGradient(colors: [Theme.orange, Theme.yellow], startPoint: .leading, endPoint: .trailing))
-                                    : AnyShapeStyle(Theme.cardFill))
-                                .overlay(RoundedRectangle(cornerRadius: 22)
-                                    .stroke(bothSelected ? Color.white.opacity(0.2) : Theme.cardBorder, lineWidth: 1))
-                        )
-                        .shadow(color: bothSelected ? Theme.orange.opacity(0.6) : .clear,
-                                radius: bothSelected ? fightButtonGlowRadius : 0, x: 0, y: 6)
+                        .padding(.horizontal, 20).padding(.bottom, 32)
+                        .transition(.opacity.combined(with: .scale(scale: 0.97)))
+                    } else {
+                        Text("Pick 2 animals to fight")
+                            .font(.system(size: 16, weight: .semibold, design: .rounded))
+                            .foregroundColor(.white.opacity(0.35))
+                            .frame(maxWidth: .infinity).frame(height: 64)
+                            .background(
+                                RoundedRectangle(cornerRadius: 22)
+                                    .fill(Color.white.opacity(0.12))
+                                    .overlay(RoundedRectangle(cornerRadius: 22)
+                                        .stroke(Color.white.opacity(0.2), lineWidth: 1))
+                            )
+                            .padding(.horizontal, 20).padding(.bottom, 32)
+                            .transition(.opacity)
                     }
-                    .buttonStyle(PressableButtonStyle()).disabled(!bothSelected)
-                    .padding(.horizontal, 20).padding(.bottom, 32)
-                    .animation(.easeInOut(duration: 0.3), value: bothSelected)
                 }
-                .background(Theme.bgDeep)
+                .animation(.easeInOut(duration: 0.3), value: bothSelected)
+                .background(Color.black.opacity(0.4))
             }
             .frame(width: 360)
             .background(Color.black.opacity(0.12))
@@ -667,6 +815,16 @@ struct AnimalPickerView: View {
             // ── Right animal grid ────────────────────────────────────────
             ScrollView {
                 LazyVGrid(columns: landscapeGridColumns, spacing: 12) {
+                    // Random pick — first cell when browsing
+                    if viewModel.searchText.isEmpty {
+                        RandomPickCard {
+                            if let pick = randomUnlockedPick() {
+                                withAnimation(.spring(response: 0.28, dampingFraction: 0.62)) {
+                                    viewModel.select(pick)
+                                }
+                            }
+                        }
+                    }
                     ForEach(viewModel.filteredAnimals) { animal in
                         let isSelected = viewModel.fighter1?.id == animal.id || viewModel.fighter2?.id == animal.id
                         let isAnimalLocked: Bool = {
@@ -709,8 +867,8 @@ struct AnimalPickerView: View {
                     HStack(spacing: 14) {
                         Text("🔒").font(.system(size: 28)).frame(width: 48, height: 48)
                         VStack(alignment: .leading, spacing: 3) {
-                            Text(locked.name).font(.system(size: 16, weight: .bold, design: .rounded)).foregroundColor(Theme.textPrimary)
-                            Text("Unlock this pack to use \(locked.name)").font(.system(size: 12, weight: .medium, design: .rounded)).foregroundColor(Theme.textSecondary)
+                            Text(locked.name).font(.system(size: 16, weight: .bold, design: .rounded)).foregroundColor(.white)
+                            Text("Unlock this pack to use \(locked.name)").font(.system(size: 12, weight: .medium, design: .rounded)).foregroundColor(.white.opacity(0.6))
                         }
                         Spacer()
                         Button("Unlock") {
@@ -728,19 +886,15 @@ struct AnimalPickerView: View {
                         .background(Capsule().fill(Theme.purple))
                     }
                     .padding(16)
-                    .background(RoundedRectangle(cornerRadius: 18).fill(Theme.cardFill)
+                    .background(RoundedRectangle(cornerRadius: 18).fill(Color.white.opacity(0.12))
                         .overlay(RoundedRectangle(cornerRadius: 18).stroke(Theme.purple.opacity(0.4), lineWidth: 1.5)))
                     .padding(.horizontal, 20).padding(.bottom, 24)
                 }
 
-                // Custom animal row
+                // Custom animal row — dual path: coins OR ad
                 if let custom = viewModel.customAnimal {
-                    Button(action: {
-                        AdManager.shared.showRewardedAdForCustomCreature { granted in
-                            if granted { viewModel.selectAnimal(custom) }
-                            else { showAdGateFailedAlert = true }
-                        }
-                    }) {
+                    let canAfford = coinStore.canAfford(CoinStore.shared.customCreatureCost)
+                    VStack(spacing: 8) {
                         HStack(spacing: 14) {
                             Group {
                                 if let imageURL = viewModel.customAnimalImageURL {
@@ -749,24 +903,49 @@ struct AnimalPickerView: View {
                                         else if case .failure = phase { Text(viewModel.customAnimalEmoji).font(.system(size: 28)) }
                                         else { ProgressView().tint(.white) }
                                     }
-                                } else {
-                                    Text(viewModel.customAnimalEmoji).font(.system(size: 28))
-                                }
+                                } else { Text(viewModel.customAnimalEmoji).font(.system(size: 28)) }
                             }
                             .frame(width: 48, height: 48).clipShape(Circle()).background(Circle().fill(Color.white.opacity(0.1)))
                             VStack(alignment: .leading, spacing: 3) {
-                                Text("Battle as \"\(custom.name)\"").font(.system(size: 16, weight: .bold, design: .rounded)).foregroundColor(Theme.textPrimary)
-                                Text("Custom animal").font(.system(size: 12, weight: .medium, design: .rounded)).foregroundColor(Theme.textSecondary)
+                                Text("Battle as \"\(custom.name)\"").font(.system(size: 16, weight: .bold, design: .rounded)).foregroundColor(.white)
+                                Text("Choose how to unlock").font(.system(size: 12, weight: .medium, design: .rounded)).foregroundColor(.white.opacity(0.5))
                             }
                             Spacer()
-                            Image(systemName: "plus.circle.fill").font(.system(size: 22)).foregroundColor(Theme.yellow)
                         }
-                        .padding(16)
-                        .background(RoundedRectangle(cornerRadius: 18).fill(Theme.cardFill)
-                            .overlay(RoundedRectangle(cornerRadius: 18).stroke(Theme.yellow.opacity(0.35), lineWidth: 1.5)))
-                        .padding(.horizontal, 20).padding(.bottom, 24)
+                        HStack(spacing: 10) {
+                            Button {
+                                if coinStore.spend(CoinStore.shared.customCreatureCost) { viewModel.selectAnimal(custom) }
+                            } label: {
+                                HStack(spacing: 4) {
+                                    GoldCoin(size: 12)
+                                    Text("\(CoinStore.shared.customCreatureCost)").font(.system(size: 13, weight: .bold, design: .rounded))
+                                }
+                                .foregroundColor(canAfford ? Theme.gold : .white.opacity(0.35))
+                                .frame(maxWidth: .infinity).frame(height: 38)
+                                .background(RoundedRectangle(cornerRadius: 12).fill(canAfford ? Theme.gold.opacity(0.15) : Color.white.opacity(0.06))
+                                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(canAfford ? Theme.gold.opacity(0.4) : Color.white.opacity(0.1), lineWidth: 1)))
+                            }.buttonStyle(PressableButtonStyle()).disabled(!canAfford).opacity(canAfford ? 1.0 : 0.5)
+
+                            Button {
+                                AdManager.shared.showRewardedAdForCustomCreature { granted in
+                                    if granted { viewModel.selectAnimal(custom) }
+                                }
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "play.rectangle.fill").font(.system(size: 12))
+                                    Text("Free Ad").font(.system(size: 13, weight: .bold, design: .rounded))
+                                }
+                                .foregroundColor(Theme.neonGrn)
+                                .frame(maxWidth: .infinity).frame(height: 38)
+                                .background(RoundedRectangle(cornerRadius: 12).fill(Theme.neonGrn.opacity(0.12))
+                                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Theme.neonGrn.opacity(0.35), lineWidth: 1)))
+                            }.buttonStyle(PressableButtonStyle())
+                        }
                     }
-                    .buttonStyle(PressableButtonStyle())
+                    .padding(16)
+                    .background(RoundedRectangle(cornerRadius: 18).fill(Color.white.opacity(0.12))
+                        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Theme.yellow.opacity(0.35), lineWidth: 1.5)))
+                    .padding(.horizontal, 20).padding(.bottom, 24)
                 }
             }
             .scrollDismissesKeyboard(.immediately)
@@ -800,6 +979,28 @@ struct AnimalPickerView: View {
         withAnimation(.easeInOut(duration: 1.6).repeatForever(autoreverses: true)) {
             fightButtonGlowRadius = 22
         }
+    }
+
+    // MARK: - Random pick
+
+    /// Picks a random creature from the currently-filtered list that is
+    /// unlocked AND not already in either fighter slot. Returns nil if
+    /// the pool is empty (all filtered creatures are locked or picked).
+    private func randomUnlockedPick() -> Animal? {
+        let pool = viewModel.filteredAnimals.filter { animal in
+            // Exclude locked
+            switch animal.category {
+            case .fantasy:     if !settings.isFantasyUnlocked { return false }
+            case .prehistoric: if !settings.isPrehistoricUnlocked { return false }
+            case .mythic:      if !settings.isMythicUnlocked { return false }
+            case .olympus:     if !settings.isOlympusUnlocked && !cheat.olympusUnlocked { return false }
+            default: break
+            }
+            // Exclude already-picked
+            if animal == viewModel.fighter1 || animal == viewModel.fighter2 { return false }
+            return true
+        }
+        return pool.randomElement()
     }
 
     // MARK: - Cheat code: VS ×2 then FIGHTERS ×6
@@ -942,11 +1143,11 @@ struct FighterSlot: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             RoundedRectangle(cornerRadius: 20)
-                .fill(Theme.cardFill)
+                .fill(Color.white.opacity(0.12))
                 .overlay(
                     RoundedRectangle(cornerRadius: 20)
                         .stroke(
-                            animal != nil ? accentColor.opacity(0.7) : Theme.cardBorder,
+                            animal != nil ? accentColor.opacity(0.7) : Color.white.opacity(0.2),
                             lineWidth: animal != nil ? 2 : 1
                         )
                 )
@@ -984,7 +1185,7 @@ struct FighterSlot: View {
                                 }
 
                                 Text(animal.name)
-                                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                                    .font(Theme.bungee(11))
                                     .foregroundColor(accentColor)
                                     .multilineTextAlignment(.center)
                                     .lineLimit(2)
@@ -995,12 +1196,11 @@ struct FighterSlot: View {
                             VStack(spacing: 8) {
                                 Text("?")
                                     .font(.system(size: 38, weight: .black, design: .rounded))
-                                    .foregroundColor(Theme.textTertiary)
+                                    .foregroundColor(.white.opacity(0.35))
                                     .scaleEffect(emptyPulseScale)
                                 Text(label)
-                                    .font(.system(size: 10, weight: .semibold, design: .rounded))
-                                    .foregroundColor(Theme.textTertiary)
-                                    .tracking(0.5)
+                                    .font(Theme.bungee(10))
+                                    .foregroundColor(.white.opacity(0.35))
                             }
                         }
                     }
@@ -1039,6 +1239,7 @@ struct CategoryPill: View {
     let category: AnimalCategory
     let isSelected: Bool
     var isLocked: Bool = false
+    var enlarged: Bool = false
     let onTap: () -> Void
 
     private var selectedGradient: LinearGradient {
@@ -1100,37 +1301,75 @@ struct CategoryPill: View {
 
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: 5) {
-                Text(Theme.categoryEmoji(category))
-                    .font(.system(size: 13))
-                Text(Theme.categoryLabel(category))
-                    .font(.system(size: 13, weight: .bold, design: .rounded))
-                    .foregroundColor(textColor)
-                if isLocked {
-                    Image(systemName: "lock.fill")
-                        .font(.system(size: 10, weight: .bold))
-                        .foregroundColor(Theme.categoryAccent(category).opacity(0.9))
+            if enlarged {
+                VStack(spacing: 4) {
+                    Text(Theme.categoryEmoji(category))
+                        .font(.system(size: 22))
+                    HStack(spacing: 4) {
+                        Text(Theme.categoryLabel(category))
+                            .font(Theme.bungee(13))
+                            .foregroundColor(textColor)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
+                        if isLocked {
+                            Image(systemName: "lock.fill")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundColor(Theme.categoryAccent(category).opacity(0.9))
+                        }
+                    }
                 }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(isSelected ? AnyShapeStyle(selectedGradient) : unselectedBg)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(
+                            isLocked
+                                ? Theme.categoryAccent(category).opacity(0.5)
+                                : (isSelected ? Color.clear : unselectedBorder),
+                            lineWidth: isLocked ? 1.5 : 1
+                        )
+                )
+                .shadow(
+                    color: isSelected ? Theme.categoryAccent(category).opacity(0.4) : .clear,
+                    radius: 6, x: 0, y: 3
+                )
+            } else {
+                HStack(spacing: 5) {
+                    Text(Theme.categoryEmoji(category))
+                        .font(.system(size: 13))
+                    Text(Theme.categoryLabel(category))
+                        .font(Theme.bungee(13))
+                        .foregroundColor(textColor)
+                    if isLocked {
+                        Image(systemName: "lock.fill")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundColor(Theme.categoryAccent(category).opacity(0.9))
+                    }
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 9)
+                .background(
+                    Capsule()
+                        .fill(isSelected ? AnyShapeStyle(selectedGradient) : unselectedBg)
+                )
+                .overlay(
+                    Capsule()
+                        .stroke(
+                            isLocked
+                                ? Theme.categoryAccent(category).opacity(0.5)
+                                : (isSelected ? Color.clear : unselectedBorder),
+                            lineWidth: isLocked ? 1.5 : 1
+                        )
+                )
+                .shadow(
+                    color: isSelected ? Theme.categoryAccent(category).opacity(0.4) : .clear,
+                    radius: 6, x: 0, y: 3
+                )
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 9)
-            .background(
-                Capsule()
-                    .fill(isSelected ? AnyShapeStyle(selectedGradient) : unselectedBg)
-            )
-            .overlay(
-                Capsule()
-                    .stroke(
-                        isLocked
-                            ? Theme.categoryAccent(category).opacity(0.5)
-                            : (isSelected ? Color.clear : unselectedBorder),
-                        lineWidth: isLocked ? 1.5 : 1
-                    )
-            )
-            .shadow(
-                color: isSelected ? Theme.categoryAccent(category).opacity(0.4) : .clear,
-                radius: 6, x: 0, y: 3
-            )
         }
         .buttonStyle(PressableButtonStyle())
     }
@@ -1284,7 +1523,7 @@ struct EnvironmentsPackSheet: View {
 
     var body: some View {
         ZStack {
-            Theme.mainBg.ignoresSafeArea()
+            ScreenBackground(style: .home).ignoresSafeArea()
 
             VStack(spacing: 0) {
                 // Handle

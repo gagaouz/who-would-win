@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Placeholder "VS" icon foreground. Replace with the real app icon in v1 polish pass
+  (mipmap-*dpi PNGs exported from the same source as the iOS icon).
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FF6F00"
+        android:pathData="M30,40 L38,72 L46,40 L38,40 M38,58 L34,58 M62,40 L70,40 L62,52 L70,72 L62,72 L58,62 L54,72 L46,72 Z"
+        android:strokeColor="#FFD600"
+        android:strokeWidth="2"/>
+</vector>

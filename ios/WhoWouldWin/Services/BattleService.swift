@@ -7,14 +7,18 @@ actor BattleService {
 
     // MARK: - Network Battle
 
-    func fetchBattleResult(fighter1: Animal, fighter2: Animal, environment: BattleEnvironment = .grassland, arenaEffectsEnabled: Bool = true) async throws -> BattleResult {
+    func fetchBattleResult(fighter1: Animal, fighter2: Animal, environment: BattleEnvironment = .grassland, arenaEffectsEnabled: Bool = true, tournamentContext: String? = nil) async throws -> BattleResult {
         guard let url = URL(string: "\(AppConfig.backendBaseURL)/api/battle") else {
             throw BattleError.serverError
         }
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.timeoutInterval = 15   // fail fast; offline fallback kicks in after 15 s
+        // 25s gives the Railway backend room for a cold-start (~5–15 s) plus
+        // a few seconds of LLM round-trip without prematurely tripping the
+        // offline fallback. Anything tighter than this misclassifies legit
+        // slow-but-working responses as "offline".
+        request.timeoutInterval = 25
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
         var body: [String: String] = [
@@ -22,12 +26,18 @@ actor BattleService {
             "fighter2": fighter2.id,
             "fighter1Name": fighter1.name,
             "fighter2Name": fighter2.name,
-            "environment": environment.rawValue
         ]
-        // Only send environmentName when arena effects are on — omitting it tells
-        // the backend to use neutral logic (no arena advantage/disadvantage).
+        // Only send environment fields when arena effects are explicitly enabled.
+        // Omitting them entirely tells the backend to use neutral logic —
+        // no terrain advantage or disadvantage for either animal.
         if arenaEffectsEnabled {
+            body["environment"]     = environment.rawValue
             body["environmentName"] = environment.name
+        }
+        // Tournament context: a short server-trusted string describing the round.
+        // When present, the backend skips its result cache so each round gets fresh narration.
+        if let tournamentContext, !tournamentContext.isEmpty {
+            body["tournamentContext"] = tournamentContext
         }
         request.httpBody = try? JSONEncoder().encode(body)
 
@@ -69,12 +79,80 @@ actor BattleService {
         }
     }
 
-    // MARK: - Offline Fallback
+    // MARK: - Quick Battle (lightweight AI)
+
+    /// Calls /api/battle/quick — same AI logic but shorter prompt (~4× fewer tokens).
+    /// Used by tournament Quick Mode. Never returns a draw.
+    func fetchQuickBattleResult(fighter1: Animal, fighter2: Animal, environment: BattleEnvironment = .grassland, arenaEffectsEnabled: Bool = false) async throws -> BattleResult {
+        guard let url = URL(string: "\(AppConfig.backendBaseURL)/api/battle/quick") else {
+            throw BattleError.serverError
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        // Quick-mode requests are smaller but still hit the same Railway
+        // backend, which can cold-start. 20s absorbs the cold-start without
+        // making the user wait through every wait-and-fail cycle.
+        request.timeoutInterval = 20
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        var body: [String: String] = [
+            "fighter1": fighter1.id,
+            "fighter2": fighter2.id,
+            "fighter1Name": fighter1.name,
+            "fighter2Name": fighter2.name,
+        ]
+        if arenaEffectsEnabled {
+            body["environment"]     = environment.rawValue
+            body["environmentName"] = environment.name
+        }
+        request.httpBody = try? JSONEncoder().encode(body)
+
+        let data: Data
+        let response: URLResponse
+
+        do {
+            (data, response) = try await URLSession.shared.data(for: request)
+        } catch let urlError as URLError {
+            switch urlError.code {
+            case .notConnectedToInternet, .networkConnectionLost, .cannotConnectToHost,
+                 .cannotFindHost, .timedOut, .dnsLookupFailed:
+                throw BattleError.networkUnavailable
+            default:
+                throw BattleError.serverError
+            }
+        } catch {
+            throw BattleError.serverError
+        }
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw BattleError.serverError
+        }
+
+        switch httpResponse.statusCode {
+        case 200...299: break
+        case 429: throw BattleError.rateLimited
+        default:  throw BattleError.serverError
+        }
+
+        do {
+            return try JSONDecoder().decode(BattleResult.self, from: data)
+        } catch {
+            throw BattleError.serverError
+        }
+    }
+
+    // MARK: - Offline / Local Fallback
 
     /// Determines winner based on size with some randomness.
     /// Larger size wins ~70% of matchups, 10% draw chance.
-    /// Marks result with isOfflineFallback = true.
-    func generateFallbackResult(fighter1: Animal, fighter2: Animal, environment: BattleEnvironment = .grassland) -> BattleResult {
+    ///
+    /// `markAsOffline` controls whether the result is flagged with
+    /// `isOfflineFallback = true`. Pass `true` only when the device is
+    /// genuinely offline (no internet); pass `false` when this is a local
+    /// fallback for a server slowdown / 5xx / rate-limit so the user does NOT
+    /// see a misleading "⚡ Offline result" badge while they're online.
+    func generateFallbackResult(fighter1: Animal, fighter2: Animal, environment: BattleEnvironment = .grassland, markAsOffline: Bool = true) -> BattleResult {
         let roll = Double.random(in: 0..<1)
 
         // Compute environment-adjusted total power for each fighter
@@ -133,14 +211,14 @@ actor BattleService {
             winnerHealthPercent: winnerHealthPercent,
             loserHealthPercent: loserHealthPercent
         )
-        result.isOfflineFallback = true
+        result.isOfflineFallback = markAsOffline
         return result
     }
 }
 
 // MARK: - BattleError
 
-enum BattleError: LocalizedError {
+enum BattleError: LocalizedError, Equatable {
     case serverError
     case networkUnavailable
     case rateLimited
@@ -149,7 +227,7 @@ enum BattleError: LocalizedError {
         switch self {
         case .serverError: return "The battle server is resting. Try again!"
         case .networkUnavailable: return "No internet! The animals need WiFi to fight."
-        case .rateLimited: return "Too many battles! Rest the arena for a minute."
+        case .rateLimited: return "Wow, you've been battling a lot! The arena needs a 15-minute break. Come back soon!"
         }
     }
 }

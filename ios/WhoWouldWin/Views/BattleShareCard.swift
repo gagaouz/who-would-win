@@ -10,6 +10,7 @@ struct BattleShareCard: View {
     let fighter2: Animal
     let result: BattleResult
     var environment: BattleEnvironment = .grassland
+    var arenaEffectsEnabled: Bool = false
     var image1: UIImage? = nil
     var image2: UIImage? = nil
 
@@ -31,13 +32,8 @@ struct BattleShareCard: View {
     private var winnerHP: Int { result.winnerHealthPercent }
     private var loserHP:  Int { result.loserHealthPercent }
 
-    /// First sentence of the narration, max 110 chars.
     private var excerpt: String {
-        let sentence = result.narration.components(separatedBy: ". ").first
-                    ?? result.narration.components(separatedBy: ".").first
-                    ?? result.narration
-        let t = sentence.trimmingCharacters(in: .whitespaces)
-        if t.count > 130 { return String(t.prefix(130)) + "…" }
+        let t = result.narration.trimmingCharacters(in: .whitespaces)
         return t.hasSuffix(".") ? t : t + "."
     }
 
@@ -97,7 +93,7 @@ struct BattleShareCard: View {
                 HStack(spacing: 5) {
                     Text("⚡").font(.system(size: 10))
                     Text("ANIMAL VS ANIMAL")
-                        .font(.system(size: 11, weight: .black, design: .rounded))
+                        .font(Theme.bungee(11))
                         .tracking(2.5)
                         .foregroundColor(orange)
                     Text("⚡").font(.system(size: 10))
@@ -181,12 +177,12 @@ struct BattleShareCard: View {
 
                 gradientRule.padding(.bottom, 10)
 
-                // ── ENVIRONMENT BADGE ─────────────────────────────
-                if environment != .grassland {
+                // ── ENVIRONMENT BADGE (only when arena effects active) ──
+                if arenaEffectsEnabled {
                     HStack(spacing: 5) {
                         Text(environment.emoji).font(.system(size: 12))
                         Text("\(environment.name.uppercased()) ARENA")
-                            .font(.system(size: 9, weight: .black, design: .rounded))
+                            .font(Theme.bungee(9))
                             .foregroundColor(environment.accentColor)
                             .tracking(1)
                     }
@@ -203,26 +199,49 @@ struct BattleShareCard: View {
                 Spacer(minLength: 0)
 
                 // ── FOOTER ───────────────────────────────────────
-                HStack(spacing: 5) {
-                    Text("🐾")
-                        .font(.system(size: 12))
-                    Text("Animal vs Animal")
-                        .font(.system(size: 11, weight: .black, design: .rounded))
-                        .foregroundColor(.white.opacity(0.7))
-                    Rectangle()
-                        .fill(.white.opacity(0.2))
-                        .frame(width: 1, height: 10)
-                    Image(systemName: "apple.logo")
-                        .font(.system(size: 10, weight: .medium))
-                        .foregroundColor(.white.opacity(0.4))
-                    Text("apps.apple.com/app/id6761319389")
-                        .font(.system(size: 9, weight: .semibold, design: .rounded))
-                        .foregroundColor(.white.opacity(0.35))
+                HStack(spacing: 12) {
+                    // QR code — scannable App Store link
+                    if let qrImage = makeQRCode(size: 48) {
+                        Image(uiImage: qrImage)
+                            .interpolation(.none)
+                            .resizable()
+                            .frame(width: 48, height: 48)
+                            .padding(5)
+                            .background(
+                                RoundedRectangle(cornerRadius: 7)
+                                    .fill(.white)
+                            )
+                    }
+
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("🐾 Animal vs Animal")
+                            .font(Theme.bungee(11))
+                            .foregroundColor(.white.opacity(0.85))
+                        HStack(spacing: 4) {
+                            Image(systemName: "apple.logo")
+                                .font(.system(size: 9, weight: .medium))
+                                .foregroundColor(orange)
+                            Text("Download free on the App Store →")
+                                .font(Theme.bungee(9))
+                                .foregroundColor(orange.opacity(0.85))
+                        }
+                    }
+                    Spacer(minLength: 0)
                 }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(orange.opacity(0.08))
+                        .overlay(RoundedRectangle(cornerRadius: 10)
+                            .stroke(orange.opacity(0.22), lineWidth: 1))
+                )
+                .padding(.horizontal, 16)
                 .padding(.bottom, 18)
             }
         }
-        .frame(width: 390, height: 560)
+        .frame(width: 390)
+        .frame(minHeight: 560)
     }
 
     // MARK: - Sub-views
@@ -235,14 +254,14 @@ struct BattleShareCard: View {
             // Result badge above avatar
             if isWinner {
                 Text("👑 WINNER")
-                    .font(.system(size: 8, weight: .black, design: .rounded))
+                    .font(Theme.bungee(8))
                     .foregroundColor(gold)
                     .tracking(1)
                     .padding(.horizontal, 8).padding(.vertical, 3)
                     .background(Capsule().fill(gold.opacity(0.18)))
             } else if isLoser {
                 Text("DEFEATED")
-                    .font(.system(size: 8, weight: .black, design: .rounded))
+                    .font(Theme.bungee(8))
                     .foregroundColor(.white.opacity(0.35))
                     .tracking(1)
                     .padding(.horizontal, 8).padding(.vertical, 3)
@@ -283,7 +302,7 @@ struct BattleShareCard: View {
             .frame(width: 110, height: 110)
 
             Text(animal.name.uppercased())
-                .font(.system(size: 13, weight: .black, design: .rounded))
+                .font(Theme.bungee(13))
                 .foregroundColor(isLoser ? accent.opacity(0.5) : accent)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
@@ -312,7 +331,7 @@ struct BattleShareCard: View {
                 .tracking(3)
 
             Text(winnerAnimal.name.uppercased())
-                .font(.system(size: 40, weight: .black, design: .rounded))
+                .font(Theme.bungee(36))
                 .foregroundStyle(
                     LinearGradient(
                         colors: [winnerAccent, gold, goldLight, gold, winnerAccent],
@@ -331,7 +350,7 @@ struct BattleShareCard: View {
         VStack(spacing: 6) {
             Text("⚔️").font(.system(size: 40))
             Text("IT'S A DRAW!")
-                .font(.system(size: 28, weight: .black, design: .rounded))
+                .font(Theme.bungee(26))
                 .foregroundStyle(
                     LinearGradient(colors: [orange, gold, cyan], startPoint: .leading, endPoint: .trailing)
                 )
@@ -349,7 +368,7 @@ struct BattleShareCard: View {
     private func healthRow(name: String, pct: Int, accent: Color) -> some View {
         HStack(spacing: 8) {
             Text(name.uppercased())
-                .font(.system(size: 8, weight: .black, design: .rounded))
+                .font(Theme.bungee(8))
                 .foregroundColor(.white.opacity(0.5))
                 .frame(width: 68, alignment: .trailing)
                 .lineLimit(1)
@@ -368,10 +387,28 @@ struct BattleShareCard: View {
             .frame(height: 7)
 
             Text("\(pct)%")
-                .font(.system(size: 8, weight: .bold, design: .rounded))
+                .font(Theme.bungee(8))
                 .foregroundColor(accent)
                 .frame(width: 28, alignment: .leading)
         }
+    }
+
+    private func makeQRCode(size: CGFloat) -> UIImage? {
+        let urlString = "https://apps.apple.com/app/id6761319389"
+        guard
+            let data = urlString.data(using: .isoLatin1),
+            let filter = CIFilter(name: "CIQRCodeGenerator")
+        else { return nil }
+        filter.setValue(data, forKey: "inputMessage")
+        filter.setValue("M", forKey: "inputCorrectionLevel")
+        guard let ciImage = filter.outputImage else { return nil }
+        let scale = size / ciImage.extent.size.width
+        let scaled = ciImage.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
+        // UIImage(ciImage:) is lazy and stays blank inside ImageRenderer.
+        // Force rasterisation through CIContext → CGImage first.
+        let context = CIContext()
+        guard let cgImage = context.createCGImage(scaled, from: scaled.extent) else { return nil }
+        return UIImage(cgImage: cgImage)
     }
 
     private var gradientRule: some View {
@@ -388,9 +425,11 @@ struct BattleShareCard: View {
     @MainActor
     static func render(fighter1: Animal, fighter2: Animal, result: BattleResult,
                        environment: BattleEnvironment = .grassland,
+                       arenaEffectsEnabled: Bool = false,
                        image1: UIImage? = nil, image2: UIImage? = nil) -> UIImage? {
         let card = BattleShareCard(fighter1: fighter1, fighter2: fighter2, result: result,
-                                   environment: environment, image1: image1, image2: image2)
+                                   environment: environment, arenaEffectsEnabled: arenaEffectsEnabled,
+                                   image1: image1, image2: image2)
             .environment(\.colorScheme, .dark)
         let renderer = ImageRenderer(content: card)
         renderer.scale = 3.0
@@ -418,10 +457,20 @@ struct BattleShareCard: View {
 
 struct BattleShareSheet: UIViewControllerRepresentable {
     let image: UIImage
+    var caption: String = ""
+
+    private var appStoreURL: URL {
+        URL(string: "https://apps.apple.com/app/id6761319389")!
+    }
 
     func makeUIViewController(context: Context) -> UIActivityViewController {
+        var items: [Any] = [image]
+        let text = caption.isEmpty
+            ? "Who would win? 🔥 Find out in Animal vs Animal!"
+            : caption
+        items.append("\(text)\n\(appStoreURL.absoluteString)")
         let controller = UIActivityViewController(
-            activityItems: [image],
+            activityItems: items,
             applicationActivities: nil
         )
         return controller

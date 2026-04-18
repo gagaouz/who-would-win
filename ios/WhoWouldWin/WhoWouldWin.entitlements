@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- com.apple.developer.carplay-audio intentionally omitted for TestFlight builds.
+	     Apple must explicitly grant this entitlement before it can be included in a
+	     provisioning profile. Apply at:
+	     https://developer.apple.com/contact/request/carplay-audio-app/
+	     Once approved, add back: <key>com.apple.developer.carplay-audio</key><true/> -->
+	<key>com.apple.developer.game-center</key>
+	<true/>
+	<key>com.apple.developer.ubiquity-kvstore-identifier</key>
+	<string>$(TeamIdentifierPrefix)$(CFBundleIdentifier)</string>
+</dict>
+</plist>

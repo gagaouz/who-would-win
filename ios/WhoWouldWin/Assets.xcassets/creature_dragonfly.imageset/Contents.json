@@ -1,0 +1,13 @@
+{
+  "images": [
+    {
+      "filename": "creature_dragonfly.png",
+      "idiom": "universal",
+      "scale": "1x"
+    }
+  ],
+  "info": {
+    "author": "xcode",
+    "version": 1
+  }
+}

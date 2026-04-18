@@ -143,6 +143,17 @@ final class SpeechService: NSObject, ObservableObject {
 
     // MARK: - Voice selection
 
+    /// True if the device has any Enhanced or Premium en-* voice already downloaded.
+    /// Compact/default voices are robotic — we only count the neural tiers.
+    static var hasHighQualityVoice: Bool {
+        if #available(iOS 16.0, *) {
+            return AVSpeechSynthesisVoice.speechVoices()
+                .filter { $0.language.hasPrefix("en") }
+                .contains { $0.quality == .premium || $0.quality == .enhanced }
+        }
+        return false
+    }
+
     /// Returns the most natural available English voice, in priority order:
     /// 1. Premium (neural) voices — the best quality, downloaded on some devices
     /// 2. Enhanced voices — better than compact, usually pre-installed

@@ -30,6 +30,21 @@
       "type" : "NonConsumable"
     },
     {
+      "displayPrice" : "1.99",
+      "familyShareable" : false,
+      "internalID" : "6761348360",
+      "localizations" : [
+        {
+          "description" : "Get 1,000 Battle Coins instantly to spend on packs and wagers.",
+          "displayName" : "1,000 Battle Coins",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.whowouldin.coins1000",
+      "referenceName" : "1,000 Battle Coins",
+      "type" : "Consumable"
+    },
+    {
       "displayPrice" : "4.99",
       "familyShareable" : false,
       "internalID" : "6761348240",

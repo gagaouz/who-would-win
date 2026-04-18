@@ -6,6 +6,11 @@ import StoreKit
 struct BattleView: View {
     let fighter1: Animal
     let fighter2: Animal
+    /// When set, this battle is part of a tournament. The post-battle UI hides the
+    /// Rematch / New Battle / Share buttons and shows a single CONTINUE button that
+    /// invokes this callback with the final result. The tournament host is responsible
+    /// for recording the matchup result and advancing the tournament phase.
+    let onTournamentComplete: ((BattleResult) -> Void)?
     @State private var displayEnvironment: BattleEnvironment
     @StateObject private var viewModel: BattleViewModel
     @Environment(\.dismiss) private var dismiss
@@ -28,25 +33,46 @@ struct BattleView: View {
     @State private var battleRound: Int = 0
     @State private var showFantasyBanner = false
     @State private var showOlympusBanner = false
+    @State private var showTournamentBanner = false
+    @State private var showFirstCustomBanner = false
     @State private var showShareSheet = false
+    @State private var showVoiceQualityPrompt = false
     @State private var shareImage: UIImage? = nil
     @State private var fighter1Image: UIImage? = nil
     @State private var fighter2Image: UIImage? = nil
     @State private var showArenaSheet = false
     @Environment(\.requestReview) private var requestReview
 
+    // Tournament draw-elimination state
+    // First draw → retry in a new arena; second draw → settle with a kid-friendly tiebreaker.
+    // Banners are tap-to-dismiss so the user has time to read them.
+    @State private var tournamentDrawRetryCount: Int = 0
+    @State private var showTournamentOvertimeBanner: Bool = false
+    @State private var showTournamentTiebreakerBanner: Bool = false
+    @State private var tiebreakerTitle: String = ""
+    @State private var tiebreakerSubtitle: String = ""
+    @State private var pendingTournamentDrawContinuation: (() -> Void)? = nil
+
     @StateObject private var speech = SpeechService()
+    @ObservedObject private var coinStore = CoinStore.shared
 
     // MARK: - Init
 
-    init(fighter1: Animal, fighter2: Animal, environment: BattleEnvironment = .grassland, arenaEffectsEnabled: Bool = true) {
+    init(fighter1: Animal,
+         fighter2: Animal,
+         environment: BattleEnvironment = .grassland,
+         arenaEffectsEnabled: Bool = false,
+         quickMode: Bool = false,
+         tournamentContext: String? = nil,
+         onTournamentComplete: ((BattleResult) -> Void)? = nil) {
         self.fighter1 = fighter1
         self.fighter2 = fighter2
+        self.onTournamentComplete = onTournamentComplete
         _displayEnvironment = State(initialValue: environment)
         let offscreen = UIScreen.main.bounds.width * 1.1
         _fighter1Offset = State(initialValue: -offscreen)
         _fighter2Offset = State(initialValue: offscreen)
-        _viewModel = StateObject(wrappedValue: BattleViewModel(fighter1: fighter1, fighter2: fighter2, environment: environment, arenaEffectsEnabled: arenaEffectsEnabled))
+        _viewModel = StateObject(wrappedValue: BattleViewModel(fighter1: fighter1, fighter2: fighter2, environment: environment, arenaEffectsEnabled: arenaEffectsEnabled, isQuickMode: quickMode, tournamentContext: tournamentContext))
         _battleScene = State(initialValue: BattleScene(
             fighter1: fighter1,
             fighter2: fighter2,
@@ -90,6 +116,16 @@ struct BattleView: View {
                 .allowsHitTesting(false)
             }
 
+            // Tournament unlock milestone banner
+            if showTournamentBanner {
+                VStack {
+                    TournamentUnlockedBanner(isShowing: $showTournamentBanner)
+                        .padding(.top, 60)
+                    Spacer()
+                }
+                .allowsHitTesting(false)
+            }
+
             // Olympus unlock milestone banner
             if showOlympusBanner {
                 VStack {
@@ -99,19 +135,116 @@ struct BattleView: View {
                 }
                 .allowsHitTesting(false)
             }
+
+            // First custom creature celebration banner (+50 coin bonus)
+            if showFirstCustomBanner {
+                VStack {
+                    FirstCustomBanner(isShowing: $showFirstCustomBanner)
+                        .padding(.top, 60)
+                    Spacer()
+                }
+                .allowsHitTesting(false)
+            }
+
+            // Tournament draw interceptor — "OVERTIME!" (switching arenas)
+            if showTournamentOvertimeBanner {
+                tournamentDrawBanner(
+                    title: "OVERTIME!",
+                    subtitle: "Too close to call — switching arenas!",
+                    emoji: "⚡",
+                    glow: Theme.orange
+                )
+                .transition(.asymmetric(
+                    insertion: .scale(scale: 0.5).combined(with: .opacity),
+                    removal: .opacity
+                ))
+                .zIndex(25)
+            }
+
+            // Tournament draw interceptor — "TIEBREAKER!" (kid-friendly fallback)
+            if showTournamentTiebreakerBanner {
+                tournamentDrawBanner(
+                    title: tiebreakerTitle,
+                    subtitle: tiebreakerSubtitle,
+                    emoji: "🎲",
+                    glow: Theme.gold
+                )
+                .transition(.asymmetric(
+                    insertion: .scale(scale: 0.5).combined(with: .opacity),
+                    removal: .opacity
+                ))
+                .zIndex(25)
+            }
+
+            // Coin earn animation overlay
+            if coinStore.showEarnAnimation {
+                VStack(spacing: 0) {
+                    HStack(spacing: 6) {
+                        GoldCoin(size: 18)
+                        Text("+\(coinStore.earnAnimationAmount)")
+                            .font(.system(size: 18, weight: .black, design: .rounded))
+                            .foregroundColor(Color(hex: "#FFD700"))
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(
+                        Capsule()
+                            .fill(Color(hex: "#FFD700").opacity(0.18))
+                            .overlay(Capsule().stroke(Color(hex: "#FFD700").opacity(0.45), lineWidth: 1.5))
+                    )
+                    .shadow(color: Color(hex: "#FFD700").opacity(0.4), radius: 8, x: 0, y: 0)
+                    .transition(.asymmetric(
+                        insertion: .scale(scale: 0.7).combined(with: .opacity),
+                        removal: .move(edge: .top).combined(with: .opacity)
+                    ))
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .padding(.top, 80)
+                .allowsHitTesting(false)
+                .zIndex(20)
+            }
         }
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
+        .alert("Better Voice Available 🎙️", isPresented: $showVoiceQualityPrompt) {
+            Button("Open Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            Button("Play Anyway") {
+                if let r = viewModel.battleResult {
+                    speech.speak(r.narration + (r.funFact.isEmpty ? "" : ". Fun fact: \(r.funFact)"))
+                }
+            }
+            Button("Not Now", role: .cancel) { }
+        } message: {
+            Text("Download a free Premium voice for natural, human-sounding narration.\n\nGo to:\nSettings → Accessibility → Spoken Content → Voices → English\n\nTap any voice marked \"Premium\" to download it free.")
+        }
         .sheet(isPresented: $showShareSheet) {
             if let img = shareImage {
-                BattleShareSheet(image: img)
+                BattleShareSheet(
+                    image: img,
+                    caption: {
+                        if let r = viewModel.battleResult {
+                            let winner = r.winner == fighter1.id ? fighter1.name : fighter2.name
+                            return r.winner == "draw"
+                                ? "\(fighter1.name) vs \(fighter2.name) — it's a DRAW! 🤯"
+                                : "\(winner) beats \(r.winner == fighter1.id ? fighter2.name : fighter1.name)! 🏆🔥"
+                        }
+                        return ""
+                    }()
+                )
                     .presentationDetents([PresentationDetent.medium, PresentationDetent.large])
             }
         }
         .sheet(isPresented: $showArenaSheet) {
+            // If arena effects were off the previous round, the battle was a
+            // neutral fight — the grasslands backdrop was just visual. Pass
+            // `nil` so the picker doesn't lie about a "CURRENT" arena.
             ArenaPickerSheet(
                 isPresented: $showArenaSheet,
-                current: displayEnvironment
+                current: viewModel.arenaEffectsEnabled ? displayEnvironment : nil
             ) { newEnv in
                 switchArena(to: newEnv)
             }
@@ -141,6 +274,14 @@ struct BattleView: View {
             }
 
             if newPhase == .revealing, let result = viewModel.battleResult {
+                // Tournaments can't end in a draw. If one slips through, take over the
+                // result flow: first draw re-runs the fight in a different arena; second
+                // draw is settled with a client-side kid-friendly tiebreaker scenario.
+                if onTournamentComplete != nil && result.winner == "draw" {
+                    handleTournamentDraw()
+                    return
+                }
+
                 battleScene.setBattleResult(result)
 
                 // Haptic feedback on result reveal
@@ -165,7 +306,24 @@ struct BattleView: View {
             if newPhase == .complete {
                 let justHitMilestone = UserSettings.shared.justUnlockedFantasy
                 let justHitOlympus   = UserSettings.shared.justUnlockedOlympus
+                let justHitTournament = UserSettings.shared.justUnlockedTournament
                 UserSettings.shared.recordBattle()
+                // Tournament battles don't earn normal battle coins — coin flow is wager-driven.
+                if onTournamentComplete == nil {
+                    CoinStore.shared.earnBattleCoins()
+                }
+
+                // First custom creature bonus (+50 coins, once ever) — show celebration banner
+                if onTournamentComplete == nil && (fighter1.isCustom || fighter2.isCustom) {
+                    if CoinStore.shared.earnFirstCustomBonus() {
+                        HapticsService.shared.success()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                                showFirstCustomBanner = true
+                            }
+                        }
+                    }
+                }
 
                 // Fantasy milestone celebration (fires once, the battle that crosses 250)
                 if justHitMilestone {
@@ -185,6 +343,31 @@ struct BattleView: View {
                             showOlympusBanner = true
                         }
                     }
+                }
+
+                // Tournament milestone celebration (fires once at 30)
+                if justHitTournament {
+                    HapticsService.shared.success()
+                    // Also seed 200 starter coins for the first tournament
+                    CoinStore.shared.awardTournamentSeedIfNeeded()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                        withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                            showTournamentBanner = true
+                        }
+                    }
+                }
+
+                // ── Achievement tracking ──
+                if let result = viewModel.battleResult {
+                    AchievementTracker.shared.checkBattleAchievements(
+                        fighter1: fighter1,
+                        fighter2: fighter2,
+                        result: result,
+                        environment: displayEnvironment
+                    )
+                    AchievementTracker.shared.checkStreakAchievements(streak: UserSettings.shared.currentStreak)
+                    AchievementTracker.shared.checkCoinAchievements(balance: CoinStore.shared.balance)
+                    AchievementTracker.shared.checkPackAchievements()
                 }
 
                 // App Store review prompt — request after 5th battle
@@ -356,25 +539,27 @@ struct BattleView: View {
         return VStack(spacing: 0) {
             // Environment badge + fighter badges row
             VStack(spacing: 6) {
-                // Arena label
-                HStack(spacing: 5) {
-                    Text(displayEnvironment.emoji).font(.system(size: 13))
-                    Text(displayEnvironment.name.uppercased())
-                        .font(.system(size: 9, weight: .black, design: .rounded))
-                        .foregroundColor(displayEnvironment.accentColor)
-                        .tracking(1.5)
-                    Text("ARENA")
-                        .font(.system(size: 9, weight: .black, design: .rounded))
-                        .foregroundColor(displayEnvironment.accentColor.opacity(0.6))
-                        .tracking(1.5)
+                // Arena label — only shown when arena effects are active
+                if viewModel.arenaEffectsEnabled {
+                    HStack(spacing: 5) {
+                        Text(displayEnvironment.emoji).font(.system(size: 13))
+                        Text(displayEnvironment.name.uppercased())
+                            .font(.system(size: 9, weight: .black, design: .rounded))
+                            .foregroundColor(displayEnvironment.accentColor)
+                            .tracking(1.5)
+                        Text("ARENA")
+                            .font(.system(size: 9, weight: .black, design: .rounded))
+                            .foregroundColor(displayEnvironment.accentColor.opacity(0.6))
+                            .tracking(1.5)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 5)
+                    .background(
+                        Capsule()
+                            .fill(displayEnvironment.accentColor.opacity(0.12))
+                            .overlay(Capsule().stroke(displayEnvironment.accentColor.opacity(0.3), lineWidth: 1))
+                    )
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 5)
-                .background(
-                    Capsule()
-                        .fill(displayEnvironment.accentColor.opacity(0.12))
-                        .overlay(Capsule().stroke(displayEnvironment.accentColor.opacity(0.3), lineWidth: 1))
-                )
 
                 HStack(spacing: 0) {
                     fighterTurnBadge(animal: fighter1, image: fighter1Image, color: Theme.orange)
@@ -394,8 +579,8 @@ struct BattleView: View {
                         .fill(LinearGradient(colors: [.clear, Theme.orange.opacity(0.4)], startPoint: .leading, endPoint: .trailing))
                         .frame(height: 1)
                     Text("BATTLE STATS")
-                        .font(.system(size: 8, weight: .black, design: .rounded))
-                        .foregroundColor(Theme.textSecondary)
+                        .font(Theme.bungee(8))
+                        .foregroundColor(.white.opacity(0.6))
                         .tracking(2)
                         .padding(.horizontal, 10)
                     Rectangle()
@@ -462,8 +647,8 @@ struct BattleView: View {
             .frame(height: 9)
 
             Text(label)
-                .font(.system(size: 7, weight: .black, design: .rounded))
-                .foregroundColor(Theme.textSecondary)
+                .font(Theme.bungee(7))
+                .foregroundColor(.white.opacity(0.6))
                 .frame(width: 52)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
@@ -496,10 +681,10 @@ struct BattleView: View {
                     .overlay(
                         LinearGradient(
                             stops: [
-                                .init(color: Theme.bgDeep, location: 0.0),
-                                .init(color: Theme.bgDeep, location: 0.30),
+                                .init(color: Color.black.opacity(0.6), location: 0.0),
+                                .init(color: Color.black.opacity(0.6), location: 0.30),
                                 .init(color: .clear, location: 0.55),
-                                .init(color: Theme.bgDeep.opacity(0.7), location: 1.0)
+                                .init(color: Color.black.opacity(0.4), location: 1.0)
                             ],
                             startPoint: .top, endPoint: .bottom
                         )
@@ -533,7 +718,7 @@ struct BattleView: View {
                 VStack(spacing: 0) {
                     // Drag pill — drag down to peek at the battle scene beneath
                     RoundedRectangle(cornerRadius: 3)
-                        .fill(Theme.divider)
+                        .fill(Color.white.opacity(0.15))
                         .frame(width: 40, height: 5)
                         .padding(.top, 14)
                         .padding(.bottom, 18)
@@ -566,9 +751,15 @@ struct BattleView: View {
                                     Text("⚔️")
                                         .font(.system(size: 60))
                                     Text("IT'S A DRAW!")
-                                        .font(.system(size: 26, weight: .black, design: .rounded))
+                                        .font(Theme.bungee(26))
                                         .foregroundColor(Theme.gold)
                                         .shadow(color: Theme.gold.opacity(0.4), radius: 8, x: 0, y: 0)
+                                    Text("Neither fighter could claim victory — their strengths were too evenly matched.")
+                                        .font(Theme.bungee(13))
+                                        .foregroundColor(.white.opacity(0.65))
+                                        .multilineTextAlignment(.center)
+                                        .padding(.horizontal, 20)
+                                        .padding(.top, 2)
                                 }
                             } else {
                                 VStack(spacing: 6) {
@@ -577,12 +768,12 @@ struct BattleView: View {
                                         .shadow(color: Theme.gold.opacity(0.6), radius: 12, x: 0, y: 0)
 
                                     Text("WINNER!")
-                                        .font(.system(size: 13, weight: .bold, design: .rounded))
-                                        .foregroundColor(Theme.textSecondary)
+                                        .font(Theme.bungee(13))
+                                        .foregroundColor(.white.opacity(0.6))
                                         .tracking(3)
 
                                     Text(winnerAnimal.name.uppercased())
-                                        .font(.system(size: 26, weight: .black, design: .rounded))
+                                        .font(Theme.bungee(26))
                                         .foregroundStyle(
                                             LinearGradient(
                                                 colors: [winnerAccent, Theme.gold],
@@ -594,7 +785,8 @@ struct BattleView: View {
                                 }
                             }
 
-                            // Environment badge
+                            // Environment badge — only shown when arena effects are active
+                            if viewModel.arenaEffectsEnabled {
                             HStack(spacing: 5) {
                                 Text(displayEnvironment.emoji).font(.system(size: 12))
                                 Text("\(displayEnvironment.name.uppercased()) ARENA")
@@ -609,8 +801,11 @@ struct BattleView: View {
                                     .fill(displayEnvironment.accentColor.opacity(0.12))
                                     .overlay(Capsule().stroke(displayEnvironment.accentColor.opacity(0.3), lineWidth: 1))
                             )
+                            } // end arenaEffectsEnabled
 
-                            // Winner photo
+                            // Winner photo — full Wikipedia photo, fitted (never zoomed/cropped).
+                            // Uses a dark letterbox background instead of a blurred crop of the image
+                            // itself, so the photo always shows at its true framing.
                             if !isDraw, let photoURL = winnerPhotoURL {
                                 AsyncImage(url: photoURL) { phase in
                                     switch phase {
@@ -618,9 +813,13 @@ struct BattleView: View {
                                         image
                                             .resizable()
                                             .aspectRatio(contentMode: .fit)
+                                            .frame(maxWidth: .infinity, maxHeight: 190)
+                                            .padding(8)
                                             .frame(maxWidth: .infinity)
-                                            .frame(maxHeight: 240)
-                                            .clipShape(RoundedRectangle(cornerRadius: 18))
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 18)
+                                                    .fill(Color.black.opacity(0.35))
+                                            )
                                             .overlay(
                                                 RoundedRectangle(cornerRadius: 18)
                                                     .stroke(
@@ -629,13 +828,15 @@ struct BattleView: View {
                                                     )
                                             )
                                             .shadow(color: winnerAccent.opacity(0.35), radius: 12, x: 0, y: 6)
+                                            .padding(.horizontal, 12)
                                     case .failure:
                                         EmptyView()
                                     case .empty:
                                         RoundedRectangle(cornerRadius: 18)
                                             .fill(Color.white.opacity(0.05))
-                                            .frame(maxWidth: .infinity).frame(height: 160)
+                                            .frame(maxWidth: .infinity).frame(height: 190)
                                             .overlay(ProgressView().tint(Theme.gold))
+                                            .padding(.horizontal, 12)
                                     @unknown default:
                                         EmptyView()
                                     }
@@ -663,7 +864,7 @@ struct BattleView: View {
                             // Narration (typewriter)
                             Text(viewModel.narrationDisplayed)
                                 .font(.system(size: 16, weight: .regular, design: .rounded))
-                                .foregroundColor(Theme.textPrimary)
+                                .foregroundColor(.white)
                                 .multilineTextAlignment(.center)
                                 .lineSpacing(5)
                                 .padding(.horizontal, 4)
@@ -672,7 +873,13 @@ struct BattleView: View {
                             // Speaker button
                             if viewModel.phase == .complete, !result.narration.isEmpty {
                                 Button(action: {
-                                    speech.speak(result.narration + (result.funFact.isEmpty ? "" : ". Fun fact: \(result.funFact)"))
+                                    let settings = UserSettings.shared
+                                    if !SpeechService.hasHighQualityVoice && !settings.hasSeenVoiceQualityPrompt {
+                                        settings.hasSeenVoiceQualityPrompt = true
+                                        showVoiceQualityPrompt = true
+                                    } else {
+                                        speech.speak(result.narration + (result.funFact.isEmpty ? "" : ". Fun fact: \(result.funFact)"))
+                                    }
                                 }) {
                                     HStack(spacing: 8) {
                                         Image(systemName: speech.isSpeaking ? "speaker.wave.3.fill" : "speaker.wave.2")
@@ -680,14 +887,14 @@ struct BattleView: View {
                                         Text(speech.isSpeaking ? "Stop" : "Read Aloud")
                                             .font(.system(size: 14, weight: .semibold, design: .rounded))
                                     }
-                                    .foregroundColor(speech.isSpeaking ? Theme.orange : Theme.textSecondary)
+                                    .foregroundColor(speech.isSpeaking ? Theme.orange : .white.opacity(0.6))
                                     .padding(.horizontal, 18)
                                     .padding(.vertical, 9)
                                     .background(
                                         Capsule()
-                                            .fill(speech.isSpeaking ? Theme.orange.opacity(0.15) : Theme.cardFill)
+                                            .fill(speech.isSpeaking ? Theme.orange.opacity(0.15) : Color.white.opacity(0.12))
                                             .overlay(Capsule().stroke(
-                                                speech.isSpeaking ? Theme.orange.opacity(0.4) : Theme.cardBorder,
+                                                speech.isSpeaking ? Theme.orange.opacity(0.4) : Color.white.opacity(0.2),
                                                 lineWidth: 1
                                             ))
                                     )
@@ -708,7 +915,7 @@ struct BattleView: View {
 
                                     Text(result.funFact)
                                         .font(.system(size: 14, weight: .medium, design: .rounded))
-                                        .foregroundColor(Theme.textPrimary)
+                                        .foregroundColor(.white)
                                         .multilineTextAlignment(.leading)
                                         .lineSpacing(4)
                                         .fixedSize(horizontal: false, vertical: true)
@@ -742,7 +949,7 @@ struct BattleView: View {
                             topLeadingRadius: 30, bottomLeadingRadius: 0,
                             bottomTrailingRadius: 0, topTrailingRadius: 30
                         )
-                        .stroke(Theme.cardBorder, lineWidth: 1)
+                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
                     )
                 )
             }
@@ -753,126 +960,394 @@ struct BattleView: View {
 
     @ViewBuilder
     private var resultActionButtons: some View {
-        VStack(spacing: 12) {
-            // Share button
-            if let result = viewModel.battleResult {
+        if let onTournamentComplete = onTournamentComplete {
+            // ── Tournament mode: single CONTINUE button only ──────────
+            VStack(spacing: 10) {
                 Button {
-                    HapticsService.shared.medium()
-                    shareImage = BattleShareCard.render(
-                        fighter1: fighter1,
-                        fighter2: fighter2,
-                        result: result,
-                        environment: displayEnvironment,
-                        image1: fighter1Image,
-                        image2: fighter2Image
-                    )
-if shareImage != nil { showShareSheet = true }
+                    if let result = viewModel.battleResult {
+                        HapticsService.shared.medium()
+                        onTournamentComplete(result)
+                    }
                 } label: {
-                    shareButtonLabel
+                    HStack(spacing: 10) {
+                        Text("🏆").font(.system(size: 18))
+                        Text("CONTINUE TOURNAMENT")
+                    }
                 }
-                .buttonStyle(PressableButtonStyle())
+                .buttonStyle(MegaButtonStyle(color: .gold, height: 60, cornerRadius: 18, fontSize: 16))
+                .disabled(viewModel.battleResult == nil)
             }
+        } else {
+        VStack(spacing: 10) {
 
-            // Try New Arena — environment picker
+            // ── Primary: New Arena ───────────────────────────────
             Button {
                 HapticsService.shared.tap()
                 showArenaSheet = true
             } label: {
-                HStack(spacing: 8) {
-                    Text(displayEnvironment.emoji).font(.system(size: 18))
-                    VStack(alignment: .leading, spacing: 1) {
-                        Text("TRY NEW ARENA")
-                            .font(.system(size: 14, weight: .black, design: .rounded))
-                            .foregroundColor(.white)
-                        Text("Same fighters, different terrain")
-                            .font(.system(size: 11, weight: .medium, design: .rounded))
-                            .foregroundColor(.white.opacity(0.6))
-                    }
+                HStack(spacing: 10) {
+                    Text(displayEnvironment.emoji).font(.system(size: 20))
+                    Text("TRY NEW ARENA")
+                        .font(Theme.bungee(16))
+                        .foregroundColor(.white)
                     Spacer()
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundColor(.white.opacity(0.5))
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundColor(.white.opacity(0.6))
                 }
-                .padding(.horizontal, 16)
-                .frame(maxWidth: .infinity)
-                .frame(height: 52)
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(displayEnvironment.accentColor.opacity(0.15))
-                        .overlay(RoundedRectangle(cornerRadius: 16)
-                            .stroke(displayEnvironment.accentColor.opacity(0.4), lineWidth: 1.5))
-                )
-            }
-            .buttonStyle(PressableButtonStyle())
-
-            // Rematch
-            Button {
-                guard !AdManager.shared.isShowingAd else { return }
-                AdManager.shared.showInterstitialIfNeeded {
-                    showConfetti = false
-                    battleRound += 1
-                    battleScene.reset()
-                    viewModel.rematch()
-                    winnerPhotoURL = nil
-                    withAnimation(.spring(response: 0.4)) {
-                        resultsPanelOffset = 700
-                        fighter1Offset = -introOffset
-                        fighter2Offset = introOffset
-                        vsScale = 0.1
-                        vsOpacity = 0
-                    }
-                }
-            } label: {
-                HStack(spacing: 8) {
-                    Text("🔄")
-                    Text("REMATCH!")
-                        .font(.system(size: 17, weight: .black, design: .rounded))
-                        .foregroundColor(.white)
-                }
+                .padding(.horizontal, 18)
                 .frame(maxWidth: .infinity)
                 .frame(height: 56)
                 .background(
                     RoundedRectangle(cornerRadius: 18)
                         .fill(LinearGradient(
-                            colors: [Theme.orange, Theme.yellow],
+                            colors: [displayEnvironment.accentColor.opacity(0.85),
+                                     displayEnvironment.accentColor],
                             startPoint: .leading, endPoint: .trailing
                         ))
                 )
-                .shadow(color: Theme.orange.opacity(0.45), radius: 10, x: 0, y: 5)
+                .shadow(color: displayEnvironment.accentColor.opacity(0.4), radius: 10, x: 0, y: 4)
             }
             .buttonStyle(PressableButtonStyle())
-            .disabled(AdManager.shared.isShowingAd)
 
-            // New Battle
+            // ── Secondary row: Share + Rematch ───────────────────
+            HStack(spacing: 10) {
+                if let result = viewModel.battleResult {
+                    Button {
+                        HapticsService.shared.medium()
+                        shareImage = BattleShareCard.render(
+                            fighter1: fighter1,
+                            fighter2: fighter2,
+                            result: result,
+                            environment: displayEnvironment,
+                            arenaEffectsEnabled: viewModel.arenaEffectsEnabled,
+                            image1: fighter1Image,
+                            image2: fighter2Image
+                        )
+                        if shareImage != nil { showShareSheet = true }
+                    } label: {
+                        HStack(spacing: 5) {
+                            Image(systemName: "square.and.arrow.up")
+                                .font(.system(size: 13, weight: .semibold))
+                            Text("Share")
+                                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        }
+                        .foregroundColor(.white.opacity(0.65))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 44)
+                        .background(
+                            RoundedRectangle(cornerRadius: 13)
+                                .fill(Color.white.opacity(0.06))
+                                .overlay(RoundedRectangle(cornerRadius: 13)
+                                    .stroke(Color.white.opacity(0.12), lineWidth: 1))
+                        )
+                    }
+                    .buttonStyle(PressableButtonStyle())
+                }
+
+                Button {
+                    guard !AdManager.shared.isShowingAd else { return }
+                    AdManager.shared.showInterstitialIfNeeded {
+                        showConfetti = false
+                        battleRound += 1
+                        battleScene.reset()
+                        viewModel.rematch()
+                        winnerPhotoURL = nil
+                        withAnimation(.spring(response: 0.4)) {
+                            resultsPanelOffset = 700
+                            fighter1Offset = -introOffset
+                            fighter2Offset = introOffset
+                            vsScale = 0.1
+                            vsOpacity = 0
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 5) {
+                        Text("🔄").font(.system(size: 13))
+                        Text("Rematch")
+                            .font(.system(size: 13, weight: .semibold, design: .rounded))
+                            .foregroundColor(.white.opacity(0.65))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 44)
+                    .background(
+                        RoundedRectangle(cornerRadius: 13)
+                            .fill(Color.white.opacity(0.06))
+                            .overlay(RoundedRectangle(cornerRadius: 13)
+                                .stroke(Color.white.opacity(0.12), lineWidth: 1))
+                    )
+                }
+                .buttonStyle(PressableButtonStyle())
+                .disabled(AdManager.shared.isShowingAd)
+            }
+
+            // ── Tertiary: New Battle ─────────────────────────────
             Button {
                 guard !AdManager.shared.isShowingAd else { return }
                 AdManager.shared.showInterstitialIfNeeded { dismiss() }
             } label: {
-                HStack(spacing: 8) {
+                HStack(spacing: 6) {
                     Text("🐾")
-                    Text("NEW BATTLE")
-                        .font(.system(size: 17, weight: .black, design: .rounded))
-                        .foregroundColor(Theme.textPrimary)
+                        .font(.system(size: 14))
+                    Text("New Battle")
+                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                        .foregroundColor(Theme.orange)
                 }
                 .frame(maxWidth: .infinity)
-                .frame(height: 56)
+                .frame(height: 44)
                 .background(
-                    RoundedRectangle(cornerRadius: 18)
-                        .fill(Theme.cardFill)
-                        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Theme.cardBorder, lineWidth: 1.5))
+                    RoundedRectangle(cornerRadius: 13)
+                        .fill(Theme.orange.opacity(0.12))
+                        .overlay(RoundedRectangle(cornerRadius: 13)
+                            .stroke(Theme.orange.opacity(0.35), lineWidth: 1))
                 )
             }
             .buttonStyle(PressableButtonStyle())
             .disabled(AdManager.shared.isShowingAd)
         }
+        }  // end else (non-tournament mode)
+    }
+
+    // MARK: - Tournament Draw Elimination
+
+    /// Called from `.onChange(of: viewModel.phase)` when a tournament battle resolves
+    /// to a draw. First draw re-runs the fight in a different arena; second draw is
+    /// resolved with a client-side kid-friendly tiebreaker scenario that picks a winner.
+    /// Both banners wait for the user to tap CONTINUE so they have time to read them.
+    private func handleTournamentDraw() {
+        HapticsService.shared.warning()
+        tournamentDrawRetryCount += 1
+
+        if tournamentDrawRetryCount == 1 {
+            // Retry in a different arena — sometimes a draw is just an arena-balance quirk.
+            pendingTournamentDrawContinuation = {
+                let newEnv = pickDifferentTournamentArena()
+                withAnimation(.easeOut(duration: 0.25)) {
+                    showTournamentOvertimeBanner = false
+                }
+                pendingTournamentDrawContinuation = nil
+                // Slight delay so the banner fully dismisses before the arena swap kicks in.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) {
+                    switchArena(to: newEnv)
+                }
+            }
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                showTournamentOvertimeBanner = true
+            }
+        } else {
+            // Settle with a silly tiebreaker so the bracket can advance.
+            let tiebreaker = synthesizeTiebreakerResult()
+            tiebreakerTitle = tiebreaker.title
+            tiebreakerSubtitle = tiebreaker.subtitle
+            pendingTournamentDrawContinuation = {
+                withAnimation(.easeOut(duration: 0.25)) {
+                    showTournamentTiebreakerBanner = false
+                }
+                pendingTournamentDrawContinuation = nil
+                // Feed the synthesized result into the next battle run so the normal
+                // reveal flow (typewriter, confetti, results panel) picks it up.
+                viewModel.forcedResult = tiebreaker.result
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) {
+                    rerunCurrentBattle()
+                }
+            }
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                showTournamentTiebreakerBanner = true
+            }
+        }
+    }
+
+    /// Kicks off a fresh battle run in the current arena (no env change).
+    /// Used when injecting a forcedResult after a second draw.
+    private func rerunCurrentBattle() {
+        showConfetti = false
+        battleRound += 1
+        battleScene.reset()
+        viewModel.rematch()
+        winnerPhotoURL = nil
+        withAnimation(.spring(response: 0.4)) {
+            resultsPanelOffset = 700
+            fighter1Offset = -introOffset
+            fighter2Offset = introOffset
+            vsScale = 0.1
+            vsOpacity = 0
+        }
+    }
+
+    /// Picks a random free-tier arena different from the current one so the
+    /// rematch always feels like a venue change.
+    private func pickDifferentTournamentArena() -> BattleEnvironment {
+        let pool: [BattleEnvironment] = [.grassland, .ocean, .sky, .arctic, .desert]
+        let candidates = pool.filter { $0 != displayEnvironment }
+        return candidates.randomElement() ?? .grassland
+    }
+
+    /// Builds a randomized kid-friendly tiebreaker `BattleResult` that always
+    /// picks a winner. Used only when two consecutive draws happen in tournament mode.
+    private func synthesizeTiebreakerResult() -> (result: BattleResult, title: String, subtitle: String) {
+        // Coin flip who wins
+        let fighter1Wins = Bool.random()
+        let winner  = fighter1Wins ? fighter1 : fighter2
+        let loser   = fighter1Wins ? fighter2 : fighter1
+
+        // Pick a silly scenario
+        struct Scenario {
+            let title: String
+            let subtitle: String
+            let narrate: (String, String) -> String
+            let funFact: (String) -> String
+        }
+        let scenarios: [Scenario] = [
+            Scenario(
+                title: "THUMB WRESTLING!",
+                subtitle: "Best of three, winner takes all.",
+                narrate: { w, l in "After two ties, the judges called for a THUMB WRESTLING showdown! \(w) pinned \(l)'s thumb in a photo finish and took the win." },
+                funFact: { w in "\(w) has surprisingly strong thumbs for a creature this size." }
+            ),
+            Scenario(
+                title: "ROCK PAPER SCISSORS!",
+                subtitle: "One throw, best of one.",
+                narrate: { w, l in "Locked in a tie, the fight came down to ROCK PAPER SCISSORS. \(w) threw rock, \(l) threw scissors, and the crowd went wild!" },
+                funFact: { w in "\(w) is apparently a rock-paper-scissors prodigy." }
+            ),
+            Scenario(
+                title: "STARING CONTEST!",
+                subtitle: "Don't blink or you lose.",
+                narrate: { w, l in "After two draws the champions squared up for a STARING CONTEST. \(l) blinked first and \(w) claimed the trophy!" },
+                funFact: { w in "\(w) can hold a glare longer than you'd ever believe." }
+            ),
+            Scenario(
+                title: "COIN FLIP!",
+                subtitle: "Heads or tails for all the glory.",
+                narrate: { w, l in "The ref tossed a giant coin high into the air. It landed on \(w)'s side, leaving \(l) to shake hands and plot a rematch." },
+                funFact: { w in "\(w) is having a very lucky day." }
+            ),
+            Scenario(
+                title: "LIMBO CONTEST!",
+                subtitle: "How low can you go?",
+                narrate: { w, l in "Two draws in a row meant only one thing — LIMBO! \(w) bent like a noodle while \(l) tipped the bar and lost the round." },
+                funFact: { w in "\(w) is secretly very bendy." }
+            ),
+            Scenario(
+                title: "SANDCASTLE BUILD-OFF!",
+                subtitle: "Tallest castle in two minutes.",
+                narrate: { w, l in "With the score dead-even, the fighters were handed buckets for a SANDCASTLE BUILD-OFF. \(w)'s castle towered over \(l)'s and took the win." },
+                funFact: { w in "\(w) has a surprising talent for architecture." }
+            ),
+            Scenario(
+                title: "CANNONBALL SPLASH!",
+                subtitle: "Biggest splash wins.",
+                narrate: { w, l in "After two draws, the battle moved to the pool for a CANNONBALL contest. \(w) made a splash so big the judges got drenched — an easy win over \(l)!" },
+                funFact: { w in "\(w) is a certified splash champion." }
+            ),
+            Scenario(
+                title: "HIDE AND SEEK!",
+                subtitle: "Find your opponent in 60 seconds.",
+                narrate: { w, l in "Neither could land the knockout blow, so it came down to HIDE AND SEEK. \(w) found \(l) in record time and won the round." },
+                funFact: { w in "\(w) has an amazing nose for finding hidden things." }
+            ),
+            Scenario(
+                title: "DANCE-OFF!",
+                subtitle: "Who's got the best moves?",
+                narrate: { w, l in "With no clear winner, the fighters cranked the music for a DANCE-OFF. \(w) busted out moves so cool the crowd voted \(l) out." },
+                funFact: { w in "\(w) has rhythm you would not expect." }
+            ),
+            Scenario(
+                title: "BUBBLE GUM BUBBLE!",
+                subtitle: "Blow the biggest bubble.",
+                narrate: { w, l in "The fighters were handed bubble gum. \(w) blew a bubble the size of a beach ball while \(l)'s popped early. Champion crowned!" },
+                funFact: { w in "\(w) can blow enormous bubbles. Who knew?" }
+            )
+        ]
+        let pick = scenarios.randomElement()!
+
+        let result = BattleResult(
+            winner: winner.id,
+            narration: pick.narrate(winner.name, loser.name),
+            funFact: pick.funFact(winner.name),
+            winnerHealthPercent: 55,
+            loserHealthPercent: 45
+        )
+        return (result, pick.title, pick.subtitle)
+    }
+
+    // MARK: - Tournament Draw Banner
+
+    /// Full-screen centered banner shown when a tournament draw is intercepted.
+    /// Waits for the user to tap CONTINUE before running the continuation, so the
+    /// message has time to register.
+    private func tournamentDrawBanner(title: String, subtitle: String, emoji: String, glow: Color) -> some View {
+        ZStack {
+            // Dim backdrop — tapping anywhere outside also advances.
+            Color.black.opacity(0.55)
+                .ignoresSafeArea()
+                .contentShape(Rectangle())
+                .onTapGesture { pendingTournamentDrawContinuation?() }
+
+            VStack(spacing: 16) {
+                Text(emoji)
+                    .font(.system(size: 68))
+                Text(title)
+                    .font(Theme.bungee(28))
+                    .foregroundColor(.white)
+                    .tracking(1.5)
+                    .multilineTextAlignment(.center)
+                    .shadow(color: glow.opacity(0.8), radius: 14, x: 0, y: 0)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(subtitle)
+                    .font(Theme.bungee(15))
+                    .foregroundColor(.white.opacity(0.9))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 12)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Button {
+                    HapticsService.shared.medium()
+                    pendingTournamentDrawContinuation?()
+                } label: {
+                    Text("CONTINUE")
+                }
+                .buttonStyle(MegaButtonStyle(color: .gold, height: 54, cornerRadius: 16, fontSize: 16))
+                .padding(.top, 8)
+                .padding(.horizontal, 10)
+
+                Text("tap anywhere to continue")
+                    .font(Theme.bungee(11))
+                    .foregroundColor(.white.opacity(0.55))
+                    .tracking(0.5)
+            }
+            .padding(.vertical, 28)
+            .padding(.horizontal, 24)
+            .frame(maxWidth: 340)
+            .background(
+                RoundedRectangle(cornerRadius: 26)
+                    .fill(.ultraThinMaterial)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 26)
+                            .stroke(glow.opacity(0.7), lineWidth: 2)
+                    )
+                    .shadow(color: glow.opacity(0.5), radius: 20, x: 0, y: 0)
+            )
+            .padding(.horizontal, 24)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     // MARK: - Switch Arena
 
     private func switchArena(to newEnv: BattleEnvironment) {
-        guard newEnv != displayEnvironment else { return }
+        // Allow the switch if either the environment is different, OR effects
+        // were previously off — picking grasslands after a no-arena fight is
+        // still a meaningful transition (neutral → grasslands with effects on).
+        let sameEnv = newEnv == displayEnvironment
+        let alreadyHadEffects = viewModel.arenaEffectsEnabled
+        guard !sameEnv || !alreadyHadEffects else { return }
         viewModel.environment = newEnv
         displayEnvironment = newEnv
+        // Explicitly picking a new arena from the winner card means "I want the
+        // arena to matter" — re-enable arena effects so the new environment
+        // actually influences the rematch.
+        viewModel.arenaEffectsEnabled = true
         battleScene = BattleScene(
             fighter1: fighter1,
             fighter2: fighter2,
@@ -895,45 +1370,28 @@ if shareImage != nil { showShareSheet = true }
         }
     }
 
-    private var shareButtonLabel: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "square.and.arrow.up")
-                .font(.system(size: 16, weight: .bold))
-            Text("SHARE THIS BATTLE")
-                .font(.system(size: 16, weight: .black, design: .rounded))
-        }
-        .foregroundColor(.white)
-        .frame(maxWidth: .infinity)
-        .frame(height: 56)
-        .background(
-            RoundedRectangle(cornerRadius: 18)
-                .fill(LinearGradient(
-                    colors: [Theme.gold, Theme.orange],
-                    startPoint: .leading, endPoint: .trailing
-                ))
-                .overlay(RoundedRectangle(cornerRadius: 18)
-                    .stroke(Color.white.opacity(0.25), lineWidth: 1))
-        )
-        .shadow(color: Theme.gold.opacity(0.4), radius: 12, x: 0, y: 5)
-    }
 }
 
 // MARK: - Arena Picker Sheet
 
 struct ArenaPickerSheet: View {
     @Binding var isPresented: Bool
-    let current: BattleEnvironment
+    /// The arena the previous battle was fought in, or `nil` if the battle was
+    /// neutral (arena effects off). When nil, no grid cell is badged "CURRENT".
+    let current: BattleEnvironment?
     let onSelect: (BattleEnvironment) -> Void
 
     @ObservedObject private var settings = UserSettings.shared
     @State private var selected: BattleEnvironment
     @State private var showPackSheet = false
 
-    init(isPresented: Binding<Bool>, current: BattleEnvironment, onSelect: @escaping (BattleEnvironment) -> Void) {
+    init(isPresented: Binding<Bool>, current: BattleEnvironment?, onSelect: @escaping (BattleEnvironment) -> Void) {
         self._isPresented = isPresented
         self.current = current
         self.onSelect = onSelect
-        self._selected = State(initialValue: current)
+        // Preselect the current arena if there was one; otherwise default to
+        // grassland so the confirm-button label reads sensibly on open.
+        self._selected = State(initialValue: current ?? .grassland)
     }
 
     private let columns = [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())]
@@ -941,17 +1399,21 @@ struct ArenaPickerSheet: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Theme.mainBg.ignoresSafeArea()
+                ScreenBackground(style: .battle).ignoresSafeArea()
 
                 VStack(spacing: 0) {
                     // Header
                     VStack(spacing: 4) {
                         Text("CHOOSE YOUR ARENA")
-                            .font(.system(size: 18, weight: .black, design: .rounded))
+                            .font(Theme.bungee(18))
                             .foregroundColor(.white)
-                        Text("Same fighters — new battleground")
+                        Text(current == nil
+                             ? "Last round had no arena — pick one to add effects"
+                             : "Same fighters — new battleground")
                             .font(.system(size: 13, weight: .medium, design: .rounded))
-                            .foregroundColor(Theme.textSecondary)
+                            .foregroundColor(.white.opacity(0.6))
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 24)
                     }
                     .padding(.top, 24)
                     .padding(.bottom, 20)
@@ -961,7 +1423,10 @@ struct ArenaPickerSheet: View {
                         ForEach(BattleEnvironment.allCases) { env in
                             let isUnlocked = settings.isEnvironmentUnlocked(env)
                             let isSel = env == selected
-                            let isCur = env == current
+                            // Only show a "CURRENT" badge if there actually WAS
+                            // an arena last round — otherwise the grasslands
+                            // default would falsely claim to be the battle venue.
+                            let isCur = current != nil && env == current
 
                             Button {
                                 if isUnlocked {
@@ -988,7 +1453,7 @@ struct ArenaPickerSheet: View {
                                             .opacity(isUnlocked ? 1.0 : 0.4)
                                         Text(env.name.uppercased())
                                             .font(.system(size: 9, weight: .black, design: .rounded))
-                                            .foregroundColor(isSel ? env.accentColor : Theme.textSecondary)
+                                            .foregroundColor(isSel ? env.accentColor : .white.opacity(0.6))
                                             .lineLimit(1)
                                             .minimumScaleFactor(0.6)
                                         if isCur {
@@ -1018,6 +1483,8 @@ struct ArenaPickerSheet: View {
 
                     // Confirm button
                     Button {
+                        // Trigger onSelect unless they picked the same arena
+                        // they were already fighting in — STAY is a no-op.
                         if selected != current {
                             onSelect(selected)
                         }
@@ -1025,8 +1492,10 @@ struct ArenaPickerSheet: View {
                     } label: {
                         HStack(spacing: 8) {
                             Text(selected.emoji)
-                            Text(selected == current ? "STAY IN THIS ARENA" : "FIGHT IN \(selected.name.uppercased())!")
-                                .font(.system(size: 16, weight: .black, design: .rounded))
+                            Text(current != nil && selected == current
+                                 ? "STAY IN THIS ARENA"
+                                 : "FIGHT IN \(selected.name.uppercased())!")
+                                .font(Theme.bungee(14))
                                 .foregroundColor(.white)
                         }
                         .frame(maxWidth: .infinity)
@@ -1049,7 +1518,7 @@ struct ArenaPickerSheet: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Cancel") { isPresented = false }
                         .font(.system(size: 15, weight: .semibold, design: .rounded))
-                        .foregroundColor(Theme.textSecondary)
+                        .foregroundColor(.white.opacity(0.6))
                 }
             }
         }
@@ -1130,8 +1599,7 @@ struct AdPromptSheet: View {
 
     var body: some View {
         ZStack {
-            Theme.mainBg.ignoresSafeArea()
-            SpreadStarField().ignoresSafeArea().allowsHitTesting(false)
+            ScreenBackground(style: .battle).ignoresSafeArea()
 
             VStack(spacing: 0) {
                 Spacer()
@@ -1142,12 +1610,12 @@ struct AdPromptSheet: View {
 
                 Text("ENJOYING THE APP?")
                     .font(.system(size: 20, weight: .black, design: .rounded))
-                    .foregroundColor(Theme.textPrimary)
+                    .foregroundColor(.white)
                     .padding(.bottom, 8)
 
                 Text("Remove ads forever with a one-time purchase and keep the battles going!")
                     .font(.system(size: 15, weight: .medium, design: .rounded))
-                    .foregroundColor(Theme.textSecondary)
+                    .foregroundColor(.white.opacity(0.6))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
 
@@ -1189,9 +1657,10 @@ struct AdPromptSheet: View {
 
                     // Not now
                     Button { isPresented = false } label: {
-                        Text("Not now")
-                            .font(.system(size: 15, weight: .semibold, design: .rounded))
-                            .foregroundColor(Theme.textTertiary)
+                        Text("NOT NOW")
+                            .font(Theme.bungee(13))
+                            .tracking(1)
+                            .foregroundColor(.white.opacity(0.35))
                     }
                     .buttonStyle(.plain)
                 }
@@ -1238,6 +1707,59 @@ extension BattleView {
             }
         } catch {}
         return nil
+    }
+}
+
+// MARK: - First Custom Creature Celebration Banner
+// Shown once, after the user finishes their FIRST battle with a custom creature.
+// Paired with the +50 coin bonus from CoinStore.earnFirstCustomBonus().
+
+struct FirstCustomBanner: View {
+    @Binding var isShowing: Bool
+
+    var body: some View {
+        VStack(spacing: 10) {
+            Text("✨ FIRST CUSTOM BATTLE! ✨")
+                .font(Theme.bungee(16))
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [Theme.neonGrn, Theme.gold, Theme.orange],
+                        startPoint: .leading, endPoint: .trailing
+                    )
+                )
+                .shadow(color: Theme.neonGrn.opacity(0.6), radius: 8, x: 0, y: 0)
+                .multilineTextAlignment(.center)
+
+            Text("You created your first custom fighter!")
+                .font(Theme.lilita(14))
+                .foregroundColor(.white.opacity(0.85))
+                .multilineTextAlignment(.center)
+
+            HStack(spacing: 6) {
+                GoldCoin(size: 16)
+                Text("+50 bonus coins!")
+                    .font(Theme.lilita(14))
+                    .foregroundColor(Theme.gold)
+            }
+        }
+        .padding(.horizontal, 24)
+        .padding(.vertical, 18)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(Theme.neonGrn.opacity(0.5), lineWidth: 1.5)
+                )
+        )
+        .shadow(color: Theme.neonGrn.opacity(0.3), radius: 16, x: 0, y: 6)
+        .padding(.horizontal, 28)
+        .transition(.move(edge: .top).combined(with: .opacity))
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) {
+                withAnimation(.easeOut(duration: 0.4)) { isShowing = false }
+            }
+        }
     }
 }
 

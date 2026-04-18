@@ -1,6 +1,6 @@
 import Foundation
 
-struct BattleResult: Codable {
+struct BattleResult: Codable, Equatable {
     let winner: String           // Animal ID of winner, or "draw"
     let narration: String        // 2-sentence battle narration
     let funFact: String          // One fun fact about the winner

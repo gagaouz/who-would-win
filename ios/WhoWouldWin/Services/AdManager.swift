@@ -33,8 +33,9 @@ final class AdManager: NSObject, ObservableObject {
     // Simulator → test IDs. TestFlight → test IDs (production units need App Store review).
     // App Store release → production IDs. Swap the #else block before final submission.
     #if DEBUG
-    private static let interstitialAdUnitID = "ca-app-pub-3940256099942544/4411468910"
-    private static let rewardedAdUnitID     = "ca-app-pub-3940256099942544/1712485313"
+    private static let interstitialAdUnitID  = "ca-app-pub-3940256099942544/4411468910"
+    private static let rewardedAdUnitID      = "ca-app-pub-3940256099942544/1712485313"
+    private static let coinRewardedAdUnitID  = "ca-app-pub-3940256099942544/1712485313"
     #else
     private static var isTestFlight: Bool {
         Bundle.main.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt"
@@ -47,6 +48,10 @@ final class AdManager: NSObject, ObservableObject {
         isTestFlight ? "ca-app-pub-3940256099942544/1712485313"
                      : "ca-app-pub-4887593367953664/4061419186"
     }
+    private static var coinRewardedAdUnitID: String {
+        isTestFlight ? "ca-app-pub-3940256099942544/1712485313"
+                     : "ca-app-pub-4887593367953664/3537568758"
+    }
     #endif
 
     // MARK: - State
@@ -54,11 +59,21 @@ final class AdManager: NSObject, ObservableObject {
     @Published private(set) var isShowingAd = false
 
     private var interstitial: GADInterstitialAd?
-    private var rewardedAd: GADRewardedAd?
+    private var rewardedAd: GADRewardedAd?          // custom creature gate
+    private var rewardedAdForCoins: GADRewardedAd?  // coin-earning — no paid gate
 
     private var interstitialCompletion: (() -> Void)?
     private var rewardedCompletion: ((Bool) -> Void)?
     private var rewardEarned = false
+
+    // Coin-ad tracking (separate from the creature-gate rewarded slot)
+    private var coinAdCompletion: ((Bool) -> Void)?
+    private var coinRewardEarned = false
+    private var isShowingCoinAd = false
+
+    /// Publishes true when a coin rewarded ad is loaded and ready to show.
+    /// Observe this in the UI to show/disable the "Watch Ad" button reactively.
+    @Published private(set) var coinAdReady = false
 
     // MARK: - SDK Setup
 
@@ -124,6 +139,27 @@ final class AdManager: NSObject, ObservableObject {
         presentInterstitial(ad, completion: completion)
     }
 
+    /// Tournament-specific interstitial shown between rounds. Bypasses the
+    /// per-battle counter gate because a completed round is a natural pacing
+    /// break. Still respects the ad-removal entitlement.
+    func showInterstitialForTournamentRound(completion: (() -> Void)? = nil) {
+        guard !userHasPaidForAdRemoval() else {
+            completion?()
+            preloadInterstitialIfNeeded()
+            return
+        }
+        guard let ad = interstitial else {
+            // Not loaded yet — fall through so we don't block the tournament.
+            #if DEBUG
+            print("[AdManager] Tournament interstitial not ready, skipping.")
+            #endif
+            completion?()
+            preloadInterstitialIfNeeded()
+            return
+        }
+        presentInterstitial(ad, completion: completion)
+    }
+
     // MARK: - Rewarded (custom creature gate)
 
     /// Show a rewarded ad to unlock custom-creature access for one session.
@@ -147,11 +183,65 @@ final class AdManager: NSObject, ObservableObject {
         presentRewarded(ad, completion: completion)
     }
 
+    /// Whether a coin-earning rewarded ad is currently loaded and ready to show.
+    var coinAdIsReady: Bool { rewardedAdForCoins != nil }
+
+    /// Show a rewarded ad to earn coins. No paid-user gate — everyone can earn coins.
+    /// completion(true) = reward earned. completion(false) = ad not ready / failed / dismissed early.
+    func showRewardedAdForCoins(completion: @escaping (Bool) -> Void) {
+        guard let ad = rewardedAdForCoins else {
+            preloadRewardedForCoinsIfNeeded()
+            completion(false)
+            return
+        }
+        guard let rootVC = rootViewController() else {
+            completion(false)
+            return
+        }
+        // Set up delegate tracking so dismiss/fail always resolves the completion.
+        isShowingAd = true
+        isShowingCoinAd = true
+        coinAdReady = false
+        coinAdCompletion = completion
+        coinRewardEarned = false
+        rewardedAdForCoins = nil
+        ad.fullScreenContentDelegate = self
+        ad.present(fromRootViewController: rootVC) {
+            // Fires only when the full reward is earned (before dismiss).
+            self.coinRewardEarned = true
+        }
+    }
+
     // MARK: - Preloading
 
     func preloadAll() {
         preloadInterstitialIfNeeded()
         preloadRewardedIfNeeded()
+        preloadRewardedForCoinsIfNeeded()
+    }
+
+    /// Preloads the coin-earning rewarded ad. No paid-user gate.
+    func preloadRewardedForCoinsIfNeeded() {
+        guard rewardedAdForCoins == nil else { return }
+        Task {
+            do {
+                let ad = try await GADRewardedAd.load(
+                    withAdUnitID: Self.coinRewardedAdUnitID,
+                    request: makeRequest()
+                )
+                self.rewardedAdForCoins = ad
+                self.coinAdReady = true
+                #if DEBUG
+                print("[AdManager] Coin rewarded ad loaded.")
+                #endif
+            } catch {
+                #if DEBUG
+                print("[AdManager] Coin rewarded load failed: \(error.localizedDescription)")
+                #endif
+                self.rewardedAdForCoins = nil
+                self.coinAdReady = false
+            }
+        }
     }
 
     func preloadInterstitialIfNeeded() {
@@ -236,12 +326,22 @@ final class AdManager: NSObject, ObservableObject {
     }
 
     private func rootViewController() -> UIViewController? {
-        UIApplication.shared.connectedScenes
+        guard let root = UIApplication.shared.connectedScenes
             .first(where: { $0.activationState == .foregroundActive })
-            .flatMap { $0 as? UIWindowScene }?
+            .flatMap({ $0 as? UIWindowScene })?
             .windows
             .first(where: { $0.isKeyWindow })?
             .rootViewController
+        else { return nil }
+        // Walk up the presentation chain to find the topmost presented VC.
+        // AdMob must present on top of whatever is currently visible —
+        // if a sheet (e.g. CoinsHubSheet) is already on screen, presenting
+        // on the root VC below it fails silently and the delegate never fires.
+        var top: UIViewController = root
+        while let presented = top.presentedViewController {
+            top = presented
+        }
+        return top
     }
 
     private override init() { super.init() }
@@ -259,16 +359,28 @@ extension AdManager: GADFullScreenContentDelegate {
                 let completion = self.interstitialCompletion
                 self.interstitialCompletion = nil
                 self.interstitial = nil
-                self.preloadInterstitialIfNeeded()  // background-load the next one
+                self.preloadInterstitialIfNeeded()
                 completion?()
 
             } else if ad is GADRewardedAd {
-                let earned = self.rewardEarned
-                let completion = self.rewardedCompletion
-                self.rewardedCompletion = nil
-                self.rewardedAd = nil
-                self.reloadRewardedAfterDismiss()
-                completion?(earned)
+                if self.isShowingCoinAd {
+                    // Coin-earning rewarded ad dismissed — resolve with whether reward was earned.
+                    let earned = self.coinRewardEarned
+                    let completion = self.coinAdCompletion
+                    self.coinAdCompletion = nil
+                    self.coinRewardEarned = false
+                    self.isShowingCoinAd = false
+                    self.preloadRewardedForCoinsIfNeeded()
+                    completion?(earned)
+                } else {
+                    // Creature-gate rewarded ad dismissed.
+                    let earned = self.rewardEarned
+                    let completion = self.rewardedCompletion
+                    self.rewardedCompletion = nil
+                    self.rewardedAd = nil
+                    self.reloadRewardedAfterDismiss()
+                    completion?(earned)
+                }
             }
         }
     }
@@ -286,14 +398,22 @@ extension AdManager: GADFullScreenContentDelegate {
                 self.interstitialCompletion = nil
                 self.interstitial = nil
                 self.preloadInterstitialIfNeeded()
-                completion?()   // don't block user on ad failure
+                completion?()
 
             } else if ad is GADRewardedAd {
-                let completion = self.rewardedCompletion
-                self.rewardedCompletion = nil
-                self.rewardedAd = nil
-                self.preloadRewardedIfNeeded()
-                completion?(false)
+                if self.isShowingCoinAd {
+                    let completion = self.coinAdCompletion
+                    self.coinAdCompletion = nil
+                    self.isShowingCoinAd = false
+                    self.preloadRewardedForCoinsIfNeeded()
+                    completion?(false)
+                } else {
+                    let completion = self.rewardedCompletion
+                    self.rewardedCompletion = nil
+                    self.rewardedAd = nil
+                    self.preloadRewardedIfNeeded()
+                    completion?(false)
+                }
             }
         }
     }

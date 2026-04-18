@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android Auto Backup. Exclude anything sensitive so it doesn't sync to Google.
+  Currently nothing sensitive is stored on-device, but this is the right structure
+  for when billing state and auth tokens exist.
+-->
+<full-backup-content>
+    <exclude domain="sharedpref" path="device_auth.xml"/>
+</full-backup-content>

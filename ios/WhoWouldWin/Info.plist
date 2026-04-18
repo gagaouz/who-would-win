@@ -17,13 +17,11 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0.2</string>
+	<string>1.0.8</string>
 	<key>CFBundleVersion</key>
-	<string>51</string>
+	<string>63</string>
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-4887593367953664~8348884640</string>
-	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
 	<key>LSApplicationQueriesSchemes</key>
 	<array/>
 	<key>NSAppTransportSecurity</key>
@@ -45,16 +43,11 @@
 	<string>Speak the name of any animal to search or add a custom fighter.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Speak the name of any animal to search or add a custom fighter.</string>
-	<key>SKAdNetworkItems</key>
-	<array>
-		<dict>
-			<key>SKAdNetworkIdentifier</key>
-			<string>cstr6suwn9.skadnetwork</string>
-		</dict>
-	</array>
 	<key>UIAppFonts</key>
 	<array>
 		<string>PressStart2P-Regular.ttf</string>
+		<string>Bungee-Regular.ttf</string>
+		<string>LilitaOne-Regular.ttf</string>
 	</array>
 	<key>UILaunchScreen</key>
 	<dict/>

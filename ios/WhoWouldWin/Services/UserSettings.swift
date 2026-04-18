@@ -8,15 +8,20 @@ final class UserSettings: ObservableObject {
     private let ud = UserDefaults.standard
 
     // MARK: - Sound & Vibration
-    @Published var soundEnabled: Bool     { didSet { ud.set(soundEnabled,     forKey: "pref.sound") } }
-    @Published var narrationEnabled: Bool { didSet { ud.set(narrationEnabled, forKey: "pref.narration") } }
-    @Published var hapticsEnabled: Bool   { didSet { ud.set(hapticsEnabled,   forKey: "pref.haptics") } }
+    @Published var soundEnabled: Bool               { didSet { ud.set(soundEnabled,               forKey: "pref.sound") } }
+    @Published var narrationEnabled: Bool           { didSet { ud.set(narrationEnabled,           forKey: "pref.narration") } }
+    @Published var hapticsEnabled: Bool             { didSet { ud.set(hapticsEnabled,             forKey: "pref.haptics") } }
+    @Published var hasSeenVoiceQualityPrompt: Bool  { didSet { ud.set(hasSeenVoiceQualityPrompt,  forKey: "pref.voicePromptSeen") } }
 
     // MARK: - Appearance
     @Published var isLightMode: Bool      { didSet { ud.set(isLightMode,      forKey: "pref.lightMode") } }
 
     // MARK: - Battle Tracking (for ad gating)
     @Published var totalBattleCount: Int  { didSet { ud.set(totalBattleCount, forKey: "stat.battles") } }
+
+    // MARK: - Tournament Unlock
+    @Published var tournamentUnlocked: Bool          { didSet { ud.set(tournamentUnlocked,          forKey: "pref.tournamentUnlocked") } }
+    @Published var hasSeenTournamentBanner: Bool     { didSet { ud.set(hasSeenTournamentBanner,     forKey: "pref.seenTournamentBanner") } }
 
     // MARK: - Purchases
     @Published var hasRemovedAds: Bool         { didSet { ud.set(hasRemovedAds,         forKey: "iap.noads") } }
@@ -41,9 +46,10 @@ final class UserSettings: ObservableObject {
     }
 
     private init() {
-        soundEnabled     = ud.object(forKey: "pref.sound")      as? Bool ?? true
-        narrationEnabled = ud.object(forKey: "pref.narration")  as? Bool ?? true
-        hapticsEnabled   = ud.object(forKey: "pref.haptics")    as? Bool ?? true
+        soundEnabled               = ud.object(forKey: "pref.sound")           as? Bool ?? true
+        narrationEnabled           = ud.object(forKey: "pref.narration")       as? Bool ?? true
+        hapticsEnabled             = ud.object(forKey: "pref.haptics")         as? Bool ?? true
+        hasSeenVoiceQualityPrompt  = ud.object(forKey: "pref.voicePromptSeen") as? Bool ?? false
         isLightMode      = ud.object(forKey: "pref.lightMode")  as? Bool ?? false
         totalBattleCount = ud.integer(forKey: "stat.battles")
         hasRemovedAds        = ud.bool(forKey: "iap.noads")
@@ -53,6 +59,8 @@ final class UserSettings: ObservableObject {
         mythicUnlocked       = ud.bool(forKey: "iap.mythic")
         olympusUnlocked      = ud.bool(forKey: "iap.olympus")
         environmentsUnlocked = ud.bool(forKey: "iap.environments")
+        tournamentUnlocked       = ud.bool(forKey: "pref.tournamentUnlocked")
+        hasSeenTournamentBanner  = ud.bool(forKey: "pref.seenTournamentBanner")
         currentStreak  = ud.integer(forKey: "stat.streak")
         longestStreak  = ud.integer(forKey: "stat.longestStreak")
     }
@@ -63,6 +71,29 @@ final class UserSettings: ObservableObject {
     func recordBattle() {
         totalBattleCount += 1
         updateStreak()
+        AchievementTracker.shared.checkStreakAchievements(streak: currentStreak)
+        AchievementTracker.shared.checkPackAchievements()
+        // Report to Game Center leaderboards
+        GameCenterManager.shared.reportScore(.totalBattles, value: totalBattleCount)
+        GameCenterManager.shared.reportScore(.longestStreak, value: longestStreak)
+        CloudSyncService.shared.autoSync()
+    }
+
+    /// Wipes all progress and purchases — TestFlight testing only.
+    func resetAllProgressForTesting() {
+        totalBattleCount        = 0
+        currentStreak           = 0
+        longestStreak           = 0
+        fantasyUnlocked         = false
+        prehistoricUnlocked     = false
+        mythicUnlocked          = false
+        olympusUnlocked         = false
+        hasRemovedAds           = false
+        isSubscribed            = false
+        tournamentUnlocked      = false
+        hasSeenTournamentBanner = false
+        ud.removeObject(forKey: "stat.lastBattleDate")
+        Task { @MainActor in CoinStore.shared.resetForTesting() }
     }
 
     private func updateStreak() {
@@ -94,8 +125,8 @@ final class UserSettings: ObservableObject {
     /// First 5 battles are always ad-free; then every 3rd battle.
     var shouldShowAd: Bool {
         guard !hasRemovedAds         else { return false }
-        guard totalBattleCount >= 5  else { return false }
-        return totalBattleCount % 3 == 0
+        guard totalBattleCount >= 3  else { return false }
+        return totalBattleCount % 2 == 0
     }
 
     // MARK: - Fantasy Access
@@ -164,6 +195,27 @@ final class UserSettings: ObservableObject {
     }
     var justUnlockedOlympus: Bool {
         !olympusUnlocked && totalBattleCount == Self.olympusBattleThreshold
+    }
+
+    // MARK: - Tournament Access
+
+    /// Battles required to unlock Tournament Mode for free.
+    static let tournamentBattleThreshold = 30
+
+    /// True if Tournament Mode is currently usable.
+    var isTournamentUnlocked: Bool {
+        tournamentUnlocked || isSubscribed || totalBattleCount >= Self.tournamentBattleThreshold
+    }
+
+    /// Progress toward the free tournament unlock (0.0 – 1.0).
+    var tournamentUnlockProgress: Double {
+        guard !isTournamentUnlocked else { return 1.0 }
+        return min(Double(totalBattleCount) / Double(Self.tournamentBattleThreshold), 1.0)
+    }
+
+    /// True the very first time the threshold is crossed (used to trigger celebration).
+    var justUnlockedTournament: Bool {
+        !tournamentUnlocked && !isSubscribed && totalBattleCount == Self.tournamentBattleThreshold
     }
 
     // MARK: - Environment Access

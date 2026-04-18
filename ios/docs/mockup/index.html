@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Animal vs Animal — BOLD Redesign Mockup</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lilita+One&family=Press+Start+2P&family=Bungee&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1A237E;
+    color: #fff;
+    font-family: 'Lilita One', -apple-system, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+
+  h1.page-title {
+    font-family: 'Bungee', sans-serif;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: #FFD700;
+    margin: 10px 0 6px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  }
+  .page-sub { font-size: 11px; color: #90CAF9; margin-bottom: 16px; font-family: system-ui; letter-spacing: 1px; }
+
+  .tab-bar {
+    display: flex; gap: 6px; margin-bottom: 24px; flex-wrap: wrap; justify-content: center;
+  }
+  .tab-bar button {
+    background: linear-gradient(180deg, #5C6BC0, #3949AB);
+    border: 2px solid #7986CB;
+    color: #C5CAE9;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: 'Lilita One', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 3px 0 #283593, 0 4px 8px rgba(0,0,0,0.3);
+  }
+  .tab-bar button:hover { border-color: #FFD740; color: #fff; }
+  .tab-bar button.active {
+    background: linear-gradient(180deg, #FFEB3B, #FFC107);
+    border-color: #FFB300;
+    color: #1A237E;
+    box-shadow: 0 3px 0 #FF8F00, 0 4px 12px rgba(255,235,59,0.4);
+    text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+  }
+
+  .phone {
+    width: 393px; height: 852px;
+    border-radius: 48px;
+    border: 5px solid #5C6BC0;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.7), inset 0 0 30px rgba(0,0,0,0.2);
+  }
+
+  .screen { width: 100%; height: 100%; position: relative; overflow-y: auto; overflow-x: hidden; display: none; }
+  .screen.active { display: block; }
+  .screen::-webkit-scrollbar { display: none; }
+
+  /* ===== BACKGROUNDS ===== */
+  .bg-warm {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 50% 5%, rgba(255,245,100,0.45) 0%, transparent 45%),
+      radial-gradient(ellipse at 20% 80%, rgba(76,175,80,0.25) 0%, transparent 40%),
+      radial-gradient(ellipse at 80% 70%, rgba(33,150,243,0.15) 0%, transparent 35%),
+      linear-gradient(180deg, #42A5F5 0%, #1E88E5 20%, #43A047 50%, #2E7D32 80%, #1B5E20 100%);
+  }
+  .bg-battle {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 50% 35%, rgba(255,255,150,0.2) 0%, transparent 35%),
+      radial-gradient(ellipse at 20% 20%, rgba(255,50,50,0.2) 0%, transparent 40%),
+      radial-gradient(ellipse at 80% 20%, rgba(50,150,255,0.2) 0%, transparent 40%),
+      radial-gradient(ellipse at 50% 90%, rgba(156,39,176,0.15) 0%, transparent 40%),
+      linear-gradient(180deg, #1A237E 0%, #0D47A1 20%, #1565C0 40%, #0D47A1 70%, #1A237E 100%);
+  }
+  /* Battle energy ring overlay */
+  .bg-battle::after {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 50% 35%, transparent 20%, rgba(255,215,0,0.08) 25%, transparent 30%),
+      radial-gradient(circle at 50% 35%, transparent 35%, rgba(0,200,255,0.06) 40%, transparent 45%);
+    animation: battle-pulse 3s ease-in-out infinite;
+  }
+  @keyframes battle-pulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.05); }
+  }
+  .bg-purple {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 50% 15%, rgba(255,200,255,0.3) 0%, transparent 45%),
+      radial-gradient(ellipse at 30% 80%, rgba(100,180,255,0.15) 0%, transparent 40%),
+      linear-gradient(180deg, #9C27B0 0%, #7B1FA2 30%, #6A1B9A 60%, #4A148C 100%);
+  }
+
+  /* Grass/ground strip */
+  .ground-strip {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 120px;
+    background: linear-gradient(180deg, transparent 0%, rgba(56,142,60,0.5) 40%, rgba(27,94,32,0.7) 100%);
+    z-index: 1;
+  }
+
+  /* Floating particles */
+  .particles {
+    position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none;
+  }
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    animation: floatUp var(--dur) linear infinite;
+    animation-delay: var(--delay);
+    opacity: 0;
+  }
+  @keyframes floatUp {
+    0% { opacity: 0; transform: translateY(0) scale(0.5); }
+    10% { opacity: var(--opa); }
+    90% { opacity: var(--opa); }
+    100% { opacity: 0; transform: translateY(-400px) scale(0); }
+  }
+
+  .sc { position: relative; z-index: 2; padding: 55px 16px 30px; display: flex; flex-direction: column; align-items: center; min-height: 100%; }
+
+  /* ===== GAME TITLE TEXT ===== */
+  .game-title {
+    font-family: 'Bungee', sans-serif;
+    text-transform: uppercase;
+    text-align: center;
+    line-height: 1.1;
+    position: relative;
+  }
+  .game-title .big {
+    font-size: 38px;
+    color: #FFEB3B;
+    text-shadow:
+      -3px -3px 0 #E65100,
+      3px -3px 0 #E65100,
+      -3px 3px 0 #E65100,
+      3px 3px 0 #E65100,
+      0 5px 0 #BF360C,
+      0 6px 10px rgba(0,0,0,0.4),
+      0 0 30px rgba(255,235,59,0.4);
+  }
+  .game-title .sub {
+    font-family: 'Lilita One', sans-serif;
+    font-size: 20px;
+    color: #fff;
+    text-shadow:
+      -2px -2px 0 #1565C0,
+      2px -2px 0 #1565C0,
+      -2px 2px 0 #1565C0,
+      2px 2px 0 #1565C0,
+      0 3px 8px rgba(0,0,0,0.5);
+    letter-spacing: 3px;
+    margin-top: 2px;
+  }
+
+  /* ===== MEGA BUTTON (Supercell CTA) ===== */
+  .mega-btn {
+    position: relative;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 100%;
+    height: 68px;
+    border: none;
+    border-radius: 18px;
+    font-family: 'Bungee', sans-serif;
+    font-size: 24px;
+    text-transform: uppercase;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+    letter-spacing: 1px;
+    text-shadow:
+      -2px -2px 0 rgba(0,0,0,0.3),
+      2px -2px 0 rgba(0,0,0,0.3),
+      -2px 2px 0 rgba(0,0,0,0.3),
+      2px 2px 0 rgba(0,0,0,0.3),
+      0 3px 6px rgba(0,0,0,0.4);
+  }
+  .mega-btn::before {
+    content: '';
+    position: absolute;
+    top: 3px; left: 6px; right: 6px; height: 35%;
+    border-radius: 14px 14px 50% 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, transparent 100%);
+    pointer-events: none;
+  }
+  .mega-btn:active {
+    transform: scale(0.95) translateY(3px);
+  }
+
+  .mega-btn.orange {
+    background: linear-gradient(180deg, #FFB74D 0%, #FF9800 40%, #F57C00 100%);
+    box-shadow: 0 6px 0 #E65100, 0 10px 25px rgba(255,152,0,0.5), inset 0 -3px 6px rgba(0,0,0,0.12);
+  }
+  .mega-btn.orange:active { box-shadow: 0 2px 0 #E65100, 0 4px 10px rgba(255,152,0,0.4); }
+
+  .mega-btn.green {
+    background: linear-gradient(180deg, #69F0AE 0%, #4CAF50 40%, #388E3C 100%);
+    box-shadow: 0 6px 0 #1B5E20, 0 10px 25px rgba(76,175,80,0.45), inset 0 -3px 6px rgba(0,0,0,0.12);
+  }
+
+  .mega-btn.purple {
+    background: linear-gradient(180deg, #E1BEE7 0%, #BA68C8 40%, #9C27B0 100%);
+    box-shadow: 0 6px 0 #6A1B9A, 0 10px 25px rgba(186,104,200,0.45), inset 0 -3px 6px rgba(0,0,0,0.12);
+  }
+
+  .mega-btn.gold {
+    background: linear-gradient(180deg, #FFF176 0%, #FFEB3B 40%, #FDD835 100%);
+    box-shadow: 0 6px 0 #F9A825, 0 10px 25px rgba(255,235,59,0.45), inset 0 -3px 6px rgba(0,0,0,0.1);
+    color: #1A237E;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.5), 0 2px 4px rgba(0,0,0,0.15);
+  }
+
+  .mega-btn.blue {
+    background: linear-gradient(180deg, #64B5F6 0%, #2196F3 40%, #1976D2 100%);
+    box-shadow: 0 6px 0 #0D47A1, 0 10px 25px rgba(33,150,243,0.5), inset 0 -3px 6px rgba(0,0,0,0.12);
+  }
+
+  .mega-btn.red {
+    background: linear-gradient(180deg, #EF9A9A 0%, #F44336 40%, #D32F2F 100%);
+    box-shadow: 0 6px 0 #B71C1C, 0 10px 25px rgba(244,67,54,0.5), inset 0 -3px 6px rgba(0,0,0,0.12);
+  }
+
+  .mega-btn.small {
+    height: 48px; font-size: 16px; border-radius: 14px;
+  }
+  .mega-btn.small::before { border-radius: 10px 10px 50% 50%; }
+
+  .mega-btn.disabled {
+    background: linear-gradient(180deg, #78909C, #546E7A);
+    box-shadow: 0 4px 0 #37474F;
+    opacity: 0.6; pointer-events: none;
+  }
+
+  /* ===== GAME PANEL (replaces wood) ===== */
+  .game-panel {
+    width: 100%;
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%);
+    border: 3px solid rgba(255,255,255,0.25);
+    box-shadow:
+      0 6px 20px rgba(0,0,0,0.3),
+      inset 0 1px 0 rgba(255,255,255,0.2),
+      inset 0 -2px 4px rgba(0,0,0,0.15);
+    overflow: hidden;
+    position: relative;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  .game-panel .gp-header {
+    padding: 10px 16px;
+    text-align: center;
+    font-size: 18px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    position: relative;
+    text-shadow:
+      -2px -2px 0 rgba(0,0,0,0.3),
+      2px 2px 0 rgba(0,0,0,0.3),
+      0 2px 6px rgba(0,0,0,0.4);
+    border-bottom: 2px solid rgba(255,255,255,0.1);
+  }
+  .game-panel .gp-header.orange-h { background: linear-gradient(180deg, #FF9800, #F57C00); }
+  .game-panel .gp-header.purple-h { background: linear-gradient(180deg, #CE93D8, #9C27B0); }
+  .game-panel .gp-header.gold-h {
+    background: linear-gradient(180deg, #FFF176, #FDD835);
+    color: #1A237E;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.3), 0 2px 4px rgba(0,0,0,0.15);
+  }
+  .game-panel .gp-header.green-h { background: linear-gradient(180deg, #66BB6A, #388E3C); }
+  .game-panel .gp-header.blue-h { background: linear-gradient(180deg, #42A5F5, #1565C0); }
+  .game-panel .gp-header.red-h { background: linear-gradient(180deg, #EF5350, #C62828); }
+  .game-panel .gp-body { padding: 14px; }
+
+  /* ===== BATTLE PANEL — special glowing version ===== */
+  .battle-panel {
+    width: 100%;
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(13,71,161,0.7) 0%, rgba(26,35,126,0.8) 100%);
+    border: 2px solid rgba(100,181,246,0.4);
+    box-shadow:
+      0 6px 20px rgba(0,0,0,0.4),
+      0 0 20px rgba(33,150,243,0.15),
+      inset 0 1px 0 rgba(255,255,255,0.15);
+    overflow: hidden;
+    position: relative;
+  }
+  .battle-panel .bp-header {
+    padding: 10px 16px;
+    text-align: center;
+    font-size: 18px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    border-bottom: 2px solid rgba(100,181,246,0.2);
+  }
+  .battle-panel .bp-header.fire-h {
+    background: linear-gradient(180deg, #FF6D00, #D50000);
+    text-shadow: 0 0 20px rgba(255,109,0,0.5), 0 2px 4px rgba(0,0,0,0.4);
+  }
+  .battle-panel .bp-body { padding: 14px; }
+
+  /* ===== EMBOSSED ANIMAL CARD ===== */
+  .beast-card {
+    border-radius: 14px;
+    padding: 3px;
+    cursor: pointer;
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s;
+    position: relative;
+  }
+  .beast-card:hover { transform: scale(1.06); }
+  .beast-card:active { transform: scale(0.96); }
+  .beast-card .bc-inner {
+    border-radius: 11px;
+    padding: 8px 4px 6px;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.2);
+    box-shadow: inset 0 -2px 4px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.15);
+  }
+  .beast-card .bc-inner::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 45%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 100%);
+  }
+  .beast-card .bc-emoji {
+    font-size: 40px;
+    filter: drop-shadow(0 3px 5px rgba(0,0,0,0.4));
+    line-height: 1.1;
+    position: relative;
+    z-index: 1;
+  }
+  .beast-card .bc-name {
+    font-size: 10px;
+    text-align: center;
+    color: white;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    letter-spacing: 0.5px;
+    z-index: 1;
+  }
+  /* Card themes — bright & saturated */
+  .beast-card.land { background: #FF8F00; box-shadow: 0 4px 0 #E65100, 0 6px 12px rgba(0,0,0,0.25); }
+  .beast-card.land .bc-inner { background: linear-gradient(180deg, #FFB74D, #FF8F00); }
+  .beast-card.sea { background: #1E88E5; box-shadow: 0 4px 0 #1565C0, 0 6px 12px rgba(0,0,0,0.25); }
+  .beast-card.sea .bc-inner { background: linear-gradient(180deg, #64B5F6, #1E88E5); }
+  .beast-card.air { background: #29B6F6; box-shadow: 0 4px 0 #0288D1, 0 6px 12px rgba(0,0,0,0.25); }
+  .beast-card.air .bc-inner { background: linear-gradient(180deg, #81D4FA, #29B6F6); }
+  .beast-card.bug { background: #43A047; box-shadow: 0 4px 0 #2E7D32, 0 6px 12px rgba(0,0,0,0.25); }
+  .beast-card.bug .bc-inner { background: linear-gradient(180deg, #81C784, #43A047); }
+  .beast-card.fantasy { background: #AB47BC; box-shadow: 0 4px 0 #8E24AA, 0 6px 12px rgba(0,0,0,0.25); }
+  .beast-card.fantasy .bc-inner { background: linear-gradient(180deg, #CE93D8, #AB47BC); }
+
+  .beast-card.sel-orange { box-shadow: 0 0 0 3px #FF9800, 0 0 20px rgba(255,152,0,0.6), 0 4px 0 #E65100; transform: scale(1.06); }
+  .beast-card.sel-cyan { box-shadow: 0 0 0 3px #00E5FF, 0 0 20px rgba(0,229,255,0.5), 0 4px 0 #0097A7; transform: scale(1.06); }
+
+  /* Locked card */
+  .beast-card.locked { filter: brightness(0.4) grayscale(0.6); pointer-events: none; }
+  .beast-card.locked::after {
+    content: '&#x1F512;';
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    z-index: 5;
+  }
+
+  /* ===== FIGHTER PORTRAIT ===== */
+  .portrait {
+    width: 90px; height: 100px;
+    border-radius: 16px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    position: relative;
+    transition: all 0.3s;
+  }
+  .portrait.empty {
+    background: rgba(255,255,255,0.08);
+    border: 3px dashed rgba(255,255,255,0.2);
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .portrait.filled {
+    border: 3px solid;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .portrait.filled.p-orange {
+    border-color: #FF9800;
+    background: linear-gradient(180deg, rgba(255,152,0,0.25), rgba(255,152,0,0.05));
+    box-shadow: 0 0 20px rgba(255,152,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+  .portrait.filled.p-cyan {
+    border-color: #00E5FF;
+    background: linear-gradient(180deg, rgba(0,229,255,0.25), rgba(0,229,255,0.05));
+    box-shadow: 0 0 20px rgba(0,229,255,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+  .portrait .p-emoji { font-size: 44px; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.4)); }
+  .portrait .p-name { font-size: 11px; color: white; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+  .portrait .p-label { font-size: 10px; color: rgba(255,255,255,0.3); letter-spacing: 1px; text-transform: uppercase; }
+  .portrait .p-q { font-size: 28px; color: rgba(255,255,255,0.15); }
+
+  /* ===== VS SHIELD ===== */
+  .vs-shield {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #FFF176 0%, #FFEB3B 30%, #FDD835 100%);
+    border: 4px solid #FF8F00;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bungee', sans-serif;
+    font-size: 18px;
+    color: #E65100;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+    box-shadow: 0 4px 0 #F57C00, 0 6px 16px rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.3);
+    flex-shrink: 0;
+    animation: shield-bob 2.5s ease-in-out infinite;
+    z-index: 3;
+  }
+  @keyframes shield-bob {
+    0%, 100% { transform: scale(1) rotate(-2deg); }
+    50% { transform: scale(1.08) rotate(2deg); }
+  }
+
+  /* ===== BATTLE VS SHIELD — epic version ===== */
+  .vs-battle {
+    width: 70px; height: 70px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #FFF9C4 0%, #FFEB3B 30%, #FFC107 70%, #FF8F00 100%);
+    border: 4px solid #FF6D00;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bungee', sans-serif;
+    font-size: 22px;
+    color: #BF360C;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+    box-shadow:
+      0 0 30px rgba(255,235,59,0.6),
+      0 0 60px rgba(255,152,0,0.3),
+      0 5px 0 #E65100,
+      inset 0 2px 0 rgba(255,255,255,0.4);
+    flex-shrink: 0;
+    animation: vs-glow 2s ease-in-out infinite;
+    z-index: 3;
+    position: relative;
+  }
+  @keyframes vs-glow {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 30px rgba(255,235,59,0.6), 0 0 60px rgba(255,152,0,0.3), 0 5px 0 #E65100; }
+    50% { transform: scale(1.12); box-shadow: 0 0 40px rgba(255,235,59,0.8), 0 0 80px rgba(255,152,0,0.5), 0 5px 0 #E65100; }
+  }
+
+  /* ===== COIN EMBLEM ===== */
+  .coin-emblem {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
+    border: 2px solid rgba(255,235,59,0.5);
+    border-radius: 20px;
+    padding: 5px 12px 5px 6px;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.2), 0 4px 10px rgba(0,0,0,0.2);
+    backdrop-filter: blur(5px);
+  }
+  .coin-disc {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #FFF176 0%, #FFEB3B 40%, #FDD835 100%);
+    border: 2px solid #FF8F00;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 900;
+    color: #E65100;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+    box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 2px 4px rgba(0,0,0,0.2);
+  }
+  .coin-emblem .c-num {
+    font-family: 'Bungee', sans-serif;
+    font-size: 16px;
+    color: #FFEB3B;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  }
+
+  /* ===== ROUND ICON BUTTON ===== */
+  .rnd-btn {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0.06));
+    border: 2px solid rgba(255,255,255,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.15), 0 4px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2);
+    transition: transform 0.1s;
+    color: #fff;
+    backdrop-filter: blur(5px);
+  }
+  .rnd-btn:active { transform: scale(0.9) translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.15); }
+
+  /* ===== CATEGORY SHIELD PILLS ===== */
+  .shield-pills { display: flex; gap: 5px; overflow-x: auto; padding: 4px 0; width: 100%; scrollbar-width: none; }
+  .shield-pills::-webkit-scrollbar { display: none; }
+  .s-pill {
+    flex-shrink: 0;
+    display: flex; align-items: center; gap: 4px;
+    padding: 6px 12px;
+    border-radius: 10px;
+    font-size: 12px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 2px solid rgba(255,255,255,0.15);
+    font-family: 'Lilita One', sans-serif;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .s-pill:active { transform: scale(0.92); }
+  .s-pill.active { transform: scale(1.08); border-color: #FFEB3B; }
+  .s-pill.p-all { background: linear-gradient(180deg, #42A5F5, #1E88E5); box-shadow: 0 3px 0 #1565C0; }
+  .s-pill.p-land { background: linear-gradient(180deg, #FFA726, #FB8C00); box-shadow: 0 3px 0 #E65100; }
+  .s-pill.p-sea { background: linear-gradient(180deg, #29B6F6, #039BE5); box-shadow: 0 3px 0 #0277BD; }
+  .s-pill.p-air { background: linear-gradient(180deg, #81D4FA, #4FC3F7); box-shadow: 0 3px 0 #29B6F6; }
+  .s-pill.p-bug { background: linear-gradient(180deg, #66BB6A, #43A047); box-shadow: 0 3px 0 #2E7D32; }
+  .s-pill.p-fan { background: linear-gradient(180deg, #CE93D8, #AB47BC); box-shadow: 0 3px 0 #8E24AA; }
+
+  /* ===== SEARCH ===== */
+  .srch {
+    width: 100%;
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 10px 14px;
+    border: 2px solid rgba(255,255,255,0.15);
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.15);
+    backdrop-filter: blur(5px);
+  }
+  .srch input {
+    flex: 1; background: none; border: none; color: #fff;
+    font-size: 14px; font-family: system-ui; outline: none;
+  }
+  .srch input::placeholder { color: rgba(255,255,255,0.3); }
+
+  /* ===== HEALTH BAR ===== */
+  .hp-row { display: flex; align-items: center; gap: 8px; width: 100%; }
+  .hp-label { font-size: 12px; min-width: 42px; text-align: right; text-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+  .hp-bar {
+    flex: 1; height: 20px; border-radius: 10px;
+    background: rgba(0,0,0,0.3);
+    border: 2px solid rgba(255,255,255,0.15);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+    overflow: hidden; padding: 2px;
+  }
+  .hp-fill {
+    height: 100%; border-radius: 7px;
+    position: relative; overflow: hidden;
+  }
+  .hp-fill::after {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.3), transparent);
+    border-radius: 7px 7px 0 0;
+  }
+  .hp-fill.g { background: linear-gradient(90deg, #4CAF50, #69F0AE); }
+  .hp-fill.r { background: linear-gradient(90deg, #F44336, #EF9A9A); }
+
+  /* ===== RESULT BANNER ===== */
+  .result-banner {
+    width: 110%; margin-left: -5%;
+    padding: 14px 20px;
+    text-align: center;
+    font-family: 'Bungee', sans-serif;
+    font-size: 22px;
+    text-transform: uppercase;
+    color: white;
+    position: relative;
+    clip-path: polygon(5% 0%, 95% 0%, 100% 50%, 95% 100%, 5% 100%, 0% 50%);
+    text-shadow:
+      -2px -2px 0 rgba(0,0,0,0.4),
+      2px 2px 0 rgba(0,0,0,0.4),
+      0 3px 8px rgba(0,0,0,0.5);
+  }
+  .result-banner.win {
+    background: linear-gradient(90deg, #F57C00, #FF9800, #FFCA28, #FF9800, #F57C00);
+    box-shadow: 0 0 30px rgba(255,152,0,0.4);
+  }
+
+  /* ===== NARRATION BOX ===== */
+  .narr-box {
+    background: rgba(0,0,0,0.2);
+    border: 2px solid rgba(100,181,246,0.25);
+    border-radius: 14px;
+    padding: 14px;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.2);
+    font-family: system-ui;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #BBDEFB;
+    font-style: italic;
+  }
+
+  /* ===== PROGRESS BAR (Fancy) ===== */
+  .prog-track {
+    width: 100%; height: 28px;
+    border-radius: 14px;
+    background: rgba(0,0,0,0.25);
+    border: 2px solid rgba(255,255,255,0.15);
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
+    padding: 3px;
+    overflow: hidden;
+  }
+  .prog-fill {
+    height: 100%; border-radius: 11px;
+    position: relative; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-family: 'Bungee'; color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+  }
+  .prog-fill::after {
+    content: '';
+    position: absolute; top: 0; left: -120%; width: 60%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: prog-shimmer 2s ease-in-out infinite;
+  }
+  @keyframes prog-shimmer {
+    0% { left: -60%; }
+    100% { left: 120%; }
+  }
+  .prog-fill.pf-purple { background: linear-gradient(90deg, #9C27B0, #E040FB); }
+  .prog-fill.pf-gold { background: linear-gradient(90deg, #FDD835, #FFEB3B); }
+
+  /* ===== SETTINGS ROW ===== */
+  .set-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .set-row:last-child { border-bottom: none; }
+  .set-row .sr-l { display: flex; align-items: center; gap: 10px; font-size: 15px; }
+  .set-row .sr-icon { font-size: 20px; }
+  .tog {
+    width: 50px; height: 28px; border-radius: 14px;
+    background: rgba(255,255,255,0.1);
+    border: 2px solid rgba(255,255,255,0.15);
+    position: relative; cursor: pointer; transition: all 0.2s;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+  }
+  .tog.on {
+    background: linear-gradient(180deg, #69F0AE, #4CAF50);
+    border-color: #2E7D32;
+    box-shadow: 0 0 10px rgba(76,175,80,0.4), inset 0 2px 0 rgba(255,255,255,0.2);
+  }
+  .tog-knob {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: linear-gradient(180deg, #fff, #e0e0e0);
+    position: absolute; top: 1px; left: 2px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.8);
+    transition: left 0.2s;
+  }
+  .tog.on .tog-knob { left: 24px; }
+
+  /* ===== OR DIVIDER ===== */
+  .or-div { display: flex; align-items: center; gap: 10px; width: 100%; margin: 14px 0; }
+  .or-div .ln { flex: 1; height: 2px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); }
+  .or-div .or-badge {
+    font-family: 'Bungee'; font-size: 12px; color: #CE93D8;
+    background: rgba(255,255,255,0.08); border: 2px solid rgba(206,147,216,0.4);
+    padding: 3px 14px; border-radius: 20px;
+  }
+
+  /* ===== CREATURE MINI ===== */
+  .cr-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
+  .cr-mini {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    padding: 8px 4px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .cr-mini .cr-e { font-size: 26px; }
+  .cr-mini .cr-n { font-size: 9px; color: #CE93D8; font-family: system-ui; }
+
+  /* ===== RIBBON BANNER ===== */
+  .ribbon {
+    position: relative;
+    background: linear-gradient(180deg, #FFEB3B, #FFC107);
+    color: #1A237E;
+    font-family: 'Bungee'; font-size: 10px;
+    text-transform: uppercase;
+    padding: 4px 18px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    transform: rotate(-5deg);
+    text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+    letter-spacing: 1px;
+    display: inline-block;
+  }
+
+  /* ===== PACK JOURNEY STRIP ===== */
+  .pj-strip { width: 100%; display: flex; gap: 3px; align-items: flex-end; }
+  .pj-item { flex: 1; text-align: center; }
+  .pj-item .pj-ico { font-size: 20px; margin-bottom: 4px; }
+  .pj-item .pj-lab { font-size: 8px; letter-spacing: 0.5px; color: rgba(255,255,255,0.5); text-transform: uppercase; margin-bottom: 4px; }
+  .pj-item .pj-bar {
+    height: 8px; border-radius: 4px;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.1);
+    overflow: hidden;
+  }
+  .pj-item .pj-fill {
+    height: 100%; border-radius: 3px;
+    position: relative; overflow: hidden;
+  }
+  .pj-item .pj-fill::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.35), transparent);
+  }
+
+  .animal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
+
+  .g8 { height: 8px; } .g12 { height: 12px; } .g16 { height: 16px; } .g20 { height: 20px; } .g24 { height: 24px; }
+  .w100 { width: 100%; }
+  .flx { display: flex; align-items: center; }
+  .flxb { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+  .tc { text-align: center; }
+
+  .float { animation: float 2.5s ease-in-out infinite; }
+  @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+  .float-d { animation: float 2.5s ease-in-out infinite; animation-delay: 0.8s; }
+
+  .pulse { animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+
+  /* ===== BATTLE ARENA ===== */
+  .arena {
+    width: 100%; height: 230px;
+    border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+    background:
+      radial-gradient(ellipse at 50% 50%, rgba(255,235,59,0.1) 0%, transparent 50%),
+      linear-gradient(180deg, rgba(13,71,161,0.5) 0%, rgba(26,35,126,0.7) 100%);
+    border: 2px solid rgba(100,181,246,0.3);
+    box-shadow:
+      inset 0 0 60px rgba(33,150,243,0.15),
+      inset 0 -4px 12px rgba(0,0,0,0.2),
+      0 0 30px rgba(33,150,243,0.1);
+  }
+  .arena::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 25% 50%, rgba(255,87,34,0.15) 0%, transparent 40%),
+      radial-gradient(circle at 75% 50%, rgba(0,229,255,0.15) 0%, transparent 40%);
+  }
+  .arena .ground {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 60px;
+    background: linear-gradient(180deg, transparent, rgba(76,175,80,0.35));
+  }
+
+  /* Battle fighter glow */
+  .fighter-left {
+    font-size: 70px;
+    filter: drop-shadow(0 0 15px rgba(255,87,34,0.5)) drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+    animation: fighter-float 2.5s ease-in-out infinite;
+    position: relative;
+    z-index: 2;
+  }
+  .fighter-right {
+    font-size: 70px;
+    filter: drop-shadow(0 0 15px rgba(0,229,255,0.5)) drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+    animation: fighter-float 2.5s ease-in-out infinite;
+    animation-delay: 0.6s;
+    position: relative;
+    z-index: 2;
+  }
+  @keyframes fighter-float {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-8px) scale(1.05); }
+  }
+
+  /* Lightning streaks */
+  .arena .lightning {
+    position: absolute;
+    width: 2px; height: 40px;
+    background: linear-gradient(180deg, transparent, rgba(255,235,59,0.8), transparent);
+    animation: lightning-flash 1.5s ease-in-out infinite;
+    z-index: 1;
+  }
+  @keyframes lightning-flash {
+    0%, 40%, 60%, 100% { opacity: 0; }
+    45%, 55% { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+
+<h1 class="page-title">&#9876; Animal vs Animal — Supercell Makeover</h1>
+<div class="page-sub">Click tabs to preview each screen</div>
+
+<div class="tab-bar">
+  <button class="active" onclick="showScreen('home', this)">Home</button>
+  <button onclick="showScreen('picker', this)">Picker</button>
+  <button onclick="showScreen('battle', this)">Battle</button>
+  <button onclick="showScreen('unlock', this)">Unlock</button>
+  <button onclick="showScreen('settings', this)">Settings</button>
+</div>
+
+<div class="phone">
+
+  <!-- ===== HOME ===== -->
+  <div class="screen active" id="screen-home">
+    <div class="bg-warm"></div>
+    <div class="ground-strip"></div>
+    <div class="particles" id="p-home"></div>
+    <div class="sc">
+      <div class="flxb">
+        <div class="rnd-btn">&#9881;</div>
+        <div class="coin-emblem">
+          <div class="coin-disc">$</div>
+          <span class="c-num">540</span>
+        </div>
+        <div class="rnd-btn">?</div>
+      </div>
+
+      <div class="g24"></div>
+
+      <!-- Hero matchup -->
+      <div class="flx" style="gap: 14px;">
+        <div class="float" style="text-align:center;">
+          <div style="font-size:72px; filter: drop-shadow(0 6px 12px rgba(0,0,0,0.5));">&#x1F981;</div>
+        </div>
+        <div class="vs-shield">VS</div>
+        <div class="float-d" style="text-align:center;">
+          <div style="font-size:72px; filter: drop-shadow(0 6px 12px rgba(0,0,0,0.5));">&#x1F988;</div>
+        </div>
+      </div>
+
+      <div class="g16"></div>
+
+      <!-- Title -->
+      <div class="game-title">
+        <div class="big">ANIMAL</div>
+        <div class="sub">VS ANIMAL</div>
+      </div>
+      <div style="font-size:14px; color:rgba(255,255,255,0.6); margin-top:6px; font-family: system-ui;">Who Would Win?</div>
+
+      <div class="g16"></div>
+
+      <!-- Streak -->
+      <div style="display:inline-flex; align-items:center; gap:8px; background: linear-gradient(180deg,rgba(255,255,255,0.15),rgba(255,255,255,0.05)); border:2px solid rgba(255,152,0,0.5); border-radius:12px; padding:6px 16px; box-shadow: 0 3px 0 rgba(0,0,0,0.15); backdrop-filter:blur(5px);">
+        <span style="font-size:18px;">&#x1F525;</span>
+        <span style="font-size:14px; color:#FFB74D; text-shadow: 0 1px 3px rgba(0,0,0,0.4);">3 Day Streak!</span>
+      </div>
+
+      <div class="g24"></div>
+
+      <!-- BATTLE BUTTON -->
+      <button class="mega-btn orange w100 pulse">&#9876; Let's Battle! &#9876;</button>
+
+      <div class="g24"></div>
+
+      <!-- Pack journey -->
+      <div class="pj-strip">
+        <div class="pj-item">
+          <div class="pj-ico">&#x1F996;</div>
+          <div class="pj-lab">Dinos</div>
+          <div class="pj-bar"><div class="pj-fill" style="width:100%; background: linear-gradient(90deg,#FF8F00,#FFB74D);"></div></div>
+        </div>
+        <div class="pj-item">
+          <div class="pj-ico">&#10024;</div>
+          <div class="pj-lab">Fantasy</div>
+          <div class="pj-bar"><div class="pj-fill" style="width:65%; background: linear-gradient(90deg,#AB47BC,#E040FB);"></div></div>
+        </div>
+        <div class="pj-item">
+          <div class="pj-ico">&#9889;</div>
+          <div class="pj-lab">Mythic</div>
+          <div class="pj-bar"><div class="pj-fill" style="width:30%; background: linear-gradient(90deg,#FDD835,#FFEB3B);"></div></div>
+        </div>
+        <div class="pj-item">
+          <div class="pj-ico">&#x1F3DB;</div>
+          <div class="pj-lab">Gods</div>
+          <div class="pj-bar"><div class="pj-fill" style="width:6%; background: linear-gradient(90deg,#42A5F5,#90CAF9);"></div></div>
+        </div>
+      </div>
+
+      <div class="g16"></div>
+      <div style="font-size:11px; color:rgba(255,255,255,0.3); font-family:system-ui;">Just for fun — no real animals are harmed &#x1F43E;</div>
+    </div>
+  </div>
+
+  <!-- ===== PICKER ===== -->
+  <div class="screen" id="screen-picker">
+    <div class="bg-warm"></div>
+    <div class="particles" id="p-pick"></div>
+    <div class="sc">
+      <div class="flxb">
+        <div class="rnd-btn">&#8592;</div>
+        <div class="game-title" style="line-height:1;">
+          <div style="font-size:10px; color:rgba(255,255,255,0.5); font-family:system-ui; letter-spacing:3px; text-transform:uppercase; text-shadow:none; margin-bottom:2px;">Pick Your</div>
+          <div class="big" style="font-size:24px;">Fighters</div>
+        </div>
+        <div class="coin-emblem" style="padding:4px 10px 4px 5px;">
+          <div class="coin-disc" style="width:22px;height:22px;font-size:11px;">$</div>
+          <span class="c-num" style="font-size:13px;">540</span>
+        </div>
+      </div>
+
+      <div class="g16"></div>
+
+      <!-- Fighter portraits -->
+      <div class="flx" style="gap: 10px;">
+        <div class="portrait filled p-orange">
+          <div class="p-emoji">&#x1F981;</div>
+          <div class="p-name">Lion</div>
+        </div>
+        <div class="vs-shield" style="width:44px;height:44px;font-size:14px;">VS</div>
+        <div class="portrait empty">
+          <div class="p-q">?</div>
+          <div class="p-label">Fighter 2</div>
+        </div>
+      </div>
+
+      <div class="g12"></div>
+
+      <div class="srch">
+        <span style="color:rgba(255,255,255,0.3);">&#x1F50D;</span>
+        <input type="text" placeholder="Search or add any animal...">
+        <div class="rnd-btn" style="width:30px;height:30px;font-size:14px;">&#x1F3A4;</div>
+      </div>
+
+      <div class="g8"></div>
+
+      <div class="shield-pills">
+        <button class="s-pill p-all active">&#x1F30D; All</button>
+        <button class="s-pill p-land">&#x1F33F; Land</button>
+        <button class="s-pill p-sea">&#x1F30A; Sea</button>
+        <button class="s-pill p-air">&#9925; Air</button>
+        <button class="s-pill p-bug">&#x1F41B; Bugs</button>
+        <button class="s-pill p-fan">&#10024; Fantasy</button>
+      </div>
+
+      <div class="g12"></div>
+
+      <div class="animal-grid">
+        <div class="beast-card land sel-orange"><div class="bc-inner"><div class="bc-emoji">&#x1F981;</div><div class="bc-name">Lion</div></div></div>
+        <div class="beast-card land"><div class="bc-inner"><div class="bc-emoji">&#x1F42F;</div><div class="bc-name">Tiger</div></div></div>
+        <div class="beast-card land"><div class="bc-inner"><div class="bc-emoji">&#x1F43B;</div><div class="bc-name">Grizzly</div></div></div>
+        <div class="beast-card land"><div class="bc-inner"><div class="bc-emoji">&#x1F43A;</div><div class="bc-name">Wolf</div></div></div>
+        <div class="beast-card land"><div class="bc-inner"><div class="bc-emoji">&#x1F418;</div><div class="bc-name">Elephant</div></div></div>
+        <div class="beast-card sea"><div class="bc-inner"><div class="bc-emoji">&#x1F988;</div><div class="bc-name">Shark</div></div></div>
+        <div class="beast-card sea"><div class="bc-inner"><div class="bc-emoji">&#x1F433;</div><div class="bc-name">Orca</div></div></div>
+        <div class="beast-card air"><div class="bc-inner"><div class="bc-emoji">&#x1F985;</div><div class="bc-name">Eagle</div></div></div>
+        <div class="beast-card bug"><div class="bc-inner"><div class="bc-emoji">&#x1F41C;</div><div class="bc-name">Army Ant</div></div></div>
+      </div>
+
+      <div class="g16"></div>
+      <button class="mega-btn green w100 disabled small">Pick 2 Animals to Fight</button>
+    </div>
+  </div>
+
+  <!-- ===== BATTLE ===== -->
+  <div class="screen" id="screen-battle">
+    <div class="bg-battle"></div>
+    <div class="particles" id="p-bat"></div>
+    <div class="sc" style="padding-top:45px;">
+      <!-- Arena -->
+      <div class="arena">
+        <div class="ground"></div>
+        <!-- Lightning effects -->
+        <div class="lightning" style="left:30%;top:15%;height:50px;transform:rotate(15deg);animation-delay:0s;"></div>
+        <div class="lightning" style="left:65%;top:10%;height:60px;transform:rotate(-10deg);animation-delay:0.7s;"></div>
+        <div class="lightning" style="left:48%;top:5%;height:45px;transform:rotate(5deg);animation-delay:1.2s;"></div>
+        <div class="flx" style="gap:18px; position:relative; z-index:2;">
+          <div class="fighter-left">&#x1F981;</div>
+          <div class="vs-battle">VS</div>
+          <div class="fighter-right">&#x1F988;</div>
+        </div>
+      </div>
+
+      <div class="g12"></div>
+
+      <!-- Health -->
+      <div class="hp-row">
+        <span class="hp-label" style="color:#FF9800;">Lion</span>
+        <div class="hp-bar"><div class="hp-fill g" style="width:72%;"></div></div>
+        <span style="font-size:12px;font-weight:900;color:#69F0AE;">72%</span>
+      </div>
+      <div class="g8"></div>
+      <div class="hp-row">
+        <span class="hp-label" style="color:#00E5FF;">Shark</span>
+        <div class="hp-bar"><div class="hp-fill r" style="width:28%;"></div></div>
+        <span style="font-size:12px;font-weight:900;color:#EF9A9A;">28%</span>
+      </div>
+
+      <div class="g16"></div>
+
+      <!-- Winner banner -->
+      <div class="result-banner win">&#x1F451; Lion Wins!</div>
+
+      <div class="g12"></div>
+
+      <!-- Result panel -->
+      <div class="battle-panel">
+        <div class="bp-header fire-h">&#x1F525; Battle Report</div>
+        <div class="bp-body">
+          <div class="narr-box">
+            "The lion's raw power and agility proved decisive. With a devastating pounce, the king of the jungle asserts dominance over the ocean predator on dry land..."
+          </div>
+          <div class="g12"></div>
+          <div style="font-size:12px; color:#90CAF9; display:flex; gap:6px; font-family:system-ui; line-height:1.5;">
+            <span>&#10024;</span>
+            <span>Lions can reach speeds of 50 mph in short bursts, making them one of the fastest large predators on land.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="g16"></div>
+
+      <div class="flx" style="gap:10px; width:100%;">
+        <button class="mega-btn orange small" style="flex:1;">&#x1F504; Rematch</button>
+        <button class="mega-btn blue small" style="flex:1;">&#9876; New Battle</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== UNLOCK ===== -->
+  <div class="screen" id="screen-unlock">
+    <div class="bg-purple"></div>
+    <div class="particles" id="p-unl"></div>
+    <div class="sc">
+      <div class="flxb" style="margin-bottom:8px;">
+        <div></div>
+        <div class="rnd-btn" style="width:36px;height:36px;font-size:14px;">&#10005;</div>
+      </div>
+
+      <div class="game-panel w100" style="border-color:rgba(206,147,216,0.4);">
+        <div class="gp-header purple-h">&#10024; Fantasy Realm</div>
+        <div class="gp-body">
+          <div class="cr-grid">
+            <div class="cr-mini"><div class="cr-e">&#x1F984;</div><div class="cr-n">Unicorn</div></div>
+            <div class="cr-mini"><div class="cr-e">&#x1F409;</div><div class="cr-n">Dragon</div></div>
+            <div class="cr-mini"><div class="cr-e">&#129440;</div><div class="cr-n">Griffin</div></div>
+            <div class="cr-mini"><div class="cr-e">&#x1F419;</div><div class="cr-n">Kraken</div></div>
+            <div class="cr-mini"><div class="cr-e">&#x1F54A;</div><div class="cr-n">Phoenix</div></div>
+            <div class="cr-mini"><div class="cr-e">&#x1F98A;</div><div class="cr-n">Kitsune</div></div>
+          </div>
+
+          <div class="g16"></div>
+
+          <div style="font-size:12px;color:#E040FB;text-transform:uppercase;letter-spacing:2px;text-shadow:0 0 10px rgba(224,64,251,0.3);">Free Path</div>
+          <div class="g8"></div>
+          <div class="prog-track">
+            <div class="prog-fill pf-purple" style="width:65%;">163 / 250</div>
+          </div>
+
+          <div class="g16"></div>
+
+          <!-- Coin unlock -->
+          <div style="background:rgba(255,255,255,0.06); border-radius:14px; padding:14px; border:1px solid rgba(255,255,255,0.1);">
+            <div class="flxb">
+              <span style="font-size:14px;">Unlock with Coins</span>
+              <div class="flx" style="gap:4px;">
+                <div class="coin-disc" style="width:20px;height:20px;font-size:10px;">$</div>
+                <span style="font-size:15px;color:#FFEB3B;font-family:'Bungee';">500</span>
+              </div>
+            </div>
+            <div class="g8"></div>
+            <button class="mega-btn gold w100 small" style="height:44px;font-size:14px;">Spend 500 Coins</button>
+          </div>
+
+          <div class="or-div">
+            <div class="ln"></div>
+            <div class="or-badge">OR</div>
+            <div class="ln"></div>
+          </div>
+
+          <button class="mega-btn purple w100 small">Unlock Fantasy — $1.99</button>
+          <div class="g8"></div>
+          <div style="font-size:11px; color:rgba(255,255,255,0.35); text-align:center; font-family:system-ui;">Or get everything with Premium</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SETTINGS ===== -->
+  <div class="screen" id="screen-settings">
+    <div class="bg-warm"></div>
+    <div class="sc">
+      <div class="flxb">
+        <div class="rnd-btn">&#8592;</div>
+        <div class="game-title"><div class="big" style="font-size:24px;">Settings</div></div>
+        <div style="width:44px;"></div>
+      </div>
+
+      <div class="g20"></div>
+
+      <div class="game-panel w100">
+        <div class="gp-header orange-h">&#x1F50A; Sound & Vibration</div>
+        <div class="gp-body">
+          <div class="set-row">
+            <div class="sr-l"><span class="sr-icon">&#x1F3B5;</span> Sound Effects</div>
+            <div class="tog on" onclick="this.classList.toggle('on')"><div class="tog-knob"></div></div>
+          </div>
+          <div class="set-row">
+            <div class="sr-l"><span class="sr-icon">&#x1F399;</span> Narration</div>
+            <div class="tog on" onclick="this.classList.toggle('on')"><div class="tog-knob"></div></div>
+          </div>
+          <div class="set-row">
+            <div class="sr-l"><span class="sr-icon">&#x1F4F3;</span> Haptics</div>
+            <div class="tog" onclick="this.classList.toggle('on')"><div class="tog-knob"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="g16"></div>
+
+      <div class="game-panel w100">
+        <div class="gp-header gold-h">&#x1F451; Creature Packs</div>
+        <div class="gp-body">
+          <div class="set-row">
+            <div class="sr-l"><span class="sr-icon">&#x1F996;</span> Prehistoric</div>
+            <span style="font-size:13px;color:#69F0AE;">&#10003; Unlocked</span>
+          </div>
+          <div class="set-row">
+            <div class="sr-l"><span class="sr-icon">&#10024;</span> Fantasy</div>
+            <button class="mega-btn purple" style="height:34px;font-size:11px;padding:0 14px;border-radius:10px;">Unlock $1.99</button>
+          </div>
+          <div class="set-row">
+            <div class="sr-l"><span class="sr-icon">&#9889;</span> Mythic</div>
+            <button class="mega-btn gold" style="height:34px;font-size:11px;padding:0 14px;border-radius:10px;">Unlock $2.99</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="g16"></div>
+
+      <div class="game-panel w100" style="border-color:rgba(206,147,216,0.4);">
+        <div class="gp-header purple-h">&#x1F48E; Go Premium</div>
+        <div class="gp-body tc">
+          <div style="font-size:13px;color:#B39DDB;margin-bottom:14px;font-family:system-ui;">Remove ads, unlock all packs, premium voices</div>
+          <div class="flx" style="gap:10px;width:100%;">
+            <button class="mega-btn purple" style="flex:1;height:44px;font-size:13px;padding:0;">$2.99/mo</button>
+            <div style="position:relative;flex:1;">
+              <button class="mega-btn purple" style="width:100%;height:44px;font-size:13px;padding:0;">$19.99/yr</button>
+              <div class="ribbon" style="position:absolute;top:-12px;right:-8px;">Best Value</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="g16"></div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.25);text-align:center;font-family:system-ui;">
+        Animal vs Animal v1.0.1 &middot; 616 battles fought
+      </div>
+      <div class="g24"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function mkParticles(id, count, colors) {
+  const c = document.getElementById(id); if (!c) return;
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const s = 2 + Math.random() * 4;
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    Object.assign(p.style, {
+      width: s+'px', height: s+'px',
+      left: Math.random()*100+'%',
+      bottom: -10+'px',
+      background: color,
+      '--dur': (4+Math.random()*6)+'s',
+      '--delay': (Math.random()*5)+'s',
+      '--opa': (0.2+Math.random()*0.5).toString(),
+    });
+    c.appendChild(p);
+  }
+}
+mkParticles('p-home', 25, ['#FFEB3B','#4FC3F7','#81C784','#FF9800','#fff']);
+mkParticles('p-pick', 20, ['#FFEB3B','#64B5F6','#CE93D8','#81D4FA','#fff']);
+mkParticles('p-bat', 35, ['#FFEB3B','#FF9800','#00E5FF','#FF5252','#64B5F6','#fff','#E040FB']);
+mkParticles('p-unl', 22, ['#E040FB','#CE93D8','#FFEB3B','#B39DDB','#F48FB1','#fff']);
+
+function showScreen(name, btn) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+
+</body>
+</html>

@@ -16,7 +16,7 @@ struct PreBattleSheet: View {
 
     var body: some View {
         ZStack {
-            Theme.mainBg.ignoresSafeArea()
+            ScreenBackground(style: .home).ignoresSafeArea()
 
             VStack(spacing: 0) {
                 // Handle
@@ -24,14 +24,29 @@ struct PreBattleSheet: View {
                     .fill(Color.white.opacity(0.2))
                     .frame(width: 40, height: 4)
                     .padding(.top, 12)
-                    .padding(.bottom, 20)
+                    .padding(.bottom, 10)
 
-                // Title
-                Text("CHOOSE YOUR ARENA")
-                    .font(.system(size: 13, weight: .bold, design: .rounded))
-                    .foregroundColor(Theme.textTertiary)
-                    .tracking(2)
-                    .padding(.bottom, 20)
+                // Back button + title row
+                ZStack {
+                    Text("CHOOSE YOUR ARENA")
+                        .font(Theme.bungee(11))
+                        .foregroundColor(.white.opacity(0.35))
+                        .tracking(2)
+                    HStack {
+                        Button(action: { isPresented = false }) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "chevron.left")
+                                    .font(.system(size: 13, weight: .semibold))
+                                Text("Change")
+                                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                            }
+                            .foregroundColor(.white.opacity(0.6))
+                        }
+                        Spacer()
+                    }
+                    .padding(.horizontal, 20)
+                }
+                .padding(.bottom, 20)
 
                 // Fighter matchup row
                 HStack(spacing: 0) {
@@ -68,13 +83,13 @@ struct PreBattleSheet: View {
                 HStack(spacing: 12) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Arena Effects")
-                            .font(.system(size: 15, weight: .bold, design: .rounded))
-                            .foregroundColor(Theme.textPrimary)
+                            .font(Theme.bungee(13))
+                            .foregroundColor(.white)
                         Text(arenaEffectsEnabled
                              ? "Arena shapes the outcome"
                              : "Pure animal vs animal")
-                            .font(.system(size: 12, weight: .medium, design: .rounded))
-                            .foregroundColor(Theme.textTertiary)
+                            .font(Theme.bungee(12))
+                            .foregroundColor(.white.opacity(0.35))
                     }
                     Spacer()
                     Toggle("", isOn: $arenaEffectsEnabled)
@@ -85,9 +100,9 @@ struct PreBattleSheet: View {
                 .padding(.vertical, 14)
                 .background(
                     RoundedRectangle(cornerRadius: 16)
-                        .fill(Theme.cardFill)
+                        .fill(Color.white.opacity(0.12))
                         .overlay(RoundedRectangle(cornerRadius: 16)
-                            .stroke(Theme.cardBorder, lineWidth: 1))
+                            .stroke(Color.white.opacity(0.2), lineWidth: 1))
                 )
                 .padding(.horizontal, 20)
                 .padding(.bottom, 16)
@@ -101,7 +116,7 @@ struct PreBattleSheet: View {
                     HStack(spacing: 12) {
                         Text("⚔️").font(.system(size: 22))
                         Text("LET'S FIGHT!")
-                            .font(.system(size: 20, weight: .black, design: .rounded))
+                            .font(Theme.bungee(20))
                             .foregroundColor(.white)
                         Text("⚔️").font(.system(size: 22))
                     }
@@ -166,12 +181,31 @@ struct PreBattleSheet: View {
                     .fill(accent.opacity(0.15))
                     .frame(width: 64, height: 64)
                     .overlay(Circle().stroke(accent.opacity(0.4), lineWidth: 1.5))
-                Text(animal.emoji)
-                    .font(.system(size: 34))
+                if let assetName = animal.creatureAssetName,
+                   let uiImg = UIImage(named: assetName) {
+                    Image(uiImage: uiImg)
+                        .resizable().scaledToFill()
+                        .frame(width: 48, height: 48)
+                        .clipShape(Circle())
+                } else if let imageURL = animal.imageURL {
+                    AsyncImage(url: imageURL) { phase in
+                        if let img = phase.image {
+                            img.resizable().scaledToFill()
+                                .frame(width: 48, height: 48)
+                                .clipShape(Circle())
+                        } else {
+                            Text(animal.emoji + "\u{FE0F}")
+                                .font(.system(size: 34))
+                        }
+                    }
+                } else {
+                    Text(animal.emoji + "\u{FE0F}")
+                        .font(.system(size: 34))
+                }
             }
             Text(animal.name)
-                .font(.system(size: 13, weight: .bold, design: .rounded))
-                .foregroundColor(Theme.textPrimary)
+                .font(Theme.bungee(11))
+                .foregroundColor(.white)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
                 .frame(maxWidth: 100)
@@ -194,14 +228,18 @@ struct PreBattleSheet: View {
                 withAnimation(.spring(response: 0.25, dampingFraction: 0.7)) {
                     selectedEnvironment = env
                 }
+                // Selecting a new arena re-enables effects by default — matches the
+                // user's expectation that picking an arena means "I want the arena
+                // to matter". They can still toggle off explicitly afterwards.
+                arenaEffectsEnabled = true
             }
         }) {
             VStack(spacing: 5) {
                 Text(env.emoji)
                     .font(.system(size: 28))
                 Text(env.name)
-                    .font(.system(size: 12, weight: .bold, design: .rounded))
-                    .foregroundColor(isSelected ? .white : Theme.textSecondary)
+                    .font(Theme.bungee(10))
+                    .foregroundColor(isSelected ? .white : .white.opacity(0.6))
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
                 if isLocked {
@@ -217,9 +255,9 @@ struct PreBattleSheet: View {
                           ? AnyShapeStyle(LinearGradient(
                             colors: [env.accentColor.opacity(0.35), env.accentColor.opacity(0.15)],
                             startPoint: .topLeading, endPoint: .bottomTrailing))
-                          : AnyShapeStyle(Theme.cardFill))
+                          : AnyShapeStyle(Color.white.opacity(0.12)))
                     .overlay(RoundedRectangle(cornerRadius: 14)
-                        .stroke(isSelected ? env.accentColor.opacity(0.8) : Theme.cardBorder,
+                        .stroke(isSelected ? env.accentColor.opacity(0.8) : Color.white.opacity(0.2),
                                 lineWidth: isSelected ? 2 : 1))
             )
             .opacity(isLocked ? 0.55 : 1.0)

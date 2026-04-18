@@ -1,16 +1,10 @@
-# Backend
-backend/node_modules/
-backend/dist/
-backend/.env
-
-# iOS
-ios/WhoWouldWin.xcodeproj/xcuserdata/
-ios/WhoWouldWin.xcworkspace/xcuserdata/
 ios/build/
 ios/DerivedData/
-ios/*.xcarchive
-*.ipa
-
-# macOS
-.DS_Store
-**/.DS_Store
+android/.gradle/
+android/build/
+android/app/build/
+android/.idea/
+android/local.properties
+android/app/build/
+*.xcarchive
+node_modules/
