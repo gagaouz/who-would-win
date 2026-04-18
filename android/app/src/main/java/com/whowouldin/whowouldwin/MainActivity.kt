@@ -40,7 +40,7 @@ private fun AppNav(modifier: Modifier = Modifier) {
         composable("home") {
             HomeScreen(
                 onBattleClick = { nav.navigate("picker") },
-                onTournamentClick = { /* TODO: tournament flow */ },
+                onTournamentClick = { nav.navigate("tournament") },
                 onSettingsClick = { nav.navigate("settings") },
                 onCoinBadgeClick = { /* TODO: coins hub sheet */ },
                 onHelpClick = { /* TODO: help sheet */ },
@@ -73,6 +73,11 @@ private fun AppNav(modifier: Modifier = Modifier) {
                     onNewFighters = { nav.popBackStack("picker", inclusive = false) },
                 )
             }
+        }
+        composable("tournament") {
+            com.whowouldin.whowouldwin.ui.screens.tournament.TournamentRootScreen(
+                onExit = { nav.popBackStack("home", inclusive = false) },
+            )
         }
         composable("settings") {
             com.whowouldin.whowouldwin.ui.screens.SettingsScreen(

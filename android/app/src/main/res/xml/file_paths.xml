@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Share cards saved into app-specific external files dir (/Android/media/...)
+         and exposed via FileProvider with a stable authority. -->
+    <external-files-path name="share_cards" path="share_cards/" />
+    <cache-path name="cache" path="." />
+</paths>
