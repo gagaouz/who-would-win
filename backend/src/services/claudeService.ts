@@ -243,10 +243,7 @@ const SYSTEM_PROMPT =
 
   'MYTHOLOGICAL/FANTASY: Use their established legendary abilities from mythology and folklore. Gods (Zeus, Poseidon, Hades, etc.) beat all mortal creatures convincingly. Two gods fighting each other can go either way.\n\n' +
 
-  'NARRATION RULES (strictly enforced):\n' +
-  '• Length: EXACTLY 4–5 sentences. Never fewer. Never one or two sentences.\n' +
-  '• Structure: (1) Set the opening scene. (2) First key moment. (3) Turning point. (4) Decisive blow and outcome. Optional 5th sentence for flavor.\n' +
-  '• Tone: Sports announcer energy — vivid, dramatic, exciting. Kid-friendly. No graphic violence.\n\n' +
+  'NARRATION: 2-3 vivid, descriptive sentences. Be specific — name the key move, the decisive moment, the weapon or ability that won it. Sports announcer energy, kid-friendly, no graphic violence.\n\n' +
 
   'FORMAT: Respond with ONLY valid JSON matching the exact schema. No markdown, no text outside the JSON.';
 
@@ -389,7 +386,7 @@ function buildUserPrompt(fighter1Id: string, fighter2Id: string, fighter1Name?: 
     `- "winner" must be exactly: "${fighter1Id}", "${fighter2Id}", or "draw"\n` +
     `- winnerHealthPercent: 10–90 (higher = more dominant win)\n` +
     `- loserHealthPercent: 0–89, always strictly less than winnerHealthPercent\n` +
-    `- Narration: MUST be 4-5 full sentences. Set the scene, build tension, describe the decisive moment, then show the outcome. Be vivid and dramatic — like a sports announcer calling the biggest match of the year. Do NOT write fewer than 4 sentences.\n` +
+    `- Narration: 2-3 sentences — be specific and vivid. Name the decisive move or weapon. No generic "X wins" phrasing.\n` +
     `- Fun fact: accurate and interesting`
   );
 }
