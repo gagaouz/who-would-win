@@ -377,7 +377,7 @@ function buildUserPrompt(fighter1Id: string, fighter2Id: string, fighter1Name?: 
     `Respond with ONLY a JSON object:\n\n` +
     `{\n` +
     `  "winner": "<${fighter1Id} or ${fighter2Id} or \\"draw\\">",\n` +
-    `  "narration": "<2-3 sentences describing the battle outcome — exciting but kid-friendly>",\n` +
+    `  "narration": "<4-5 sentences describing the battle — set the scene, describe the key moment, show the outcome; exciting and vivid but kid-friendly>",\n` +
     `  "funFact": "<one fascinating fact about the winner's most impressive ability or trait, or about both if draw>",\n` +
     `  "winnerHealthPercent": <integer 10-90>,\n` +
     `  "loserHealthPercent": <integer 0-89, must be less than winnerHealthPercent>\n` +
@@ -499,7 +499,7 @@ async function callClaude(
 
   const response = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 500,
+    max_tokens: 800,
     top_p: topP,
     system: SYSTEM_PROMPT,
     messages,
