@@ -8,3 +8,12 @@ android/local.properties
 android/app/build/
 *.xcarchive
 node_modules/
+
+# Release signing + Google service IDs — keep OUT of git.
+secrets.properties
+android/secrets.properties
+
+# Environment files — never commit secrets
+.env
+**/.env
+*.env
