@@ -386,7 +386,7 @@ function buildUserPrompt(fighter1Id: string, fighter2Id: string, fighter1Name?: 
     `- "winner" must be exactly: "${fighter1Id}", "${fighter2Id}", or "draw"\n` +
     `- winnerHealthPercent: 10–90 (higher = more dominant win)\n` +
     `- loserHealthPercent: 0–89, always strictly less than winnerHealthPercent\n` +
-    `- Narration: exciting and appropriate for children\n` +
+    `- Narration: MUST be 4-5 full sentences. Set the scene, build tension, describe the decisive moment, then show the outcome. Be vivid and dramatic — like a sports announcer calling the biggest match of the year. Do NOT write fewer than 4 sentences.\n` +
     `- Fun fact: accurate and interesting`
   );
 }
