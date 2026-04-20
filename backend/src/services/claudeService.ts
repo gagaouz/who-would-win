@@ -243,7 +243,10 @@ const SYSTEM_PROMPT =
 
   'MYTHOLOGICAL/FANTASY: Use their established legendary abilities from mythology and folklore. Gods (Zeus, Poseidon, Hades, etc.) beat all mortal creatures convincingly. Two gods fighting each other can go either way.\n\n' +
 
-  'NARRATION: Keep it exciting and kid-friendly — like a sports announcer or myth retelling. No graphic violence.\n\n' +
+  'NARRATION RULES (strictly enforced):\n' +
+  '• Length: EXACTLY 4–5 sentences. Never fewer. Never one or two sentences.\n' +
+  '• Structure: (1) Set the opening scene. (2) First key moment. (3) Turning point. (4) Decisive blow and outcome. Optional 5th sentence for flavor.\n' +
+  '• Tone: Sports announcer energy — vivid, dramatic, exciting. Kid-friendly. No graphic violence.\n\n' +
 
   'FORMAT: Respond with ONLY valid JSON matching the exact schema. No markdown, no text outside the JSON.';
 
