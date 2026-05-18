@@ -1,9 +1,45 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const claudeService_1 = require("../services/claudeService");
+const meleeService_1 = require("../services/meleeService");
 const rateLimit_1 = require("../middleware/rateLimit");
 const sanitize_1 = require("../middleware/sanitize");
+const customCreatureLogger_1 = require("../services/customCreatureLogger");
+const battleLogger_1 = require("../services/battleLogger");
 const router = (0, express_1.Router)();
 // ── In-memory battle result cache ──────────────────────────────────────────────
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
@@ -64,6 +100,16 @@ const VALID_ANIMALS = new Set([
     // Bugs
     'army_ant', 'bombardier_beetle', 'bullet_ant', 'praying_mantis',
     'fire_ant', 'centipede', 'wasp', 'stag_beetle',
+    // Pets
+    'great_dane', 'german_shepherd', 'golden_retriever', 'labrador',
+    'husky', 'bulldog', 'beagle', 'poodle', 'corgi', 'pug',
+    'dachshund', 'chihuahua', 'tabby_cat', 'persian_cat', 'maine_coon',
+    'parakeet', 'cockatiel', 'canary', 'hamster', 'gerbil',
+    'guinea_pig', 'pet_rabbit', 'goldfish', 'betta_fish', 'leopard_gecko',
+    // Farm
+    'cow', 'bull', 'ox', 'pig', 'piglet', 'sheep', 'lamb', 'ram', 'goat',
+    'horse', 'donkey', 'mule', 'llama', 'alpaca',
+    'chicken', 'rooster', 'duck', 'goose', 'turkey', 'border_collie',
     // Fantasy
     'dragon', 'unicorn', 'griffin', 'kraken', 'minotaur', 'werewolf',
     'hydra', 'phoenix', 'kitsune', 'basilisk', 'cerberus', 'leviathan',
@@ -135,8 +181,17 @@ router.post('/battle', rateLimit_1.rateLimitMiddleware, async (req, res) => {
         }
         fighter2Name = r.value;
     }
-    // ── Call Claude (with cache) ───────────────────────────────────────────────
+    // ── Log custom creatures for demand tracking ───────────────────────────────
     const environmentName = typeof rawEnvName === 'string' ? rawEnvName.trim().slice(0, 40) : undefined;
+    if (isCustom1 && fighter1Name) {
+        const opponentLabel = isCustom2 ? (fighter2Name ?? fighter2) : fighter2;
+        (0, customCreatureLogger_1.logCustomCreature)(fighter1Name, opponentLabel, environmentName);
+    }
+    if (isCustom2 && fighter2Name) {
+        const opponentLabel = isCustom1 ? (fighter1Name ?? fighter1) : fighter1;
+        (0, customCreatureLogger_1.logCustomCreature)(fighter2Name, opponentLabel, environmentName);
+    }
+    // ── Call Claude (with cache) ───────────────────────────────────────────────
     // Tournament context: a short server-trusted string (e.g. "This battle is a Quarterfinal in an 8-creature tournament. Build drama accordingly.")
     // Tournament battles SKIP the cache entirely so the narration always reflects the current round.
     const tournamentContext = typeof rawTournamentContext === 'string'
@@ -158,6 +213,20 @@ router.post('/battle', rateLimit_1.rateLimitMiddleware, async (req, res) => {
             storeCachedResult(cacheKey, result);
         }
         res.json(result);
+        // Log AFTER the response is sent — never blocks the user.
+        res.on('finish', () => {
+            void (0, battleLogger_1.logBattle)({
+                fighter1Id: fighter1,
+                fighter2Id: fighter2,
+                fighter1Name,
+                fighter2Name,
+                winnerId: result.winner,
+                environment: environmentName,
+                isCustom1,
+                isCustom2,
+                mode: 'full',
+            });
+        });
     }
     catch (err) {
         console.error('Battle error:', err);
@@ -218,13 +287,269 @@ router.post('/battle/quick', rateLimit_1.rateLimitMiddleware, async (req, res) =
         fighter2Name = r.value;
     }
     const environmentName = typeof rawEnvName === 'string' ? rawEnvName.trim().slice(0, 40) : undefined;
+    // Log custom creatures
+    if (isCustom1 && fighter1Name) {
+        (0, customCreatureLogger_1.logCustomCreature)(fighter1Name, isCustom2 ? (fighter2Name ?? fighter2) : fighter2, environmentName);
+    }
+    if (isCustom2 && fighter2Name) {
+        (0, customCreatureLogger_1.logCustomCreature)(fighter2Name, isCustom1 ? (fighter1Name ?? fighter1) : fighter1, environmentName);
+    }
     try {
         const result = await (0, claudeService_1.getQuickBattleResult)(fighter1, fighter2, fighter1Name, fighter2Name, environmentName);
         res.json(result);
+        res.on('finish', () => {
+            void (0, battleLogger_1.logBattle)({
+                fighter1Id: fighter1,
+                fighter2Id: fighter2,
+                fighter1Name,
+                fighter2Name,
+                winnerId: result.winner,
+                environment: environmentName,
+                isCustom1,
+                isCustom2,
+                mode: 'quick',
+            });
+        });
     }
     catch (err) {
         console.error('Quick battle error:', err);
         res.status(500).json({ error: 'Failed to determine the quick battle result. Please try again.' });
     }
 });
+// POST /api/battle/melee
+// N-vs-M team battle. Body: { teamA: [{id,name?}], teamB: [{id,name?}], environment?, environmentName? }
+// Returns { winningTeam, narration, funFact, mvp, teamAHealth, teamBHealth }
+router.post('/battle/melee', rateLimit_1.rateLimitMiddleware, async (req, res) => {
+    const { teamA, teamB, environmentName } = req.body ?? {};
+    if (!Array.isArray(teamA) || !Array.isArray(teamB) ||
+        teamA.length === 0 || teamB.length === 0) {
+        res.status(400).json({ error: 'teamA and teamB must be non-empty arrays' });
+        return;
+    }
+    if (teamA.length > 6 || teamB.length > 6) {
+        res.status(400).json({ error: 'each team is capped at 6 fighters' });
+        return;
+    }
+    // Normalize each fighter entry. Each must have a string id; names go
+    // through the sanitizer just like /api/battle does.
+    const norm = (arr) => {
+        const out = [];
+        for (const f of arr) {
+            if (!f || typeof f !== 'object')
+                return null;
+            const id = f.id;
+            if (typeof id !== 'string' || id.trim() === '')
+                return null;
+            const rawName = f.name;
+            let name;
+            if (typeof rawName === 'string') {
+                const s = (0, sanitize_1.sanitizeName)(rawName);
+                name = s.ok ? s.value : undefined;
+            }
+            out.push({ id: id.trim(), name });
+        }
+        return out;
+    };
+    const normTeamA = norm(teamA);
+    const normTeamB = norm(teamB);
+    if (!normTeamA || !normTeamB) {
+        res.status(400).json({ error: 'each fighter entry must have a string id' });
+        return;
+    }
+    // Log any custom (non-whitelist) fighter names so we can track demand.
+    const { ANIMAL_NAMES_EXPORT } = await Promise.resolve().then(() => __importStar(require('../services/claudeService')));
+    const logTeam = (team, opponentLabel) => {
+        team.forEach(f => {
+            if (f.name && !(f.id in ANIMAL_NAMES_EXPORT)) {
+                (0, customCreatureLogger_1.logCustomCreature)(f.name, opponentLabel, environmentName);
+            }
+        });
+    };
+    logTeam(normTeamA, `melee vs team of ${normTeamB.length}`);
+    logTeam(normTeamB, `melee vs team of ${normTeamA.length}`);
+    try {
+        const result = await (0, meleeService_1.getMeleeResult)(normTeamA, normTeamB, environmentName);
+        res.json(result);
+        // Log a summary row: MVP vs the first fighter on the losing team.
+        // Melee data is admin-dashboard-only; the public leaderboard filters mode='full'.
+        res.on('finish', () => {
+            const winners = result.winningTeam === 'A' ? normTeamA : normTeamB;
+            const losers = result.winningTeam === 'A' ? normTeamB : normTeamA;
+            const mvp = winners.find(f => f.id === result.mvp) ?? winners[0];
+            const opp = losers[0];
+            if (!mvp || !opp)
+                return;
+            const mvpIsCustom = !VALID_ANIMALS.has(mvp.id);
+            const oppIsCustom = !VALID_ANIMALS.has(opp.id);
+            void (0, battleLogger_1.logBattle)({
+                fighter1Id: mvp.id,
+                fighter2Id: opp.id,
+                fighter1Name: mvpIsCustom ? mvp.name : undefined,
+                fighter2Name: oppIsCustom ? opp.name : undefined,
+                winnerId: mvp.id,
+                environment: environmentName,
+                isCustom1: mvpIsCustom,
+                isCustom2: oppIsCustom,
+                mode: 'melee',
+            });
+        });
+    }
+    catch (err) {
+        console.error('Melee error:', err);
+        res.status(500).json({ error: 'Failed to resolve the melee. Please try again.' });
+    }
+});
+// GET /api/admin/custom-creatures
+// Returns a live report of all custom creature requests since last deploy.
+// Protected by a simple secret header to prevent public access.
+router.get('/admin/custom-creatures', (req, res) => {
+    const secret = process.env.ADMIN_SECRET;
+    const provided = req.headers['x-admin-secret'];
+    if (!secret || provided !== secret) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+    }
+    res.json((0, customCreatureLogger_1.getCustomCreatureReport)());
+});
+// GET /api/leaderboard — PUBLIC
+// Returns built-in animal stats for the in-app Hall of Fame.
+// Filters: mode='full', is_custom1=false AND is_custom2=false.
+router.get('/leaderboard', rateLimit_1.rateLimitMiddleware, async (_req, res) => {
+    try {
+        const board = await (0, battleLogger_1.getAnimalLeaderboard)(25);
+        res.json(board);
+    }
+    catch (err) {
+        console.error('Leaderboard error:', err);
+        res.status(500).json({ error: 'Failed to load leaderboard.' });
+    }
+});
+// GET /admin/dashboard?token=… — PRIVATE HTML PAGE
+// Renders a self-contained admin dashboard with three tables:
+//   1. Top custom creatures (case-insensitive name aggregation)
+//   2. Top built-in animals
+//   3. Recent activity (last 200 battles)
+// Token accepted via ?token= query string OR x-admin-secret header.
+router.get('/admin/dashboard', async (req, res) => {
+    const secret = process.env.ADMIN_SECRET;
+    const provided = req.query.token ?? req.headers['x-admin-secret'];
+    if (!secret || provided !== secret) {
+        res.status(401).type('text/html').send('<h1>401 Unauthorized</h1><p>Provide ?token=&lt;ADMIN_SECRET&gt; or x-admin-secret header.</p>');
+        return;
+    }
+    try {
+        const [custom, animals, recent] = await Promise.all([
+            (0, battleLogger_1.getCustomCreatureLeaderboard)(50),
+            (0, battleLogger_1.getAnimalLeaderboard)(50),
+            (0, battleLogger_1.getRecentActivity)(200),
+        ]);
+        res.type('text/html').send(renderDashboardHtml({ custom, animals, recent }));
+    }
+    catch (err) {
+        console.error('Dashboard error:', err);
+        res.status(500).type('text/html').send('<h1>500 Internal Server Error</h1>');
+    }
+});
+function renderDashboardHtml(data) {
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const customRows = data.custom.map(c => `
+    <tr>
+      <td>${esc(c.name)}</td>
+      <td class="num">${c.battles}</td>
+      <td class="num">${c.wins}</td>
+      <td class="num">${c.battles ? ((c.wins / c.battles) * 100).toFixed(1) + '%' : '—'}</td>
+      <td>${esc(c.sampleOpponent)}</td>
+      <td class="num">${esc(c.lastSeen.slice(0, 16).replace('T', ' '))}</td>
+    </tr>`).join('');
+    const renderAnimalTable = (rows, valueLabel, valueFn) => rows.map((r, i) => `
+    <tr>
+      <td class="num">${i + 1}</td>
+      <td>${esc(r.name)}</td>
+      <td class="num">${valueFn(r)}</td>
+      <td class="num">${r.battles}</td>
+    </tr>`).join('');
+    const recentRows = data.recent.map(r => `
+    <tr>
+      <td class="num">${esc(r.createdAt.slice(0, 16).replace('T', ' '))}</td>
+      <td>${esc(r.fighter1)}</td>
+      <td>${esc(r.fighter2)}</td>
+      <td><b>${esc(r.winner)}</b></td>
+      <td>${esc(r.environment ?? '—')}</td>
+      <td><span class="badge ${esc(r.mode)}">${esc(r.mode)}</span></td>
+    </tr>`).join('');
+    return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AvA admin dashboard</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font: 14px/1.4 -apple-system, system-ui, sans-serif; max-width: 1200px; margin: 24px auto; padding: 0 16px; }
+  h1 { margin: 0 0 4px; }
+  .muted { color: #888; font-size: 12px; }
+  h2 { margin-top: 32px; padding-bottom: 4px; border-bottom: 1px solid #ccc4; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 6px 8px; text-align: left; border-bottom: 1px solid #ccc4; }
+  th { background: #f4f4f44d; position: sticky; top: 0; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .badge { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .badge.full  { background: #6ECC6E33; color: #2a7d2a; }
+  .badge.quick { background: #FFD43B33; color: #8a6500; }
+  .badge.melee { background: #C77DFF33; color: #5a2d8a; }
+  .scroll { max-height: 600px; overflow: auto; border: 1px solid #ccc4; border-radius: 6px; }
+</style>
+</head>
+<body>
+<h1>🐾 Animal vs Animal — Admin Dashboard</h1>
+<div class="muted">Total full-mode battles: ${data.animals.totalBattles.toLocaleString()} · Generated ${esc(data.animals.generatedAt)}</div>
+
+<h2>Top 50 custom creatures (all modes)</h2>
+<div class="scroll">
+<table>
+  <thead>
+    <tr><th>Name</th><th class="num">Battles</th><th class="num">Wins</th><th class="num">Win rate</th><th>Sample opponent</th><th class="num">Last seen (UTC)</th></tr>
+  </thead>
+  <tbody>${customRows || '<tr><td colspan="6" class="muted">No custom creatures logged yet.</td></tr>'}</tbody>
+</table>
+</div>
+
+<h2>Top built-in animals (full mode)</h2>
+<div class="grid">
+  <div>
+    <h3>By wins</h3>
+    <table>
+      <thead><tr><th class="num">#</th><th>Animal</th><th class="num">Wins</th><th class="num">Battles</th></tr></thead>
+      <tbody>${renderAnimalTable(data.animals.topByWins, 'wins', r => r.wins.toString())}</tbody>
+    </table>
+  </div>
+  <div>
+    <h3>By win rate (min 10 battles)</h3>
+    <table>
+      <thead><tr><th class="num">#</th><th>Animal</th><th class="num">Rate</th><th class="num">Battles</th></tr></thead>
+      <tbody>${renderAnimalTable(data.animals.topByWinRate, 'winRate', r => (r.winRate * 100).toFixed(1) + '%')}</tbody>
+    </table>
+  </div>
+  <div>
+    <h3>By popularity</h3>
+    <table>
+      <thead><tr><th class="num">#</th><th>Animal</th><th class="num">Battles</th><th class="num">Wins</th></tr></thead>
+      <tbody>${renderAnimalTable(data.animals.topByPopularity, 'battles', r => r.battles.toString())}</tbody>
+    </table>
+  </div>
+</div>
+
+<h2>Recent activity (last 200)</h2>
+<div class="scroll">
+<table>
+  <thead>
+    <tr><th class="num">Time (UTC)</th><th>Fighter 1</th><th>Fighter 2</th><th>Winner</th><th>Arena</th><th>Mode</th></tr>
+  </thead>
+  <tbody>${recentRows || '<tr><td colspan="6" class="muted">No battles yet.</td></tr>'}</tbody>
+</table>
+</div>
+
+</body>
+</html>`;
+}
 exports.default = router;

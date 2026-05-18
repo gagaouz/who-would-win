@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import battleRouter from './routes/battle';
 import animalRouter from './routes/animal';
+import { initDb } from './services/battleLogger';
 
 dotenv.config();
 
@@ -79,4 +80,18 @@ app.use((err: Error & { status?: number; statusCode?: number; type?: string },
 
 app.listen(PORT, () => {
   console.log(`Who Would Win backend running on port ${PORT}`);
+  // Bootstrap Postgres (no-op if DATABASE_URL is unset).
+  void initDb();
+  // Diagnostic: list every registered route so we can confirm new endpoints
+  // are actually mounted in the deployed image. Logged once per boot.
+  const seen: string[] = [];
+  app._router?.stack?.forEach((m: any) => {
+    if (m.route) seen.push(`${Object.keys(m.route.methods).join(',').toUpperCase()} ${m.route.path}`);
+    else if (m.name === 'router' && m.handle?.stack) {
+      m.handle.stack.forEach((r: any) => {
+        if (r.route) seen.push(`${Object.keys(r.route.methods).join(',').toUpperCase()} ${r.route.path}`);
+      });
+    }
+  });
+  console.log(`[boot:v2] Registered routes: ${seen.join(' | ')}`);
 });

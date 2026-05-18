@@ -8,6 +8,7 @@ const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const battle_1 = __importDefault(require("./routes/battle"));
 const animal_1 = __importDefault(require("./routes/animal"));
+const battleLogger_1 = require("./services/battleLogger");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
@@ -73,4 +74,20 @@ app.use((err, _req, res, _next) => {
 });
 app.listen(PORT, () => {
     console.log(`Who Would Win backend running on port ${PORT}`);
+    // Bootstrap Postgres (no-op if DATABASE_URL is unset).
+    void (0, battleLogger_1.initDb)();
+    // Diagnostic: list every registered route so we can confirm new endpoints
+    // are actually mounted in the deployed image. Logged once per boot.
+    const seen = [];
+    app._router?.stack?.forEach((m) => {
+        if (m.route)
+            seen.push(`${Object.keys(m.route.methods).join(',').toUpperCase()} ${m.route.path}`);
+        else if (m.name === 'router' && m.handle?.stack) {
+            m.handle.stack.forEach((r) => {
+                if (r.route)
+                    seen.push(`${Object.keys(r.route.methods).join(',').toUpperCase()} ${r.route.path}`);
+            });
+        }
+    });
+    console.log(`[boot:v2] Registered routes: ${seen.join(' | ')}`);
 });

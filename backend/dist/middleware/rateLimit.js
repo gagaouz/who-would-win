@@ -15,7 +15,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.rateLimitMiddleware = rateLimitMiddleware;
 const WINDOW_MS = 60 * 60 * 1000; // 1 hour
-const MAX_REQUESTS = 50; // per IP per window
+// 50 was too low — a single tournament burns ~10 battles, and active players
+// can hit the cap mid-session. When that happens the iOS app falls back to
+// LOCAL stat resolution, which on older TestFlight builds uses a soft win-
+// curve that lets tiny creatures occasionally upset apex predators. Raising
+// to 300 prevents the fallback path from being hit during normal play.
+const MAX_REQUESTS = 600; // per IP per window
 const store = new Map();
 // Periodically purge expired entries so memory doesn't grow unbounded.
 setInterval(() => {
