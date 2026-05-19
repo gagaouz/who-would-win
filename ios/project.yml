@@ -45,9 +45,18 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.whowouldin.WhoWouldWin
         INFOPLIST_FILE: WhoWouldWin/Info.plist
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        # Points the code-signer at the entitlements file that declares
+        # `com.apple.developer.game-center` (required because the app links
+        # GameCenter framework). Without this, App Store Connect rejects
+        # the submission with "must add the com.apple.developer.game-center
+        # key in Xcode" because the binary claims the capability but the
+        # provisioning profile/signature doesn't grant it.
+        CODE_SIGN_ENTITLEMENTS: WhoWouldWin/WhoWouldWin.entitlements
     info:
       path: WhoWouldWin/Info.plist
       properties:
+        CFBundleShortVersionString: "1.1.2"
+        CFBundleVersion: "87"
         CFBundleDisplayName: "Animal vs Animal"
         UILaunchScreen: {}
         NSMicrophoneUsageDescription: "Speak the name of any animal to search or add a custom fighter."
@@ -64,6 +73,8 @@ targets:
           - PressStart2P-Regular.ttf
           - Bungee-Regular.ttf
           - LilitaOne-Regular.ttf
+          - Fredoka.ttf
+          - Nunito.ttf
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: false
           NSExceptionDomains:
@@ -72,6 +83,11 @@ targets:
               NSIncludesSubdomains: false
         LSApplicationQueriesSchemes: []
         GADApplicationIdentifier: "ca-app-pub-4887593367953664~8348884640"
+        # Encryption export compliance: the app only uses HTTPS + Apple-provided
+        # frameworks (StoreKit, etc.), all of which are exempt from US export
+        # restrictions. Declaring this here means TestFlight/App Store Connect
+        # won't ask the compliance question on every upload.
+        ITSAppUsesNonExemptEncryption: false
 
   WhoWouldWinTests:
     type: bundle.unit-test

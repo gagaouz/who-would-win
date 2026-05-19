@@ -17,11 +17,13 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0.8</string>
+	<string>1.1.2</string>
 	<key>CFBundleVersion</key>
-	<string>63</string>
+	<string>87</string>
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-4887593367953664~8348884640</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSApplicationQueriesSchemes</key>
 	<array/>
 	<key>NSAppTransportSecurity</key>
@@ -48,6 +50,8 @@
 		<string>PressStart2P-Regular.ttf</string>
 		<string>Bungee-Regular.ttf</string>
 		<string>LilitaOne-Regular.ttf</string>
+		<string>Fredoka.ttf</string>
+		<string>Nunito.ttf</string>
 	</array>
 	<key>UILaunchScreen</key>
 	<dict/>
