@@ -3,64 +3,245 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Support — Beast Clash</title>
+  <title>Support — AvA: Animal vs Animal</title>
+  <meta name="description" content="Help and FAQ for AvA — Animal vs Animal (Who Would Win?), made by King Painter Technology LLC." />
+  <link rel="canonical" href="https://animal-vs-animal.com/support.html" />
+
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep:    #0E0B22;
+      --bg-mid:     #180B32;
+      --orange:     #FF5722;
+      --yellow:     #FFD60A;
+      --purple:     #C77DFF;
+      --green:      #00E676;
+      --text:       #FFFFFF;
+      --text-dim:   rgba(255,255,255,0.55);
+      --text-body:  rgba(255,255,255,0.78);
+      --card:       rgba(255,255,255,0.06);
+      --border:     rgba(255,255,255,0.10);
+    }
+
+    html { scroll-behavior: smooth; }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #0E0B22; color: #fff; min-height: 100vh;
-      padding: 48px 24px;
+      background: linear-gradient(135deg, var(--bg-deep) 0%, var(--bg-mid) 50%, #0B1528 100%);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
     }
-    .container { max-width: 720px; margin: 0 auto; }
-    a { color: #FF5722; }
-    h1 { font-size: 32px; font-weight: 900; margin-bottom: 8px; color: #FF5722; }
-    .subtitle { font-size: 14px; color: rgba(255,255,255,0.45); margin-bottom: 48px; }
-    h2 { font-size: 18px; font-weight: 800; margin: 32px 0 10px; }
-    p, li { font-size: 15px; color: rgba(255,255,255,0.75); line-height: 1.8; }
-    ul { padding-left: 20px; }
-    li { margin-bottom: 10px; }
-    .back { display: inline-block; margin-bottom: 32px; font-size: 14px; color: rgba(255,255,255,0.45); text-decoration: none; }
-    .back:hover { color: #fff; }
-    .contact-box {
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 16px;
-      padding: 28px;
-      margin-top: 32px;
+
+    /* ── Stars ── */
+    .stars {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image:
+        radial-gradient(1px 1px at 8% 18%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 25% 8%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(2px 2px at 45% 15%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 62% 5%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(2px 2px at 80% 20%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 93% 11%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 15% 32%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(2px 2px at 38% 28%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 57% 35%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 74% 30%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 90% 40%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 5% 50%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(2px 2px at 22% 44%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 48% 52%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 68% 47%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 85% 55%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(2px 2px at 30% 90%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 55% 85%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 78% 77%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 92% 70%, rgba(255,255,255,0.6) 0%, transparent 100%);
     }
-    .contact-box h2 { margin-top: 0; }
+
+    .container { max-width: 780px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+    /* ── Nav ── */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 24px;
+      position: relative; z-index: 1;
+    }
+    .nav-logo { font-size: 15px; font-weight: 800; letter-spacing: 1px; color: var(--text-dim); text-decoration: none; }
+    .nav-logo span { color: var(--orange); }
+    .nav-back { font-size: 13px; font-weight: 700; color: var(--text-dim); text-decoration: none; }
+    .nav-back:hover { color: var(--text); }
+
+    /* ── Page header ── */
+    .page-head { text-align: center; padding: 40px 24px 44px; }
+    .page-eyebrow {
+      font-size: 12px; font-weight: 700; letter-spacing: 3px;
+      color: var(--text-dim); text-transform: uppercase; margin-bottom: 16px;
+    }
+    .page-title {
+      font-size: clamp(36px, 8vw, 56px);
+      font-weight: 900; line-height: 1.05; letter-spacing: -1px;
+      color: var(--orange);
+      text-shadow: 0 0 40px rgba(255,87,34,0.45);
+      margin-bottom: 12px;
+    }
+    .page-sub { font-size: 14px; color: var(--text-dim); line-height: 1.7; }
+
+    /* ── FAQ cards ── */
+    .section-label {
+      text-align: center; font-size: 12px; font-weight: 700;
+      letter-spacing: 3px; color: var(--text-dim); text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+    .faq-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px 26px;
+      margin-bottom: 14px;
+    }
+    .faq-q {
+      font-size: 16px; font-weight: 800; margin-bottom: 8px;
+      display: flex; align-items: baseline; gap: 10px;
+    }
+    .faq-q .icon { font-size: 18px; }
+    .faq-card p, .faq-card li { font-size: 14px; color: var(--text-body); line-height: 1.75; }
+    .faq-card p { margin-bottom: 6px; }
+    .faq-card p:last-child { margin-bottom: 0; }
+    .faq-card ul { padding-left: 20px; margin-top: 4px; }
+    .faq-card li { margin-bottom: 5px; }
+    .faq-card a { color: var(--orange); }
+    .faq-card strong { color: var(--text); }
+
+    /* ── Contact box ── */
+    .contact-card {
+      background: linear-gradient(135deg, rgba(255,87,34,0.12), rgba(255,214,10,0.06));
+      border: 1px solid rgba(255,87,34,0.35);
+      border-radius: 20px;
+      padding: 32px 28px;
+      margin: 40px 0 24px;
+      text-align: center;
+      box-shadow: 0 8px 30px rgba(255,87,34,0.12);
+    }
+    .contact-card h2 { font-size: 20px; font-weight: 900; margin-bottom: 10px; }
+    .contact-card p { font-size: 14px; color: var(--text-body); line-height: 1.8; }
+    .btn-email {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: linear-gradient(135deg, var(--orange), var(--yellow));
+      color: #fff; text-decoration: none;
+      padding: 14px 28px; border-radius: 16px;
+      font-size: 15px; font-weight: 800;
+      box-shadow: 0 8px 30px rgba(255,87,34,0.45);
+      transition: transform 0.15s, box-shadow 0.15s;
+      margin-top: 14px;
+    }
+    .btn-email:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(255,87,34,0.55); }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 24px;
+      text-align: center;
+      position: relative; z-index: 1;
+      margin-top: 40px;
+    }
+    footer p { font-size: 13px; color: var(--text-dim); line-height: 1.8; }
+    footer a { color: var(--text-dim); text-decoration: underline; }
+    footer a:hover { color: var(--text); }
+    .footer-logo { font-size: 22px; font-weight: 900; margin-bottom: 12px; }
+    .footer-logo .ava { color: var(--orange); }
   </style>
 </head>
 <body>
+  <div class="stars"></div>
+
+  <nav>
+    <a class="nav-logo" href="/">animal<span>-vs-</span>animal.com</a>
+    <a class="nav-back" href="/">← Home</a>
+  </nav>
+
+  <header class="page-head">
+    <p class="page-eyebrow">🦉 We’re here to help 🦉</p>
+    <h1 class="page-title">Support</h1>
+    <p class="page-sub">
+      AvA — Animal vs Animal (“Who Would Win?”)<br/>
+      Made by <strong style="color:rgba(255,255,255,0.85);">King Painter Technology LLC</strong> · We typically reply within 24 hours
+    </p>
+  </header>
+
   <div class="container">
-    <a href="/" class="back">← animal-vs-animal.com</a>
-    <h1>Support</h1>
-    <p class="subtitle">Beast Clash · We typically reply within 24 hours</p>
+    <p class="section-label">Frequently asked questions</p>
 
-    <h2>Frequently Asked Questions</h2>
+    <div class="faq-card">
+      <div class="faq-q"><span class="icon">🔓</span> How do I unlock the special realms?</div>
+      <p>Every realm unlocks <strong>free</strong> just by playing battles — or instantly with a one-time pack purchase (prices shown in the app):</p>
+      <ul>
+        <li>🦕 <strong>Prehistoric Realm</strong> — free after 40 battles</li>
+        <li>✨ <strong>Fantasy Realm</strong> — free after 100 battles</li>
+        <li>🌊 <strong>Mythic Realm</strong> — free after 200 battles</li>
+        <li>⚡ <strong>Mount Olympus</strong> — free after 500 battles</li>
+      </ul>
+      <p>The <strong>Everything Bundle</strong> and <strong>Premium</strong> unlock all realms (plus arenas, Melee Mode, and no ads) right away.</p>
+    </div>
 
-    <h2>How do I unlock Fantasy creatures?</h2>
-    <p>Two ways: play 50 battles to unlock the Fantasy Realm for free, or tap any locked Fantasy animal and purchase the Fantasy Pack ($1.99 one-time). Premium subscribers get instant access too.</p>
+    <div class="faq-card">
+      <div class="faq-q"><span class="icon">🛒</span> I bought something but it’s not showing</div>
+      <p>Open the app → <strong>Settings</strong> (gear icon on the home screen) → <strong>Shop &amp; Unlocks</strong> → scroll to the bottom → tap <strong>Restore purchases</strong>. Your purchase comes back immediately on any device signed into the same Apple ID.</p>
+      <p>If a kid’s purchase used <strong>Ask to Buy</strong>, it completes automatically once the family organizer approves it.</p>
+    </div>
 
-    <h2>I bought the Fantasy Pack but it's not showing</h2>
-    <p>Open the app, go to Settings (gear icon on the home screen), scroll to the bottom and tap <strong>Restore Purchases</strong>. Your purchase will be restored immediately.</p>
+    <div class="faq-card">
+      <div class="faq-q"><span class="icon">🚫</span> How do I remove ads?</div>
+      <p>Go to <strong>Settings → Shop &amp; Unlocks → Remove Ads</strong> — a one-time purchase that removes ads forever (a grown-up completes the quick parental gate first). Premium and the Everything Bundle also remove all ads. (Ads in AvA are always non-personalized and kid-safe, rated G.)</p>
+    </div>
 
-    <h2>How do I remove ads?</h2>
-    <p>Go to Settings → Remove Ads ($4.99 one-time). This removes ads permanently across all your devices logged into the same Apple ID.</p>
+    <div class="faq-card">
+      <div class="faq-q"><span class="icon">🪙</span> What are coins and how do I earn them?</div>
+      <p>Coins are AvA’s play money — earn them by battling (with a bonus for your first battle each day), playing the Daily Challenge, hitting streak milestones, and watching optional reward videos. (The daily gift 🎁 gives a mystery <em>sticker</em> for your sticker book.) Spend coins on <strong>custom creatures</strong> (150 coins — or free by watching a short ad) and on <strong>tournament wagers</strong>.</p>
+    </div>
 
-    <h2>The battle result seems wrong</h2>
-    <p>Results are generated by AI and are intended to be educational and fun — not a definitive scientific ranking. Edge cases and surprising outcomes are part of the fun! If you think something is really off, let us know.</p>
+    <div class="faq-card">
+      <div class="faq-q"><span class="icon">🐉</span> How do custom creatures work?</div>
+      <p>Type <em>anything</em> into the search bar — “quokka”, “T-Rex”, even “Godzilla” — and AvA creates a fighter for it, judged by AI using real-world knowledge, with a picture found for it (a real photo when one exists, otherwise a kid-safe illustration). Custom names go through a kid-safe content filter first.</p>
+    </div>
 
-    <h2>The app won't connect / results say "Offline"</h2>
-    <p>Check your internet connection. The app includes an offline fallback mode that still lets you battle — it uses animal size as a tiebreaker until you're back online.</p>
+    <div class="faq-card">
+      <div class="faq-q"><span class="icon">⚖️</span> The battle result seems wrong</div>
+      <p>Battles are decided by <strong>real biology</strong> — size, weapons, speed, armor, and (for legends) mythology — deterministically, so the same matchup gives the same winner. Picking an <strong>arena</strong> changes the odds: an orca is unbeatable in the Ocean and helpless in the Desert. A Quick Fight with no arena is judged on pure ability. Think a result is truly off? Email us — we genuinely tune these.</p>
+    </div>
 
-    <h2>Voice search isn't working</h2>
-    <p>Go to iPhone Settings → Privacy & Security → Microphone, and make sure Beast Clash has microphone access. Also check Settings → Privacy & Security → Speech Recognition.</p>
+    <div class="faq-card">
+      <div class="faq-q"><span class="icon">📵</span> What happens if I lose internet?</div>
+      <p>Check your internet connection. No signal? No problem — a built-in local battle engine keeps the fights going until you’re back online.</p>
+    </div>
 
-    <div class="contact-box">
+    <div class="faq-card">
+      <div class="faq-q"><span class="icon">🎤</span> Voice search isn’t working</div>
+      <p>Voice search needs two permissions: iPhone <strong>Settings → Privacy &amp; Security → Microphone</strong> and <strong>→ Speech Recognition</strong> — make sure AvA is allowed in both. All voice processing happens on your device; audio never leaves the phone.</p>
+    </div>
+
+    <div class="faq-card">
+      <div class="faq-q"><span class="icon">🧑‍🧒</span> What’s the Grown-Up Zone? Can I erase my child’s data?</div>
+      <p><strong>Settings → Grown-Up Zone</strong> (behind a parental gate) shows what your child is learning, purchase controls, and <strong>Erase all data</strong> — which wipes all progress, coins, stickers, and synced iCloud data after a quick confirmation. See our <a href="/privacy.html">Privacy Policy</a> for the full kid-safety picture.</p>
+    </div>
+
+    <div class="contact-card">
       <h2>Still need help?</h2>
-      <p>Email us at <a href="mailto:support@animal-vs-animal.com">support@animal-vs-animal.com</a> and include your iOS version and a description of the issue. We'll get back to you fast.</p>
+      <p>Email us with your iOS version and a quick description of the issue.<br/>We’re a small family company — a real person reads every message.</p>
+      <a class="btn-email" href="mailto:billvoyiatzis@gmail.com">✉️ Email Support</a>
     </div>
   </div>
+
+  <footer>
+    <div class="footer-logo"><span class="ava">AvA</span> — Animal vs Animal</div>
+    <p>
+      The ultimate animal battle arena — Who Would Win?<br />
+      <a href="/privacy.html">Privacy Policy</a> · <a href="/support.html">Support</a> · <a href="https://apps.apple.com/app/id6761319389">App Store</a>
+    </p>
+    <p style="margin-top: 16px; font-size: 12px; opacity: 0.4;">
+      © 2026 King Painter Technology LLC · animal-vs-animal.com
+    </p>
+  </footer>
 </body>
 </html>

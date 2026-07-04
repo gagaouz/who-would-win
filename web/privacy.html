@@ -3,65 +3,302 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Privacy Policy — Animal vs Animal</title>
+  <title>Privacy Policy — AvA: Animal vs Animal</title>
+  <meta name="description" content="Privacy policy for AvA — Animal vs Animal (Who Would Win?), made by King Painter Technology LLC. Plain-English, kid-safe, no tracking." />
+  <link rel="canonical" href="https://animal-vs-animal.com/privacy.html" />
+
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep:    #0E0B22;
+      --bg-mid:     #180B32;
+      --orange:     #FF5722;
+      --yellow:     #FFD60A;
+      --green:      #00E676;
+      --text:       #FFFFFF;
+      --text-dim:   rgba(255,255,255,0.55);
+      --text-body:  rgba(255,255,255,0.78);
+      --card:       rgba(255,255,255,0.06);
+      --border:     rgba(255,255,255,0.10);
+    }
+
+    html { scroll-behavior: smooth; }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #0E0B22; color: #fff; min-height: 100vh;
-      padding: 48px 24px;
+      background: linear-gradient(135deg, var(--bg-deep) 0%, var(--bg-mid) 50%, #0B1528 100%);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
     }
-    .container { max-width: 720px; margin: 0 auto; }
-    a { color: #FF5722; }
-    h1 { font-size: 32px; font-weight: 900; margin-bottom: 8px; color: #FF5722; }
-    .subtitle { font-size: 14px; color: rgba(255,255,255,0.45); margin-bottom: 48px; }
-    h2 { font-size: 18px; font-weight: 800; margin: 32px 0 10px; }
-    p, li { font-size: 15px; color: rgba(255,255,255,0.75); line-height: 1.8; }
-    ul { padding-left: 20px; }
-    li { margin-bottom: 6px; }
-    .back { display: inline-block; margin-bottom: 32px; font-size: 14px; color: rgba(255,255,255,0.45); text-decoration: none; }
-    .back:hover { color: #fff; }
+
+    /* ── Stars ── */
+    .stars {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image:
+        radial-gradient(1px 1px at 8% 18%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 25% 8%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(2px 2px at 45% 15%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 62% 5%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(2px 2px at 80% 20%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 93% 11%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 15% 32%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(2px 2px at 38% 28%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 57% 35%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 74% 30%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 90% 40%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 5% 50%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(2px 2px at 22% 44%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 48% 52%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 68% 47%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 85% 55%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(2px 2px at 30% 90%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 55% 85%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 78% 77%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 92% 70%, rgba(255,255,255,0.6) 0%, transparent 100%);
+    }
+
+    .container { max-width: 780px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+    /* ── Nav ── */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 24px;
+      position: relative; z-index: 1;
+    }
+    .nav-logo { font-size: 15px; font-weight: 800; letter-spacing: 1px; color: var(--text-dim); text-decoration: none; }
+    .nav-logo span { color: var(--orange); }
+    .nav-back { font-size: 13px; font-weight: 700; color: var(--text-dim); text-decoration: none; }
+    .nav-back:hover { color: var(--text); }
+
+    /* ── Page header ── */
+    .page-head { text-align: center; padding: 40px 24px 44px; }
+    .page-eyebrow {
+      font-size: 12px; font-weight: 700; letter-spacing: 3px;
+      color: var(--text-dim); text-transform: uppercase; margin-bottom: 16px;
+    }
+    .page-title {
+      font-size: clamp(36px, 8vw, 56px);
+      font-weight: 900; line-height: 1.05; letter-spacing: -1px;
+      color: var(--orange);
+      text-shadow: 0 0 40px rgba(255,87,34,0.45);
+      margin-bottom: 12px;
+    }
+    .page-sub { font-size: 14px; color: var(--text-dim); line-height: 1.7; }
+
+    /* ── Summary card ── */
+    .summary {
+      background: rgba(255,87,34,0.08);
+      border: 1px solid rgba(255,87,34,0.35);
+      border-radius: 20px;
+      padding: 26px 28px;
+      margin-bottom: 40px;
+      box-shadow: 0 8px 30px rgba(255,87,34,0.12);
+    }
+    .summary h2 {
+      font-size: 15px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--orange); margin-bottom: 14px;
+    }
+    .summary li { margin-bottom: 8px; }
+
+    /* ── Body text ── */
+    .doc h2 {
+      font-size: 21px; font-weight: 900; margin: 44px 0 12px;
+      color: var(--text);
+    }
+    .doc h2 .num { color: var(--orange); margin-right: 6px; }
+    .doc h3 { font-size: 16px; font-weight: 800; margin: 24px 0 8px; color: rgba(255,255,255,0.92); }
+    .doc p, .doc li { font-size: 15px; color: var(--text-body); line-height: 1.75; }
+    .doc p { margin-bottom: 12px; }
+    .doc ul { padding-left: 22px; margin-bottom: 12px; }
+    .doc li { margin-bottom: 7px; }
+    .doc a { color: var(--orange); }
+    .doc strong { color: var(--text); }
+
+    .note-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px 22px;
+      margin: 16px 0;
+    }
+
+    /* ── Contact card ── */
+    .contact-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+      margin: 44px 0 24px;
+      text-align: center;
+    }
+    .contact-card h2 { font-size: 18px; font-weight: 900; margin-bottom: 10px; }
+    .contact-card p { font-size: 14px; color: var(--text-body); line-height: 1.7; }
+    .contact-card a { color: var(--orange); font-weight: 700; }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 24px;
+      text-align: center;
+      position: relative; z-index: 1;
+      margin-top: 40px;
+    }
+    footer p { font-size: 13px; color: var(--text-dim); line-height: 1.8; }
+    footer a { color: var(--text-dim); text-decoration: underline; }
+    footer a:hover { color: var(--text); }
+    .footer-logo { font-size: 22px; font-weight: 900; margin-bottom: 12px; }
+    .footer-logo .ava { color: var(--orange); }
   </style>
 </head>
 <body>
-  <div class="container">
-    <a href="/" class="back">← animal-vs-animal.com</a>
-    <h1>Privacy Policy</h1>
-    <p class="subtitle">Animal vs Animal · Last updated: March 2026</p>
+  <div class="stars"></div>
 
-    <h2>Overview</h2>
-    <p>Animal vs Animal ("the app") is designed with privacy in mind, especially for young users. We collect as little data as possible.</p>
+  <nav>
+    <a class="nav-logo" href="/">animal<span>-vs-</span>animal.com</a>
+    <a class="nav-back" href="/">← Home</a>
+  </nav>
 
-    <h2>Data We Do Not Collect</h2>
+  <header class="page-head">
+    <p class="page-eyebrow">🛡️ Kid-Safe by Design 🛡️</p>
+    <h1 class="page-title">Privacy Policy</h1>
+    <p class="page-sub">
+      AvA — Animal vs Animal (“Who Would Win?”) for iPhone &amp; iPad<br/>
+      Published by <strong style="color:rgba(255,255,255,0.85);">King Painter Technology LLC</strong> · Effective 2026-04-19 · Last updated 2026-07-03
+    </p>
+  </header>
+
+  <div class="container doc">
+
+    <p>AvA is made for children and families, and we take that seriously. This policy explains — in plain language — exactly what the app does and does not do with information. “We,” “us,” and “our” mean <strong>King Painter Technology LLC</strong>, the company that makes and operates AvA and the animal-vs-animal.com services.</p>
+
+    <div class="summary">
+      <h2>Plain-English Summary</h2>
+      <ul>
+        <li>We don’t ask for names, emails, phone numbers, or logins — there are no accounts.</li>
+        <li>We don’t track you or your child across other apps or websites, and we don’t sell any data.</li>
+        <li>Ads are kid-safe: non-personalized, configured for child-directed treatment, rated G — and a one-time purchase removes them.</li>
+        <li>Purchases are handled entirely by Apple. We never see card numbers or billing details.</li>
+        <li>Game progress lives on your device (and optionally in your own iCloud) — not on our servers.</li>
+        <li>If you type a custom creature, its name (and nothing about you) is sent to our battle service to write the story and find a picture.</li>
+        <li>Voice search happens on the device. Audio never leaves the phone.</li>
+        <li>Grown-ups can erase everything: Settings → Grown-Up Zone → Erase all data.</li>
+      </ul>
+    </div>
+
+    <h2><span class="num">1.</span>Information the app does <em>not</em> collect</h2>
+    <p>To be explicit, the app does <strong>not</strong> collect any of the following:</p>
     <ul>
-      <li>We do not create user accounts or require sign-in.</li>
-      <li>We do not collect your name, email address, or any personally identifiable information.</li>
-      <li>We do not track your location.</li>
-      <li>We do not share data with advertisers or third-party analytics providers.</li>
+      <li>Name, email address, phone number, or postal address</li>
+      <li>Age or birthdate</li>
+      <li>Accounts, passwords, or login credentials (there is no login)</li>
+      <li>Precise location (GPS)</li>
+      <li>Photos, videos, files, or recorded audio from your device</li>
+      <li>Contacts, calendar, messages, or call history</li>
+      <li>Browsing history or activity in other apps</li>
+      <li>Health, fitness, financial, or biometric data</li>
+    </ul>
+    <p>We do not use Google Analytics, Firebase, Crashlytics, Sentry, or any other third-party analytics or crash-reporting SDK.</p>
+
+    <h2><span class="num">2.</span>Information the app does handle</h2>
+
+    <h3>2.1 Saved on your device</h3>
+    <p>The app stores game data on your device so progress persists between sessions: sound/narration/haptics preferences, battle counts, win streaks and per-animal win records, coin balance, sticker and achievement unlocks, purchased packs, and any custom creature names you’ve created.</p>
+    <p>If iCloud is enabled on the device, key progress syncs through <strong>your own iCloud account</strong> (Apple’s key-value storage) so it survives getting a new phone. That data lives in your Apple account — we never see it.</p>
+
+    <h3>2.2 Sent to our battle service</h3>
+    <p>When you start a battle (or a team battle, with up to six fighters per side), the app sends the fighters’ names (or the custom names you typed), the chosen arena (only if one was chosen), and — for tournaments — a short round description to our battle service at <strong>api.animal-vs-animal.com</strong>, which we operate. When you create a custom creature, its name is also sent so the AI can pick a matching emoji and category. The service uses an AI model (Anthropic’s Claude) to write the battle stories and make those picks, so creature names are processed by Anthropic to generate the text. The request contains <strong>no identifier for you or your device</strong>, and we don’t link requests to any person.</p>
+    <p>Custom creature names pass through a content filter on the device before any network call — inappropriate words are rejected before they leave the phone. Our service keeps battle records with <strong>no user identifiers</strong> — which creatures fought and who won — to prevent abuse, fix bugs, and power the app’s anonymous, aggregate battle stats. Any <strong>custom creature names</strong> in those records are automatically deleted within <strong>90 days</strong>.</p>
+
+    <h3>2.3 Custom creature pictures</h3>
+    <p>If you create a custom creature, the app looks for a picture using the creature’s name only:</p>
+    <ul>
+      <li><strong>Wikipedia</strong> (Wikimedia Foundation) is tried first for a real photo — <a href="https://foundation.wikimedia.org/wiki/Privacy_policy">their privacy policy</a> applies to that lookup.</li>
+      <li>If no photo exists, <strong>Pollinations.ai</strong> generates a G-rated cartoon from a fixed, child-friendly prompt containing only the filtered creature name.</li>
+    </ul>
+    <p>Only the creature name is sent — never anything about you or your device.</p>
+
+    <h3>2.4 Ads (Google AdMob)</h3>
+    <p>The free version shows ads through Google AdMob with these settings locked in:</p>
+    <ul>
+      <li><strong>Child-directed treatment (COPPA):</strong> ON</li>
+      <li><strong>Users under the age of consent (GDPR-K):</strong> ON</li>
+      <li><strong>Maximum ad content rating:</strong> G · <strong>Personalized ads:</strong> OFF (contextual only)</li>
+    </ul>
+    <p>To show and count ads, Google’s ad software receives standard device information (device identifiers, an approximate location derived from IP address, and how ads perform in the app). With the child-directed settings above, Google does not use behavioral profiling or cross-app tracking for these ads — see <a href="https://support.google.com/admob/answer/6219315">Google’s child-directed ads documentation</a> and <a href="https://policies.google.com/privacy">Google’s privacy policy</a>. We do not use Apple’s App Tracking Transparency because we do not track. Removing ads (one-time purchase, Premium, or the Everything Bundle) stops all interstitial ads and their ad requests. One optional feature remains for everyone — the “watch a video to earn coins” button in the Coin Shop — and the ad network is only contacted for it when you open the Coin Shop.</p>
+
+    <h3>2.5 Crash reports (first-party only)</h3>
+    <p>To fix bugs, the app uses Apple’s built-in <strong>MetricKit</strong> to receive anonymous crash and hang diagnostics, and forwards a trimmed copy (with device details stripped down) to our own service. These reports contain technical stack traces — no personal information, no identifiers, and no third-party crash SDK is involved.</p>
+
+    <h3>2.6 Purchases</h3>
+    <p>All payments run through Apple’s StoreKit. We receive only a receipt confirming a purchase succeeded — never your card number, billing address, or identity. Real-money purchases in the app sit behind a <strong>parental gate</strong>, and Apple’s <strong>Ask to Buy</strong> is fully supported.</p>
+
+    <h3>2.7 Voice search &amp; read-aloud</h3>
+    <p>Voice search uses the device microphone with Apple’s speech recognition locked to <strong>on-device only</strong> — audio and transcripts are processed on the phone and are never sent anywhere. On a device that can’t do on-device recognition, voice search simply turns itself off (you can type instead) — it never falls back to server processing. Read-aloud narration uses the device’s built-in text-to-speech. Both require your permission via iOS settings and are entirely optional.</p>
+
+    <h3>2.8 Game Center (optional)</h3>
+    <p>If you choose to sign in to Apple’s Game Center, achievements are saved under your Apple account, handled by Apple per <a href="https://www.apple.com/legal/privacy/">Apple’s privacy policy</a>. The app works fully without it.</p>
+
+    <h2><span class="num">3.</span>Children’s privacy</h2>
+    <p>AvA is designed for children and families and built to comply with the <strong>Children’s Online Privacy Protection Act (COPPA)</strong> and Apple’s guidelines for kids’ apps:</p>
+    <ul>
+      <li>No personal information is collected — from children or anyone else.</li>
+      <li>No chat, social features, user-to-user messaging, or public sharing of typed content.</li>
+      <li>Everything a child types is checked by a content filter before it can be used.</li>
+      <li>Ads are contextual only — no behavioral profiling, no retargeting, ever.</li>
+      <li>A parental gate protects purchases and external links.</li>
+    </ul>
+    <p>If you believe your child’s information was somehow collected in error, email <a href="mailto:billvoyiatzis@gmail.com">billvoyiatzis@gmail.com</a> and we will delete it immediately.</p>
+
+    <h2><span class="num">4.</span>Data retention &amp; deletion</h2>
+    <ul>
+      <li><strong>On your device:</strong> deleted when you uninstall the app — or via <strong>Settings → Grown-Up Zone → Erase all data</strong>, which wipes all progress, the grown-up PIN, and iCloud-synced progress.</li>
+      <li><strong>Our service records:</strong> never linked to a person; any custom creature names are deleted automatically within 90 days, and the remaining records are anonymous battle statistics.</li>
+      <li><strong>Wikipedia / Pollinations requests:</strong> handled by those services under their own policies.</li>
+      <li><strong>Purchases &amp; Game Center:</strong> retained by Apple under Apple’s terms.</li>
+    </ul>
+    <p>For any other deletion request, email <a href="mailto:billvoyiatzis@gmail.com">billvoyiatzis@gmail.com</a>. Because there are no accounts, there is usually nothing to delete beyond the logs above.</p>
+
+    <h2><span class="num">5.</span>Who receives any data</h2>
+    <p>We never sell or rent information, and we never share it for advertising beyond what’s described above. The only parties that process any data are:</p>
+    <ul>
+      <li><strong>Apple</strong> — StoreKit purchases, optional Game Center, optional iCloud sync</li>
+      <li><strong>Google</strong> — AdMob ads with child-directed settings</li>
+      <li><strong>Anthropic</strong> — creature names/arena are processed by the Claude AI model to write battle stories and pick a custom creature’s emoji and category</li>
+      <li><strong>Wikimedia Foundation &amp; Pollinations.ai</strong> — custom-creature picture lookups</li>
+      <li><strong>Our hosting provider (Railway)</strong> — runs the battle service we operate</li>
     </ul>
 
-    <h2>Data Stored Locally on Your Device</h2>
-    <p>The following preferences are saved on your device using iOS UserDefaults and never transmitted to our servers:</p>
-    <ul>
-      <li>Sound, narration, and haptics on/off settings</li>
-      <li>Total battle count (used to unlock the free Fantasy tier at 50 battles)</li>
-      <li>In-app purchase status (ads removed, Fantasy Pack, Premium subscription)</li>
-    </ul>
+    <h2><span class="num">6.</span>Security</h2>
+    <p>All network traffic to our services and partners uses HTTPS, enforced by Apple’s App Transport Security. The app stores no sensitive personal data.</p>
 
-    <h2>Battle Requests</h2>
-    <p>When you start a battle, the two animal IDs (e.g. "lion", "tiger") are sent to our API at <strong>api.animal-vs-animal.com</strong> to generate the battle result. No personal information is included in this request. We log request volume for rate-limiting purposes only; logs are purged automatically and are never sold or shared.</p>
+    <h2><span class="num">7.</span>International users</h2>
+    <p>The app is available worldwide. If you are in the EEA, UK, California, or another region with data-protection laws: we do not collect personal data, so rights like access, portability, and deletion are effectively satisfied by default. Email us with any specific request and we’ll help.</p>
 
-    <h2>Microphone & Speech Recognition</h2>
-    <p>The app can optionally use your device's microphone and Apple's on-device speech recognition so you can speak an animal name instead of typing. Audio is processed entirely on your device by Apple's framework and is not recorded or transmitted to us.</p>
+    <h2><span class="num">8.</span>Changes to this policy</h2>
+    <p>We may update this policy from time to time; the “Last updated” date above shows the current version. Material changes are announced in the app’s release notes.</p>
 
-    <h2>In-App Purchases</h2>
-    <p>Purchases are processed entirely by Apple through the App Store. We never see or store your payment information. Purchase receipts are verified locally using StoreKit 2.</p>
+    <div class="contact-card">
+      <h2>Questions? We’re a small family company.</h2>
+      <p>
+        <strong>King Painter Technology LLC</strong><br/>
+        Email <a href="mailto:billvoyiatzis@gmail.com">billvoyiatzis@gmail.com</a> · or visit <a href="/support.html">Support</a><br/>
+        This policy is written in plain language on purpose. It is not legal advice; the plain-English summary controls in case of ambiguity.
+      </p>
+    </div>
 
-    <h2>Children's Privacy</h2>
-    <p>Animal vs Animal is suitable for all ages. We do not knowingly collect personal information from children under 13. Because we collect no personal information from any user, the app is compliant with COPPA.</p>
-
-    <h2>Contact</h2>
-    <p>Questions about privacy? Email us at <a href="mailto:support@animal-vs-animal.com">support@animal-vs-animal.com</a> or visit <a href="/support.html">our support page</a>.</p>
   </div>
+
+  <footer>
+    <div class="footer-logo"><span class="ava">AvA</span> — Animal vs Animal</div>
+    <p>
+      The ultimate animal battle arena — Who Would Win?<br />
+      <a href="/privacy.html">Privacy Policy</a> · <a href="/support.html">Support</a> · <a href="https://apps.apple.com/app/id6761319389">App Store</a>
+    </p>
+    <p style="margin-top: 16px; font-size: 12px; opacity: 0.4;">
+      © 2026 King Painter Technology LLC · animal-vs-animal.com
+    </p>
+  </footer>
 </body>
 </html>
