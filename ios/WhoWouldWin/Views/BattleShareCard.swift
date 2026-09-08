@@ -121,7 +121,7 @@ struct BattleShareCard: View {
                                 LinearGradient(colors: [orange.opacity(0.7), cyan.opacity(0.7)],
                                                startPoint: .topLeading, endPoint: .bottomTrailing),
                                 lineWidth: 1.5))
-                            .shadow(color: .black.opacity(0.6), radius: 6, x: 0, y: 0)
+                            .shadow(color: .black.opacity(0.36), radius: 6, x: 0, y: 0)
                         Text("VS")
                             .font(.custom("PressStart2P-Regular", size: 10))
                             .foregroundColor(.white.opacity(0.9))
@@ -338,7 +338,7 @@ struct BattleShareCard: View {
                         startPoint: .leading, endPoint: .trailing
                     )
                 )
-                .shadow(color: gold.opacity(0.7), radius: 16, x: 0, y: 0)
+                .shadow(color: gold.opacity(0.42), radius: 16, x: 0, y: 0)
                 .multilineTextAlignment(.center)
                 .lineLimit(1)
                 .minimumScaleFactor(0.5)
@@ -354,7 +354,7 @@ struct BattleShareCard: View {
                 .foregroundStyle(
                     LinearGradient(colors: [orange, gold, cyan], startPoint: .leading, endPoint: .trailing)
                 )
-                .shadow(color: gold.opacity(0.5), radius: 12, x: 0, y: 0)
+                .shadow(color: gold.opacity(0.30), radius: 12, x: 0, y: 0)
         }
     }
 

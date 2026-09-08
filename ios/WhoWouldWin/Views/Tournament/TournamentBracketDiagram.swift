@@ -11,18 +11,24 @@ struct TournamentBracketDiagram: View {
     /// When true, the diagram is scrollable horizontally.
     var scrollable: Bool = true
 
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    private var isIPad: Bool { sizeClass == .regular }
+
     var body: some View {
-        let content = HStack(alignment: .center, spacing: 12) {
+        let content = HStack(alignment: .center, spacing: isIPad ? 18 : 12) {
             ForEach(Array(bracket.rounds.enumerated()), id: \.offset) { (roundIdx, round) in
-                VStack(spacing: 10) {
+                VStack(spacing: isIPad ? 14 : 10) {
                     Text(roundLabel(roundIdx))
-                        .font(Theme.bungee(11))
-                        .foregroundColor(.white.opacity(0.75))
+                        .font(Kids.fredoka(isIPad ? 13 : 10, weight: .bold))
+                        .foregroundColor(Kids.ink)
                         .tracking(1)
-                        .padding(.bottom, 2)
+                        .padding(.horizontal, isIPad ? 12 : 8).padding(.vertical, isIPad ? 5 : 3)
+                        .background(
+                            Capsule().fill(Kids.sun)
+                                .overlay(Capsule().stroke(Kids.ink, lineWidth: 1.5))
+                        )
 
                     if round.isEmpty {
-                        // Placeholder for unplayed future round
                         ForEach(0..<max(1, placeholderCount(for: roundIdx)), id: \.self) { _ in
                             placeholderCard
                         }
@@ -35,8 +41,8 @@ struct TournamentBracketDiagram: View {
                 .opacity(highlightedRoundIndex == nil || highlightedRoundIndex == roundIdx ? 1.0 : 0.55)
             }
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 6)
+        .padding(.horizontal, isIPad ? 14 : 8)
+        .padding(.vertical, isIPad ? 10 : 6)
 
         if scrollable {
             ScrollView(.horizontal, showsIndicators: false) { content }
@@ -49,7 +55,6 @@ struct TournamentBracketDiagram: View {
 
     private func roundLabel(_ roundIdx: Int) -> String {
         let size: BracketSize
-        // Derive from total rounds count (rounds array always has .totalRounds entries)
         switch bracket.rounds.count {
         case 2: size = .four
         case 3: size = .eight
@@ -60,7 +65,6 @@ struct TournamentBracketDiagram: View {
     }
 
     private func placeholderCount(for roundIdx: Int) -> Int {
-        // total rounds - roundIdx gives number of matches remaining (1 = final)
         let total = bracket.rounds.count
         let remaining = total - roundIdx
         switch remaining {
@@ -74,65 +78,95 @@ struct TournamentBracketDiagram: View {
 
     @ViewBuilder
     private func matchupCard(_ matchup: Matchup) -> some View {
-        VStack(spacing: 2) {
+        VStack(spacing: isIPad ? 5 : 3) {
             fighterRow(matchup.fighter1,
                        isWinner: matchup.winningFighter?.id == matchup.fighter1.id,
                        isLoser:  matchup.losingFighter?.id == matchup.fighter1.id)
             Rectangle()
-                .fill(Color.white.opacity(0.25))
-                .frame(height: 0.6)
+                .fill(Kids.ink.opacity(0.15))
+                .frame(height: 1)
             fighterRow(matchup.fighter2,
                        isWinner: matchup.winningFighter?.id == matchup.fighter2.id,
                        isLoser:  matchup.losingFighter?.id == matchup.fighter2.id)
         }
-        .padding(.vertical, 6)
-        .padding(.horizontal, 8)
-        .frame(width: 120)
+        .padding(.vertical, isIPad ? 10 : 6)
+        .padding(.horizontal, isIPad ? 12 : 8)
+        .frame(width: isIPad ? 188 : 128)
         .background(
-            RoundedRectangle(cornerRadius: 10)
-                .fill(Color.white.opacity(0.08))
+            RoundedRectangle(cornerRadius: isIPad ? 16 : 12, style: .continuous)
+                .fill(.white)
+                .overlay(RoundedRectangle(cornerRadius: isIPad ? 16 : 12, style: .continuous).stroke(Kids.ink, lineWidth: 2))
         )
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.white.opacity(0.25), lineWidth: 1)
-        )
+        .shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 2)
     }
 
     @ViewBuilder
     private func fighterRow(_ animal: Animal, isWinner: Bool, isLoser: Bool) -> some View {
-        HStack(spacing: 5) {
-            AnimalAvatar(animal: animal, size: 20, cornerRadius: 5)
+        HStack(spacing: isIPad ? 7 : 5) {
+            DiagramMini(animal: animal, isIPad: isIPad)
             Text(animal.name)
-                .font(Theme.bungee(11))
-                .foregroundColor(isLoser ? .white.opacity(0.35) : .white)
+                .font(Kids.fredoka(isIPad ? 13 : 10, weight: .bold))
+                .foregroundColor(isLoser ? Kids.inkSoft.opacity(0.5) : Kids.ink)
                 .lineLimit(1)
-                .minimumScaleFactor(0.7)
+                .minimumScaleFactor(0.65)
                 .strikethrough(isLoser)
             Spacer(minLength: 0)
             if isWinner {
-                Image(systemName: "crown.fill")
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundColor(Theme.gold)
+                Text("👑")
+                    .font(.system(size: isIPad ? 15 : 11))
             }
         }
     }
 
     private var placeholderCard: some View {
-        VStack(spacing: 2) {
-            HStack { Text("? ? ?").font(Theme.bungee(11)).foregroundColor(.white.opacity(0.35)); Spacer() }
-            Rectangle().fill(Color.white.opacity(0.15)).frame(height: 0.6)
-            HStack { Text("? ? ?").font(Theme.bungee(11)).foregroundColor(.white.opacity(0.35)); Spacer() }
+        VStack(spacing: isIPad ? 5 : 3) {
+            HStack {
+                Text("???").font(Kids.fredoka(isIPad ? 13 : 10, weight: .bold)).foregroundColor(Kids.inkSoft.opacity(0.5))
+                Spacer()
+            }
+            Rectangle().fill(Kids.ink.opacity(0.1)).frame(height: 1)
+            HStack {
+                Text("???").font(Kids.fredoka(isIPad ? 13 : 10, weight: .bold)).foregroundColor(Kids.inkSoft.opacity(0.5))
+                Spacer()
+            }
         }
-        .padding(.vertical, 6)
-        .padding(.horizontal, 8)
-        .frame(width: 120)
+        .padding(.vertical, isIPad ? 10 : 6)
+        .padding(.horizontal, isIPad ? 12 : 8)
+        .frame(width: isIPad ? 188 : 128)
         .background(
-            RoundedRectangle(cornerRadius: 10)
-                .fill(Color.white.opacity(0.04))
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color(hex: "#F7F2FF"))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.white.opacity(0.12), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(Kids.ink.opacity(0.15), style: StrokeStyle(lineWidth: 1.5, dash: [3, 3]))
         )
+    }
+}
+
+private struct DiagramMini: View {
+    let animal: Animal
+    let isIPad: Bool
+    private var bundledImage: UIImage? {
+        guard let name = animal.creatureAssetName else { return nil }
+        return UIImage(named: name)
+    }
+    var body: some View {
+        let outer: CGFloat = isIPad ? 30 : 22
+        let inner: CGFloat = isIPad ? 22 : 16
+        ZStack {
+            Circle().fill(.white)
+                .overlay(Circle().stroke(Kids.ink, lineWidth: 1.5))
+                .frame(width: outer, height: outer)
+            Group {
+                if let ui = bundledImage {
+                    Image(uiImage: ui).resizable().scaledToFill()
+                } else {
+                    Text(animal.emoji).font(.system(size: isIPad ? 16 : 12))
+                }
+            }
+            .frame(width: inner, height: inner)
+            .clipShape(Circle())
+        }
     }
 }

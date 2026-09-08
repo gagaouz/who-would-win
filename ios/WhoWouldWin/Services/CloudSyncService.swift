@@ -31,7 +31,9 @@ final class CloudSyncService {
         "stat.longestStreak",
         "coin.balance",
         "achievement.totalCoinsSpent",
-        "achievement.tournamentsCompleted"
+        "achievement.tournamentsCompleted",
+        "stat.predTotal",      // prediction accuracy — survives reinstall
+        "stat.predCorrect"
     ]
 
     /// Double keys use MAX merge (timestamps, etc.).
@@ -40,18 +42,25 @@ final class CloudSyncService {
     ]
 
     /// Bool keys use TRUE-wins merge -- once true, stays true forever.
+    /// NOTE: "iap.sub" (isSubscribed) is intentionally NOT synced — a
+    /// subscription is REVOCABLE and account-wide, so StoreKit
+    /// (refreshEntitlements) is the single source of truth per device. Syncing
+    /// it TRUE-wins would resurrect a cancelled subscription forever. The
+    /// permanent purchase/coin flags below are correct to TRUE-wins (they're
+    /// never revoked).
     private let boolKeys: [String] = [
         "coin.welcomed",
         "coin.firstCustomAwarded",
         "coin.tournamentSeedAwarded",
         "iap.noads",
-        "iap.sub",
         "iap.fantasy",
         "iap.prehistoric",
         "iap.mythic",
         "iap.olympus",
         "iap.environments",
-        "pref.tournamentUnlocked"
+        "pref.tournamentUnlocked",
+        "onboard.seenFirstBattle",   // one-time onboarding survives reinstall
+        "paywall.shownOnce"          // don't re-nag a returning user
     ]
 
     /// Array-of-String keys use UNION merge -- combine both sides, deduplicated.
@@ -61,6 +70,12 @@ final class CloudSyncService {
         "achievement.categoriesBattled",
         "achievement.earned",
         "achievement.uniqueAnimalsUsed"
+    ]
+
+    /// [String:Int] dictionary keys use PER-KEY MAX merge -- each animal's win
+    /// count only goes up, and neither device loses progress.
+    private let intDictKeys: [String] = [
+        "stat.animalWins"
     ]
 
     // MARK: - Debounce State
@@ -120,6 +135,12 @@ final class CloudSyncService {
             cloud.set(local, forKey: key)
         }
 
+        // -- [String:Int] dictionaries --
+        for key in intDictKeys {
+            let local = (defaults.dictionary(forKey: key) as? [String: Int]) ?? [:]
+            cloud.set(local, forKey: key)
+        }
+
         cloud.synchronize()
         lastSyncTime = Date()
     }
@@ -172,6 +193,19 @@ final class CloudSyncService {
             defaults.set(merged, forKey: key)
         }
 
+        // -- [String:Int] dictionaries: PER-KEY MAX merge --
+        // Each animal's win count only goes up; union the keys so neither
+        // device drops a creature the other has wins for.
+        for key in intDictKeys {
+            let local = (defaults.dictionary(forKey: key) as? [String: Int]) ?? [:]
+            let remote = (cloud.dictionary(forKey: key) as? [String: Int]) ?? [:]
+            var merged = local
+            for (k, v) in remote {
+                merged[k] = max(merged[k] ?? 0, v)
+            }
+            defaults.set(merged, forKey: key)
+        }
+
         // Write the merged values back to iCloud as well so both sides
         // converge to the same state.
         syncToCloud()
@@ -205,6 +239,22 @@ final class CloudSyncService {
             pendingWorkItem = work
             DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
         }
+    }
+
+    /// Remove every tracked key from the iCloud key-value store so erased
+    /// progress doesn't restore from the cloud. Backs the "erase all data" path.
+    func wipeCloud() {
+        // Cancel any pending debounced upload (a battle just before erase
+        // schedules one up to 5s out) and block the immediate-path sync for the
+        // next window — otherwise it would re-upload local values right after we
+        // wipe, partially un-erasing the data the parent just deleted.
+        pendingWorkItem?.cancel()
+        pendingWorkItem = nil
+        lastSyncTime = Date()
+        for key in intKeys + doubleKeys + boolKeys + arrayKeys + intDictKeys {
+            cloud.removeObject(forKey: key)
+        }
+        cloud.synchronize()
     }
 
     // MARK: - iCloud Change Observer

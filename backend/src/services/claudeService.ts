@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
-import dotenv from 'dotenv';
-dotenv.config({ override: true }); // override: true needed because Claude Code pre-sets ANTHROPIC_API_KEY to ""
+import { createMessage } from './anthropicClient';
+import { isSafeGeneratedText } from '../middleware/sanitize';
 
 // Deterministic battle resolver — picks the winner for clear-cut matchups so
 // Claude is only asked to NARRATE, not to decide. See battleResolver.ts.
@@ -137,7 +137,102 @@ function getPowerProfile(id: string, name: string): string {
   if (DEITY_IDS.has(id)) {
     return `${name} — TIER 10/10 — Olympian god with divine powers; dominates all mortal creatures`;
   }
+  // Custom creature: use the estimated tier (populated by estimateCustomTier
+  // before the prompt is built) so the narration is anchored to real scale.
+  const est = customTierCache.get(name.trim().toLowerCase());
+  if (est) {
+    return `${name} — TIER ${est.tier}/10 (estimated) — ${est.blurb}`;
+  }
   return `${name} — tier unknown (custom/user-defined creature) — judge from your own knowledge of this creature\'s real-world or fictional abilities`;
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// Custom-creature tier estimation
+// ───────────────────────────────────────────────────────────────────────────
+// User-typed creatures have no tier profile, so the resolver used to defer the
+// whole fight to the AI — which let a gram-scale "gravedigger beetle" beat a
+// 45 kg wolf because it sounded mighty. We instead classify the custom creature
+// into the SAME 1–10 tier scale (a cheap Haiku call, cached by name) and feed it
+// into the deterministic resolver, so REAL physical scale decides the winner —
+// consistent, realistic, educational. Falls back to the AI path on any failure.
+
+const customTierCache = new Map<string, { tier: number; blurb: string }>();
+
+const TIER_RUBRIC_SYSTEM =
+  `You classify a creature into a COMBAT TIER from 1 to 10 for a kids' "who would win" game. ` +
+  `The tier reflects REAL physical size, mass, and lethal capability in a 1-on-1 fight to the finish.\n\n` +
+  `ABSOLUTE SCALE DOMINATES. Being "strong for its size" does NOT raise the tier — a beetle that ` +
+  `lifts 50× its gram-scale body is still TIER 1, because a wolf outweighs it ten-thousand-fold.\n\n` +
+  `Tier anchors:\n` +
+  `1 = gram-scale invertebrate / insect / bug (ant, beetle, wasp, mantis, hornet) or famously defenseless (dodo)\n` +
+  `2 = small (tarantula, scorpion, crow ~1kg, piranha, small lizard)\n` +
+  `3 = small-but-dangerous ~6–15kg (cobra, octopus, honey badger, small venomous snake)\n` +
+  `4 = medium predator ~15–55kg (wolf, cheetah, eagle, boar, barracuda)\n` +
+  `5 = large ~80–1200kg, not apex (komodo dragon, giraffe, velociraptor, swordfish)\n` +
+  `6 = apex land predator / great ape ~180–500kg (lion, tiger, gorilla, saber-tooth, moose)\n` +
+  `7 = heavy/armored megafauna ~360–2000kg (grizzly, crocodile, rhino, hippo, giant squid, griffin)\n` +
+  `8 = giant ~1100–7000kg (elephant, great white shark, T-Rex, phoenix, chimera)\n` +
+  `9 = colossal / apex legendary 5000kg+ (orca, megalodon, dragon, kraken, leviathan, hydra)\n` +
+  `10 = god / deity with reality-bending power\n\n` +
+  `Rules: judge a REAL animal by its typical adult size; a mythical/fictional one by its established lore size. ` +
+  `Insects and bugs are TIER 1 no matter their reputation. A small real animal can NEVER be tier 5+. ` +
+  `If the name is vague, estimate conservatively from the most likely real creature it names.\n` +
+  `Output ONLY a JSON object: {"tier": <1-10 integer>, "blurb": "<=12 words: typical weight + why>"}`;
+
+export async function estimateCustomTier(
+  name: string, signal?: AbortSignal,
+): Promise<{ tier: number; blurb: string } | null> {
+  const key = name.trim().toLowerCase();
+  if (!key) return null;
+  const cached = customTierCache.get(key);
+  if (cached) return cached;
+  try {
+    const resp = await createMessage('tier', {
+      max_tokens: 80,
+      system: TIER_RUBRIC_SYSTEM,
+      messages: [{ role: 'user', content: `Creature: "${name}"` }],
+    }, signal);
+    const block = resp.content.find((b) => b.type === 'text');
+    const text = block && block.type === 'text' ? block.text : '';
+    const m = text.match(/\{[\s\S]*\}/);
+    if (!m) return null;
+    const parsed = JSON.parse(m[0]) as { tier?: unknown; blurb?: unknown };
+    let tier = Math.round(Number(parsed.tier));
+    if (!Number.isFinite(tier)) return null;
+    tier = Math.max(1, Math.min(10, tier));
+    const rawBlurb = String(parsed.blurb ?? '').slice(0, 80);
+    const result = { tier, blurb: isSafeGeneratedText(rawBlurb) ? rawBlurb : '' };
+    if (customTierCache.size >= 1_000) {
+      const oldest = customTierCache.keys().next().value as string | undefined;
+      if (oldest) customTierCache.delete(oldest);
+    }
+    customTierCache.set(key, result);
+    return result;
+  } catch {
+    return null; // never block a battle — fall back to the AI-judged path
+  }
+}
+
+/** A fighter is custom when it has no built-in tier profile and isn't a deity. */
+export function isCustomFighter(id: string): boolean {
+  return !(id in POWER_PROFILES) && !DEITY_IDS.has(id);
+}
+
+/**
+ * Estimate tiers for whichever fighters are custom (concurrently). Returns the
+ * tier numbers to thread into resolveBattle; also primes customTierCache so
+ * getPowerProfile shows the estimate in the prompt.
+ */
+async function estimateCustomTiers(
+  fighter1Id: string, fighter1Name: string | undefined,
+  fighter2Id: string, fighter2Name: string | undefined,
+  signal?: AbortSignal,
+): Promise<{ customTier1: number | null; customTier2: number | null }> {
+  const [e1, e2] = await Promise.all([
+    isCustomFighter(fighter1Id) ? estimateCustomTier(fighter1Name ?? fighter1Id, signal) : Promise.resolve(null),
+    isCustomFighter(fighter2Id) ? estimateCustomTier(fighter2Name ?? fighter2Id, signal) : Promise.resolve(null),
+  ]);
+  return { customTier1: e1?.tier ?? null, customTier2: e2?.tier ?? null };
 }
 
 // Mapping of animal IDs to human-readable display names
@@ -224,6 +319,7 @@ export interface BattleResult {
   funFact: string;              // one fun fact about the winner (or both if draw)
   winnerHealthPercent: number;  // 10–90
   loserHealthPercent: number;   // 0–25
+  why?: string;                 // one short kid-friendly reason the winner won
 }
 
 const SYSTEM_PROMPT =
@@ -357,7 +453,11 @@ function buildUserPrompt(fighter1Id: string, fighter2Id: string, fighter1Name?: 
       `(2) SURVIVAL: Can it physically survive here? A land animal in deep ocean drowns. A sea fish in a desert suffocates. A non-flying creature in the sky falls. A cold-blooded insect in arctic freezes. A creature that cannot survive loses automatically unless it has a special ability.\n` +
       `(3) EFFECTIVENESS: Even if a creature can survive, does this arena cripple it? A lion can swim briefly but is nearly useless in deep ocean vs a sea creature. A shark on land can thrash but has no mobility. A jungle creature loses its agility advantage in an open desert. A desert creature overheats on a volcano. Score each fighter's combat effectiveness in THIS arena — not in their home environment.\n` +
       `(4) HOME ADVANTAGE: A creature native to this environment fights at full strength. An outsider fights at a fraction of its normal ability. Weight this heavily — it often decides the outcome.\n\n`
-    : `There is NO arena environment for this battle. Judge each fighter purely on their natural strengths, biology, and abilities. Do NOT apply any terrain advantage or disadvantage — neither fighter has a home-environment bonus or penalty. Base the outcome entirely on the fighters themselves.\n\n`;
+    : `There is NO arena environment for this battle. Judge each fighter purely on their natural strengths, biology, and abilities. Do NOT apply any terrain advantage or disadvantage — neither fighter has a home-environment bonus or penalty. Base the outcome entirely on the fighters themselves.\n` +
+      // Wording rules too, not just outcome rules — the quick + melee prompts
+      // already ban terrain words in env-less narration; the full prompt was
+      // the one place a no-arena story could still say "on the savanna".
+      `NARRATION WORDING (strict, because there is no arena): do NOT mention savanna, ocean, jungle, sky, land, water, or any terrain. Do NOT use habitat descriptors like "ocean giant" or "savanna king" — refer to fighters by NAME. Do NOT describe anyone as "out of its element", "stranded", "beached", or "in its home".\n\n`;
 
   const warn1 = environmentName ? getSurvivalWarning(fighter1Id, name1, environmentName) : '';
   const warn2 = environmentName ? getSurvivalWarning(fighter2Id, name2, environmentName) : '';
@@ -422,8 +522,9 @@ function buildUserPrompt(fighter1Id: string, fighter2Id: string, fighter1Name?: 
     `Respond with ONLY a JSON object:\n\n` +
     `{\n` +
     `  "winner": "<${fighter1Id} or ${fighter2Id} or \\"draw\\">",\n` +
-    `  "narration": "<4-6 EPIC sentences as described in the Narration rules below>",\n` +
+    `  "narration": "<EXACTLY 3 EPIC sentences as described in the Narration rules below>",\n` +
     `  "funFact": "<a WHOA-DID-YOU-KNOW reveal — see Fun Fact rules>",\n` +
+    `  "why": "<see Why rules below>",\n` +
     `  "winnerHealthPercent": <integer 10-90>,\n` +
     `  "loserHealthPercent": <integer 0-89, must be less than winnerHealthPercent>\n` +
     `}\n\n` +
@@ -431,6 +532,10 @@ function buildUserPrompt(fighter1Id: string, fighter2Id: string, fighter1Name?: 
     `- "winner" must be exactly: "${fighter1Id}", "${fighter2Id}", or "draw"\n` +
     `- winnerHealthPercent: 10–90 (higher = more dominant win)\n` +
     `- loserHealthPercent: 0–89, always strictly less than winnerHealthPercent\n\n` +
+    `Why rules — a single crisp takeaway a kid actually learns from:\n` +
+    `- ONE short sentence (max ~14 words) naming the SPECIFIC thing that decided it: a real weapon, ability, size, speed, venom, armor, or legendary power. e.g. "A wolf's pack-hunting bite is far too strong for a tiny beetle." or "Medusa's stone-turning stare ends the fight instantly."\n` +
+    `- Be concrete and accurate — NOT generic ("bigger and stronger", "too powerful"). Name the actual deciding factor.\n` +
+    `- Kid-friendly, no jargon (no "tier"/"stat"). Don't just repeat the narration.\n\n` +
     `Narration rules — write it CINEMATIC, like a kids action movie trailer:\n` +
     `- EXACTLY 3 sentences, present tense, every sentence pulses with action. Do not exceed 3 sentences.\n` +
     `- Use punchy verbs (charges, slams, vaults, gores, rips, soars, crashes) and sensory hits (dust kicks up, the ground shakes, a roar splits the air).\n` +
@@ -463,28 +568,39 @@ function validateResult(data: unknown, fighter1Id: string, fighter2Id: string): 
 
   const winner = obj['winner'];
   if (winner !== fighter1Id && winner !== fighter2Id && winner !== 'draw') {
-    throw new Error(`Invalid winner value: "${winner}"`);
+    throw new Error('Invalid winner value');
   }
 
-  const narration = obj['narration'];
-  if (typeof narration !== 'string' || narration.trim() === '') {
+  // Strip emoji BEFORE the non-empty check — an all-emoji field is non-empty raw
+  // but would strip to "", and we must reject it (retry/fallback) rather than
+  // ship a blank card.
+  const narrationRaw = obj['narration'];
+  if (typeof narrationRaw !== 'string') {
+    throw new Error('narration must be a non-empty string');
+  }
+  const narration = stripEmoji(narrationRaw).slice(0, 1_200);
+  if (narration.trim() === '' || !isSafeGeneratedText(narration)) {
     throw new Error('narration must be a non-empty string');
   }
 
-  const funFact = obj['funFact'];
-  if (typeof funFact !== 'string' || funFact.trim() === '') {
+  const funFactRaw = obj['funFact'];
+  if (typeof funFactRaw !== 'string') {
+    throw new Error('funFact must be a non-empty string');
+  }
+  const funFact = stripEmoji(funFactRaw).slice(0, 500);
+  if (funFact.trim() === '' || !isSafeGeneratedText(funFact)) {
     throw new Error('funFact must be a non-empty string');
   }
 
   const rawWinner = Number(obj['winnerHealthPercent']);
   if (isNaN(rawWinner)) {
-    throw new Error(`winnerHealthPercent is not a number: ${obj['winnerHealthPercent']}`);
+    throw new Error('winnerHealthPercent is not a number');
   }
   const winnerHealthPercent = Math.min(90, Math.max(10, Math.round(rawWinner)));
 
   const rawLoser = Number(obj['loserHealthPercent']);
   if (isNaN(rawLoser)) {
-    throw new Error(`loserHealthPercent is not a number: ${obj['loserHealthPercent']}`);
+    throw new Error('loserHealthPercent is not a number');
   }
   // Clamp loser, then ensure it's strictly less than winner for non-draws
   let loserHealthPercent = Math.min(89, Math.max(0, Math.round(rawLoser)));
@@ -492,13 +608,37 @@ function validateResult(data: unknown, fighter1Id: string, fighter2Id: string): 
     loserHealthPercent = Math.max(0, winnerHealthPercent - 1);
   }
 
+  // Optional: the one-line "why". Missing/blank → undefined (iOS falls back to
+  // its local reason). Cap length so a runaway sentence can't bloat the card.
+  const rawWhy = obj['why'];
+  const whyStripped = typeof rawWhy === 'string' ? stripEmoji(rawWhy) : '';
+  // Blank (incl. all-emoji that stripped to "") → undefined so iOS falls back to
+  // its local BattleInsight reason.
+  const why = whyStripped !== '' && isSafeGeneratedText(whyStripped)
+    ? whyStripped.slice(0, 160) : undefined;
+
   return {
     winner: winner as string,
-    narration: narration.trim(),
-    funFact: funFact.trim(),
+    narration,   // already emoji-stripped + validated non-empty
+    funFact,     // already emoji-stripped + validated non-empty
     winnerHealthPercent,
     loserHealthPercent,
+    why,
   };
+}
+
+/// Removes emoji / pictographic symbols from AI copy. The narration model
+/// sometimes sprinkles in emoji that render as empty placeholder boxes (tofu) in
+/// the app's custom fonts — strip them so all user-facing text is plain words.
+/// Letters, digits, and normal punctuation are preserved.
+export function stripEmoji(s: string): string {
+  return s
+    // Keycap sequences (1️⃣) first: base char + optional FE0F + 20E3 — drop whole.
+    .replace(/[0-9#*]\u{FE0F}?\u{20E3}/gu, '')
+    .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{1F1E6}-\u{1F1FF}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}]/gu, '')
+    .replace(/\p{Extended_Pictographic}/gu, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
 }
 
 /**
@@ -524,25 +664,30 @@ function buildArenaPrefill(
 }
 
 async function callClaude(
-  client: Anthropic,
   fighter1Id: string,
   fighter2Id: string,
   topP: number,
   fighter1Name?: string,
   fighter2Name?: string,
   environmentName?: string,
-  tournamentContext?: string
+  tournamentContext?: string,
+  signal?: AbortSignal,
 ): Promise<BattleResult> {
   const name1 = fighter1Name ?? ANIMAL_NAMES[fighter1Id] ?? fighter1Id;
   const name2 = fighter2Name ?? ANIMAL_NAMES[fighter2Id] ?? fighter2Id;
 
-  // 🔒 Step 1: Resolve the battle deterministically. If the resolver returns
-  // a "forced" verdict (clear winner from tier/env rules), we inject it into
-  // the prompt AND validate the response afterwards — Claude can't override.
+  // 🔒 Step 1: Resolve the battle deterministically. For custom creatures we
+  // first estimate a real-scale tier so even user-typed fighters get a
+  // realistic, forced outcome (no gram-scale beetle beating a wolf). If the
+  // resolver returns a "forced" verdict, we inject it into the prompt AND
+  // validate the response afterwards — Claude can't override.
+  const { customTier1, customTier2 } = await estimateCustomTiers(
+    fighter1Id, fighter1Name, fighter2Id, fighter2Name, signal);
   const verdict = resolveBattle({
     fighter1Id, fighter2Id,
     fighter1Name, fighter2Name,
     environmentName,
+    customTier1, customTier2,
   });
 
   // Prefill: force Claude to commit to the arena assessment before writing JSON.
@@ -561,13 +706,12 @@ async function callClaude(
     messages.push({ role: 'assistant', content: prefill });
   }
 
-  const response = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 800,
+  const response = await createMessage('battle', {
+    max_tokens: 450,
     top_p: topP,
     system: SYSTEM_PROMPT,
     messages,
-  });
+  }, signal);
 
   const block = response.content[0];
   if (!block || block.type !== 'text') {
@@ -609,15 +753,15 @@ function enforceVerdict(
 
   console.warn(JSON.stringify({
     event: 'verdict_override',
-    fighter1Id, fighter2Id,
-    claudeWinner: result.winner,
-    forcedWinner: verdict.winnerId,
-    reason: verdict.reason,
+    fighter1Type: isCustomFighter(fighter1Id) ? 'custom' : 'built-in',
+    fighter2Type: isCustomFighter(fighter2Id) ? 'custom' : 'built-in',
   }));
 
   return {
     winner: verdict.winnerId,
-    narration: `The ${winnerName} charges in with a thunderous roar and overwhelms the ${loserName} from the first second. Dust kicks up, the ground shakes, and a final crushing blow seals it — the ${winnerName} stands triumphant as the crowd erupts.`,
+    // Terrain-neutral on purpose: this override can fire in ANY arena (or no
+    // arena at all) — "dust kicks up, the ground shakes" read absurd mid-ocean.
+    narration: `The ${winnerName} charges in with a thunderous roar and overwhelms the ${loserName} from the first second. Blow after blow lands until one final crushing strike seals it — the ${winnerName} stands triumphant as the crowd erupts.`,
     funFact: result.funFact, // keep Claude's fun fact — usually still accurate
     winnerHealthPercent: Math.max(70, result.winnerHealthPercent),
     loserHealthPercent: Math.min(25, result.loserHealthPercent),
@@ -688,7 +832,8 @@ function buildQuickUserPrompt(
     arenaDesc +
     survivalBlock +
     `Pick the accurate winner based on biology, power tier, and arena. Respond with ONLY valid JSON — no markdown:\n` +
-    `{"winner":"<${fighter1Id} or ${fighter2Id}>","narration":"<see Narration rules>","funFact":"<see Fun-Fact rules>","winnerHealthPercent":<10-90>,"loserHealthPercent":<0-40>}\n\n` +
+    `{"winner":"<${fighter1Id} or ${fighter2Id}>","narration":"<see Narration rules>","funFact":"<see Fun-Fact rules>","why":"<see Why rule>","winnerHealthPercent":<10-90>,"loserHealthPercent":<0-40>}\n\n` +
+    `Why rule — ONE short sentence (≤14 words) naming the SPECIFIC deciding factor (a real weapon, ability, venom, armor, size, or speed), kid-friendly, no jargon, not a repeat of the narration. Be concrete, never generic like "bigger and stronger".\n\n` +
     `Narration rules — EPIC and CINEMATIC, like a kids action movie:\n` +
     `• EXACTLY 2 punchy sentences in present tense. Do not exceed 2 sentences.\n` +
     `• Use punchy verbs (charges, slams, rips, soars, crashes) and sensory hits (dust kicks up, the ground shakes, a roar splits the air).\n` +
@@ -708,21 +853,23 @@ export async function getQuickBattleResult(
   fighter2Id: string,
   fighter1Name?: string,
   fighter2Name?: string,
-  environmentName?: string
+  environmentName?: string,
+  signal?: AbortSignal,
 ): Promise<BattleResult> {
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
-  // 🔒 Resolve deterministically first; verdict is appended to the prompt and
-  // enforced after the response.
+  // 🔒 Resolve deterministically first (estimating a real-scale tier for any
+  // custom creature so it can't win on vibes); verdict is appended to the
+  // prompt and enforced after the response.
+  const { customTier1, customTier2 } = await estimateCustomTiers(
+    fighter1Id, fighter1Name, fighter2Id, fighter2Name, signal);
   const verdict = resolveBattle({
     fighter1Id, fighter2Id,
     fighter1Name, fighter2Name,
     environmentName,
+    customTier1, customTier2,
   });
 
-  const response = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 500,
+  const response = await createMessage('quick', {
+    max_tokens: 360,
     top_p: 0.85,
     system:
       'You are the cinematic narrator for "Who Would Win?" — write like a kids action movie trailer. ' +
@@ -734,7 +881,7 @@ export async function getQuickBattleResult(
       'Never return a draw — always pick the realistic winner.\n' +
       'Always respond with ONLY valid JSON. No markdown, no explanation outside the JSON.',
     messages: [{ role: 'user', content: buildQuickUserPrompt(fighter1Id, fighter2Id, fighter1Name, fighter2Name, environmentName, verdict) }],
-  });
+  }, signal);
 
   const block = response.content[0];
   if (!block || block.type !== 'text') {
@@ -769,24 +916,11 @@ export async function getBattleResult(
   fighter1Name?: string,
   fighter2Name?: string,
   environmentName?: string,
-  tournamentContext?: string
+  tournamentContext?: string,
+  signal?: AbortSignal,
 ): Promise<BattleResult> {
-  const client = new Anthropic({
-    apiKey: process.env.ANTHROPIC_API_KEY,
-  });
-
-  // First attempt with top_p equivalent to temperature 0.8 (~0.95)
-  try {
-    return await callClaude(client, fighter1Id, fighter2Id, 0.95, fighter1Name, fighter2Name, environmentName, tournamentContext);
-  } catch (firstError) {
-    console.warn('First attempt failed, retrying with lower top_p:', firstError);
-  }
-
-  // Retry once with a more deterministic top_p equivalent to temperature 0.3 (~0.7)
-  try {
-    return await callClaude(client, fighter1Id, fighter2Id, 0.7, fighter1Name, fighter2Name, environmentName, tournamentContext);
-  } catch (secondError) {
-    console.error('Second attempt also failed:', secondError);
-    throw new Error('Unable to generate a valid battle result after two attempts.');
-  }
+  // One attempt only. The SDK is also configured with maxRetries=0; callers
+  // use idempotency and the app's local fallback instead of multiplying spend.
+  return callClaude(fighter1Id, fighter2Id, 0.85, fighter1Name, fighter2Name,
+    environmentName, tournamentContext, signal);
 }

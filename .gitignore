@@ -17,3 +17,12 @@ android/secrets.properties
 .env
 **/.env
 *.env
+
+# Netlify CLI stores local project linkage here.
+.netlify/
+
+# macOS and Xcode per-user workspace state.
+.DS_Store
+**/.DS_Store
+**/xcuserdata/
+*.xcuserstate

@@ -27,10 +27,10 @@ struct GoldCoin: View {
                 .frame(width: size * 0.76, height: size * 0.76)
             // Symbol
             Text("C")
-                .font(.system(size: size * 0.36, weight: .black, design: .rounded))
+                .font(Theme.bungee(size * 0.36))
                 .foregroundColor(goldLight.opacity(0.9))
         }
-        .shadow(color: goldMid.opacity(0.5), radius: size * 0.12, x: 0, y: size * 0.06)
+        .shadow(color: goldMid.opacity(0.30), radius: size * 0.12, x: 0, y: size * 0.06)
     }
 }
 
@@ -126,6 +126,8 @@ struct CoinsHubSheet: View {
     @ObservedObject private var storeKit = StoreKitManager.shared
     @State private var isWatchingAd = false
     @State private var isBuyingCoins = false
+    @State private var showParentGate = false
+    @State private var showAskToBuyNotice = false
     @Environment(\.dismiss) private var dismiss
 
     private let gold = Color(hex: "#FFD700")
@@ -148,7 +150,7 @@ struct CoinsHubSheet: View {
                                     // load at app start failed.
                                     Task { await StoreKitManager.shared.loadProducts() }
                                 }
-                                .font(.system(size: 48, weight: .black, design: .rounded))
+                                .font(Theme.bungee(48))
                                 .foregroundColor(gold)
                                 .contentTransition(.numericText())
                                 .animation(.spring(response: 0.4), value: coinStore.balance)
@@ -244,7 +246,7 @@ struct CoinsHubSheet: View {
                                     if adReady && !isWatchingAd {
                                         GoldCoin(size: 20)
                                         Text("+\(coinStore.coinsPerAd)")
-                                            .font(.system(size: 14, weight: .black, design: .rounded))
+                                            .font(Theme.bungee(14))
                                             .foregroundColor(gold)
                                     } else if isNotReady {
                                         ProgressView().tint(.white.opacity(0.4)).scaleEffect(0.8)
@@ -272,19 +274,10 @@ struct CoinsHubSheet: View {
                         // Buy coins IAP — always visible (lazy-loads product on
                         // tap if ASC hasn't returned it yet). This is the
                         // primary entry point Apple's reviewer tests.
+                        // Real-money purchase, so the parental gate comes first.
                         Button {
-                            isBuyingCoins = true
-                            Task {
-                                if storeKit.coins1000Product == nil {
-                                    await StoreKitManager.shared.loadProducts()
-                                }
-                                if let product = storeKit.coins1000Product {
-                                    _ = await StoreKitManager.shared.purchase(product)
-                                } else {
-                                    storeKit.lastError = "Coin pack is temporarily unavailable. Please try again in a moment."
-                                }
-                                isBuyingCoins = false
-                            }
+                            guard !isBuyingCoins else { return }
+                            showParentGate = true
                         } label: {
                             HStack(spacing: 10) {
                                 if isBuyingCoins {
@@ -302,7 +295,7 @@ struct CoinsHubSheet: View {
                                 Spacer()
                                 if !isBuyingCoins {
                                     Text("+1,000")
-                                        .font(.system(size: 14, weight: .black, design: .rounded))
+                                        .font(Theme.bungee(14))
                                         .foregroundColor(gold)
                                 }
                             }
@@ -324,7 +317,7 @@ struct CoinsHubSheet: View {
                         // Earn rates card
                         VStack(alignment: .leading, spacing: 12) {
                             Text("HOW TO EARN")
-                                .font(.system(size: 11, weight: .black, design: .rounded))
+                                .font(Theme.bungee(11))
                                 .foregroundColor(.white.opacity(0.3))
                                 .tracking(1.5)
 
@@ -366,6 +359,30 @@ struct CoinsHubSheet: View {
                 }
             }
         }
+        .parentGate(isPresented: $showParentGate) { buyCoins() }
+        .alert("📨 Asked your grown-up!", isPresented: $showAskToBuyNotice) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Your coins will arrive when they say yes.")
+        }
+    }
+
+    /// Runs only after the parental gate has been passed.
+    private func buyCoins() {
+        isBuyingCoins = true
+        Task { @MainActor in
+            if storeKit.coins1000Product == nil {
+                await StoreKitManager.shared.loadProducts()
+            }
+            if let product = storeKit.coins1000Product {
+                if await StoreKitManager.shared.purchase(product) == .pending {
+                    showAskToBuyNotice = true
+                }
+            } else {
+                storeKit.lastError = "Coin pack is temporarily unavailable. Please try again in a moment."
+            }
+            isBuyingCoins = false
+        }
     }
 
     private func earnRow(icon: String, label: String, value: String) -> some View {
@@ -387,12 +404,16 @@ struct CoinsHubSheet: View {
 
 // MARK: - Buy Coins Button (reusable)
 
-/// Drop-in "Buy 1,000 Coins" IAP button.  Always visible — shows the live
-/// App Store price when the product is loaded, falls back to "$1.99" otherwise.
+/// Drop-in "Buy 1,000 Coins" IAP button. Kids-themed pill matching the rest
+/// of the UI overhaul — sun fill, ink stroke, Fredoka font.
 struct BuyCoinsButton: View {
     @ObservedObject private var storeKit = StoreKitManager.shared
     @State private var isBuying = false
-    private let gold = Color(hex: "#FFD700")
+    @State private var showParentGate = false
+    @State private var showAskToBuyNotice = false
+
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    private var isIPad: Bool { sizeClass == .regular }
 
     private var displayPrice: String {
         storeKit.coins1000Product?.displayPrice ?? "$1.99"
@@ -400,50 +421,73 @@ struct BuyCoinsButton: View {
 
     var body: some View {
         Button {
-            isBuying = true
-            Task {
-                // If the product didn't load on init (flaky network, ASC lag),
-                // reload right before the purchase so the reviewer doesn't get
-                // stuck on a silent no-op tap.
-                if storeKit.coins1000Product == nil {
-                    await StoreKitManager.shared.loadProducts()
-                }
-                if let product = storeKit.coins1000Product {
-                    _ = await StoreKitManager.shared.purchase(product)
-                } else {
-                    storeKit.lastError = "Coin pack is temporarily unavailable. Please try again in a moment."
-                }
-                isBuying = false
-            }
+            HapticsService.shared.tap()
+            guard !isBuying else { return }
+            // Real-money purchase — parental gate before StoreKit.
+            showParentGate = true
         } label: {
-            HStack(spacing: 10) {
+            HStack(spacing: isIPad ? 12 : 8) {
                 if isBuying {
-                    ProgressView().tint(.white).scaleEffect(0.8)
+                    ProgressView().tint(Kids.ink).scaleEffect(isIPad ? 1.0 : 0.85)
                 } else {
-                    GoldCoin(size: 18)
+                    KidsGoldCoin(size: isIPad ? 26 : 20)
                 }
-                Text(isBuying ? "Purchasing…" : "Buy 1,000 Coins — \(displayPrice)")
-                    .font(Theme.bungee(14))
-                    .foregroundColor(.white)
-                Spacer()
+                Text(isBuying ? "Purchasing…" : "BUY 1,000 COINS")
+                    .font(Kids.fredoka(isIPad ? 17 : 14, weight: .bold))
+                    .foregroundColor(Kids.ink)
+                Spacer(minLength: 0)
                 if !isBuying {
-                    Text("+1,000")
-                        .font(Theme.bungee(12))
-                        .foregroundColor(gold)
+                    Text(displayPrice)
+                        .font(Kids.fredoka(isIPad ? 15 : 12, weight: .bold))
+                        .foregroundColor(Kids.ink.opacity(0.7))
+                        .padding(.horizontal, isIPad ? 10 : 7)
+                        .padding(.vertical, isIPad ? 5 : 3)
+                        .background(
+                            Capsule().fill(.white)
+                                .overlay(Capsule().stroke(Kids.ink, lineWidth: 1.5))
+                        )
                 }
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, isIPad ? 18 : 14)
+            .padding(.vertical, isIPad ? 14 : 11)
             .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(LinearGradient(
-                        colors: [Color(hex: "#DAA520"), Color(hex: "#8B6914")],
-                        startPoint: .leading, endPoint: .trailing))
-                    .overlay(RoundedRectangle(cornerRadius: 14)
-                        .stroke(gold.opacity(0.5), lineWidth: 1))
+                RoundedRectangle(cornerRadius: isIPad ? 18 : 14, style: .continuous)
+                    .fill(Kids.sun)
+                    .overlay(RoundedRectangle(cornerRadius: isIPad ? 18 : 14, style: .continuous).fill(Kids.sheen))
+                    .overlay(RoundedRectangle(cornerRadius: isIPad ? 18 : 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
             )
+            .shadow(color: Kids.ink.opacity(0.10), radius: 0, x: 0, y: 3)
+            .opacity(isBuying ? 0.7 : 1.0)
         }
-        .buttonStyle(PressableButtonStyle())
+        .buttonStyle(.plain)
         .disabled(isBuying)
+        .parentGate(isPresented: $showParentGate) { buyCoins() }
+        .alert("📨 Asked your grown-up!", isPresented: $showAskToBuyNotice) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Your coins will arrive when they say yes.")
+        }
+    }
+
+    /// Runs only after the parental gate has been passed.
+    private func buyCoins() {
+        isBuying = true
+        Task { @MainActor in
+            // If the product didn't load on init (flaky network, ASC lag),
+            // reload right before the purchase so the user doesn't get
+            // stuck on a silent no-op tap.
+            if storeKit.coins1000Product == nil {
+                await StoreKitManager.shared.loadProducts()
+            }
+            if let product = storeKit.coins1000Product {
+                if await StoreKitManager.shared.purchase(product) == .pending {
+                    showAskToBuyNotice = true
+                }
+            } else {
+                storeKit.lastError = "Coin pack is temporarily unavailable. Please try again in a moment."
+            }
+            isBuying = false
+        }
     }
 }

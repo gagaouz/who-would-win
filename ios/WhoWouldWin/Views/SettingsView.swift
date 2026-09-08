@@ -77,7 +77,7 @@ struct SettingsView: View {
                                 if !settings.isSubscribed {
                                     VStack(alignment: .trailing, spacing: 2) {
                                         Text("👑 Premium")
-                                            .font(.system(size: 12, weight: .black, design: .rounded))
+                                            .font(Theme.bungee(12))
                                             .foregroundColor(Color(hex: "#FFD700"))
                                         Text("earns 2× coins!")
                                             .font(.system(size: 11, weight: .semibold, design: .rounded))
@@ -757,7 +757,7 @@ struct SettingsView: View {
             .frame(maxWidth: .infinity)
             .frame(height: 50)
             .background(RoundedRectangle(cornerRadius: 14).fill(gradient))
-            .shadow(color: shadowColor.opacity(0.4), radius: 8, x: 0, y: 4)
+            .shadow(color: shadowColor.opacity(0.24), radius: 8, x: 0, y: 4)
         }
         .buttonStyle(PressableButtonStyle())
         .disabled(store.isPurchasing)
@@ -779,7 +779,7 @@ struct SettingsView: View {
         HStack(spacing: 6) {
             GoldCoin(size: 14)
             Text(amount)
-                .font(.system(size: 13, weight: .black, design: .rounded))
+                .font(Theme.bungee(13))
                 .foregroundColor(Color(hex: "#FFD700"))
             Text(label)
                 .font(.system(size: 13, weight: .semibold, design: .rounded))

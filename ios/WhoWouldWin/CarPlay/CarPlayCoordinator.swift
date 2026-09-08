@@ -168,7 +168,7 @@ final class CarPlayCoordinator: NSObject {
         let settings = UserSettings.shared
 
         let orderedCategories: [AnimalCategory] = [
-            .land, .sea, .air, .insect, .prehistoric, .fantasy, .mythic
+            .land, .sea, .air, .insect, .pets, .farm, .prehistoric, .fantasy, .mythic
         ]
 
         var sections: [CPListSection] = []
@@ -441,6 +441,8 @@ final class CarPlayCoordinator: NSObject {
         case .sea:         return "🦈"
         case .air:         return "🦅"
         case .insect:      return "🐛"
+        case .pets:        return "🐶"
+        case .farm:        return "🚜"
         case .prehistoric: return "🦕"
         case .fantasy:     return "🐉"
         case .mythic:      return "⚡️"

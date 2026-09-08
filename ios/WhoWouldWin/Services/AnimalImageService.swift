@@ -19,6 +19,9 @@ actor AnimalImageService {
     private var imageCache:  [String: UIImage] = [:]
     /// Animal name (lowercased) → resolved image URL (for SwiftUI AsyncImage)
     private var urlCache:    [String: URL]     = [:]
+    private let maxImageBytes = 5 * 1024 * 1024
+    private let maxCachedImages = 100
+    private let maxCachedURLs = 200
 
     // MARK: - Public API
 
@@ -37,11 +40,22 @@ actor AnimalImageService {
         let url: URL
         if let wikiURL = await wikipediaImageURL(for: name) {
             url = wikiURL
+        } else if Task.isCancelled {
+            // The Wikipedia lookup was abandoned mid-flight (the calling view
+            // disappeared or changed identity) — it didn't really fail. Serve
+            // the fallback to THIS caller but do NOT cache it, otherwise the
+            // creature is stuck showing an AI cartoon instead of its real
+            // photo for the rest of the session.
+            return pollinationsURL(for: name)
+                ?? URL(string: "https://image.pollinations.ai/prompt/animal?width=512&height=512&nologo=true&model=flux-schnell&safe=true")!
         } else if let pollinationsURL = pollinationsURL(for: name) {
             url = pollinationsURL
         } else {
             // Absolute last resort — static placeholder (encoding of name failed).
             url = URL(string: "https://image.pollinations.ai/prompt/animal?width=512&height=512&nologo=true&model=flux-schnell&safe=true")!
+        }
+        if urlCache.count >= maxCachedURLs, let oldest = urlCache.keys.first {
+            urlCache.removeValue(forKey: oldest)
         }
         urlCache[key] = url
         return url
@@ -58,6 +72,9 @@ actor AnimalImageService {
 
         let url = await imageURL(for: animal.name)
         guard let img = await downloadImage(from: url) else { return nil }
+        if imageCache.count >= maxCachedImages, let oldest = imageCache.keys.first {
+            imageCache.removeValue(forKey: oldest)
+        }
         imageCache[animal.id] = img
         return img
     }
@@ -66,11 +83,25 @@ actor AnimalImageService {
 
     /// Asks the backend for the best emoji + category + colour for a name.
     func fetchAnimalInfo(name: String) async -> (emoji: String, category: AnimalCategory, color: String) {
-        let encoded = name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? name
-        let urlStr  = "\(AppConfig.backendBaseURL)/api/animal?name=\(encoded)"
-        guard let url = URL(string: urlStr) else { return ("🐾", .land, "#888888") }
+        guard let url = URL(string: "\(AppConfig.backendBaseURL)/api/animal") else {
+            return ("🐾", .land, "#888888")
+        }
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.timeoutInterval = 12
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            AnonymousRequestIdentity.apply(to: &request)
+            let prepared = await AppAttestManager.shared.prepare(["name": name])
+            request.httpBody = prepared.data
+            if let authentication = prepared.authentication {
+                request.setValue(authentication, forHTTPHeaderField: "X-App-Attest")
+            }
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let http = response as? HTTPURLResponse,
+                  (200...299).contains(http.statusCode), data.count <= 16_384 else {
+                return ("🐾", .land, "#888888")
+            }
             if let json = try? JSONSerialization.jsonObject(with: data) as? [String: String] {
                 let emojiStr = json["emoji"] ?? "🐾"
                 let catStr   = json["category"] ?? "land"
@@ -112,7 +143,10 @@ actor AnimalImageService {
             if let json      = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                let thumbnail = json["thumbnail"]  as? [String: Any],
                let source    = thumbnail["source"] as? String {
-                return URL(string: source)
+                guard let result = URL(string: source),
+                      result.scheme == "https",
+                      result.host?.lowercased() == "upload.wikimedia.org" else { return nil }
+                return result
             }
         } catch {}
         return nil
@@ -123,6 +157,13 @@ actor AnimalImageService {
     /// The prompt is deliberately generic — we only pass the name, never
     /// user-supplied adjectives — to avoid prompt injection via the search bar.
     private func pollinationsURL(for name: String) -> URL? {
+        // Defense-in-depth for a Kids app: never request an AI image for a name
+        // our own content filter doesn't consider appropriate. (The custom-
+        // creature flow already gates on ContentFilter upstream; this guards any
+        // other caller and any future code path so a questionable name can never
+        // reach the image generator.) On a fail, callers fall back to the emoji.
+        guard ContentFilter.isAppropriate(name) else { return nil }
+
         // Sanitise: keep only letters, numbers, spaces and common punctuation.
         // This prevents a user-typed "naked X" from leaking adjectives into the prompt.
         let safeName = name
@@ -135,7 +176,7 @@ actor AnimalImageService {
             .prefix(4)                // at most 4 words — no essays
             .joined(separator: " ")
 
-        let prompt  = "cute cartoon illustration of \(safeName), child-friendly, simple background"
+        let prompt  = "cute wholesome G-rated cartoon illustration of \(safeName) as a friendly animal character, child-friendly, no text, no people, simple background"
         let encoded = prompt.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed)
                       ?? safeName
         // safe=true → Pollinations content filter; model=flux-schnell → fast
@@ -150,12 +191,20 @@ actor AnimalImageService {
     /// but we don't want to block the battle intro screen indefinitely.
     private func downloadImage(from url: URL) async -> UIImage? {
         do {
+            let allowedHosts = Set(["upload.wikimedia.org", "image.pollinations.ai"])
+            guard url.scheme == "https", let host = url.host?.lowercased(),
+                  allowedHosts.contains(host) else { return nil }
             var request = URLRequest(url: url)
             request.timeoutInterval = 12
             let (data, response) = try await URLSession.shared.data(for: request)
             guard let http = response as? HTTPURLResponse,
-                  (200...299).contains(http.statusCode) else { return nil }
-            return UIImage(data: data)
+                  (200...299).contains(http.statusCode),
+                  http.value(forHTTPHeaderField: "Content-Type")?.lowercased().hasPrefix("image/") == true,
+                  data.count <= maxImageBytes,
+                  let image = UIImage(data: data) else { return nil }
+            if let cgImage = image.cgImage,
+               cgImage.width * cgImage.height > 16_000_000 { return nil }
+            return image
         } catch {
             return nil
         }

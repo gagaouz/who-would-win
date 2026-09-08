@@ -395,13 +395,13 @@ struct AnimalPickerView: View {
                                     HStack(spacing: 6) {
                                         Text("✨").font(.system(size: 14))
                                         Text("BATTLE FREE")
-                                            .font(.system(size: 15, weight: .black, design: .rounded))
+                                            .font(Theme.bungee(15))
                                     }
                                     .foregroundColor(.white)
                                     .frame(maxWidth: .infinity).frame(height: 42)
                                     .background(RoundedRectangle(cornerRadius: 14)
                                         .fill(LinearGradient(colors: [Theme.neonGrn, Theme.teal], startPoint: .leading, endPoint: .trailing)))
-                                    .shadow(color: Theme.neonGrn.opacity(0.4), radius: 8, y: 3)
+                                    .shadow(color: Theme.neonGrn.opacity(0.24), radius: 8, y: 3)
                                 }
                                 .buttonStyle(PressableButtonStyle())
                             } else {
@@ -504,7 +504,7 @@ struct AnimalPickerView: View {
                                         .overlay(RoundedRectangle(cornerRadius: 22)
                                             .stroke(Color.white.opacity(0.2), lineWidth: 1))
                                 )
-                                .shadow(color: Theme.orange.opacity(0.6), radius: fightButtonGlowRadius, x: 0, y: 6)
+                                .shadow(color: Theme.orange.opacity(0.36), radius: fightButtonGlowRadius, x: 0, y: 6)
                             }
                             .buttonStyle(PressableButtonStyle())
 
@@ -758,7 +758,7 @@ struct AnimalPickerView: View {
                                         .overlay(RoundedRectangle(cornerRadius: 18)
                                             .stroke(Color.white.opacity(0.2), lineWidth: 1))
                                 )
-                                .shadow(color: Theme.orange.opacity(0.6), radius: fightButtonGlowRadius, x: 0, y: 6)
+                                .shadow(color: Theme.orange.opacity(0.36), radius: fightButtonGlowRadius, x: 0, y: 6)
                             }
                             .buttonStyle(PressableButtonStyle())
 
@@ -773,7 +773,7 @@ struct AnimalPickerView: View {
                                 HStack(spacing: 8) {
                                     Text("🏟️").font(.system(size: 18))
                                     Text("CHOOSE ARENA")
-                                        .font(.system(size: 14, weight: .black, design: .rounded))
+                                        .font(Theme.bungee(14))
                                         .foregroundColor(Theme.orange)
                                 }
                                 .frame(maxWidth: .infinity).frame(height: 48)
@@ -1080,19 +1080,19 @@ struct OlympusRevealOverlay: View {
                 }
 
                 Text("MOUNT OLYMPUS")
-                    .font(.system(size: 28, weight: .black, design: .rounded))
+                    .font(Theme.bungee(28))
                     .foregroundStyle(
                         LinearGradient(
                             colors: [Theme.olympusAccent, Color.white, Theme.olympusAccent],
                             startPoint: .leading, endPoint: .trailing
                         )
                     )
-                    .shadow(color: Theme.olympusAccent.opacity(0.8), radius: 12)
+                    .shadow(color: Theme.olympusAccent.opacity(0.48), radius: 12)
                     .scaleEffect(textScale)
                     .opacity(textOpacity)
 
                 Text("UNLOCKED")
-                    .font(.system(size: 18, weight: .black, design: .rounded))
+                    .font(Theme.bungee(18))
                     .foregroundColor(Theme.olympusAccent)
                     .tracking(6)
                     .opacity(textOpacity)
@@ -1110,7 +1110,7 @@ struct OlympusRevealOverlay: View {
                         .padding(.horizontal, 28)
                         .padding(.vertical, 12)
                         .background(Capsule().fill(Theme.olympusAccent))
-                        .shadow(color: Theme.olympusAccent.opacity(0.6), radius: 10)
+                        .shadow(color: Theme.olympusAccent.opacity(0.36), radius: 10)
                 }
                 .buttonStyle(PressableButtonStyle())
                 .opacity(textOpacity)
@@ -1152,7 +1152,7 @@ struct FighterSlot: View {
                         )
                 )
                 .shadow(
-                    color: animal != nil ? accentColor.opacity(0.25) : .clear,
+                    color: animal != nil ? accentColor.opacity(0.15) : .clear,
                     radius: 10, x: 0, y: 4
                 )
                 .frame(height: 108)
@@ -1195,7 +1195,7 @@ struct FighterSlot: View {
                         } else {
                             VStack(spacing: 8) {
                                 Text("?")
-                                    .font(.system(size: 38, weight: .black, design: .rounded))
+                                    .font(Theme.bungee(38))
                                     .foregroundColor(.white.opacity(0.35))
                                     .scaleEffect(emptyPulseScale)
                                 Text(label)
@@ -1215,13 +1215,13 @@ struct FighterSlot: View {
                         Image(systemName: "xmark")
                             .font(.system(size: 9, weight: .black))
                         Text("REMOVE")
-                            .font(.system(size: 9, weight: .black, design: .rounded))
+                            .font(Theme.bungee(9))
                     }
                     .foregroundColor(.white)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
                     .background(Capsule().fill(Theme.red))
-                    .shadow(color: Theme.red.opacity(0.4), radius: 4, x: 0, y: 2)
+                    .shadow(color: Theme.red.opacity(0.24), radius: 4, x: 0, y: 2)
                 }
                 .buttonStyle(.plain)
                 .offset(y: 14)
@@ -1254,6 +1254,10 @@ struct CategoryPill: View {
             return LinearGradient(colors: [Color(hex: "#0891B2"), Color(hex: "#0e7490")], startPoint: .leading, endPoint: .trailing)
         case .insect:
             return LinearGradient(colors: [Color(hex: "#65A30D"), Color(hex: "#4d7c0f")], startPoint: .leading, endPoint: .trailing)
+        case .pets:
+            return LinearGradient(colors: [Color(hex: "#EC407A"), Color(hex: "#AD1457")], startPoint: .leading, endPoint: .trailing)
+        case .farm:
+            return LinearGradient(colors: [Color(hex: "#F57C00"), Color(hex: "#E65100")], startPoint: .leading, endPoint: .trailing)
         case .fantasy:
             return LinearGradient(colors: [Color(hex: "#7B2FBE"), Color(hex: "#4A1080")], startPoint: .leading, endPoint: .trailing)
         case .prehistoric:
@@ -1390,7 +1394,7 @@ struct EnvironmentPickerStrip: View {
                     .fill(LinearGradient(colors: [.clear, Color.white.opacity(0.12)], startPoint: .leading, endPoint: .trailing))
                     .frame(height: 1)
                 Text("CHOOSE ARENA")
-                    .font(.system(size: 9, weight: .black, design: .rounded))
+                    .font(Theme.bungee(9))
                     .foregroundColor(Color.white.opacity(0.35))
                     .tracking(2)
                     .padding(.horizontal, 10)
@@ -1462,7 +1466,7 @@ struct EnvironmentCard: View {
                                 lineWidth: isSelected ? 2 : 1
                             )
                         )
-                        .shadow(color: isSelected ? env.accentColor.opacity(0.5) : .clear, radius: 8, x: 0, y: 3)
+                        .shadow(color: isSelected ? env.accentColor.opacity(0.30) : .clear, radius: 8, x: 0, y: 3)
 
                     if isUnlocked {
                         Text(env.emoji)
@@ -1480,7 +1484,7 @@ struct EnvironmentCard: View {
                 }
 
                 Text(env.name.uppercased())
-                    .font(.system(size: 8, weight: .black, design: .rounded))
+                    .font(Theme.bungee(8))
                     .foregroundColor(isSelected ? env.accentColor : Color.white.opacity(isUnlocked ? 0.55 : 0.25))
                     .lineLimit(1)
 
@@ -1493,13 +1497,13 @@ struct EnvironmentCard: View {
                                 .foregroundColor(Color(hex: "#FFB347").opacity(0.8))
                         } else {
                             Text("PACK")
-                                .font(.system(size: 7, weight: .black, design: .rounded))
+                                .font(Theme.bungee(7))
                                 .foregroundColor(Theme.purple.opacity(0.9))
                         }
                     }
                 } else if env.tier == .premium {
                     Text("PREMIUM")
-                        .font(.system(size: 7, weight: .black, design: .rounded))
+                        .font(Theme.bungee(7))
                         .foregroundColor(Theme.purple.opacity(0.7))
                 } else {
                     Text(" ")
@@ -1540,7 +1544,7 @@ struct EnvironmentsPackSheet: View {
                             Text("🌍")
                                 .font(.system(size: 52))
                             Text("UNLOCK ALL ARENAS")
-                                .font(.system(size: 20, weight: .black, design: .rounded))
+                                .font(Theme.bungee(20))
                                 .foregroundColor(.white)
                                 .tracking(1)
                             Text("9 unique environments that change\nthe outcome of every battle")
@@ -1580,7 +1584,7 @@ struct EnvironmentsPackSheet: View {
                         Button {
                             Task {
                                 if let product = await StoreKitManager.shared.environmentsPackProduct {
-                                    let success = await StoreKitManager.shared.purchase(product)
+                                    let success = await StoreKitManager.shared.purchase(product) == .success
                                     if success { isPresented = false }
                                 }
                             }
@@ -1592,7 +1596,7 @@ struct EnvironmentsPackSheet: View {
                                     Text("🌍")
                                     VStack(alignment: .leading, spacing: 1) {
                                         Text("Unlock All Arenas")
-                                            .font(.system(size: 16, weight: .black, design: .rounded))
+                                            .font(Theme.bungee(16))
                                             .foregroundColor(.white)
                                         if let product = storeKit.environmentsPackProduct {
                                             Text(product.displayPrice)

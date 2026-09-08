@@ -3,36 +3,15 @@
 // All exports are safe to call when DATABASE_URL is unset: log calls no-op,
 // reads return empty data. Lets local dev run with zero Postgres setup.
 
-import { Pool } from 'pg';
 import { ANIMAL_NAMES_EXPORT } from './claudeService';
-
-// ── Connection pool ────────────────────────────────────────────────────────────
-
-let pool: Pool | null = null;
-
-function getPool(): Pool | null {
-  if (pool) return pool;
-  if (!process.env.DATABASE_URL) return null;
-  pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    // Railway Postgres uses self-signed certs; allow them.
-    ssl: process.env.DATABASE_URL.includes('railway')
-      || process.env.PGSSLMODE === 'require'
-      ? { rejectUnauthorized: false }
-      : undefined,
-    max: 5,
-    idleTimeoutMillis: 30_000,
-  });
-  pool.on('error', err => console.error('[battleLogger] pool error:', err.message));
-  return pool;
-}
+import { getDbPool } from './database';
 
 // ── Schema bootstrap ───────────────────────────────────────────────────────────
 
 let initialized = false;
 
 export async function initDb(): Promise<void> {
-  const p = getPool();
+  const p = getDbPool();
   if (!p) {
     console.log('[battleLogger] DATABASE_URL not set — logging disabled');
     return;
@@ -56,12 +35,61 @@ export async function initDb(): Promise<void> {
       CREATE INDEX IF NOT EXISTS battles_fighter2_idx ON battles(fighter2_id);
       CREATE INDEX IF NOT EXISTS battles_mode_idx     ON battles(mode);
       CREATE INDEX IF NOT EXISTS battles_created_idx  ON battles(created_at DESC);
+
+      -- Older builds derived custom IDs from child-entered text. Remove both
+      -- that identifier and the display-name copy immediately.
+      UPDATE battles
+         SET winner_id = CASE
+               WHEN is_custom1 AND winner_id = fighter1_id THEN 'custom'
+               WHEN is_custom2 AND winner_id = fighter2_id THEN 'custom'
+               ELSE winner_id
+             END,
+             fighter1_id = CASE WHEN is_custom1 THEN 'custom' ELSE fighter1_id END,
+             fighter2_id = CASE WHEN is_custom2 THEN 'custom' ELSE fighter2_id END,
+             fighter1_name = CASE WHEN is_custom1 THEN NULL ELSE fighter1_name END,
+             fighter2_name = CASE WHEN is_custom2 THEN NULL ELSE fighter2_name END
+       WHERE is_custom1 OR is_custom2;
     `);
     initialized = true;
     console.log('[battleLogger] Postgres ready');
+    // Enforce the privacy policy's 90-day retention promise continuously:
+    // once at boot, then daily. unref() so the timer never holds the process.
+    void pruneAgedCustomNames();
+    setInterval(() => { void pruneAgedCustomNames(); }, 24 * 60 * 60 * 1000).unref();
   } catch (err) {
     console.error('[battleLogger] initDb failed:', (err as Error).message);
     // Don't throw — battles must still resolve when the DB is broken.
+  }
+}
+
+// ── Privacy retention ──────────────────────────────────────────────────────────
+// Custom free text is not retained at all. This cleanup remains scheduled so
+// rows created by an older instance during a rolling deploy are also scrubbed.
+
+export async function pruneAgedCustomNames(): Promise<void> {
+  const p = getDbPool();
+  if (!p || !initialized) return;
+  try {
+    const res = await p.query(
+      `UPDATE battles
+          SET winner_id = CASE
+                WHEN is_custom1 AND winner_id = fighter1_id THEN 'custom'
+                WHEN is_custom2 AND winner_id = fighter2_id THEN 'custom'
+                ELSE winner_id
+              END,
+              fighter1_id = CASE WHEN is_custom1 THEN 'custom' ELSE fighter1_id END,
+              fighter2_id = CASE WHEN is_custom2 THEN 'custom' ELSE fighter2_id END,
+              fighter1_name = CASE WHEN is_custom1 THEN NULL ELSE fighter1_name END,
+              fighter2_name = CASE WHEN is_custom2 THEN NULL ELSE fighter2_name END
+        WHERE (is_custom1 AND (fighter1_id <> 'custom' OR fighter1_name IS NOT NULL))
+           OR (is_custom2 AND (fighter2_id <> 'custom' OR fighter2_name IS NOT NULL))`,
+    );
+    if ((res.rowCount ?? 0) > 0) {
+      console.log(`[battleLogger] privacy scrub: de-identified ${res.rowCount} custom battle rows`);
+      invalidateCache();
+    }
+  } catch (err) {
+    console.error('[battleLogger] pruneAgedCustomNames failed:', (err as Error).message);
   }
 }
 
@@ -98,7 +126,7 @@ export interface LogBattleArgs {
 }
 
 export async function logBattle(args: LogBattleArgs): Promise<void> {
-  const p = getPool();
+  const p = getDbPool();
   if (!p || !initialized) return;
   try {
     await p.query(
@@ -107,11 +135,13 @@ export async function logBattle(args: LogBattleArgs): Promise<void> {
           winner_id, environment, is_custom1, is_custom2, mode)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
       [
-        args.fighter1Id,
-        args.fighter2Id,
-        args.fighter1Name ?? null,
-        args.fighter2Name ?? null,
-        args.winnerId,
+        args.isCustom1 ? 'custom' : args.fighter1Id,
+        args.isCustom2 ? 'custom' : args.fighter2Id,
+        null,
+        null,
+        (args.isCustom1 && args.winnerId === args.fighter1Id)
+          || (args.isCustom2 && args.winnerId === args.fighter2Id)
+          ? 'custom' : args.winnerId,
         args.environment ?? null,
         args.isCustom1,
         args.isCustom2,
@@ -147,7 +177,7 @@ const MIN_BATTLES_FOR_RATE = 10;  // exclude single-game flukes from win-rate ra
 
 export async function getAnimalLeaderboard(limit = 25): Promise<AnimalLeaderboard> {
   return cached(`animal:${limit}`, async () => {
-    const p = getPool();
+    const p = getDbPool();
     if (!p || !initialized) {
       return {
         topByWins: [],
@@ -220,7 +250,7 @@ export interface CustomCreatureRow {
 
 export async function getCustomCreatureLeaderboard(limit = 25): Promise<CustomCreatureRow[]> {
   return cached(`custom:${limit}`, async () => {
-    const p = getPool();
+    const p = getDbPool();
     if (!p || !initialized) return [];
 
     const sql = `
@@ -261,6 +291,34 @@ export async function getCustomCreatureLeaderboard(limit = 25): Promise<CustomCr
   });
 }
 
+// ── Data deletion: erase persisted custom-creature names ───────────────────────
+
+/**
+ * COPPA / data-minimization: erase raw child-typed names and name-derived IDs.
+ * This backs the admin purge so the "delete data" path actually removes the
+ * names everywhere (the in-memory tally alone did not). Returns how many name
+ * fields were cleared. No-op when there is no database configured.
+ */
+export async function purgeCustomCreatureNames(): Promise<number> {
+  const p = getDbPool();
+  if (!p || !initialized) return 0;
+  const result = await p.query(`
+    UPDATE battles
+       SET winner_id = CASE
+             WHEN is_custom1 AND winner_id = fighter1_id THEN 'custom'
+             WHEN is_custom2 AND winner_id = fighter2_id THEN 'custom'
+             ELSE winner_id
+           END,
+           fighter1_id = CASE WHEN is_custom1 THEN 'custom' ELSE fighter1_id END,
+           fighter2_id = CASE WHEN is_custom2 THEN 'custom' ELSE fighter2_id END,
+           fighter1_name = CASE WHEN is_custom1 THEN NULL ELSE fighter1_name END,
+           fighter2_name = CASE WHEN is_custom2 THEN NULL ELSE fighter2_name END
+     WHERE is_custom1 OR is_custom2
+  `);
+  invalidateCache();
+  return result.rowCount ?? 0;
+}
+
 // ── Read: recent activity (admin-only) ─────────────────────────────────────────
 
 export interface RecentBattleRow {
@@ -275,7 +333,7 @@ export interface RecentBattleRow {
 
 export async function getRecentActivity(limit = 200): Promise<RecentBattleRow[]> {
   return cached(`recent:${limit}`, async () => {
-    const p = getPool();
+    const p = getDbPool();
     if (!p || !initialized) return [];
 
     const { rows } = await p.query(

@@ -28,12 +28,12 @@ struct RandomPickCard: View {
                     Text("🎲")
                         .font(.system(size: 40))
                         .rotationEffect(.degrees(diceRotation))
-                        .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 3)
+                        .shadow(color: .black.opacity(0.18), radius: 4, x: 0, y: 3)
 
                     Text("RANDOM")
                         .font(Theme.bungee(11))
                         .foregroundColor(.white)
-                        .shadow(color: .black.opacity(0.6), radius: 2, x: 0, y: 1)
+                        .shadow(color: .black.opacity(0.36), radius: 2, x: 0, y: 1)
                         .multilineTextAlignment(.center)
                         .lineLimit(1)
                         .minimumScaleFactor(0.65)
@@ -74,7 +74,7 @@ struct RandomPickCard: View {
                     RoundedRectangle(cornerRadius: 14)
                         .stroke(Color.white.opacity(0.3), lineWidth: 1)
                 )
-                .shadow(color: Theme.orange.opacity(0.45), radius: 6, x: 0, y: 3)
+                .shadow(color: Theme.orange.opacity(0.27), radius: 6, x: 0, y: 3)
             }
         }
         .buttonStyle(PressableButtonStyle())

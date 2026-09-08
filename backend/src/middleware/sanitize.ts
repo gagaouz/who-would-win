@@ -47,8 +47,39 @@ const BLOCKED_WORDS = new Set([
   'pedophile','pedophilia','incest','necrophilia','bestiality',
 ]);
 
+// Legitimate real animals whose names contain a blocked whole word
+// ("sperm" in "sperm whale", "ass" in "wild ass"). Scrubbed out before the
+// word-level check. Longest variants first so they're consumed before a bare
+// "sperm"/"ass" can match.
+const ALLOWED_ANIMAL_PHRASES = [
+  'pygmy sperm whale', 'dwarf sperm whale', 'sperm whale',
+  'african wild ass', 'asiatic wild ass', 'asian wild ass',
+  'indian wild ass', 'mongolian wild ass', 'somali wild ass',
+  'persian wild ass', 'tibetan wild ass', 'wild ass',
+];
+
 function containsBlockedWord(s: string): boolean {
-  return s.toLowerCase().split(/\s+/).some(w => BLOCKED_WORDS.has(w));
+  let scrubbed = s.normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase();
+  for (const phrase of ALLOWED_ANIMAL_PHRASES) {
+    if (scrubbed.includes(phrase)) scrubbed = scrubbed.split(phrase).join(' ');
+  }
+  const wordForm = scrubbed.replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+  const tokens = wordForm.split(/\s+/).filter(Boolean);
+  if (tokens.some(w => BLOCKED_WORDS.has(w))) return true;
+
+  // Also catch punctuation-separated spelling such as "f.u.c.k" while
+  // retaining whole-word boundaries so harmless words like "bass" survive.
+  return [...BLOCKED_WORDS].some(word => {
+    if (word.length < 4) return false;
+    const separated = word.split('').join('[^\\p{L}\\p{N}]*');
+    return new RegExp(`(^|[^\\p{L}\\p{N}])${separated}($|[^\\p{L}\\p{N}])`, 'iu').test(scrubbed);
+  });
+}
+
+export function isSafeGeneratedText(value: string): boolean {
+  return !containsBlockedWord(value)
+    && !/<\/?[a-z][^>]*>/i.test(value)
+    && !/https?:\/\/|www\./i.test(value);
 }
 
 // Phrases that look like prompt injection or jailbreak attempts
@@ -80,10 +111,17 @@ export function sanitizeName(raw: unknown): SanitizeResult {
   }
 
   // Trim whitespace
-  let s = raw.trim();
+  let s = raw.normalize('NFKC').trim();
 
   if (s.length === 0) {
     return { ok: false, value: '', error: 'cannot be empty' };
+  }
+
+  // Do not accept obvious personal contact details as a creature name.
+  if (/\b[\w.+-]+@[\w.-]+\.[a-z]{2,}\b/i.test(s)
+      || /\b(?:https?:\/\/|www\.)\S+/i.test(s)
+      || /(?:\+?\d[\s().-]*){8,}/.test(s)) {
+    return { ok: false, value: '', error: 'personal contact information is not allowed' };
   }
 
   // Hard length cap BEFORE any other processing (don't even process huge strings)
@@ -116,4 +154,40 @@ export function sanitizeName(raw: unknown): SanitizeResult {
   }
 
   return { ok: true, value: s };
+}
+
+// Built-in IDs use underscores. Privacy-preserving custom IDs use UUIDs, so
+// hyphens are valid as well; no other punctuation reaches prompts or queries.
+const FIGHTER_ID = /^[a-z0-9_-]{1,64}$/;
+
+export function sanitizeFighterId(raw: unknown): SanitizeResult {
+  if (typeof raw !== 'string') return { ok: false, value: '', error: 'must be a string' };
+  const value = raw.trim().toLowerCase();
+  if (!FIGHTER_ID.test(value)) {
+    return { ok: false, value: '', error: 'must contain only lowercase letters, numbers, underscores, and hyphens' };
+  }
+  return { ok: true, value };
+}
+
+const ENVIRONMENTS = new Map([
+  ['grassland', 'Grassland'], ['ocean', 'Ocean'], ['sky', 'Sky'],
+  ['arctic', 'Arctic'], ['desert', 'Desert'], ['jungle', 'Jungle'],
+  ['volcano', 'Volcano'], ['night', 'Night'], ['storm', 'Storm'],
+]);
+
+export function sanitizeEnvironment(raw: unknown): string | undefined {
+  if (typeof raw !== 'string') return undefined;
+  return ENVIRONMENTS.get(raw.trim().toLowerCase());
+}
+
+export function sanitizeTournamentContext(raw: unknown): string | undefined {
+  if (typeof raw !== 'string') return undefined;
+  const value = raw.toLowerCase();
+  if (value.includes('championship') || value.includes('final')) return 'This is the tournament final.';
+  if (value.includes('semifinal')) return 'This is a tournament semifinal.';
+  if (value.includes('quarterfinal')) return 'This is a tournament quarterfinal.';
+  if (value.includes('round of 16')) return 'This is a tournament round-of-16 battle.';
+  if (value.includes('round of 32')) return 'This is a tournament round-of-32 battle.';
+  if (value.includes('tournament')) return 'This is an early-round tournament battle.';
+  return undefined;
 }

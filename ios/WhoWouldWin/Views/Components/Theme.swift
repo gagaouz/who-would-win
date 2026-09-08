@@ -248,6 +248,12 @@ struct Theme {
         case .insect:
             return LinearGradient(colors: [Color(hex: "#81C784"), Color(hex: "#43A047")],
                                   startPoint: .topLeading, endPoint: .bottomTrailing)
+        case .pets:
+            return LinearGradient(colors: [Color(hex: "#F8BBD0"), Color(hex: "#EC407A")],
+                                  startPoint: .topLeading, endPoint: .bottomTrailing)
+        case .farm:
+            return LinearGradient(colors: [Color(hex: "#FFD180"), Color(hex: "#F57C00")],
+                                  startPoint: .topLeading, endPoint: .bottomTrailing)
         case .fantasy:
             return LinearGradient(colors: [Color(hex: "#CE93D8"), Color(hex: "#AB47BC")],
                                   startPoint: .topLeading, endPoint: .bottomTrailing)
@@ -272,6 +278,8 @@ struct Theme {
         case .sea:         return seaAccent
         case .air:         return airAccent
         case .insect:      return insectAccent
+        case .pets:        return Color(hex: "#EC407A")
+        case .farm:        return Color(hex: "#F57C00")
         case .fantasy:     return fantasyAccent
         case .prehistoric: return prehistoricAccent
         case .mythic:      return mythicAccent
@@ -287,6 +295,8 @@ struct Theme {
         case .sea:         return "🌊"
         case .air:         return "☁️"
         case .insect:      return "🐛"
+        case .pets:        return "🐶"
+        case .farm:        return "🚜"
         case .fantasy:     return "✨"
         case .prehistoric: return "🦖"
         case .mythic:      return "⚡"
@@ -301,6 +311,8 @@ struct Theme {
         case .sea:         return "Sea"
         case .air:         return "Air"
         case .insect:      return "Bugs"
+        case .pets:        return "Pets"
+        case .farm:        return "Farm"
         case .fantasy:     return "Fantasy"
         case .prehistoric: return "Dinos"
         case .mythic:      return "Mythic"

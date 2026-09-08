@@ -165,7 +165,7 @@
     <h1 class="page-title">Privacy Policy</h1>
     <p class="page-sub">
       AvA — Animal vs Animal (“Who Would Win?”) for iPhone &amp; iPad<br/>
-      Published by <strong style="color:rgba(255,255,255,0.85);">King Painter Technology LLC</strong> · Effective 2026-04-19 · Last updated 2026-07-03
+      Published by <strong style="color:rgba(255,255,255,0.85);">King Painter Technology LLC</strong> · Effective 2026-04-19 · Last updated 2026-09-08
     </p>
   </header>
 
@@ -176,21 +176,22 @@
     <div class="summary">
       <h2>Plain-English Summary</h2>
       <ul>
-        <li>We don’t ask for names, emails, phone numbers, or logins — there are no accounts.</li>
+        <li>We don’t ask for a real name, email, phone number, or login — there are no accounts.</li>
         <li>We don’t track you or your child across other apps or websites, and we don’t sell any data.</li>
         <li>Ads are kid-safe: non-personalized, configured for child-directed treatment, rated G — and a one-time purchase removes them.</li>
         <li>Purchases are handled entirely by Apple. We never see card numbers or billing details.</li>
         <li>Game progress lives on your device (and optionally in your own iCloud) — not on our servers.</li>
-        <li>If you type a custom creature, its name (and nothing about you) is sent to our battle service to write the story and find a picture.</li>
+        <li>If you use a custom creature, its filtered name is sent to our battle service to write the story and, when needed, find a picture.</li>
+        <li>A random app-install identifier and Apple App Attest security proof protect the paid API from bots; neither is used for advertising or linked to an account.</li>
         <li>Voice search happens on the device. Audio never leaves the phone.</li>
-        <li>Grown-ups can erase everything: Settings → Grown-Up Zone → Erase all data.</li>
+        <li>Grown-ups can erase all on-device and iCloud game progress: Settings → Grown-Up Zone → Erase all data.</li>
       </ul>
     </div>
 
     <h2><span class="num">1.</span>Information the app does <em>not</em> collect</h2>
     <p>To be explicit, the app does <strong>not</strong> collect any of the following:</p>
     <ul>
-      <li>Name, email address, phone number, or postal address</li>
+      <li>A requested real name, email address, phone number, or postal address</li>
       <li>Age or birthdate</li>
       <li>Accounts, passwords, or login credentials (there is no login)</li>
       <li>Precise location (GPS)</li>
@@ -199,7 +200,7 @@
       <li>Browsing history or activity in other apps</li>
       <li>Health, fitness, financial, or biometric data</li>
     </ul>
-    <p>We do not use Google Analytics, Firebase, Crashlytics, Sentry, or any other third-party analytics or crash-reporting SDK.</p>
+    <p>We do not add a general-purpose analytics or crash-reporting SDK such as Google Analytics, Firebase Analytics, Crashlytics, or Sentry. The AdMob advertising SDK has the limited ad-delivery diagnostics described below.</p>
 
     <h2><span class="num">2.</span>Information the app does handle</h2>
 
@@ -208,11 +209,12 @@
     <p>If iCloud is enabled on the device, key progress syncs through <strong>your own iCloud account</strong> (Apple’s key-value storage) so it survives getting a new phone. That data lives in your Apple account — we never see it.</p>
 
     <h3>2.2 Sent to our battle service</h3>
-    <p>When you start a battle (or a team battle, with up to six fighters per side), the app sends the fighters’ names (or the custom names you typed), the chosen arena (only if one was chosen), and — for tournaments — a short round description to our battle service at <strong>api.animal-vs-animal.com</strong>, which we operate. When you create a custom creature, its name is also sent so the AI can pick a matching emoji and category. The service uses an AI model (Anthropic’s Claude) to write the battle stories and make those picks, so creature names are processed by Anthropic to generate the text. The request contains <strong>no identifier for you or your device</strong>, and we don’t link requests to any person.</p>
-    <p>Custom creature names pass through a content filter on the device before any network call — inappropriate words are rejected before they leave the phone. Our service keeps battle records with <strong>no user identifiers</strong> — which creatures fought and who won — to prevent abuse, fix bugs, and power the app’s anonymous, aggregate battle stats. Any <strong>custom creature names</strong> in those records are automatically deleted within <strong>90 days</strong>.</p>
+    <p>When you start a battle (or a team battle, with up to six fighters per side), the app sends the fighters’ names (or the custom names you typed), the chosen arena (only if one was chosen), and — for tournaments — a standardized round label to our battle service at <strong>api.animal-vs-animal.com</strong>, which we operate. The service uses Anthropic’s Claude model to write cloud battle stories, so those creature names are processed by Anthropic to generate the text.</p>
+    <p>Custom creature names pass through content filters before use. Our service does <strong>not retain raw custom names or name-derived identifiers in battle statistics</strong>. A generated response can remain in a protected, hashed-key cache for up to 24 hours so retries do not create duplicate AI charges, after which it is deleted.</p>
+    <p>Every installation creates a random identifier, and supported Apple devices use App Attest, to enforce quotas and confirm that paid requests come from a genuine copy of the app. We also process a one-way keyed hash derived from the network address for short-term abuse prevention. Rate-limit records expire after about one hour; unused App Attest public-key records are deleted after 180 days. These security identifiers are not connected to an account, used for advertising, or shared with other users.</p>
 
     <h3>2.3 Custom creature pictures</h3>
-    <p>If you create a custom creature, the app looks for a picture using the creature’s name only:</p>
+    <p>After you choose a custom creature, the app may look for a picture using the filtered creature name only:</p>
     <ul>
       <li><strong>Wikipedia</strong> (Wikimedia Foundation) is tried first for a real photo — <a href="https://foundation.wikimedia.org/wiki/Privacy_policy">their privacy policy</a> applies to that lookup.</li>
       <li>If no photo exists, <strong>Pollinations.ai</strong> generates a G-rated cartoon from a fixed, child-friendly prompt containing only the filtered creature name.</li>
@@ -222,14 +224,14 @@
     <h3>2.4 Ads (Google AdMob)</h3>
     <p>The free version shows ads through Google AdMob with these settings locked in:</p>
     <ul>
-      <li><strong>Child-directed treatment (COPPA):</strong> ON</li>
-      <li><strong>Users under the age of consent (GDPR-K):</strong> ON</li>
-      <li><strong>Maximum ad content rating:</strong> G · <strong>Personalized ads:</strong> OFF (contextual only)</li>
+      <li><strong>Child age-restricted treatment:</strong> ON</li>
+      <li><strong>Maximum ad content rating:</strong> G</li>
+      <li><strong>Personalized ads and publisher first-party identifier:</strong> OFF (contextual only)</li>
     </ul>
     <p>To show and count ads, Google’s ad software receives standard device information (device identifiers, an approximate location derived from IP address, and how ads perform in the app). With the child-directed settings above, Google does not use behavioral profiling or cross-app tracking for these ads — see <a href="https://support.google.com/admob/answer/6219315">Google’s child-directed ads documentation</a> and <a href="https://policies.google.com/privacy">Google’s privacy policy</a>. We do not use Apple’s App Tracking Transparency because we do not track. Removing ads (one-time purchase, Premium, or the Everything Bundle) stops all interstitial ads and their ad requests. One optional feature remains for everyone — the “watch a video to earn coins” button in the Coin Shop — and the ad network is only contacted for it when you open the Coin Shop.</p>
 
-    <h3>2.5 Crash reports (first-party only)</h3>
-    <p>To fix bugs, the app uses Apple’s built-in <strong>MetricKit</strong> to receive anonymous crash and hang diagnostics, and forwards a trimmed copy (with device details stripped down) to our own service. These reports contain technical stack traces — no personal information, no identifiers, and no third-party crash SDK is involved.</p>
+    <h3>2.5 Diagnostics</h3>
+    <p>AvA does not send Apple MetricKit crash or hang reports to our service. When the AdMob SDK is active, Google says it may receive non-user-related crash logs and performance information to operate, secure, and improve ad delivery; these items are disclosed in the App Store privacy label and are handled under <a href="https://policies.google.com/privacy">Google’s privacy policy</a>.</p>
 
     <h3>2.6 Purchases</h3>
     <p>All payments run through Apple’s StoreKit. We receive only a receipt confirming a purchase succeeded — never your card number, billing address, or identity. Real-money purchases in the app sit behind a <strong>parental gate</strong>, and Apple’s <strong>Ask to Buy</strong> is fully supported.</p>
@@ -243,7 +245,7 @@
     <h2><span class="num">3.</span>Children’s privacy</h2>
     <p>AvA is designed for children and families and built to comply with the <strong>Children’s Online Privacy Protection Act (COPPA)</strong> and Apple’s guidelines for kids’ apps:</p>
     <ul>
-      <li>No personal information is collected — from children or anyone else.</li>
+      <li>We do not request account or contact information, and obvious contact details are rejected from custom-creature input.</li>
       <li>No chat, social features, user-to-user messaging, or public sharing of typed content.</li>
       <li>Everything a child types is checked by a content filter before it can be used.</li>
       <li>Ads are contextual only — no behavioral profiling, no retargeting, ever.</li>
@@ -254,7 +256,7 @@
     <h2><span class="num">4.</span>Data retention &amp; deletion</h2>
     <ul>
       <li><strong>On your device:</strong> deleted when you uninstall the app — or via <strong>Settings → Grown-Up Zone → Erase all data</strong>, which wipes all progress, the grown-up PIN, and iCloud-synced progress.</li>
-      <li><strong>Our service records:</strong> never linked to a person; any custom creature names are deleted automatically within 90 days, and the remaining records are anonymous battle statistics.</li>
+      <li><strong>Our service records:</strong> raw custom names are not retained in battle statistics; transient generated-result caches expire within 24 hours, abuse counters within about one hour, and inactive App Attest keys after 180 days.</li>
       <li><strong>Wikipedia / Pollinations requests:</strong> handled by those services under their own policies.</li>
       <li><strong>Purchases &amp; Game Center:</strong> retained by Apple under Apple’s terms.</li>
     </ul>
@@ -265,16 +267,16 @@
     <ul>
       <li><strong>Apple</strong> — StoreKit purchases, optional Game Center, optional iCloud sync</li>
       <li><strong>Google</strong> — AdMob ads with child-directed settings</li>
-      <li><strong>Anthropic</strong> — creature names/arena are processed by the Claude AI model to write battle stories and pick a custom creature’s emoji and category</li>
+      <li><strong>Anthropic</strong> — creature names and arena labels are processed by Claude when cloud narration or custom-creature classification is requested</li>
       <li><strong>Wikimedia Foundation &amp; Pollinations.ai</strong> — custom-creature picture lookups</li>
       <li><strong>Our hosting provider (Railway)</strong> — runs the battle service we operate</li>
     </ul>
 
     <h2><span class="num">6.</span>Security</h2>
-    <p>All network traffic to our services and partners uses HTTPS, enforced by Apple’s App Transport Security. The app stores no sensitive personal data.</p>
+    <p>All network traffic to our services and partners uses HTTPS, enforced by Apple’s App Transport Security. Apple App Attest, request signing, strict quotas, duplicate-request protection, and application spending ceilings protect the battle service.</p>
 
     <h2><span class="num">7.</span>International users</h2>
-    <p>The app is available worldwide. If you are in the EEA, UK, California, or another region with data-protection laws: we do not collect personal data, so rights like access, portability, and deletion are effectively satisfied by default. Email us with any specific request and we’ll help.</p>
+    <p>The app is available worldwide. If you are in the EEA, UK, California, or another region with data-protection laws, email us with any access or deletion request and we’ll help. Because the app has no accounts and security identifiers are pseudonymous, we may be unable to associate a request with a particular installation.</p>
 
     <h2><span class="num">8.</span>Changes to this policy</h2>
     <p>We may update this policy from time to time; the “Last updated” date above shows the current version. Material changes are announced in the app’s release notes.</p>

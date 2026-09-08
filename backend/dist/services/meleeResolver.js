@@ -26,10 +26,13 @@ const SEMI_AQUATIC = new Set(['hippopotamus', 'alligator', 'crocodile']);
 function isKnown(id) {
     return id in claudeService_1.POWER_PROFILES || claudeService_1.DEITY_IDS.has(id);
 }
-function getTier(id) {
+function getTier(id, customTier) {
     if (claudeService_1.DEITY_IDS.has(id))
         return 10;
-    return claudeService_1.POWER_PROFILES[id]?.tier ?? null;
+    const t = claudeService_1.POWER_PROFILES[id]?.tier;
+    if (t != null)
+        return t;
+    return customTier ?? null; // custom fighter uses its estimated tier
 }
 function envModifier(id, env) {
     if (!env)
@@ -63,12 +66,17 @@ function envModifier(id, env) {
     }
     return 1.0;
 }
-/** 2^tier × envModifier — same as 1v1 resolver. */
-function fighterPower(id, env) {
-    const t = getTier(id);
+// Same fractional realism nudges as the 1v1 resolver. KEEP IN SYNC with
+// battleResolver.ts TIER_ADJUST and the iOS OnDeviceTiers.tierAdjust.
+const TIER_ADJUST = {
+    tiger: 0.45,
+};
+/** 2^(tier + realism nudge) × envModifier — same as 1v1 resolver. */
+function fighterPower(f, env) {
+    const t = getTier(f.id, f.customTier);
     if (t === null)
         return 0;
-    return Math.pow(2, t) * envModifier(id, env);
+    return Math.pow(2, t + (TIER_ADJUST[f.id] ?? 0)) * envModifier(f.id, env);
 }
 /**
  * Team power = sum(fighter powers) × coordination factor.
@@ -79,7 +87,7 @@ function fighterPower(id, env) {
 function teamPower(team, env) {
     if (team.length === 0)
         return 0;
-    const sum = team.reduce((acc, f) => acc + fighterPower(f.id, env), 0);
+    const sum = team.reduce((acc, f) => acc + fighterPower(f, env), 0);
     const coord = Math.pow(0.92, team.length - 1);
     return sum * coord;
 }
@@ -88,11 +96,13 @@ function resolveMelee(args) {
     if (teamA.length === 0 || teamB.length === 0) {
         return { kind: 'open', reason: 'empty team — AI decides' };
     }
-    // Any custom/unknown fighter on either side → defer to AI.
-    // Resolver only forces verdicts when EVERY fighter is in the tier table.
-    const allKnown = teamA.every(f => isKnown(f.id)) && teamB.every(f => isKnown(f.id));
-    if (!allKnown) {
-        return { kind: 'open', reason: 'custom-or-unknown fighter on one team' };
+    // Force a verdict when EVERY fighter is resolvable — known in the tier table
+    // OR a custom fighter with an estimated tier. Only fall back to the AI when a
+    // custom fighter has no estimate at all.
+    const resolvable = (f) => isKnown(f.id) || f.customTier != null;
+    const allResolvable = teamA.every(resolvable) && teamB.every(resolvable);
+    if (!allResolvable) {
+        return { kind: 'open', reason: 'custom fighter without a tier estimate — AI decides' };
     }
     // Deity asymmetry: a team with a deity beats a team without one outright,
     // unless the opposing team also has a deity.
@@ -120,18 +130,13 @@ function resolveMelee(args) {
     if (envB <= 0.10 && envA >= 0.5) {
         return { kind: 'forced', winningTeam: 'A', reason: `team B cannot survive ${environmentName}` };
     }
-    const ratio = pA / pB;
-    if (ratio >= 8) {
-        return { kind: 'forced', winningTeam: 'A', reason: `team A power ${ratio.toFixed(1)}× team B` };
-    }
-    if (ratio <= 1 / 8) {
-        return { kind: 'forced', winningTeam: 'B', reason: `team B power ${(1 / ratio).toFixed(1)}× team A` };
-    }
-    return {
-        kind: 'open',
-        predictedWinningTeam: pA >= pB ? 'A' : 'B',
-        reason: `close matchup, ratio ${(pA >= pB ? ratio : 1 / ratio).toFixed(2)}×`,
-    };
+    // DETERMINISTIC for all-known teams: the stronger team always wins (the model
+    // still narrates a fresh story). Exact ties → team A (stable). Custom-fighter
+    // teams returned 'open' above, where the AI judges from its own knowledge.
+    const ratio = pA >= pB ? pA / Math.max(pB, 0.0001) : pB / Math.max(pA, 0.0001);
+    return pA >= pB
+        ? { kind: 'forced', winningTeam: 'A', reason: `team power ${ratio.toFixed(2)}×` }
+        : { kind: 'forced', winningTeam: 'B', reason: `team power ${ratio.toFixed(2)}×` };
 }
 function meleeVerdictPromptLine(v) {
     if (v.kind !== 'forced')

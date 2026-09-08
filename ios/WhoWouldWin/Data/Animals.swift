@@ -58,6 +58,61 @@ struct Animals {
     static let wasp = Animal(id: "wasp", name: "Wasp", emoji: "🐝", category: .insect, pixelColor: "#FFD700", size: 1)
     static let stag_beetle = Animal(id: "stag_beetle", name: "Stag Beetle", emoji: "🪲", category: .insect, pixelColor: "#3D2B1F", size: 1)
 
+    // MARK: - Pets (25) — free pack, household animals from Great Danes to gerbils
+    // Dogs
+    static let great_dane       = Animal(id: "great_dane",       name: "Great Dane",        emoji: "🐕", category: .pets, pixelColor: "#C8A47A", size: 5)
+    static let german_shepherd  = Animal(id: "german_shepherd",  name: "German Shepherd",   emoji: "🐕", category: .pets, pixelColor: "#8B4513", size: 4)
+    static let golden_retriever = Animal(id: "golden_retriever", name: "Golden Retriever",  emoji: "🐕", category: .pets, pixelColor: "#E8B96E", size: 4)
+    static let labrador         = Animal(id: "labrador",         name: "Labrador",          emoji: "🐕", category: .pets, pixelColor: "#3D2B1F", size: 4)
+    static let husky            = Animal(id: "husky",            name: "Husky",             emoji: "🐕", category: .pets, pixelColor: "#D8D8E0", size: 3)
+    static let bulldog          = Animal(id: "bulldog",          name: "Bulldog",           emoji: "🐕", category: .pets, pixelColor: "#E8D0A0", size: 3)
+    static let beagle           = Animal(id: "beagle",           name: "Beagle",            emoji: "🐕", category: .pets, pixelColor: "#A0623A", size: 2)
+    static let poodle           = Animal(id: "poodle",           name: "Poodle",            emoji: "🐩", category: .pets, pixelColor: "#F0E4D0", size: 3)
+    static let corgi            = Animal(id: "corgi",            name: "Corgi",             emoji: "🐕", category: .pets, pixelColor: "#D4A06A", size: 2)
+    static let pug              = Animal(id: "pug",              name: "Pug",               emoji: "🐕", category: .pets, pixelColor: "#D4B888", size: 2)
+    static let dachshund        = Animal(id: "dachshund",        name: "Dachshund",         emoji: "🐕", category: .pets, pixelColor: "#8B4513", size: 1)
+    static let chihuahua        = Animal(id: "chihuahua",        name: "Chihuahua",         emoji: "🐕", category: .pets, pixelColor: "#C8A47A", size: 1)
+    // Cats
+    static let tabby_cat        = Animal(id: "tabby_cat",        name: "Tabby Cat",         emoji: "🐈", category: .pets, pixelColor: "#A0743A", size: 2)
+    static let persian_cat      = Animal(id: "persian_cat",      name: "Persian Cat",       emoji: "🐈", category: .pets, pixelColor: "#F0E4D0", size: 2)
+    static let maine_coon       = Animal(id: "maine_coon",       name: "Maine Coon",        emoji: "🐈", category: .pets, pixelColor: "#8B6914", size: 3)
+    // Birds
+    static let parakeet         = Animal(id: "parakeet",         name: "Parakeet",          emoji: "🦜", category: .pets, pixelColor: "#3CB371", size: 1)
+    static let cockatiel        = Animal(id: "cockatiel",        name: "Cockatiel",         emoji: "🦜", category: .pets, pixelColor: "#F0E4A0", size: 1)
+    static let canary           = Animal(id: "canary",           name: "Canary",            emoji: "🐤", category: .pets, pixelColor: "#FFD700", size: 1)
+    // Small mammals
+    static let hamster          = Animal(id: "hamster",          name: "Hamster",           emoji: "🐹", category: .pets, pixelColor: "#D4A06A", size: 1)
+    static let gerbil           = Animal(id: "gerbil",           name: "Gerbil",            emoji: "🐭", category: .pets, pixelColor: "#A0743A", size: 1)
+    static let guinea_pig       = Animal(id: "guinea_pig",       name: "Guinea Pig",        emoji: "🐹", category: .pets, pixelColor: "#C87858", size: 1)
+    static let pet_rabbit       = Animal(id: "pet_rabbit",       name: "Pet Rabbit",        emoji: "🐰", category: .pets, pixelColor: "#F0E4D0", size: 2)
+    // Fish
+    static let goldfish         = Animal(id: "goldfish",         name: "Goldfish",          emoji: "🐠", category: .pets, pixelColor: "#FF8C00", size: 1)
+    static let betta_fish       = Animal(id: "betta_fish",       name: "Betta Fish",        emoji: "🐠", category: .pets, pixelColor: "#C40000", size: 1)
+    // Reptile
+    static let leopard_gecko    = Animal(id: "leopard_gecko",    name: "Leopard Gecko",     emoji: "🦎", category: .pets, pixelColor: "#F0D080", size: 1)
+
+    // MARK: - Farm (20) — free pack, classic barnyard animals
+    static let cow            = Animal(id: "cow",            name: "Cow",             emoji: "🐄", category: .farm, pixelColor: "#F0E4D0", size: 5)
+    static let bull           = Animal(id: "bull",           name: "Bull",            emoji: "🐂", category: .farm, pixelColor: "#3D2B1F", size: 5)
+    static let ox             = Animal(id: "ox",             name: "Ox",              emoji: "🐃", category: .farm, pixelColor: "#5C3317", size: 5)
+    static let pig            = Animal(id: "pig",            name: "Pig",             emoji: "🐖", category: .farm, pixelColor: "#F8C0CB", size: 3)
+    static let piglet         = Animal(id: "piglet",         name: "Piglet",          emoji: "🐷", category: .farm, pixelColor: "#FFC0CB", size: 1)
+    static let sheep          = Animal(id: "sheep",          name: "Sheep",           emoji: "🐑", category: .farm, pixelColor: "#F0E4D0", size: 3)
+    static let lamb           = Animal(id: "lamb",           name: "Lamb",            emoji: "🐑", category: .farm, pixelColor: "#FFF8E7", size: 1)
+    static let ram            = Animal(id: "ram",            name: "Ram",             emoji: "🐏", category: .farm, pixelColor: "#D0C4A8", size: 4)
+    static let goat           = Animal(id: "goat",           name: "Goat",            emoji: "🐐", category: .farm, pixelColor: "#C8B088", size: 2)
+    static let horse          = Animal(id: "horse",          name: "Horse",           emoji: "🐎", category: .farm, pixelColor: "#8B4513", size: 5)
+    static let donkey         = Animal(id: "donkey",         name: "Donkey",          emoji: "🫏", category: .farm, pixelColor: "#9B8B7B", size: 3)
+    static let mule           = Animal(id: "mule",           name: "Mule",            emoji: "🐴", category: .farm, pixelColor: "#7B5E3A", size: 4)
+    static let llama          = Animal(id: "llama",          name: "Llama",           emoji: "🦙", category: .farm, pixelColor: "#E8D0A0", size: 3)
+    static let alpaca         = Animal(id: "alpaca",         name: "Alpaca",          emoji: "🦙", category: .farm, pixelColor: "#F0E0C8", size: 3)
+    static let chicken        = Animal(id: "chicken",        name: "Chicken",         emoji: "🐔", category: .farm, pixelColor: "#F5DEB3", size: 1)
+    static let rooster        = Animal(id: "rooster",        name: "Rooster",         emoji: "🐓", category: .farm, pixelColor: "#C40000", size: 1)
+    static let duck           = Animal(id: "duck",           name: "Duck",            emoji: "🦆", category: .farm, pixelColor: "#FFD700", size: 1)
+    static let goose          = Animal(id: "goose",          name: "Goose",           emoji: "🪿", category: .farm, pixelColor: "#FFFAF0", size: 2)
+    static let turkey         = Animal(id: "turkey",         name: "Turkey",          emoji: "🦃", category: .farm, pixelColor: "#5A3A22", size: 2)
+    static let border_collie  = Animal(id: "border_collie",  name: "Border Collie",   emoji: "🐕", category: .farm, pixelColor: "#1C1C1C", size: 3)
+
     // MARK: - Fantasy (12)
     static let dragon     = Animal(id: "dragon",     name: "Dragon",      emoji: "🐉", category: .fantasy, pixelColor: "#C40000", size: 5)
     static let unicorn    = Animal(id: "unicorn",    name: "Unicorn",     emoji: "🦄", category: .fantasy, pixelColor: "#C77DFF", size: 4)
@@ -131,6 +186,19 @@ struct Animals {
         // Insect/Small
         army_ant, bombardier_beetle, bullet_ant, praying_mantis, fire_ant,
         centipede, wasp, stag_beetle,
+        // Pets
+        great_dane, german_shepherd, golden_retriever, labrador, husky, bulldog,
+        beagle, poodle, corgi, pug, dachshund, chihuahua,
+        tabby_cat, persian_cat, maine_coon,
+        parakeet, cockatiel, canary,
+        hamster, gerbil, guinea_pig, pet_rabbit,
+        goldfish, betta_fish,
+        leopard_gecko,
+        // Farm
+        cow, bull, ox, pig, piglet, sheep, lamb, ram, goat,
+        horse, donkey, mule, llama, alpaca,
+        chicken, rooster, duck, goose, turkey,
+        border_collie,
         // Fantasy
         dragon, unicorn, griffin, kraken, minotaur, werewolf,
         hydra, phoenix, kitsune, basilisk, cerberus, leviathan,

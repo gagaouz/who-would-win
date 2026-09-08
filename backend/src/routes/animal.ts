@@ -1,61 +1,65 @@
 import { Router, Request, Response } from 'express';
-import Anthropic from '@anthropic-ai/sdk';
-import dotenv from 'dotenv';
-import { rateLimitMiddleware } from '../middleware/rateLimit';
+import { animalRateLimit } from '../middleware/rateLimit';
 import { sanitizeName } from '../middleware/sanitize';
-dotenv.config({ override: true });
+import { createMessage } from '../services/anthropicClient';
+import { cachedOperation } from '../services/responseStore';
+import { requireAppAttest } from '../services/appAttest';
 
 const router = Router();
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const DEFAULT_INFO = { emoji: '🐾', category: 'land', color: '#888888' } as const;
 
-// GET /api/animal?name=wolverine
-// Shares the same per-IP rate limit bucket as /api/battle.
-router.get('/animal', rateLimitMiddleware, async (req: Request, res: Response): Promise<void> => {
-  const raw = req.query['name'];
+// Backward compatibility for App Store builds that put child-entered text in a
+// URL. Do not forward those requests to Anthropic; new builds use POST only.
+router.get('/animal', animalRateLimit, (_req: Request, res: Response): void => {
+  res.setHeader('Deprecation', 'true');
+  res.json(DEFAULT_INFO);
+});
 
-  // Type-check: query params can technically be arrays if ?name=a&name=b
-  if (typeof raw !== 'string') {
-    res.status(400).json({ error: 'name query parameter must be a single string' });
-    return;
-  }
-
-  const sanitized = sanitizeName(raw);
+router.post('/animal', requireAppAttest, animalRateLimit, async (req: Request, res: Response): Promise<void> => {
+  const sanitized = sanitizeName((req.body as Record<string, unknown> | undefined)?.['name']);
   if (!sanitized.ok) {
-    // Return a safe default rather than erroring — the app will still work
-    res.json({ emoji: '🐾', category: 'land', color: '#888888' });
+    res.json(DEFAULT_INFO);
     return;
   }
 
-  const name = sanitized.value;
+  const controller = new AbortController();
+  res.once('close', () => { if (!res.writableEnded) controller.abort(); });
 
   try {
-    const message = await client.messages.create({
-      model: 'claude-haiku-4-5',
-      max_tokens: 80,   // Emoji + category + hex color — 80 tokens is plenty
-      messages: [{
-        role: 'user',
-        content:
-          `For the animal or creature named "${name}", respond with ONLY a JSON object (no markdown):\n` +
-          `{"emoji":"<single emoji>","category":"<land|sea|air|insect>","color":"<hex>"}\n` +
-          `Use the closest animal emoji if no exact match exists.`,
-      }],
-    });
+    const { value } = await cachedOperation(
+      'animal-info',
+      sanitized.value.toLocaleLowerCase('en-US'),
+      7 * 24 * 60 * 60 * 1000,
+      async () => {
+        const message = await createMessage('animal', {
+          max_tokens: 60,
+          messages: [{
+            role: 'user',
+            content:
+              `Pick the single best emoji for the creature named "${sanitized.value}" and classify it. ` +
+              `Respond with only JSON: {"emoji":"<one emoji>","category":"<land|sea|air|insect>","color":"<#RRGGBB>"}`,
+          }],
+        }, controller.signal);
 
-    const text = (message.content[0] as { type: string; text: string }).text.trim();
-    const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
-    const parsed = JSON.parse(cleaned) as Record<string, unknown>;
-
-    // Validate the response shape before forwarding to the client
-    const emoji    = typeof parsed['emoji']    === 'string' ? parsed['emoji']    : '🐾';
-    const category = ['land','sea','air','insect'].includes(parsed['category'] as string)
-                     ? parsed['category'] as string : 'land';
-    const color    = typeof parsed['color'] === 'string' && /^#[0-9a-fA-F]{6}$/.test(parsed['color'] as string)
-                     ? parsed['color'] as string : '#888888';
-
-    res.json({ emoji, category, color });
-  } catch (err) {
-    console.error('Animal info error:', err);
-    res.json({ emoji: '🐾', category: 'land', color: '#888888' });
+        const block = message.content.find(item => item.type === 'text');
+        const text = block && block.type === 'text' ? block.text : '';
+        const match = text.match(/\{[\s\S]*\}/);
+        const parsed = match ? JSON.parse(match[0]) as Record<string, unknown> : {};
+        const emoji = typeof parsed['emoji'] === 'string'
+          ? [...parsed['emoji']].slice(0, 4).join('') : DEFAULT_INFO.emoji;
+        const category = ['land', 'sea', 'air', 'insect'].includes(String(parsed['category']))
+          ? String(parsed['category']) : DEFAULT_INFO.category;
+        const color = typeof parsed['color'] === 'string' && /^#[0-9a-f]{6}$/i.test(parsed['color'])
+          ? parsed['color'] : DEFAULT_INFO.color;
+        return { emoji, category, color };
+      },
+    );
+    res.json(value);
+  } catch (error) {
+    if (!controller.signal.aborted) {
+      console.error('[animal] lookup failed:', (error as Error).message);
+      res.json(DEFAULT_INFO);
+    }
   }
 });
 

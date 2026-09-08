@@ -14,6 +14,7 @@ import SwiftUI
 struct TournamentRootView: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject private var manager = TournamentManager.shared
+    @ObservedObject private var settings = UserSettings.shared
 
     // Pre-tournament state (only used when activeTournament == nil)
     @State private var preSize: BracketSize = .eight
@@ -27,6 +28,9 @@ struct TournamentRootView: View {
     // coin-unlock confirmation sheet instead of silently starting a new run.
     @State private var showDailyCapSheet = false
     @State private var pendingStart: PendingStart?
+
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    private var isIPad: Bool { sizeClass == .regular }
 
     private struct PendingStart {
         let size: BracketSize
@@ -105,7 +109,10 @@ struct TournamentRootView: View {
             BracketPreviewView(
                 tournament: t,
                 onConfirm: {
-                    if t.grandChampion == nil {
+                    if !settings.wageringEnabled {
+                        // Parent has disabled wagering — jump straight to first round battles.
+                        manager.setPhase(.roundBattles(roundIndex: 0, matchupIndex: 0))
+                    } else if t.grandChampion == nil {
                         manager.setPhase(.grandWager)
                     } else {
                         manager.setPhase(.roundWager(roundIndex: 0))
@@ -119,25 +126,35 @@ struct TournamentRootView: View {
             )
 
         case .grandWager:
-            GrandChampionWagerView(
-                tournament: t,
-                onConfirm: { id, amount in
-                    _ = manager.placeGrandChampion(pickedFighterId: id, amount: amount)
-                    manager.setPhase(.roundWager(roundIndex: 0))
-                },
-                onSkip: {
-                    manager.setPhase(.roundWager(roundIndex: 0))
-                }
-            )
+            if !settings.wageringEnabled {
+                // Parental controls — skip the grand champion wager screen entirely.
+                Color.clear.onAppear { manager.setPhase(.roundBattles(roundIndex: 0, matchupIndex: 0)) }
+            } else {
+                GrandChampionWagerView(
+                    tournament: t,
+                    onConfirm: { id, amount in
+                        _ = manager.placeGrandChampion(pickedFighterId: id, amount: amount)
+                        manager.setPhase(.roundWager(roundIndex: 0))
+                    },
+                    onSkip: {
+                        manager.setPhase(.roundWager(roundIndex: 0))
+                    }
+                )
+            }
 
         case .roundWager(let r):
-            RoundWagerView(
-                tournament: t,
-                roundIndex: r,
-                onDone: {
-                    manager.setPhase(.roundBattles(roundIndex: r, matchupIndex: 0))
-                }
-            )
+            if !settings.wageringEnabled {
+                // Parental controls — skip the per-round wager screen.
+                Color.clear.onAppear { manager.setPhase(.roundBattles(roundIndex: r, matchupIndex: 0)) }
+            } else {
+                RoundWagerView(
+                    tournament: t,
+                    roundIndex: r,
+                    onDone: {
+                        manager.setPhase(.roundBattles(roundIndex: r, matchupIndex: 0))
+                    }
+                )
+            }
 
         case .roundBattles(let r, let m):
             if let matchup = t.bracket.rounds[safe: r]?[safe: m] {
@@ -188,18 +205,15 @@ struct TournamentRootView: View {
                                       round r: Int,
                                       matchupIndex m: Int,
                                       matchup: Matchup) -> some View {
-        BattleView(
+        KidsTournamentBattleView(
             fighter1: matchup.fighter1,
             fighter2: matchup.fighter2,
             environment: matchup.environment,
             arenaEffectsEnabled: !quickMode,
             quickMode: quickMode,
             tournamentContext: tournamentContextString(for: t, roundIndex: r, matchupIndex: m),
-            onTournamentComplete: { result in
-                // 1. Record this matchup's result
+            onComplete: { result in
                 manager.recordMatchupResult(matchupId: matchup.id, result: result)
-
-                // 2. Advance: next matchup in this round, or → results
                 let thisRoundCount = t.bracket.rounds[r].count
                 let nextMatchup = m + 1
                 if nextMatchup < thisRoundCount {
@@ -209,7 +223,7 @@ struct TournamentRootView: View {
                 }
             }
         )
-        .id("\(r)-\(m)") // force fresh BattleView instance for each matchup
+        .id("\(r)-\(m)")
     }
 
     // MARK: - Daily cap sheet
@@ -221,107 +235,113 @@ struct TournamentRootView: View {
         let canAfford = balance >= cost
         let limit = CoinStore.shared.tournamentDailyFreeLimit
 
-        VStack(spacing: 20) {
-            Text("⏰")
-                .font(.system(size: 64))
-                .padding(.top, 28)
+        ZStack {
+            LinearGradient(colors: [Color(hex: "#FFE9BA"), Kids.peach.opacity(0.7)],
+                           startPoint: .top, endPoint: .bottom)
+                .ignoresSafeArea()
 
-            Text("DAILY LIMIT REACHED")
-                .font(Theme.bungee(16))
-                .foregroundColor(Theme.gold)
-                .tracking(2)
-                .multilineTextAlignment(.center)
+            VStack(spacing: isIPad ? 22 : 16) {
+                Text("⏰").font(.system(size: isIPad ? 96 : 64)).padding(.top, isIPad ? 42 : 28)
 
-            Text("You've played your \(limit) free tournaments today.\nCome back tomorrow for more — or unlock one more now.")
-                .font(Theme.bungee(14))
-                .foregroundColor(.white.opacity(0.75))
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 24)
+                StickerWord(text: "DAILY LIMIT", fill: Kids.sun, fontSize: isIPad ? 32 : 22, tilt: -2)
 
-            HStack(spacing: 6) {
-                Text("BALANCE")
-                    .font(Theme.bungee(10))
-                    .foregroundColor(.white.opacity(0.5))
-                    .tracking(1.5)
-                Text("\(balance)")
-                    .font(Theme.bungee(14))
-                    .foregroundColor(.white)
-                GoldCoin(size: 14)
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 8)
-            .background(Capsule().fill(Color.white.opacity(0.08)))
+                Text("You've played your \(limit) free tournaments today.\nCome back tomorrow — or unlock one more now.")
+                    .font(Kids.nunito(isIPad ? 17 : 13, weight: .bold))
+                    .foregroundColor(Kids.ink)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, isIPad ? 36 : 24)
 
-            VStack(spacing: 10) {
-                Button {
-                    guard let pending = pendingStart else { return }
-                    showDailyCapSheet = false
-                    _ = manager.startNew(
-                        size: pending.size,
-                        selectionMode: pending.mode,
-                        manualPicks: pending.manualPicks,
-                        payWithCoinsIfOverLimit: true
-                    )
-                    pendingStart = nil
-                } label: {
-                    HStack(spacing: 8) {
-                        Image(systemName: "bolt.fill")
-                        Text("UNLOCK FOR \(cost)")
-                        GoldCoin(size: 14)
-                    }
+                HStack(spacing: isIPad ? 9 : 6) {
+                    Text("BALANCE")
+                        .font(Kids.fredoka(isIPad ? 13 : 10, weight: .bold))
+                        .tracking(1.5)
+                        .foregroundColor(Kids.inkSoft)
+                    Text(balance.abbreviatedKidsCount)
+                        .font(Kids.fredoka(isIPad ? 18 : 14, weight: .bold))
+                        .foregroundColor(Kids.ink)
+                        .lineLimit(1)
+                    KidsGoldCoin(size: isIPad ? 18 : 14)
                 }
-                .buttonStyle(MegaButtonStyle(
-                    color: .gold,
-                    height: 56,
-                    cornerRadius: 18,
-                    fontSize: 15
-                ))
-                .disabled(!canAfford)
-                .opacity(canAfford ? 1.0 : 0.5)
+                .padding(.horizontal, isIPad ? 20 : 14).padding(.vertical, isIPad ? 10 : 7)
+                .background(Capsule().fill(.white).overlay(Capsule().stroke(Kids.ink, lineWidth: 2)))
 
-                if !canAfford {
-                    Text("Need \(cost - balance) more coins — earn more by playing battles.")
-                        .font(Theme.bungee(12))
-                        .foregroundColor(Theme.red.opacity(0.85))
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 16)
-                    BuyCoinsButton()
+                VStack(spacing: isIPad ? 14 : 10) {
+                    Button {
+                        guard let pending = pendingStart else { return }
+                        showDailyCapSheet = false
+                        _ = manager.startNew(
+                            size: pending.size,
+                            selectionMode: pending.mode,
+                            manualPicks: pending.manualPicks,
+                            payWithCoinsIfOverLimit: true
+                        )
+                        pendingStart = nil
+                    } label: {
+                        HStack(spacing: isIPad ? 9 : 6) {
+                            Text("⚡").font(.system(size: isIPad ? 22 : 16))
+                            Text("UNLOCK FOR \(cost)")
+                                .font(Kids.fredoka(isIPad ? 18 : 14, weight: .bold))
+                                .foregroundColor(Kids.ink)
+                            KidsGoldCoin(size: isIPad ? 18 : 14)
+                        }
+                        .frame(maxWidth: .infinity, minHeight: isIPad ? 64 : 50)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .fill(Kids.sun)
+                                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Kids.sheen))
+                                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                        )
+                        .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!canAfford)
+                    .opacity(canAfford ? 1.0 : 0.55)
+
+                    if !canAfford {
+                        Text("Need \(cost - balance) more coins — earn more by playing battles.")
+                            .font(Kids.fredoka(11, weight: .bold))
+                            .foregroundColor(Kids.pink)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 16)
+                        BuyCoinsButton().padding(.horizontal, 4)
+                    } else if canAfford && (balance - cost) < CoinStore.shared.tournamentMatchupWagerFloor {
+                        HStack(spacing: 6) {
+                            Text("⚠️").font(.system(size: 13))
+                            Text("You'll only have \(balance - cost) coin\(balance - cost == 1 ? "" : "s") left — not enough to wager. You can still play, but you can earn coins by watching an ad during the tournament.")
+                                .font(Kids.nunito(11, weight: .bold))
+                                .foregroundColor(Kids.ink)
+                        }
+                        .padding(.horizontal, 12).padding(.vertical, 8)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .fill(Kids.sun.opacity(0.3))
+                                .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Kids.sun, lineWidth: 1.5))
+                        )
                         .padding(.horizontal, 4)
-                } else if canAfford && (balance - cost) < CoinStore.shared.tournamentMatchupWagerFloor {
-                    // After paying the entry cost the player won't have enough
-                    // coins left to place any wagers — warn them upfront.
-                    HStack(spacing: 6) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(Theme.gold)
-                        Text("You'll only have \(balance - cost) coin\(balance - cost == 1 ? "" : "s") left — not enough to wager. You can still play, but you can earn coins by watching an ad during the tournament.")
                     }
-                    .font(Theme.bungee(11))
-                    .foregroundColor(.white.opacity(0.75))
-                    .multilineTextAlignment(.leading)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(RoundedRectangle(cornerRadius: 10).fill(Theme.gold.opacity(0.12)))
-                    .padding(.horizontal, 4)
-                }
 
-                Button {
-                    showDailyCapSheet = false
-                    pendingStart = nil
-                    dismiss()
-                } label: {
-                    Text("BACK TO HOME")
-                        .font(Theme.bungee(14))
-                        .foregroundColor(.white.opacity(0.65))
-                        .padding(.vertical, 10)
+                    Button {
+                        showDailyCapSheet = false
+                        pendingStart = nil
+                        dismiss()
+                    } label: {
+                        Text("Back to home")
+                            .font(Kids.fredoka(isIPad ? 17 : 13, weight: .bold))
+                            .foregroundColor(Kids.inkSoft)
+                            .padding(.vertical, isIPad ? 14 : 10)
+                            .underline()
+                    }
+                    .buttonStyle(.plain)
                 }
+                .padding(.horizontal, isIPad ? 34 : 22)
+                .frame(maxWidth: isIPad ? 600 : .infinity)
+
+                Spacer()
             }
-            .padding(.horizontal, 22)
-
-            Spacer()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Theme.battleBg(.dark).ignoresSafeArea())
-        .presentationDetents([.medium, .large])
+        .presentationDetents(isIPad ? [.large] : [.medium, .large])
+        .presentationDragIndicator(.visible)
     }
 
     // MARK: - Tournament context string

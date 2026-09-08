@@ -2,9 +2,60 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <!-- No data is collected or linked to the user's identity. -->
+    <!-- "Other User Content": when a child types a CUSTOM creature name, that
+         text is sent to our backend (and on to the narration AI) to generate
+         the battle. It is NOT linked to the user's identity and is NOT used for
+         tracking — only app functionality. All other state stays on device.
+         (Keep the App Store "App Privacy" answers in App Store Connect in sync
+         with this: User Content → collected, not linked, not for tracking.) -->
     <key>NSPrivacyCollectedDataTypes</key>
-    <array/>
+    <array>
+        <dict>
+            <key>NSPrivacyCollectedDataType</key>
+            <string>NSPrivacyCollectedDataTypeOtherUserContent</string>
+            <key>NSPrivacyCollectedDataTypeLinked</key>
+            <false/>
+            <key>NSPrivacyCollectedDataTypeTracking</key>
+            <false/>
+            <key>NSPrivacyCollectedDataTypePurposes</key>
+            <array>
+                <string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+            </array>
+        </dict>
+        <!-- A random per-install identifier and Apple App Attest key identifier
+             are sent solely for fraud prevention, quotas, and API security. -->
+        <dict>
+            <key>NSPrivacyCollectedDataType</key>
+            <string>NSPrivacyCollectedDataTypeDeviceID</string>
+            <key>NSPrivacyCollectedDataTypeLinked</key>
+            <false/>
+            <key>NSPrivacyCollectedDataTypeTracking</key>
+            <false/>
+            <key>NSPrivacyCollectedDataTypePurposes</key>
+            <array>
+                <string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+            </array>
+        </dict>
+        <!-- "Crash Data": on a real crash or hang, the app forwards Apple's
+             first-party MetricKit diagnostic to our backend for stability
+             triage. Device model + locale are stripped before send; no
+             identifier is attached. Not linked, not tracking — app
+             functionality only. (AdMob's own performance/diagnostics
+             collection is declared in the GoogleMobileAds bundled manifest;
+             we declare only what the app's own code collects here.) -->
+        <dict>
+            <key>NSPrivacyCollectedDataType</key>
+            <string>NSPrivacyCollectedDataTypeCrashData</string>
+            <key>NSPrivacyCollectedDataTypeLinked</key>
+            <false/>
+            <key>NSPrivacyCollectedDataTypeTracking</key>
+            <false/>
+            <key>NSPrivacyCollectedDataTypePurposes</key>
+            <array>
+                <string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+            </array>
+        </dict>
+    </array>
 
     <!-- The app does NOT track users across apps and websites. -->
     <key>NSPrivacyTracking</key>

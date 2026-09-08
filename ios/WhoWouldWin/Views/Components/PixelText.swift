@@ -9,7 +9,7 @@ struct PixelTextModifier: ViewModifier {
             .font(.custom("PressStart2P-Regular", size: size).weight(.bold))
             // fallback handled by SwiftUI automatically if font missing
             .foregroundColor(color)
-            .shadow(color: .black.opacity(0.8), radius: 2, x: 2, y: 2)
+            .shadow(color: .black.opacity(0.48), radius: 2, x: 2, y: 2)
     }
 }
 

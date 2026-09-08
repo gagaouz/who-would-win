@@ -5,36 +5,18 @@
 // reads return empty data. Lets local dev run with zero Postgres setup.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.initDb = initDb;
+exports.pruneAgedCustomNames = pruneAgedCustomNames;
 exports.logBattle = logBattle;
 exports.getAnimalLeaderboard = getAnimalLeaderboard;
 exports.getCustomCreatureLeaderboard = getCustomCreatureLeaderboard;
+exports.purgeCustomCreatureNames = purgeCustomCreatureNames;
 exports.getRecentActivity = getRecentActivity;
-const pg_1 = require("pg");
 const claudeService_1 = require("./claudeService");
-// ── Connection pool ────────────────────────────────────────────────────────────
-let pool = null;
-function getPool() {
-    if (pool)
-        return pool;
-    if (!process.env.DATABASE_URL)
-        return null;
-    pool = new pg_1.Pool({
-        connectionString: process.env.DATABASE_URL,
-        // Railway Postgres uses self-signed certs; allow them.
-        ssl: process.env.DATABASE_URL.includes('railway')
-            || process.env.PGSSLMODE === 'require'
-            ? { rejectUnauthorized: false }
-            : undefined,
-        max: 5,
-        idleTimeoutMillis: 30000,
-    });
-    pool.on('error', err => console.error('[battleLogger] pool error:', err.message));
-    return pool;
-}
+const database_1 = require("./database");
 // ── Schema bootstrap ───────────────────────────────────────────────────────────
 let initialized = false;
 async function initDb() {
-    const p = getPool();
+    const p = (0, database_1.getDbPool)();
     if (!p) {
         console.log('[battleLogger] DATABASE_URL not set — logging disabled');
         return;
@@ -58,13 +40,60 @@ async function initDb() {
       CREATE INDEX IF NOT EXISTS battles_fighter2_idx ON battles(fighter2_id);
       CREATE INDEX IF NOT EXISTS battles_mode_idx     ON battles(mode);
       CREATE INDEX IF NOT EXISTS battles_created_idx  ON battles(created_at DESC);
+
+      -- Older builds derived custom IDs from child-entered text. Remove both
+      -- that identifier and the display-name copy immediately.
+      UPDATE battles
+         SET winner_id = CASE
+               WHEN is_custom1 AND winner_id = fighter1_id THEN 'custom'
+               WHEN is_custom2 AND winner_id = fighter2_id THEN 'custom'
+               ELSE winner_id
+             END,
+             fighter1_id = CASE WHEN is_custom1 THEN 'custom' ELSE fighter1_id END,
+             fighter2_id = CASE WHEN is_custom2 THEN 'custom' ELSE fighter2_id END,
+             fighter1_name = CASE WHEN is_custom1 THEN NULL ELSE fighter1_name END,
+             fighter2_name = CASE WHEN is_custom2 THEN NULL ELSE fighter2_name END
+       WHERE is_custom1 OR is_custom2;
     `);
         initialized = true;
         console.log('[battleLogger] Postgres ready');
+        // Enforce the privacy policy's 90-day retention promise continuously:
+        // once at boot, then daily. unref() so the timer never holds the process.
+        void pruneAgedCustomNames();
+        setInterval(() => { void pruneAgedCustomNames(); }, 24 * 60 * 60 * 1000).unref();
     }
     catch (err) {
         console.error('[battleLogger] initDb failed:', err.message);
         // Don't throw — battles must still resolve when the DB is broken.
+    }
+}
+// ── Privacy retention ──────────────────────────────────────────────────────────
+// Custom free text is not retained at all. This cleanup remains scheduled so
+// rows created by an older instance during a rolling deploy are also scrubbed.
+async function pruneAgedCustomNames() {
+    const p = (0, database_1.getDbPool)();
+    if (!p || !initialized)
+        return;
+    try {
+        const res = await p.query(`UPDATE battles
+          SET winner_id = CASE
+                WHEN is_custom1 AND winner_id = fighter1_id THEN 'custom'
+                WHEN is_custom2 AND winner_id = fighter2_id THEN 'custom'
+                ELSE winner_id
+              END,
+              fighter1_id = CASE WHEN is_custom1 THEN 'custom' ELSE fighter1_id END,
+              fighter2_id = CASE WHEN is_custom2 THEN 'custom' ELSE fighter2_id END,
+              fighter1_name = CASE WHEN is_custom1 THEN NULL ELSE fighter1_name END,
+              fighter2_name = CASE WHEN is_custom2 THEN NULL ELSE fighter2_name END
+        WHERE (is_custom1 AND (fighter1_id <> 'custom' OR fighter1_name IS NOT NULL))
+           OR (is_custom2 AND (fighter2_id <> 'custom' OR fighter2_name IS NOT NULL))`);
+        if ((res.rowCount ?? 0) > 0) {
+            console.log(`[battleLogger] privacy scrub: de-identified ${res.rowCount} custom battle rows`);
+            invalidateCache();
+        }
+    }
+    catch (err) {
+        console.error('[battleLogger] pruneAgedCustomNames failed:', err.message);
     }
 }
 const cache = new Map();
@@ -81,7 +110,7 @@ function invalidateCache() {
     cache.clear();
 }
 async function logBattle(args) {
-    const p = getPool();
+    const p = (0, database_1.getDbPool)();
     if (!p || !initialized)
         return;
     try {
@@ -89,11 +118,13 @@ async function logBattle(args) {
          (fighter1_id, fighter2_id, fighter1_name, fighter2_name,
           winner_id, environment, is_custom1, is_custom2, mode)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`, [
-            args.fighter1Id,
-            args.fighter2Id,
-            args.fighter1Name ?? null,
-            args.fighter2Name ?? null,
-            args.winnerId,
+            args.isCustom1 ? 'custom' : args.fighter1Id,
+            args.isCustom2 ? 'custom' : args.fighter2Id,
+            null,
+            null,
+            (args.isCustom1 && args.winnerId === args.fighter1Id)
+                || (args.isCustom2 && args.winnerId === args.fighter2Id)
+                ? 'custom' : args.winnerId,
             args.environment ?? null,
             args.isCustom1,
             args.isCustom2,
@@ -109,7 +140,7 @@ async function logBattle(args) {
 const MIN_BATTLES_FOR_RATE = 10; // exclude single-game flukes from win-rate ranking
 async function getAnimalLeaderboard(limit = 25) {
     return cached(`animal:${limit}`, async () => {
-        const p = getPool();
+        const p = (0, database_1.getDbPool)();
         if (!p || !initialized) {
             return {
                 topByWins: [],
@@ -166,7 +197,7 @@ async function getAnimalLeaderboard(limit = 25) {
 }
 async function getCustomCreatureLeaderboard(limit = 25) {
     return cached(`custom:${limit}`, async () => {
-        const p = getPool();
+        const p = (0, database_1.getDbPool)();
         if (!p || !initialized)
             return [];
         const sql = `
@@ -206,9 +237,36 @@ async function getCustomCreatureLeaderboard(limit = 25) {
         }));
     });
 }
+// ── Data deletion: erase persisted custom-creature names ───────────────────────
+/**
+ * COPPA / data-minimization: erase raw child-typed names and name-derived IDs.
+ * This backs the admin purge so the "delete data" path actually removes the
+ * names everywhere (the in-memory tally alone did not). Returns how many name
+ * fields were cleared. No-op when there is no database configured.
+ */
+async function purgeCustomCreatureNames() {
+    const p = (0, database_1.getDbPool)();
+    if (!p || !initialized)
+        return 0;
+    const result = await p.query(`
+    UPDATE battles
+       SET winner_id = CASE
+             WHEN is_custom1 AND winner_id = fighter1_id THEN 'custom'
+             WHEN is_custom2 AND winner_id = fighter2_id THEN 'custom'
+             ELSE winner_id
+           END,
+           fighter1_id = CASE WHEN is_custom1 THEN 'custom' ELSE fighter1_id END,
+           fighter2_id = CASE WHEN is_custom2 THEN 'custom' ELSE fighter2_id END,
+           fighter1_name = CASE WHEN is_custom1 THEN NULL ELSE fighter1_name END,
+           fighter2_name = CASE WHEN is_custom2 THEN NULL ELSE fighter2_name END
+     WHERE is_custom1 OR is_custom2
+  `);
+    invalidateCache();
+    return result.rowCount ?? 0;
+}
 async function getRecentActivity(limit = 200) {
     return cached(`recent:${limit}`, async () => {
-        const p = getPool();
+        const p = (0, database_1.getDbPool)();
         if (!p || !initialized)
             return [];
         const { rows } = await p.query(`SELECT id, fighter1_id, fighter2_id, fighter1_name, fighter2_name,

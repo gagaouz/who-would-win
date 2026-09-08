@@ -130,7 +130,6 @@ final class TournamentManager: ObservableObject {
         }
 
         lastStartBlockedReason = nil
-        incrementDailyCount()
 
         let bracket = generateBracket(size: size,
                                       selectionMode: selectionMode,
@@ -149,6 +148,9 @@ final class TournamentManager: ObservableObject {
         )
         activeTournament = t
         save()
+        // Count the entry only after the tournament actually exists, so a
+        // failure above can never burn one of the day's free slots.
+        incrementDailyCount()
         return t
     }
 
@@ -300,7 +302,7 @@ final class TournamentManager: ObservableObject {
         let s = UserSettings.shared
         return Animals.all.filter { animal in
             switch animal.category {
-            case .all, .land, .sea, .air, .insect: return true
+            case .all, .land, .sea, .air, .insect, .pets, .farm: return true
             case .prehistoric: return s.isPrehistoricUnlocked
             case .fantasy:     return s.isFantasyUnlocked
             case .mythic:      return s.isMythicUnlocked
@@ -445,6 +447,14 @@ final class TournamentManager: ObservableObject {
         guard let t = activeTournament else { return [] }
         guard let r = t.currentRoundIndex else { return [] }
 
+        // Re-entry guard. The results screen calls this in onAppear; if the app
+        // is killed on that screen and relaunched, onAppear fires again. Without
+        // this flag the round would pay out twice AND the next round's matchups
+        // would be regenerated with fresh UUIDs — wiping any wagers/results
+        // already recorded there. On re-entry we still compute display lines,
+        // but skip all side effects (coins, ledger, bracket mutation).
+        let alreadyResolved = t.isRoundResolved(r)
+
         let round = t.bracket.rounds[r]
         var lines: [RoundPayoutLine] = []
 
@@ -458,15 +468,17 @@ final class TournamentManager: ObservableObject {
                 if won {
                     let multiplier = WagerMultipliers.matchup(for: r, in: t.size)
                     let payout = Int((Double(wager.amount) * multiplier).rounded(.down))
-                    CoinStore.shared.earn(payout)
-                    mutate { tournament in
-                        tournament.ledger.append(LedgerEntry(
-                            id: UUID(),
-                            timestamp: Date(),
-                            description: "Win: \(winnerName) (\(String(format: "%.1f", multiplier))×)",
-                            delta: payout,
-                            runningBalance: CoinStore.shared.balance
-                        ))
+                    if !alreadyResolved {
+                        CoinStore.shared.earn(payout)
+                        mutate { tournament in
+                            tournament.ledger.append(LedgerEntry(
+                                id: UUID(),
+                                timestamp: Date(),
+                                description: "Win: \(winnerName) (\(String(format: "%.1f", multiplier))×)",
+                                delta: payout,
+                                runningBalance: CoinStore.shared.balance
+                            ))
+                        }
                     }
                     lines.append(RoundPayoutLine(
                         matchupId: matchup.id,
@@ -496,9 +508,9 @@ final class TournamentManager: ObservableObject {
             }
         }
 
-        // Build next round (or finalize tournament)
+        // Build next round (or finalize tournament) — once only.
         let nextRoundIndex = r + 1
-        if nextRoundIndex < t.size.totalRounds {
+        if !alreadyResolved, nextRoundIndex < t.size.totalRounds {
             let winners = round.compactMap { $0.winningFighter }
             // Pair winners into next round's matchups, fresh environments
             let unlockedEnvs = unlockedEnvironments()
@@ -522,11 +534,22 @@ final class TournamentManager: ObservableObject {
             }
         }
 
+        if !alreadyResolved {
+            mutate { tournament in
+                tournament.markRoundResolved(r)
+            }
+        }
+
         return lines
     }
 
     /// Resolves the grand champion payout once the final is decided.
     /// Returns the payout amount (0 if wrong / no GC pick).
+    ///
+    /// Idempotent: the trophy screen calls this in onAppear, and its @State
+    /// guard resets if the app is killed on that screen. The persisted
+    /// `grandChampionResolved` flag makes a second call return the same
+    /// display amount WITHOUT crediting coins again.
     @discardableResult
     func resolveGrandChampionPayout() -> Int {
         guard let t = activeTournament else { return 0 }
@@ -535,31 +558,26 @@ final class TournamentManager: ObservableObject {
         let finalRound = t.bracket.rounds.last ?? []
         guard let champion = finalRound.first?.winningFighter else { return 0 }
 
-        if champion.id == gc.pickedFighterId {
-            let payout = Int((Double(gc.amount) * gc.multiplier).rounded(.down))
-            CoinStore.shared.earn(payout)
-            mutate { tournament in
-                tournament.ledger.append(LedgerEntry(
-                    id: UUID(),
-                    timestamp: Date(),
-                    description: "Grand Champion correct! (\(String(format: "%.2f", gc.multiplier))×)",
-                    delta: payout,
-                    runningBalance: CoinStore.shared.balance
-                ))
-            }
-            return payout
-        } else {
-            mutate { tournament in
-                tournament.ledger.append(LedgerEntry(
-                    id: UUID(),
-                    timestamp: Date(),
-                    description: "Grand Champion miss",
-                    delta: 0,
-                    runningBalance: CoinStore.shared.balance
-                ))
-            }
-            return 0
+        let won = champion.id == gc.pickedFighterId
+        let payout = won ? Int((Double(gc.amount) * gc.multiplier).rounded(.down)) : 0
+
+        // Already credited — return the display amount only.
+        if t.grandChampionResolved ?? false { return payout }
+
+        mutate { tournament in
+            tournament.grandChampionResolved = true
+            tournament.ledger.append(LedgerEntry(
+                id: UUID(),
+                timestamp: Date(),
+                description: won
+                    ? "Grand Champion correct! (\(String(format: "%.2f", gc.multiplier))×)"
+                    : "Grand Champion miss",
+                delta: payout,
+                runningBalance: CoinStore.shared.balance + payout
+            ))
         }
+        if won { CoinStore.shared.earn(payout) }
+        return payout
     }
 
     // MARK: - Tournament summary

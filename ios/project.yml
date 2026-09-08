@@ -9,10 +9,10 @@ options:
 packages:
   GoogleMobileAds:
     url: https://github.com/googleads/swift-package-manager-google-mobile-ads.git
-    from: "11.13.0"
+    from: "13.9.0"
   GoogleUserMessagingPlatform:
     url: https://github.com/googleads/swift-package-manager-google-user-messaging-platform.git
-    from: "2.7.0"
+    from: "3.1.0"
 
 settings:
   base:
@@ -52,11 +52,16 @@ targets:
         # key in Xcode" because the binary claims the capability but the
         # provisioning profile/signature doesn't grant it.
         CODE_SIGN_ENTITLEMENTS: WhoWouldWin/WhoWouldWin.entitlements
+      configs:
+        Debug:
+          APP_ATTEST_ENVIRONMENT: development
+        Release:
+          APP_ATTEST_ENVIRONMENT: production
     info:
       path: WhoWouldWin/Info.plist
       properties:
-        CFBundleShortVersionString: "1.1.2"
-        CFBundleVersion: "87"
+        CFBundleShortVersionString: "1.1.6"
+        CFBundleVersion: "108"
         CFBundleDisplayName: "Animal vs Animal"
         UILaunchScreen: {}
         NSMicrophoneUsageDescription: "Speak the name of any animal to search or add a custom fighter."

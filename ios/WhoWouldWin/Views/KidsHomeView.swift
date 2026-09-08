@@ -14,6 +14,19 @@ struct KidsHomeView: View {
     @State private var showCoinShop = false
     @State private var showMeleeUnlock = false
     @State private var goToMelee = false
+    // One-tap quick battles (Daily Challenge, Surprise Me, first-run auto-battle).
+    @State private var quickFighters: (Animal, Animal)? = nil
+    @State private var goToQuickBattle = false
+    @State private var homeMatchupToken = UUID()
+    // Daily mystery sticker reveal.
+    @State private var mysteryReveal: Animal? = nil
+    @State private var showMysteryCoins = false
+    @State private var giftWiggle = false
+    // Onboarding: How to Play walkthrough + first-launch welcome offer.
+    @State private var showHowToPlay = false
+    @State private var showWelcome = false
+    // One-time proactive "unlock everything" offer at a happy moment.
+    @State private var showPaywall = false
 
     @Environment(\.horizontalSizeClass) private var sizeClass
     private var isIPad: Bool { sizeClass == .regular }
@@ -60,6 +73,26 @@ struct KidsHomeView: View {
                         CoinChip(count: coins.balance)
                             .scaleEffect(appeared ? 1 : 0.4)
                             .opacity(appeared ? 1 : 0)
+                        // Daily mystery sticker — only when one's waiting.
+                        if settings.mysteryStickerAvailable {
+                            Button {
+                                claimMysterySticker()
+                            } label: {
+                                Text("🎁")
+                                    .font(.system(size: isIPad ? 26 : 22))
+                                    .frame(width: isIPad ? 50 : 44, height: isIPad ? 50 : 44)
+                                    .background(
+                                        Circle().fill(Kids.pink)
+                                            .overlay(Circle().stroke(Kids.ink, lineWidth: 2.5))
+                                    )
+                                    .rotationEffect(.degrees(giftWiggle ? -8 : 8))
+                            }
+                            .buttonStyle(.plain)
+                            .padding(.leading, 6)
+                            .scaleEffect(appeared ? 1 : 0.4)
+                            .opacity(appeared ? 1 : 0)
+                            .accessibilityLabel("Open today's mystery sticker")
+                        }
                         Spacer()
                         HStack(spacing: isIPad ? 16 : 10) {
                             KidIconBtn(icon: "🏆", fill: Kids.sun) { showHallOfFame = true }
@@ -128,7 +161,26 @@ struct KidsHomeView: View {
                             .padding(.top, isIPad ? 24 : 14)
                             .opacity(appeared ? 1 : 0)
 
-                        Spacer().frame(height: isLandscape ? (isIPad ? 16 : 10) : (isIPad ? 32 : 18))
+                        // Always-available "How to Play" — discoverable, never forced.
+                        Button {
+                            HapticsService.shared.tap()
+                            showHowToPlay = true
+                        } label: {
+                            HStack(spacing: 5) {
+                                Text("❓").font(.system(size: 13))
+                                Text("How to Play")
+                                    .font(Kids.fredoka(13, weight: .bold))
+                                    .foregroundColor(Kids.ink)
+                            }
+                            .padding(.horizontal, 14).padding(.vertical, 6)
+                            .background(Capsule().fill(.white.opacity(0.85)).overlay(Capsule().stroke(Kids.ink.opacity(0.5), lineWidth: 2)))
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.top, isIPad ? 12 : 8)
+                        .opacity(appeared ? 1 : 0)
+                        .accessibilityLabel("How to play")
+
+                        Spacer().frame(height: isLandscape ? (isIPad ? 12 : 8) : (isIPad ? 26 : 14))
 
                         // Hero pair with VS star
                         ZStack {
@@ -175,6 +227,13 @@ struct KidsHomeView: View {
                             Spacer().frame(height: isIPad ? 8 : 4)
                         }
 
+                        // Daily Challenge — a fresh featured matchup every day.
+                        dailyChallengeCard
+                            .padding(.horizontal, isIPad ? 40 : 22)
+                            .padding(.bottom, isIPad ? 16 : 10)
+                            .offset(y: appeared ? 0 : 40)
+                            .opacity(appeared ? 1 : 0)
+
                         // CTAs
                         KidButton(title: "LET'S BATTLE!", icon: "⚡", color: Kids.grass, size: .xl) {
                             HapticsService.shared.tap()
@@ -186,7 +245,38 @@ struct KidsHomeView: View {
                         .offset(y: appeared ? 0 : 40)
                         .opacity(appeared ? 1 : 0)
 
+                        // Surprise Me — instant random matchup, no picking.
+                        Button {
+                            startSurprise()
+                        } label: {
+                            HStack(spacing: 8) {
+                                Text("🎲").font(.system(size: 18))
+                                Text("SURPRISE ME!")
+                                    .font(Kids.fredoka(16, weight: .bold))
+                                    .foregroundColor(Kids.ink)
+                            }
+                            .padding(.horizontal, 20).padding(.vertical, 10)
+                            .background(
+                                Capsule().fill(.white)
+                                    .overlay(Capsule().stroke(Kids.ink, lineWidth: 2.5))
+                            )
+                            .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.top, isIPad ? 14 : 10)
+                        .offset(y: appeared ? 0 : 40)
+                        .opacity(appeared ? 1 : 0)
+                        .accessibilityLabel("Surprise Me — start a random battle")
+
                         Spacer().frame(height: isLandscape ? (isIPad ? 12 : 8) : (isIPad ? 22 : 14))
+
+                        // Fact of the Day — teaches something every day, even
+                        // before a battle. Rotates deterministically by date.
+                        factOfTheDayCard
+                            .padding(.horizontal, isIPad ? 40 : 22)
+                            .padding(.bottom, isIPad ? 14 : 10)
+                            .offset(y: appeared ? 0 : 50)
+                            .opacity(appeared ? 1 : 0)
 
                         // Progress chips row — iPad puts both chips side-by-side to use
                         // the horizontal space and shorten the otherwise huge vertical sprawl.
@@ -224,6 +314,17 @@ struct KidsHomeView: View {
             .navigationDestination(isPresented: $goToMelee) {
                 MeleeSetupView()
             }
+            .navigationDestination(isPresented: $goToQuickBattle) {
+                if let pair = quickFighters {
+                    KidsBattleView(fighter1: pair.0, fighter2: pair.1,
+                                   environment: .grassland, arenaEffectsEnabled: false,
+                                   onNextChallenger: { winner in
+                                       quickFighters = (winner, QuickMatchups.opponent(excluding: winner))
+                                       homeMatchupToken = UUID()
+                                   })
+                        .id(homeMatchupToken)
+                }
+            }
         }
         .onAppear {
             withAnimation(.spring(response: 0.55, dampingFraction: 0.6).delay(0.05)) {
@@ -231,6 +332,8 @@ struct KidsHomeView: View {
             }
             startRotation()
             startAmbient()
+            maybeOfferHowToPlay()
+            maybeShowPaywall()
         }
         .onDisappear { pairTimer?.invalidate() }
         .fullScreenCover(isPresented: $showSettings) { KidsSettingsView() }
@@ -250,6 +353,41 @@ struct KidsHomeView: View {
         }
         .sheet(isPresented: $showMeleeUnlock) {
             MeleeUnlockSheet(isPresented: $showMeleeUnlock)
+        }
+        .sheet(item: $mysteryReveal) { a in
+            MysteryStickerSheet(animal: a)
+        }
+        .alert("Wow — you've collected EVERY sticker! 🏆", isPresented: $showMysteryCoins) {
+            Button("Yay!", role: .cancel) {}
+        } message: {
+            Text("Here's 50 bonus coins instead 🪙")
+        }
+        .fullScreenCover(isPresented: $showHowToPlay) { HowToPlayView() }
+        .fullScreenCover(isPresented: $showPaywall) { PaywallView() }
+        .alert("👋 Welcome to Animal vs Animal!", isPresented: $showWelcome) {
+            Button("Watch a battle! ▶️") { startSurprise() }
+            Button("Show me how 👀") { showHowToPlay = true }
+            Button("I'll explore", role: .cancel) {}
+        } message: {
+            Text("New here? Watch a quick battle, see the how-to, or jump right in!")
+        }
+    }
+
+    private func claimMysterySticker() {
+        guard settings.mysteryStickerAvailable else { return }
+        settings.lastMysteryStickerDay = UserSettings.todayStamp
+        HapticsService.shared.medium()
+        let owned = StickerCollection.shared.collected
+        let pool = QuickMatchups.pool().filter { !owned.contains($0.id) }
+        if let pick = pool.randomElement() {
+            _ = StickerCollection.shared.collect(pick)
+            mysteryReveal = pick
+        } else {
+            // Collection complete — reward coins instead, and TELL the kid why
+            // (otherwise the gift just silently vanishes with no reveal).
+            CoinStore.shared.earn(50)
+            SoundService.shared.play(.coin)
+            showMysteryCoins = true
         }
     }
 
@@ -286,6 +424,10 @@ struct KidsHomeView: View {
             VStack(spacing: isIPad ? 14 : 10) {
                 if tournamentUnlocked {
                     KidButton(title: "TOURNAMENT MODE", icon: "🏆", color: Kids.grape, size: .md) {
+                        // One-time wager seed so first-time entrants can actually
+                        // bet (idempotent; only tops up below the seed amount).
+                        // Was previously only called from the dead BattleView.
+                        CoinStore.shared.awardTournamentSeedIfNeeded()
                         showTournament = true
                     }
                     .padding(.horizontal, isIPad ? 100 : 40)
@@ -339,6 +481,162 @@ struct KidsHomeView: View {
         }
     }
 
+    // MARK: - Fact of the Day
+
+    private var factOfTheDayAnimal: Animal {
+        let pool = Animals.all.filter { !$0.isCustom && AnimalFacts.facts(for: $0.id) != nil }
+        guard !pool.isEmpty else { return Animals.all[0] }
+        var rng = SeededRNG(seed: UInt64(bitPattern: Int64(UserSettings.todayStamp &+ 7)))
+        return pool[rng.int(pool.count)]
+    }
+
+    private var factOfTheDayCard: some View {
+        let a = factOfTheDayAnimal
+        let fact = AnimalFacts.facts(for: a.id)
+        return HStack(spacing: 12) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Kids.sky)
+                    .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Kids.sheen))
+                    .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                CreatureIcon(animal: a, size: 34)
+            }
+            .frame(width: 44, height: 44)
+            VStack(alignment: .leading, spacing: 1) {
+                Text("FACT OF THE DAY")
+                    .font(Kids.fredoka(10, weight: .bold))
+                    .foregroundColor(Kids.inkSoft)
+                // Name the creature, so the fact (written as "It is…") always
+                // says what it's about.
+                Text(a.name)
+                    .font(Kids.fredoka(13, weight: .bold))
+                    .foregroundColor(Kids.ink)
+                    .lineLimit(1).minimumScaleFactor(0.8)
+                Text(fact?.coolFact ?? "")
+                    .font(Kids.nunito(11, weight: .bold))
+                    .foregroundColor(Kids.inkSoft)
+                    .lineLimit(2).minimumScaleFactor(0.85)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 12).padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(.white)
+                .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+        )
+        .shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+    }
+
+    // MARK: - Daily Challenge card
+
+    @ViewBuilder
+    private var dailyChallengeCard: some View {
+        let pair = QuickMatchups.daily(stamp: UserSettings.todayStamp)
+        let available = settings.dailyChallengeAvailable
+        Button {
+            guard available else { return }
+            startDailyChallenge()
+        } label: {
+            HStack(spacing: 12) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(Kids.sun)
+                        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Kids.sheen))
+                        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                    Text(available ? "📅" : "✅").font(.system(size: 22))
+                }
+                .frame(width: 44, height: 44)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(available ? "DAILY CHALLENGE" : "DAILY DONE!")
+                        .font(Kids.fredoka(13, weight: .bold))
+                        .foregroundColor(Kids.ink)
+                    if available {
+                        HStack(spacing: 5) {
+                            Text(pair.0.emoji).font(.system(size: 16))
+                            Text("vs").font(Kids.nunito(11, weight: .bold)).foregroundColor(Kids.inkSoft)
+                            Text(pair.1.emoji).font(.system(size: 16))
+                            Text("· +30 🪙").font(Kids.nunito(11, weight: .bold)).foregroundColor(Kids.inkSoft)
+                        }
+                    } else {
+                        Text("Come back tomorrow for a new one!")
+                            .font(Kids.nunito(11, weight: .bold))
+                            .foregroundColor(Kids.inkSoft)
+                            .lineLimit(1).minimumScaleFactor(0.8)
+                    }
+                }
+                Spacer()
+                if available {
+                    Text("▶").font(Kids.fredoka(16, weight: .bold)).foregroundColor(Kids.ink)
+                }
+            }
+            .padding(.horizontal, 12).padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(available ? Color(hex: "#FFF6E0") : .white)
+                    .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+            )
+            .shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+        }
+        .buttonStyle(.plain)
+        .disabled(!available)
+    }
+
+    // MARK: - Quick-battle launchers
+
+    private func startDailyChallenge() {
+        quickFighters = QuickMatchups.daily(stamp: UserSettings.todayStamp)
+        homeMatchupToken = UUID()
+        if settings.dailyChallengeAvailable {
+            settings.lastDailyChallengeDay = UserSettings.todayStamp
+            CoinStore.shared.earn(30)   // daily bonus
+        }
+        HapticsService.shared.tap()
+        SoundService.shared.play(.whoosh)
+        goToQuickBattle = true
+    }
+
+    private func startSurprise() {
+        quickFighters = QuickMatchups.surprise()
+        homeMatchupToken = UUID()
+        HapticsService.shared.tap()
+        SoundService.shared.play(.whoosh)
+        goToQuickBattle = true
+    }
+
+    /// Show the proactive "unlock everything" offer ONCE, after the kid has
+    /// clearly engaged (8+ battles), to non-payers. Never nags again.
+    @AppStorage("paywall.shownOnce") private var paywallShownOnce = false
+    private func maybeShowPaywall() {
+        guard !paywallShownOnce,
+              !settings.adsRemoved,
+              settings.totalBattleCount >= 8,
+              !showWelcome, !goToPicker, !goToMelee, !goToQuickBattle else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+            // Re-check at fire time AND only consume the one-shot flag when the
+            // paywall actually presents — so a user who navigates away in the
+            // 0.6s window isn't permanently skipped, and it never stacks on
+            // another cover/alert.
+            guard !showWelcome, !showHowToPlay, !goToPicker, !goToMelee, !goToQuickBattle else { return }
+            paywallShownOnce = true
+            showPaywall = true
+        }
+    }
+
+    /// On the very first launch, gently OFFER the How-to-Play walkthrough (not a
+    /// forced tutorial — they can wave it off and explore). Runs once.
+    private func maybeOfferHowToPlay() {
+        guard !settings.hasSeenFirstBattle else { return }
+        settings.hasSeenFirstBattle = true
+        // Let the home animate in first, then surface the welcome offer.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+            guard !goToPicker, !goToMelee, !goToQuickBattle else { return }
+            showWelcome = true
+        }
+    }
+
     private func startRotation() {
         pairTimer?.invalidate()
         pairTimer = Timer.scheduledTimer(withTimeInterval: 4.0, repeats: true) { _ in
@@ -349,6 +647,9 @@ struct KidsHomeView: View {
     }
 
     private func startAmbient() {
+        // Respect Reduce Motion — kids with vestibular sensitivity (or parents
+        // who set it for them) should not get six perpetual wobble loops.
+        guard !UIAccessibility.isReduceMotionEnabled else { return }
         withAnimation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true)) {
             animalBob = -6
         }
@@ -368,6 +669,10 @@ struct KidsHomeView: View {
         // Pulse stays unified on the outer VStack
         withAnimation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true)) {
             titlePulse = 1.04
+        }
+        // Gift icon wiggle to draw the eye to the daily mystery.
+        withAnimation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true)) {
+            giftWiggle = true
         }
     }
 

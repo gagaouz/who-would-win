@@ -1,15 +1,11 @@
 import SwiftUI
 
-/// Round-level wagering screen. Player may place a wager on each matchup, or tap CONTINUE
-/// without wagering. Also shows the current Grand Champion and a "Buy Out" option
-/// that lets the player swap their GC pick (with a lower locked multiplier) — unless
-/// we are in the final round.
+/// Round-level wagering screen. Restyled for Animal Arena Jr.
 struct RoundWagerView: View {
     let tournament: Tournament
     let roundIndex: Int
     let onDone: () -> Void
 
-    @Environment(\.colorScheme) private var scheme
     @ObservedObject private var coinStore = CoinStore.shared
     @ObservedObject private var manager = TournamentManager.shared
     @ObservedObject private var adManager = AdManager.shared
@@ -18,14 +14,14 @@ struct RoundWagerView: View {
     @State private var activeSheet: SheetID? = nil
     @State private var showGCSwap = false
     @State private var isBuyingCoins = false
+    @State private var appeared = false
+
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    private var isIPad: Bool { sizeClass == .regular }
 
     private enum SheetID: Identifiable {
         case matchup(UUID)
-        var id: String {
-            switch self {
-            case .matchup(let u): return u.uuidString
-            }
-        }
+        var id: String { switch self { case .matchup(let u): return u.uuidString } }
     }
 
     private var round: [Matchup] {
@@ -40,39 +36,37 @@ struct RoundWagerView: View {
 
     var body: some View {
         ZStack {
-            Theme.battleBg(scheme).ignoresSafeArea()
+            LinearGradient(colors: [Color(hex: "#FFE9BA"), Kids.peach.opacity(0.6), Kids.pink.opacity(0.5)],
+                           startPoint: .top, endPoint: .bottom)
+                .ignoresSafeArea()
 
             ScrollView {
-                VStack(spacing: 14) {
-                    header
-
-                    quickModeCard
-
-                    // If the player can't afford any wagers, offer a rewarded
-                    // ad so they can earn coins without leaving the tournament.
-                    if coinStore.balance < coinStore.tournamentMatchupWagerFloor {
-                        earnCoinsCard
-                    }
-
-                    GamePanel(headerText: tournament.size.roundName(for: roundIndex).uppercased(),
-                              headerColor: .orange) {
-                        VStack(spacing: 10) {
-                            ForEach(round) { matchup in
-                                matchupWagerRow(matchup)
-                            }
+                HStack(spacing: 0) {
+                    Spacer(minLength: 0)
+                    VStack(spacing: isIPad ? 20 : 14) {
+                        header
+                        quickModeCard
+                        if coinStore.balance < coinStore.tournamentMatchupWagerFloor {
+                            earnCoinsCard
                         }
+                        matchupsCard
+                        if tournament.grandChampion != nil {
+                            grandChampionCard
+                        }
+                        continueButton
                     }
-
-                    if tournament.grandChampion != nil {
-                        grandChampionCard
-                    }
-
-                    continueButton
+                    .padding(.horizontal, isIPad ? 24 : 16)
+                    .padding(.top, isIPad ? 18 : 12)
+                    .padding(.bottom, isIPad ? 40 : 28)
+                    .frame(maxWidth: isIPad ? 720 : .infinity)
+                    .scaleEffect(appeared ? 1 : 0.96)
+                    .opacity(appeared ? 1 : 0)
+                    Spacer(minLength: 0)
                 }
-                .padding(.horizontal, 18)
-                .padding(.top, 12)
-                .padding(.bottom, 28)
             }
+        }
+        .onAppear {
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) { appeared = true }
         }
         .navigationBarBackButtonHidden(true)
         .sheet(item: $activeSheet) { id in
@@ -83,16 +77,19 @@ struct RoundWagerView: View {
                         matchup: matchup,
                         multiplier: multiplier,
                         onPlace: { pickedId, amount in
-                            _ = manager.placeMatchupWager(
-                                matchupId: uuid,
-                                pickedFighterId: pickedId,
-                                amount: amount
-                            )
+                            _ = manager.placeMatchupWager(matchupId: uuid,
+                                                         pickedFighterId: pickedId,
+                                                         amount: amount)
                             activeSheet = nil
                         },
                         onCancel: { activeSheet = nil }
                     )
-                    .presentationDetents([.medium, .large])
+                    // On iPad, `.medium` is a tiny form sheet that clips content
+                    // (sticker title cut, "Place Bet" button squashed). Force
+                    // `.large` only on iPad; keep both detents on phone where
+                    // `.medium` is a reasonable half-height.
+                    .presentationDetents(isIPad ? [.large] : [.medium, .large])
+                    .presentationDragIndicator(.visible)
                 }
             }
         }
@@ -105,7 +102,8 @@ struct RoundWagerView: View {
                 },
                 onCancel: { showGCSwap = false }
             )
-            .presentationDetents([.medium, .large])
+            .presentationDetents(isIPad ? [.large] : [.medium, .large])
+            .presentationDragIndicator(.visible)
         }
     }
 
@@ -114,117 +112,98 @@ struct RoundWagerView: View {
     private var header: some View {
         HStack {
             Spacer()
-            VStack(spacing: 2) {
-                Text("PLACE YOUR BETS")
-                    .font(Theme.bungee(18))
-                    .foregroundColor(.white)
+            VStack(spacing: isIPad ? 6 : 4) {
+                StickerWord(text: "PLACE YOUR BETS", fill: Kids.sun, fontSize: isIPad ? 26 : 18, tilt: -2)
                 Text("Matchup payout: \(String(format: "%.1f", multiplier))×")
-                    .font(Theme.bungee(11))
-                    .foregroundColor(.white.opacity(0.75))
+                    .font(Kids.nunito(isIPad ? 15 : 11, weight: .bold))
+                    .foregroundColor(Kids.ink)
             }
             Spacer()
-            CoinBadge(size: .compact)
+            CoinChip(count: coinStore.balance)
         }
     }
 
-    // MARK: - Quick Mode card
+    // MARK: - Quick Mode
 
-    /// Prominent toggle letting the player decide whether THIS round's battles
-    /// run as full animated battles or instant AI quick decisions. Setting
-    /// persists across rounds via @AppStorage but can be flipped before every
-    /// round — so the escape hatch is always right here.
     private var quickModeCard: some View {
         Button {
+            HapticsService.shared.tap()
             withAnimation(.easeInOut(duration: 0.2)) { quickMode.toggle() }
         } label: {
-            HStack(spacing: 12) {
+            HStack(spacing: isIPad ? 14 : 10) {
                 ZStack {
-                    Circle()
-                        .fill(quickMode ? Theme.gold.opacity(0.25) : Color.white.opacity(0.08))
-                        .frame(width: 40, height: 40)
-                    Image(systemName: quickMode ? "bolt.fill" : "bolt")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(quickMode ? Theme.gold : .white.opacity(0.7))
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(quickMode ? Kids.sun : Color(hex: "#F7F2FF"))
+                        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                        .frame(width: isIPad ? 60 : 44, height: isIPad ? 60 : 44)
+                    Text(quickMode ? "⚡" : "🐢").font(.system(size: isIPad ? 30 : 22))
                 }
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: isIPad ? 4 : 2) {
                     Text(quickMode ? "QUICK MODE: ON" : "QUICK MODE: OFF")
-                        .font(Theme.bungee(12))
-                        .foregroundColor(quickMode ? Theme.gold : .white)
+                        .font(Kids.fredoka(isIPad ? 16 : 12, weight: .bold))
                         .tracking(1)
-                    Text(quickMode
-                         ? "Instant AI results — no animation"
-                         : "Full animated battles")
-                        .font(Theme.bungee(10))
-                        .foregroundColor(.white.opacity(0.6))
+                        .foregroundColor(Kids.ink)
+                    Text(quickMode ? "Instant results — no animation" : "Full animated battles")
+                        .font(Kids.nunito(isIPad ? 13 : 10, weight: .bold))
+                        .foregroundColor(Kids.inkSoft)
                 }
                 Spacer()
-                // Custom switch visual
-                ZStack(alignment: quickMode ? .trailing : .leading) {
-                    Capsule()
-                        .fill(quickMode ? Theme.gold.opacity(0.6) : Color.white.opacity(0.15))
-                        .frame(width: 44, height: 24)
-                    Circle()
-                        .fill(.white)
-                        .frame(width: 20, height: 20)
-                        .padding(2)
-                        .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
-                }
+                KidToggle(isOn: Binding(get: { quickMode }, set: { quickMode = $0 }))
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(quickMode ? Theme.gold.opacity(0.08) : Color.white.opacity(0.05))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 14)
-                    .stroke(quickMode ? Theme.gold.opacity(0.5) : Color.white.opacity(0.15),
-                            lineWidth: 1.2)
-            )
+            .padding(.horizontal, isIPad ? 18 : 12).padding(.vertical, isIPad ? 14 : 10)
+            .background(card)
+            .shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 3)
         }
-        .buttonStyle(PressableButtonStyle())
+        .buttonStyle(.plain)
     }
 
-    // MARK: - Earn coins card (shown when balance < wager floor)
+    // MARK: - Earn coins
 
     private var earnCoinsCard: some View {
         let canWatch = coinStore.canWatchAdForCoins && adManager.coinAdIsReady
         let adsLeft  = coinStore.adsRemainingToday
         let coinProduct = storeKit.coins1000Product
 
-        return VStack(spacing: 10) {
-            HStack(spacing: 8) {
-                Image(systemName: "coins.and.bills")
-                    .foregroundColor(Theme.gold)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("NOT ENOUGH COINS TO WAGER")
-                        .font(Theme.bungee(11))
-                        .foregroundColor(Theme.gold)
+        return VStack(spacing: isIPad ? 12 : 8) {
+            HStack(spacing: isIPad ? 12 : 8) {
+                KidsGoldCoin(size: isIPad ? 32 : 24)
+                VStack(alignment: .leading, spacing: isIPad ? 4 : 2) {
+                    Text("NEED COINS TO WAGER")
+                        .font(Kids.fredoka(isIPad ? 15 : 11, weight: .bold))
                         .tracking(0.5)
-                    Text("Watch a short ad to earn 75 coins — or buy a coin pack to wager freely.")
-                        .font(Theme.bungee(11))
-                        .foregroundColor(.white.opacity(0.75))
+                        .foregroundColor(Kids.ink)
+                    Text("Watch a quick ad to earn 75 coins — or buy a coin pack.")
+                        .font(Kids.nunito(isIPad ? 15 : 11, weight: .bold))
+                        .foregroundColor(Kids.inkSoft)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+                Spacer()
             }
 
-            // Rewarded ad button
             Button {
                 adManager.showRewardedAdForCoins { rewarded in
                     if rewarded { CoinStore.shared.recordAdWatched() }
                 }
             } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "play.rectangle.fill")
-                    Text(canWatch ? "WATCH AD → EARN 75" : adManager.coinAdIsReady ? "DAILY LIMIT REACHED" : "AD LOADING…")
-                    if canWatch { GoldCoin(size: 14) }
+                HStack(spacing: isIPad ? 9 : 6) {
+                    Image(systemName: "play.rectangle.fill").font(.system(size: isIPad ? 16 : 12))
+                    Text(canWatch ? "WATCH AD → EARN 75"
+                                  : adManager.coinAdIsReady ? "DAILY LIMIT REACHED" : "AD LOADING…")
+                        .font(Kids.fredoka(isIPad ? 17 : 13, weight: .bold))
+                        .foregroundColor(Kids.ink)
+                    if canWatch { KidsGoldCoin(size: isIPad ? 20 : 14) }
                 }
+                .frame(maxWidth: .infinity, minHeight: isIPad ? 56 : 42)
+                .background(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(Kids.grass)
+                        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2))
+                )
             }
-            .buttonStyle(MegaButtonStyle(color: .green, height: 46, cornerRadius: 14, fontSize: 13))
+            .buttonStyle(.plain)
             .disabled(!canWatch)
-            .opacity(canWatch ? 1 : 0.5)
+            .opacity(canWatch ? 1 : 0.55)
 
-            // Buy coin pack button
             if let product = coinProduct {
                 Button {
                     isBuyingCoins = true
@@ -233,96 +212,130 @@ struct RoundWagerView: View {
                         isBuyingCoins = false
                     }
                 } label: {
-                    HStack(spacing: 8) {
-                        Image(systemName: "bag.fill")
-                        Text(isBuyingCoins ? "PURCHASING…" : "BUY 1,000 coins — \(product.displayPrice)")
+                    HStack(spacing: isIPad ? 9 : 6) {
+                        KidsGoldCoin(size: isIPad ? 20 : 14)
+                        Text(isBuyingCoins ? "PURCHASING…" : "BUY 1,000 — \(product.displayPrice)")
+                            .font(Kids.fredoka(isIPad ? 17 : 13, weight: .bold))
+                            .foregroundColor(Kids.ink)
                     }
+                    .frame(maxWidth: .infinity, minHeight: isIPad ? 56 : 42)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(Kids.sun)
+                            .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2))
+                    )
                 }
-                .buttonStyle(MegaButtonStyle(color: .gold, height: 46, cornerRadius: 14, fontSize: 13))
+                .buttonStyle(.plain)
                 .disabled(isBuyingCoins)
                 .opacity(isBuyingCoins ? 0.6 : 1)
             }
 
             if !coinStore.canWatchAdForCoins {
-                Text("Daily ad limit reached — come back tomorrow for more free coins.")
-                    .font(Theme.bungee(10))
-                    .foregroundColor(.white.opacity(0.5))
+                Text("Daily ad limit reached — come back tomorrow.")
+                    .font(Kids.nunito(isIPad ? 13 : 10, weight: .bold))
+                    .foregroundColor(Kids.inkSoft)
                     .multilineTextAlignment(.center)
             } else if adsLeft > 0 {
                 Text("\(adsLeft) ad\(adsLeft == 1 ? "" : "s") remaining today")
-                    .font(Theme.bungee(10))
-                    .foregroundColor(.white.opacity(0.4))
+                    .font(Kids.nunito(isIPad ? 13 : 10, weight: .bold))
+                    .foregroundColor(Kids.inkSoft)
             }
         }
-        .padding(12)
-        .background(RoundedRectangle(cornerRadius: 14).fill(Color.white.opacity(0.06)))
-        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.gold.opacity(0.4), lineWidth: 1.2))
+        .padding(isIPad ? 18 : 12)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(.white)
+                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Kids.sun, lineWidth: 2.5))
+        )
+        .shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 3)
     }
 
-    // MARK: - Matchup wager row
+    // MARK: - Matchups card
+
+    private var matchupsCard: some View {
+        VStack(alignment: .leading, spacing: isIPad ? 14 : 10) {
+            HStack(spacing: isIPad ? 9 : 6) {
+                Text("⚔️").font(.system(size: isIPad ? 22 : 16))
+                Text(tournament.size.roundName(for: roundIndex).uppercased())
+                    .font(Kids.fredoka(isIPad ? 17 : 13, weight: .bold))
+                    .tracking(1)
+                    .foregroundColor(Kids.ink)
+                Spacer()
+            }
+            ForEach(round) { matchup in
+                matchupWagerRow(matchup)
+            }
+        }
+        .padding(isIPad ? 20 : 14)
+        .background(card)
+        .shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 4)
+    }
 
     private func matchupWagerRow(_ matchup: Matchup) -> some View {
         Button {
             if matchup.wager == nil { activeSheet = .matchup(matchup.id) }
         } label: {
-            VStack(spacing: 8) {
-                HStack(spacing: 8) {
+            VStack(spacing: isIPad ? 12 : 8) {
+                HStack(spacing: isIPad ? 9 : 6) {
                     fighterChip(matchup.fighter1,
                                 isPicked: matchup.wager?.pickedFighterId == matchup.fighter1.id)
-                    VSShield(size: 30, fontSize: 10)
+                    StarSticker(text: "VS", size: isIPad ? 44 : 32, fill: Kids.pink)
                     fighterChip(matchup.fighter2,
                                 isPicked: matchup.wager?.pickedFighterId == matchup.fighter2.id)
-                    envBadge(matchup.environment)
+                    // Quick mode ignores arenas entirely — showing the matchup's
+                    // (inert) arena taught kids to wager coins on an advantage
+                    // that never applies. Only show it when effects are real.
+                    if !quickMode {
+                        Text(matchup.environment.emoji).font(.system(size: isIPad ? 24 : 18))
+                    }
                 }
                 if let wager = matchup.wager {
-                    HStack(spacing: 6) {
-                        Image(systemName: "checkmark.seal.fill")
-                            .foregroundColor(Theme.gold)
+                    HStack(spacing: isIPad ? 9 : 6) {
+                        Text("✓")
+                            .font(Kids.fredoka(isIPad ? 17 : 13, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(width: isIPad ? 24 : 18, height: isIPad ? 24 : 18)
+                            .background(Circle().fill(Kids.grass).overlay(Circle().stroke(Kids.ink, lineWidth: 1.5)))
                         let name = matchup.wager?.pickedFighterId == matchup.fighter1.id ? matchup.fighter1.name : matchup.fighter2.name
                         Text("\(wager.amount)")
-                            .font(Theme.bungee(12))
-                            .foregroundColor(Theme.gold)
-                        GoldCoin(size: 12)
+                            .font(Kids.fredoka(isIPad ? 17 : 13, weight: .bold))
+                            .foregroundColor(Kids.ink)
+                        KidsGoldCoin(size: isIPad ? 16 : 12)
                         Text("on \(name)")
-                            .font(Theme.bungee(12))
-                            .foregroundColor(Theme.gold)
+                            .font(Kids.nunito(isIPad ? 16 : 12, weight: .bold))
+                            .foregroundColor(Kids.ink)
                     }
                 } else {
-                    HStack(spacing: 6) {
-                        Image(systemName: "plus.circle")
+                    HStack(spacing: isIPad ? 7 : 5) {
+                        Text("➕").font(.system(size: isIPad ? 16 : 12))
                         Text("Tap to place wager (\(String(format: "%.1f", multiplier))×)")
+                            .font(Kids.nunito(isIPad ? 15 : 11, weight: .bold))
+                            .foregroundColor(Kids.inkSoft)
                     }
-                    .font(Theme.bungee(11))
-                    .foregroundColor(.white.opacity(0.6))
                 }
             }
-            .padding(.vertical, 8)
-            .padding(.horizontal, 8)
-            .background(RoundedRectangle(cornerRadius: 12).fill(Color.white.opacity(0.06)))
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(matchup.wager != nil ? Theme.gold.opacity(0.7) : Color.white.opacity(0.18),
-                            lineWidth: matchup.wager != nil ? 1.6 : 1)
+            .padding(.vertical, isIPad ? 12 : 8).padding(.horizontal, isIPad ? 12 : 8)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(matchup.wager != nil ? Kids.sun.opacity(0.2) : Color(hex: "#F7F2FF"))
+                    .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(matchup.wager != nil ? Kids.sun : Kids.ink.opacity(0.2),
+                                lineWidth: matchup.wager != nil ? 2 : 1.5))
             )
         }
-        .buttonStyle(PressableButtonStyle())
+        .buttonStyle(.plain)
         .disabled(matchup.wager != nil)
     }
 
     private func fighterChip(_ a: Animal, isPicked: Bool) -> some View {
-        VStack(spacing: 2) {
-            AnimalAvatar(animal: a, size: 30)
+        VStack(spacing: isIPad ? 4 : 2) {
+            TournyFighterMini(animal: a, size: isIPad ? 50 : 36)
             Text(a.name)
-                .font(Theme.bungee(11))
-                .foregroundColor(isPicked ? Theme.gold : .white)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
+                .font(Kids.fredoka(isIPad ? 13 : 10, weight: .bold))
+                .foregroundColor(isPicked ? Kids.ink : Kids.ink.opacity(0.8))
+                .lineLimit(1).minimumScaleFactor(0.65)
         }
         .frame(maxWidth: .infinity)
-    }
-
-    private func envBadge(_ env: BattleEnvironment) -> some View {
-        Text(env.emoji).font(.system(size: 16)).frame(width: 28)
     }
 
     // MARK: - Grand Champion card
@@ -332,61 +345,109 @@ struct RoundWagerView: View {
         if let gc = tournament.grandChampion,
            let pick = tournament.bracket.allFighters.first(where: { $0.id == gc.pickedFighterId }) {
             let alive = tournament.bracket.aliveFighters.contains(where: { $0.id == gc.pickedFighterId })
-            VStack(spacing: 10) {
-                HStack(spacing: 10) {
-                    AnimalAvatar(animal: pick, size: 44)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("GRAND CHAMPION PICK")
-                            .font(Theme.bungee(11))
-                            .foregroundColor(Theme.gold)
+            VStack(spacing: isIPad ? 14 : 10) {
+                HStack(spacing: isIPad ? 14 : 10) {
+                    TournyFighterMini(animal: pick, size: isIPad ? 60 : 44)
+                    VStack(alignment: .leading, spacing: isIPad ? 4 : 2) {
+                        Text("👑 GRAND CHAMPION PICK")
+                            .font(Kids.fredoka(isIPad ? 13 : 10, weight: .bold))
                             .tracking(1.5)
+                            .foregroundColor(Kids.ink)
                         Text(pick.name)
-                            .font(Theme.bungee(16))
-                            .foregroundColor(.white)
-                        HStack(spacing: 4) {
+                            .font(Kids.fredoka(isIPad ? 22 : 16, weight: .bold))
+                            .foregroundColor(Kids.ink)
+                        HStack(spacing: isIPad ? 6 : 4) {
                             Text("\(gc.amount)")
-                                .font(Theme.bungee(11))
-                                .foregroundColor(.white.opacity(0.7))
-                            GoldCoin(size: 11)
+                                .font(Kids.fredoka(isIPad ? 15 : 11, weight: .bold))
+                                .foregroundColor(Kids.ink)
+                            KidsGoldCoin(size: isIPad ? 15 : 11)
                             Text("· \(String(format: "%.2f", gc.multiplier))×")
-                                .font(Theme.bungee(11))
-                                .foregroundColor(.white.opacity(0.7))
+                                .font(Kids.fredoka(isIPad ? 15 : 11, weight: .bold))
+                                .foregroundColor(Kids.inkSoft)
                         }
                     }
                     Spacer()
                     if !alive {
-                        Text("ELIMINATED")
-                            .font(Theme.bungee(10))
-                            .foregroundColor(Theme.red)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Capsule().fill(Theme.red.opacity(0.2)))
+                        Text("OUT")
+                            .font(Kids.fredoka(isIPad ? 13 : 10, weight: .bold))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, isIPad ? 12 : 8).padding(.vertical, isIPad ? 6 : 4)
+                            .background(Capsule().fill(Kids.pink).overlay(Capsule().stroke(Kids.ink, lineWidth: 1.5)))
                     }
                 }
                 if tournament.canSwapGrandChampion {
-                    Button { showGCSwap = true } label: {
+                    Button {
+                        HapticsService.shared.tap()
+                        showGCSwap = true
+                    } label: {
                         Text(alive ? "BUY OUT — SWAP PICK" : "RESCUE — PICK A SURVIVOR")
+                            .font(Kids.fredoka(isIPad ? 16 : 12, weight: .bold))
+                            .foregroundColor(Kids.ink)
+                            .frame(maxWidth: .infinity, minHeight: isIPad ? 54 : 40)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                    .fill(Kids.grape)
+                                    .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Kids.sheen))
+                                    .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Kids.ink, lineWidth: 2))
+                            )
                     }
-                    .buttonStyle(MegaButtonStyle(color: .purple, height: 42, cornerRadius: 14, fontSize: 12))
+                    .buttonStyle(.plain)
                 } else {
                     Text("Locked for the final")
-                        .font(Theme.bungee(10))
-                        .foregroundColor(.white.opacity(0.45))
+                        .font(Kids.nunito(isIPad ? 13 : 10, weight: .bold))
+                        .foregroundColor(Kids.inkSoft)
                 }
             }
-            .padding(12)
-            .background(RoundedRectangle(cornerRadius: 14).fill(Color.white.opacity(0.06)))
-            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.gold.opacity(0.45), lineWidth: 1.2))
+            .padding(isIPad ? 18 : 12)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(.white)
+                    .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Kids.sun, lineWidth: 2.5))
+            )
+            .shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 3)
         }
     }
 
     // MARK: - Continue
 
     private var continueButton: some View {
-        Button(action: onDone) {
-            Text("START THE ROUND")
+        KidButton(title: "START THE ROUND", icon: "▶️", color: Kids.grass, size: .lg) {
+            HapticsService.shared.tap()
+            onDone()
         }
-        .buttonStyle(MegaButtonStyle(color: .orange, height: 60, cornerRadius: 18, fontSize: 18))
+    }
+
+    private var card: some View {
+        RoundedRectangle(cornerRadius: 16, style: .continuous)
+            .fill(Color.white)
+            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+    }
+}
+
+// MARK: - Mini avatar shared across this file
+
+private struct TournyFighterMini: View {
+    let animal: Animal
+    var size: CGFloat = 36
+    private var bundledImage: UIImage? {
+        guard let name = animal.creatureAssetName else { return nil }
+        return UIImage(named: name)
+    }
+    var body: some View {
+        ZStack {
+            Circle().fill(.white)
+                .overlay(Circle().stroke(Kids.ink, lineWidth: 2))
+                .frame(width: size, height: size)
+            Group {
+                if let ui = bundledImage {
+                    Image(uiImage: ui).resizable().scaledToFill()
+                } else {
+                    Text(animal.emoji).font(.system(size: size * 0.55))
+                }
+            }
+            .frame(width: size - 6, height: size - 6)
+            .clipShape(Circle())
+        }
     }
 }
 
@@ -402,16 +463,16 @@ private struct MatchupWagerSheet: View {
     @State private var picked: String? = nil
     @State private var amount: Double
 
-    init(matchup: Matchup,
-         multiplier: Double,
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    private var isIPad: Bool { sizeClass == .regular }
+
+    init(matchup: Matchup, multiplier: Double,
          onPlace: @escaping (_ pickedFighterId: String, _ amount: Int) -> Void,
          onCancel: @escaping () -> Void) {
         self.matchup = matchup
         self.multiplier = multiplier
         self.onPlace = onPlace
         self.onCancel = onCancel
-        // Initialize amount to the wager floor so the Slider's initial value is
-        // never out of range (Slider fatal-errors on out-of-range values in iOS 17+).
         self._amount = State(initialValue: Double(CoinStore.shared.tournamentMatchupWagerFloor))
     }
 
@@ -419,9 +480,6 @@ private struct MatchupWagerSheet: View {
     private var minWager: Int { CoinStore.shared.tournamentMatchupWagerFloor }
     private var amountInt: Int { Int(amount.rounded(.down)) }
 
-    /// Slider step sized to always fit within the wager range. iOS Slider
-    /// fatal-errors in `Normalizing.init(min:max:stride:)` when the step is
-    /// larger than `max - min`, so we shrink the step for small ranges.
     private var wagerStep: Double {
         let span = maxWager - minWager
         if span >= 50 { return 5 }
@@ -430,148 +488,177 @@ private struct MatchupWagerSheet: View {
     }
 
     var body: some View {
-        VStack(spacing: 16) {
-            Text("PLACE WAGER")
-                .font(Theme.bungee(18))
-                .foregroundColor(.white)
-                .padding(.top, 18)
+        ZStack {
+            LinearGradient(colors: [Color(hex: "#FFE9BA"), Kids.peach.opacity(0.6)],
+                           startPoint: .top, endPoint: .bottom)
+                .ignoresSafeArea()
 
-            HStack(spacing: 12) {
-                pickButton(matchup.fighter1)
-                VSShield(size: 34, fontSize: 12)
-                pickButton(matchup.fighter2)
-            }
-            .padding(.horizontal, 16)
+            HStack(spacing: 0) {
+                Spacer(minLength: 0)
+                VStack(spacing: isIPad ? 20 : 14) {
+                    StickerWord(text: "PLACE WAGER", fill: Kids.sun, fontSize: isIPad ? 32 : 22, tilt: -2)
+                        .rotationEffect(.degrees(-2))
+                        .padding(.top, isIPad ? 22 : 16)
 
-            if maxWager > minWager {
-                VStack(spacing: 8) {
-                    HStack {
-                        Text("WAGER")
-                            .font(Theme.bungee(11))
-                            .foregroundColor(.white.opacity(0.6))
-                            .tracking(1)
-                        Spacer()
-                        HStack(spacing: 4) {
-                            Text("\(amountInt)")
-                                .font(Theme.bungee(18))
-                                .foregroundColor(Theme.gold)
-                            GoldCoin(size: 16)
+                    HStack(spacing: isIPad ? 18 : 12) {
+                        pickButton(matchup.fighter1)
+                        StarSticker(text: "VS", size: isIPad ? 52 : 38, fill: Kids.pink)
+                        pickButton(matchup.fighter2)
+                    }
+                    .padding(.horizontal, isIPad ? 22 : 16)
+
+                    wagerBlock
+
+                    Spacer()
+
+                    HStack(spacing: isIPad ? 12 : 8) {
+                        KidsMiniButton(emoji: "✕", label: "Cancel", color: Color(hex: "#E8DFF5")) { onCancel() }
+                        Button {
+                            if let p = picked, amountInt >= minWager, amountInt <= maxWager {
+                                HapticsService.shared.tap()
+                                onPlace(p, amountInt)
+                            }
+                        } label: {
+                            HStack(spacing: isIPad ? 7 : 5) {
+                                Text("🪙").font(.system(size: isIPad ? 18 : 14))
+                                Text("Place Bet")
+                                    .font(Kids.fredoka(isIPad ? 17 : 13, weight: .bold))
+                                    .foregroundColor(Kids.ink)
+                            }
+                            .frame(maxWidth: .infinity, minHeight: isIPad ? 56 : 42)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .fill(picked == nil || amountInt < minWager || amountInt > maxWager
+                                          ? Color(hex: "#CDC3E0") : Kids.grass)
+                                    .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
+                                    .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                            )
+                            .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
                         }
+                        .buttonStyle(.plain)
+                        .disabled(picked == nil || amountInt < minWager || amountInt > maxWager)
+                        .opacity((picked == nil || amountInt < minWager || amountInt > maxWager) ? 0.6 : 1)
                     }
-                    Slider(
-                        value: $amount,
-                        in: Double(minWager)...Double(maxWager),
-                        step: wagerStep
-                    ).tint(Theme.gold)
-                    HStack {
-                        Text("MIN \(minWager)")
-                        Spacer()
-                        Text("MAX \(maxWager) (10%)")
-                    }
-                    .font(.system(size: 10, weight: .medium, design: .rounded))
-                    .foregroundColor(.white.opacity(0.5))
-
-                    HStack(spacing: 4) {
-                        Text("Payout if correct: \(Int((Double(amountInt) * multiplier).rounded(.down)))")
-                            .font(Theme.bungee(12))
-                            .foregroundColor(.white.opacity(0.75))
-                        GoldCoin(size: 12)
-                    }
-                    .padding(.top, 4)
+                    .padding(.horizontal, isIPad ? 26 : 18)
+                    .padding(.bottom, isIPad ? 26 : 18)
                 }
-                .padding(.horizontal, 18)
-            } else if maxWager == minWager {
-                // Range is a single point — Slider would crash here, so just
-                // show the fixed amount and let the player confirm or cancel.
-                VStack(spacing: 8) {
-                    HStack {
-                        Text("WAGER")
-                            .font(Theme.bungee(11))
-                            .foregroundColor(.white.opacity(0.6))
-                            .tracking(1)
-                        Spacer()
-                        HStack(spacing: 4) {
-                            Text("\(minWager)")
-                                .font(Theme.bungee(18))
-                                .foregroundColor(Theme.gold)
-                            GoldCoin(size: 16)
-                        }
-                    }
-                    Text("Minimum wager only — earn more coins to bet higher.")
-                        .font(Theme.bungee(11))
-                        .foregroundColor(.white.opacity(0.5))
-                        .multilineTextAlignment(.center)
-                    HStack(spacing: 4) {
-                        Text("Payout if correct: \(Int((Double(minWager) * multiplier).rounded(.down)))")
-                            .font(Theme.bungee(12))
-                            .foregroundColor(.white.opacity(0.75))
-                        GoldCoin(size: 12)
-                    }
-                    .padding(.top, 4)
-                }
-                .padding(.horizontal, 18)
-            } else {
-                Text("Not enough coins to wager. Minimum is \(minWager).")
-                    .font(Theme.bungee(12))
-                    .foregroundColor(.white.opacity(0.6))
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 18)
+                .frame(maxWidth: isIPad ? 720 : .infinity)
+                Spacer(minLength: 0)
             }
-
-            Spacer()
-
-            HStack(spacing: 10) {
-                Button(action: onCancel) { Text("CANCEL") }
-                    .buttonStyle(MegaButtonStyle(color: .blue, height: 50, cornerRadius: 16, fontSize: 13))
-
-                Button {
-                    if let p = picked, amountInt >= minWager, amountInt <= maxWager {
-                        onPlace(p, amountInt)
-                    }
-                } label: { Text("PLACE BET") }
-                    .buttonStyle(MegaButtonStyle(color: .orange, height: 50, cornerRadius: 16, fontSize: 13))
-                    .disabled(picked == nil || amountInt < minWager || amountInt > maxWager)
-                    .opacity((picked == nil || amountInt < minWager || amountInt > maxWager) ? 0.5 : 1)
-            }
-            .padding(.horizontal, 18)
-            .padding(.bottom, 18)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Theme.battleBg.ignoresSafeArea())
         .onAppear {
-            // Clamp amount into the current valid range — the init set it to
-            // minWager, but maxWager depends on balance which can change.
             let lo = Double(minWager)
             let hi = Double(max(minWager, maxWager))
-            if amount < lo || amount > hi {
-                amount = lo
+            if amount < lo || amount > hi { amount = lo }
+        }
+    }
+
+    @ViewBuilder
+    private var wagerBlock: some View {
+        if maxWager > minWager {
+            VStack(spacing: isIPad ? 12 : 8) {
+                HStack {
+                    Text("YOUR WAGER")
+                        .font(Kids.fredoka(isIPad ? 15 : 11, weight: .bold))
+                        .tracking(1)
+                        .foregroundColor(Kids.ink)
+                    Spacer()
+                    HStack(spacing: isIPad ? 6 : 4) {
+                        Text("\(amountInt)")
+                            .font(Kids.fredoka(isIPad ? 24 : 18, weight: .bold))
+                            .foregroundColor(Kids.ink)
+                        KidsGoldCoin(size: isIPad ? 22 : 16)
+                    }
+                }
+                Slider(value: $amount, in: Double(minWager)...Double(maxWager), step: wagerStep)
+                    .tint(Kids.sun)
+                HStack {
+                    Text("MIN \(minWager)")
+                    Spacer()
+                    Text("MAX \(maxWager) (10%)")
+                }
+                .font(Kids.nunito(isIPad ? 13 : 10, weight: .bold))
+                .foregroundColor(Kids.inkSoft)
+                HStack(spacing: isIPad ? 6 : 4) {
+                    Text("Payout if correct: \(Int((Double(amountInt) * multiplier).rounded(.down)))")
+                        .font(Kids.fredoka(isIPad ? 16 : 12, weight: .bold))
+                        .foregroundColor(Kids.ink)
+                    KidsGoldCoin(size: isIPad ? 16 : 12)
+                }
+                .padding(.top, isIPad ? 6 : 4)
             }
+            .padding(isIPad ? 20 : 14)
+            .background(card)
+            .shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 3)
+            .padding(.horizontal, isIPad ? 26 : 18)
+        } else if maxWager == minWager {
+            VStack(spacing: isIPad ? 9 : 6) {
+                HStack {
+                    Text("FIXED WAGER")
+                        .font(Kids.fredoka(isIPad ? 15 : 11, weight: .bold))
+                        .tracking(1)
+                        .foregroundColor(Kids.ink)
+                    Spacer()
+                    HStack(spacing: isIPad ? 6 : 4) {
+                        Text("\(minWager)")
+                            .font(Kids.fredoka(isIPad ? 24 : 18, weight: .bold))
+                            .foregroundColor(Kids.ink)
+                        KidsGoldCoin(size: isIPad ? 22 : 16)
+                    }
+                }
+                Text("Minimum wager only — earn more coins to bet higher.")
+                    .font(Kids.nunito(isIPad ? 13 : 10, weight: .bold))
+                    .foregroundColor(Kids.inkSoft)
+                    .multilineTextAlignment(.center)
+                HStack(spacing: isIPad ? 6 : 4) {
+                    Text("Payout if correct: \(Int((Double(minWager) * multiplier).rounded(.down)))")
+                        .font(Kids.fredoka(isIPad ? 16 : 12, weight: .bold))
+                        .foregroundColor(Kids.ink)
+                    KidsGoldCoin(size: isIPad ? 16 : 12)
+                }
+                .padding(.top, isIPad ? 6 : 4)
+            }
+            .padding(isIPad ? 20 : 14)
+            .background(card)
+            .padding(.horizontal, isIPad ? 26 : 18)
+        } else {
+            Text("Not enough coins to wager. Minimum is \(minWager).")
+                .font(Kids.fredoka(isIPad ? 16 : 12, weight: .bold))
+                .foregroundColor(Kids.inkSoft)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, isIPad ? 26 : 18)
         }
     }
 
     private func pickButton(_ a: Animal) -> some View {
-        Button { picked = a.id } label: {
-            VStack(spacing: 4) {
-                AnimalAvatar(animal: a, size: 48)
+        Button {
+            HapticsService.shared.tap()
+            withAnimation(.spring(response: 0.28, dampingFraction: 0.6)) { picked = a.id }
+        } label: {
+            VStack(spacing: isIPad ? 6 : 4) {
+                TournyFighterMini(animal: a, size: isIPad ? 82 : 60)
                 Text(a.name)
-                    .font(Theme.bungee(12))
-                    .foregroundColor(.white)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
+                    .font(Kids.fredoka(isIPad ? 16 : 12, weight: .bold))
+                    .foregroundColor(Kids.ink)
+                    .lineLimit(1).minimumScaleFactor(0.7)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
+            .padding(.vertical, isIPad ? 18 : 12)
             .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(picked == a.id ? Theme.gold.opacity(0.35) : Color.white.opacity(0.08))
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(picked == a.id ? Kids.sun : Color.white)
+                    .overlay(picked == a.id ? RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Kids.sheen) : nil)
+                    .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: picked == a.id ? 3 : 2.5))
             )
-            .overlay(
-                RoundedRectangle(cornerRadius: 14)
-                    .stroke(picked == a.id ? Theme.gold : Color.white.opacity(0.2),
-                            lineWidth: picked == a.id ? 2 : 1)
-            )
+            .shadow(color: Kids.ink.opacity(picked == a.id ? 0.18 : 0.08), radius: 0, x: 0, y: picked == a.id ? 4 : 2)
         }
-        .buttonStyle(PressableButtonStyle())
+        .buttonStyle(.plain)
+    }
+
+    private var card: some View {
+        RoundedRectangle(cornerRadius: 16, style: .continuous)
+            .fill(Color.white)
+            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
     }
 }
 
@@ -584,54 +671,116 @@ private struct GrandChampionSwapSheet: View {
 
     @State private var picked: String? = nil
 
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    private var isIPad: Bool { sizeClass == .regular }
+
     private var newMultiplier: Double {
         let r = tournament.currentRoundIndex ?? 0
         return WagerMultipliers.grandChampion(lockedAtRoundIndex: r)
     }
 
     var body: some View {
-        VStack(spacing: 14) {
-            Text("SWAP GRAND CHAMPION")
-                .font(Theme.bungee(16))
-                .foregroundColor(.white)
-                .padding(.top, 18)
+        ZStack {
+            LinearGradient(colors: [Color(hex: "#FFE9BA"), Kids.grape.opacity(0.4)],
+                           startPoint: .top, endPoint: .bottom)
+                .ignoresSafeArea()
 
-            Text("New multiplier: \(String(format: "%.2f", newMultiplier))× · wager stays the same")
-                .font(Theme.bungee(12))
-                .foregroundColor(.white.opacity(0.7))
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 24)
+            HStack(spacing: 0) {
+                Spacer(minLength: 0)
+                VStack(spacing: isIPad ? 20 : 14) {
+                    StickerWord(text: "SWAP CHAMPION", fill: Kids.grape, fontSize: isIPad ? 26 : 18, tilt: -2)
+                        .padding(.top, isIPad ? 26 : 18)
 
-            ScrollView {
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
-                    ForEach(tournament.bracket.aliveFighters) { animal in
-                        AnimalCard(
-                            animal: animal,
-                            isSelected: picked == animal.id,
-                            isDisabled: false,
-                            isLocked: false,
-                            onTap: { picked = animal.id }
-                        )
+                    Text("New multiplier: \(String(format: "%.2f", newMultiplier))× — wager stays the same")
+                        .font(Kids.nunito(isIPad ? 16 : 12, weight: .bold))
+                        .foregroundColor(Kids.ink)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, isIPad ? 32 : 24)
+
+                    ScrollView {
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: isIPad ? 14 : 10), count: isIPad ? 4 : 3), spacing: isIPad ? 14 : 10) {
+                            ForEach(tournament.bracket.aliveFighters) { animal in
+                                SwapPickCard(animal: animal, selected: picked == animal.id, isIPad: isIPad) {
+                                    HapticsService.shared.tap()
+                                    withAnimation(.spring(response: 0.28, dampingFraction: 0.6)) {
+                                        picked = animal.id
+                                    }
+                                }
+                            }
+                        }
+                        .padding(.horizontal, isIPad ? 22 : 16).padding(.vertical, isIPad ? 16 : 12)
                     }
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-            }
 
-            HStack(spacing: 10) {
-                Button(action: onCancel) { Text("CANCEL") }
-                    .buttonStyle(MegaButtonStyle(color: .blue, height: 48, cornerRadius: 14, fontSize: 13))
-                Button {
-                    if let p = picked { onSwap(p) }
-                } label: { Text("SWAP") }
-                    .buttonStyle(MegaButtonStyle(color: .purple, height: 48, cornerRadius: 14, fontSize: 13))
-                    .disabled(picked == nil)
-                    .opacity(picked == nil ? 0.5 : 1)
+                    HStack(spacing: isIPad ? 12 : 8) {
+                        KidsMiniButton(emoji: "✕", label: "Cancel", color: Color(hex: "#E8DFF5")) { onCancel() }
+                        Button {
+                            if let p = picked { onSwap(p) }
+                        } label: {
+                            HStack(spacing: isIPad ? 7 : 5) {
+                                Text("🔄").font(.system(size: isIPad ? 18 : 14))
+                                Text("Swap").font(Kids.fredoka(isIPad ? 17 : 13, weight: .bold))
+                                    .foregroundColor(Kids.ink)
+                            }
+                            .frame(maxWidth: .infinity, minHeight: isIPad ? 56 : 42)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .fill(picked == nil ? Color(hex: "#CDC3E0") : Kids.grape)
+                                    .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
+                                    .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(picked == nil)
+                        .opacity(picked == nil ? 0.6 : 1)
+                    }
+                    .padding(.horizontal, isIPad ? 26 : 18)
+                    .padding(.bottom, isIPad ? 26 : 18)
+                }
+                .frame(maxWidth: isIPad ? 720 : .infinity)
+                Spacer(minLength: 0)
             }
-            .padding(.horizontal, 18)
-            .padding(.bottom, 18)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Theme.battleBg.ignoresSafeArea())
+    }
+}
+
+private struct SwapPickCard: View {
+    let animal: Animal
+    let selected: Bool
+    let isIPad: Bool
+    let onTap: () -> Void
+    private var bundledImage: UIImage? {
+        guard let name = animal.creatureAssetName else { return nil }
+        return UIImage(named: name)
+    }
+    var body: some View {
+        Button(action: onTap) {
+            ZStack(alignment: .topTrailing) {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(selected ? Kids.grape : Color.white)
+                    .overlay(selected ? RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Kids.sheen) : nil)
+                    .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                    .aspectRatio(1, contentMode: .fit)
+                VStack(spacing: isIPad ? 4 : 2) {
+                    if let ui = bundledImage {
+                        Image(uiImage: ui).resizable().scaledToFit().frame(width: isIPad ? 62 : 46, height: isIPad ? 62 : 46)
+                    } else {
+                        Text(animal.emoji).font(.system(size: isIPad ? 42 : 30))
+                    }
+                    Text(animal.name)
+                        .font(Kids.fredoka(isIPad ? 13 : 10, weight: .bold))
+                        .foregroundColor(selected ? .white : Kids.ink)
+                        .lineLimit(1).minimumScaleFactor(0.65)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                if selected {
+                    Circle().fill(Kids.grass)
+                        .overlay(Circle().stroke(Kids.ink, lineWidth: 2))
+                        .frame(width: isIPad ? 28 : 20, height: isIPad ? 28 : 20)
+                        .overlay(Text("✓").font(Kids.fredoka(isIPad ? 15 : 11, weight: .bold)).foregroundColor(Kids.ink))
+                        .offset(x: 4, y: -4)
+                }
+            }
+        }
+        .buttonStyle(.plain)
     }
 }

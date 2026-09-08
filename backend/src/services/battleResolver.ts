@@ -53,11 +53,30 @@ export interface ResolveArgs {
   fighter2Name?: string;
   /** "Grassland", "Ocean", … or undefined when no arena. */
   environmentName?: string;
+  /**
+   * Estimated 1–10 tier for a CUSTOM/unknown fighter (from estimateCustomTier).
+   * When supplied, the resolver treats the custom creature as if it were known
+   * at this tier and forces a DETERMINISTIC, realistic winner — so a gram-scale
+   * "gravedigger beetle" (tier 1) can't beat a wolf (tier 4). Null/undefined →
+   * fall back to the AI-judged 'open' path.
+   */
+  customTier1?: number | null;
+  customTier2?: number | null;
 }
 
 // Animals that, despite being categorized as land or air, can survive in an
 // alien arena because they're famously cross-environmental.
 const SEMI_AQUATIC = new Set(['hippopotamus', 'alligator', 'crocodile']);
+
+// Fine-grained realism nudges WITHIN a tier (fractional). The integer tier
+// table is coarse — these express well-established 1v1 edges between same-tier
+// creatures without bumping anyone a full tier. Effective power is
+// 2^(tier + adjust). KEEP IN SYNC with the iOS app's OnDeviceTiers.tierAdjust.
+//   • Tiger beats Lion: bigger, more muscular, a solitary fighter (lions evolved
+//     for pack combat). Historical staged fights + expert consensus favor tigers.
+const TIER_ADJUST: Record<string, number> = {
+  tiger: 0.45,   // edges its tier-6 peers (lion, gorilla) in single combat
+};
 
 function isKnown(id: string): boolean {
   return id in POWER_PROFILES || DEITY_IDS.has(id);
@@ -66,6 +85,12 @@ function isKnown(id: string): boolean {
 function getTier(id: string): number | null {
   if (DEITY_IDS.has(id)) return 10;
   return POWER_PROFILES[id]?.tier ?? null;
+}
+
+/** Integer tier + fractional realism nudge. */
+function getEffectiveTier(id: string): number | null {
+  const t = getTier(id);
+  return t === null ? null : t + (TIER_ADJUST[id] ?? 0);
 }
 
 /**
@@ -118,25 +143,31 @@ function envModifier(id: string, environmentName: string | undefined): number {
  * gap = 8× advantage, which is the threshold above which we treat a battle as
  * "decided" rather than a close fight.
  */
-function powerScore(id: string, environmentName: string | undefined): number {
-  const tier = getTier(id);
+function powerScore(id: string, environmentName: string | undefined,
+                    customTier?: number | null): number {
+  // A custom creature uses its estimated tier (no fractional realism nudge);
+  // a known creature uses its profile tier + nudge.
+  const tier = isKnown(id)
+    ? getEffectiveTier(id)
+    : (customTier != null ? customTier : null);
   if (tier === null) return 0; // unknown — caller will skip force
   const env  = envModifier(id, environmentName);
   return Math.pow(2, tier) * env;
 }
 
 export function resolveBattle(args: ResolveArgs): Verdict {
-  const { fighter1Id, fighter2Id, environmentName } = args;
+  const { fighter1Id, fighter2Id, environmentName, customTier1, customTier2 } = args;
 
   const f1Known = isKnown(fighter1Id);
   const f2Known = isKnown(fighter2Id);
+  // A custom fighter is "resolvable" once we have an estimated tier for it.
+  const f1Resolvable = f1Known || (customTier1 != null);
+  const f2Resolvable = f2Known || (customTier2 != null);
 
-  // ── Custom / unknown fighters → leave to AI ─────────────────────────────
-  // If either fighter is a user-typed custom creature, we don't have ground
-  // truth on its power. Let Claude decide — but emit a soft prediction when
-  // possible (the known fighter's tier vs an assumed mid-tier custom).
-  if (!f1Known || !f2Known) {
-    return { kind: 'open', reason: 'custom-or-unknown fighter — AI decides' };
+  // ── Truly unknown (no estimate) → leave to AI ───────────────────────────
+  // Only when we have NO tier at all for a custom fighter do we defer to Claude.
+  if (!f1Resolvable || !f2Resolvable) {
+    return { kind: 'open', reason: 'custom fighter without a tier estimate — AI decides' };
   }
 
   // ── Deity vs mortal ─────────────────────────────────────────────────────
@@ -150,8 +181,8 @@ export function resolveBattle(args: ResolveArgs): Verdict {
   }
 
   // ── Power-score comparison (tier + environment) ─────────────────────────
-  const s1 = powerScore(fighter1Id, environmentName);
-  const s2 = powerScore(fighter2Id, environmentName);
+  const s1 = powerScore(fighter1Id, environmentName, customTier1);
+  const s2 = powerScore(fighter2Id, environmentName, customTier2);
 
   // Catastrophic environment incompatibility — if one fighter is reduced to
   // ≤ 0.10 effective power and the other is at full strength, force the loss
@@ -167,28 +198,23 @@ export function resolveBattle(args: ResolveArgs): Verdict {
              reason: `${fighter2Id} cannot survive ${environmentName}` };
   }
 
-  // Power ratio — if one fighter has ≥8× the effective power of the other,
-  // force the outcome. (3-tier gap = 8×; 4-tier gap = 16×.) This is the
-  // threshold above which real-world physics make the outcome a foregone
-  // conclusion: an apex predator does not lose to a creature 8× weaker.
-  const ratio = s1 / s2;
-  if (ratio >= 8) {
-    return { kind: 'forced', winnerId: fighter1Id, loserId: fighter2Id,
-             reason: `tier/env advantage ${ratio.toFixed(1)}×` };
+  // DETERMINISTIC: for two known creatures, the higher effective power ALWAYS
+  // wins — no AI dice. This is an educational app: a tiger always beats a lion,
+  // a crow never beats a pterodactyl, every time. The MODEL still writes a fresh
+  // story each run, but the OUTCOME is fixed by realistic power so kids learn
+  // the right answer consistently. Exact ties break deterministically by id so
+  // resolve(a,b) and resolve(b,a) agree. (Custom/unknown fighters returned
+  // 'open' far above — there we have no power data, so the AI judges.)
+  const ratio = s1 >= s2 ? s1 / Math.max(s2, 0.0001) : s2 / Math.max(s1, 0.0001);
+  let f1Wins: boolean;
+  if (s1 !== s2) {
+    f1Wins = s1 > s2;
+  } else {
+    f1Wins = fighter1Id < fighter2Id;   // stable, symmetric tiebreak
   }
-  if (ratio <= 1 / 8) {
-    return { kind: 'forced', winnerId: fighter2Id, loserId: fighter1Id,
-             reason: `tier/env advantage ${(1 / ratio).toFixed(1)}×` };
-  }
-
-  // Close-ish match (gap < 3 tiers). Surface a soft prediction (the higher-
-  // power side) and let the AI write its own ruling.
-  const predicted = s1 >= s2 ? fighter1Id : fighter2Id;
-  return {
-    kind: 'open',
-    predictedWinnerId: predicted,
-    reason: `close matchup, ratio ${(s1 >= s2 ? ratio : 1 / ratio).toFixed(2)}×`,
-  };
+  return f1Wins
+    ? { kind: 'forced', winnerId: fighter1Id, loserId: fighter2Id, reason: `power advantage ${ratio.toFixed(2)}×` }
+    : { kind: 'forced', winnerId: fighter2Id, loserId: fighter1Id, reason: `power advantage ${ratio.toFixed(2)}×` };
 }
 
 /**

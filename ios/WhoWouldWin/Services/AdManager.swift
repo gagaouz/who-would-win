@@ -27,6 +27,7 @@ import UIKit
 final class AdManager: NSObject, ObservableObject {
 
     static let shared = AdManager()
+    private static var isConfigured = false
 
     // MARK: - Ad Unit IDs
 
@@ -58,9 +59,9 @@ final class AdManager: NSObject, ObservableObject {
 
     @Published private(set) var isShowingAd = false
 
-    private var interstitial: GADInterstitialAd?
-    private var rewardedAd: GADRewardedAd?          // custom creature gate
-    private var rewardedAdForCoins: GADRewardedAd?  // coin-earning — no paid gate
+    private var interstitial: InterstitialAd?
+    private var rewardedAd: RewardedAd?          // custom creature gate
+    private var rewardedAdForCoins: RewardedAd?  // coin-earning — no paid gate
 
     private var interstitialCompletion: (() -> Void)?
     private var rewardedCompletion: ((Bool) -> Void)?
@@ -71,6 +72,15 @@ final class AdManager: NSObject, ObservableObject {
     private var coinRewardEarned = false
     private var isShowingCoinAd = false
 
+    // One-shot settle guards. AdMob can invoke BOTH
+    // adDidDismissFullScreenContent AND didFailToPresentFullScreenContent…
+    // for the same presentation; without these flags the stored completion
+    // (and any coin reward attached to it) could fire twice.
+    // `true` means "nothing in flight" — set to false right before presenting.
+    private var interstitialSettled = true
+    private var rewardedSettled = true
+    private var coinAdSettled = true
+
     /// Publishes true when a coin rewarded ad is loaded and ready to show.
     /// Observe this in the UI to show/disable the "Watch Ad" button reactively.
     @Published private(set) var coinAdReady = false
@@ -80,19 +90,22 @@ final class AdManager: NSObject, ObservableObject {
     /// Call once at app launch (in WhoWouldWinApp.init or .onAppear).
     /// Sets COPPA / child-directed flags before the SDK starts.
     static func configure() {
-        let config = GADMobileAds.sharedInstance().requestConfiguration
+        guard !isConfigured else { return }
+        isConfigured = true
+        let config = MobileAds.shared.requestConfiguration
 
         // Required for apps directed at children under COPPA.
-        config.tagForChildDirectedTreatment = true
-
-        // Also tag for users under the age of consent (GDPR-adjacent).
-        config.tagForUnderAgeOfConsent = true
+        config.ageRestrictedTreatment = .child
 
         // Non-personalized ads only — no behavioral targeting.
         // This is set on every individual request too (see makeRequest()).
         config.maxAdContentRating = .general
+        config.publisherPrivacyPersonalizationState = .disabled
+        // Avoid Google's publisher first-party identifier as well. Frequency
+        // capping is less valuable here than minimizing identifiers in a kids app.
+        config.setPublisherFirstPartyIDEnabled(false)
 
-        GADMobileAds.sharedInstance().start { status in
+        MobileAds.shared.start { status in
             #if DEBUG
             let adapters = status.adapterStatusesByClassName
             print("[AdManager] SDK ready. Adapters: \(adapters.keys.joined(separator: ", "))")
@@ -204,9 +217,10 @@ final class AdManager: NSObject, ObservableObject {
         coinAdReady = false
         coinAdCompletion = completion
         coinRewardEarned = false
+        coinAdSettled = false
         rewardedAdForCoins = nil
         ad.fullScreenContentDelegate = self
-        ad.present(fromRootViewController: rootVC) {
+        ad.present(from: rootVC) {
             // Fires only when the full reward is earned (before dismiss).
             self.coinRewardEarned = true
         }
@@ -217,16 +231,26 @@ final class AdManager: NSObject, ObservableObject {
     func preloadAll() {
         preloadInterstitialIfNeeded()
         preloadRewardedIfNeeded()
-        preloadRewardedForCoinsIfNeeded()
+        // Paid users: don't contact the ad network at launch on their behalf —
+        // the privacy policy says the app only talks to the ad network for the
+        // optional earn-coins video when that feature is used, so their coin
+        // ad preloads lazily when the Coin Shop opens instead.
+        if !userHasPaidForAdRemoval() {
+            preloadRewardedForCoinsIfNeeded()
+        }
     }
 
     /// Preloads the coin-earning rewarded ad. No paid-user gate.
     func preloadRewardedForCoinsIfNeeded() {
+        // Paid users deliberately skip AdMob initialization at launch. If they
+        // opt into this one rewarded feature later, apply the child-directed,
+        // non-personalized configuration before the SDK can make a request.
+        Self.configure()
         guard rewardedAdForCoins == nil else { return }
         Task {
             do {
-                let ad = try await GADRewardedAd.load(
-                    withAdUnitID: Self.coinRewardedAdUnitID,
+                let ad = try await RewardedAd.load(
+                    with: Self.coinRewardedAdUnitID,
                     request: makeRequest()
                 )
                 self.rewardedAdForCoins = ad
@@ -248,8 +272,8 @@ final class AdManager: NSObject, ObservableObject {
         guard !userHasPaidForAdRemoval(), interstitial == nil else { return }
         Task {
             do {
-                let ad = try await GADInterstitialAd.load(
-                    withAdUnitID: Self.interstitialAdUnitID,
+                let ad = try await InterstitialAd.load(
+                    with: Self.interstitialAdUnitID,
                     request: makeRequest()
                 )
                 self.interstitial = ad
@@ -270,8 +294,8 @@ final class AdManager: NSObject, ObservableObject {
         guard !userHasPaidForAdRemoval(), rewardedAd == nil else { return }
         Task {
             do {
-                let ad = try await GADRewardedAd.load(
-                    withAdUnitID: Self.rewardedAdUnitID,
+                let ad = try await RewardedAd.load(
+                    with: Self.rewardedAdUnitID,
                     request: makeRequest()
                 )
                 self.rewardedAd = ad
@@ -290,17 +314,29 @@ final class AdManager: NSObject, ObservableObject {
 
     // MARK: - Private presentation
 
-    private func presentInterstitial(_ ad: GADInterstitialAd, completion: (() -> Void)?) {
+    private func presentInterstitial(_ ad: InterstitialAd, completion: (() -> Void)?) {
         guard let rootVC = rootViewController() else {
             completion?()
             return
         }
         isShowingAd = true
         interstitialCompletion = completion
-        ad.present(fromRootViewController: rootVC)
+        interstitialSettled = false
+        // Gentle upsell cadence: after every 4th interstitial, flag the UI to
+        // show a one-line "grown-ups can remove ads" hint. Count persists so
+        // the cadence holds across launches.
+        let shown = UserDefaults.standard.integer(forKey: "ads.interstitialShownCount") + 1
+        UserDefaults.standard.set(shown, forKey: "ads.interstitialShownCount")
+        if shown % 4 == 0 { suggestRemoveAds = true }
+        ad.present(from: rootVC)
     }
 
-    private func presentRewarded(_ ad: GADRewardedAd, completion: @escaping (Bool) -> Void) {
+    /// Set after every 4th interstitial; the battle result screen shows a small
+    /// "remove ads" hint and clears it. Never set for paying users (they don't
+    /// reach presentInterstitial at all).
+    @Published var suggestRemoveAds = false
+
+    private func presentRewarded(_ ad: RewardedAd, completion: @escaping (Bool) -> Void) {
         guard let rootVC = rootViewController() else {
             completion(false)
             return
@@ -308,18 +344,59 @@ final class AdManager: NSObject, ObservableObject {
         isShowingAd = true
         rewardEarned = false
         rewardedCompletion = completion
-        ad.present(fromRootViewController: rootVC) { [weak self] in
+        rewardedSettled = false
+        ad.present(from: rootVC) { [weak self] in
             // This block fires only when a full reward is earned.
             self?.rewardEarned = true
         }
     }
 
+    // MARK: - One-shot settlement
+    // Each settle function resolves its stored completion exactly once, no
+    // matter how many delegate callbacks arrive for the presentation.
+
+    private func settleInterstitial() {
+        guard !interstitialSettled else { return }
+        interstitialSettled = true
+        let completion = interstitialCompletion
+        interstitialCompletion = nil
+        interstitial = nil
+        preloadInterstitialIfNeeded()
+        completion?()
+    }
+
+    private func settleCoinAd(earned: Bool) {
+        guard !coinAdSettled else { return }
+        coinAdSettled = true
+        let completion = coinAdCompletion
+        coinAdCompletion = nil
+        coinRewardEarned = false
+        isShowingCoinAd = false
+        preloadRewardedForCoinsIfNeeded()
+        completion?(earned)
+    }
+
+    private func settleRewarded(earned: Bool, reloadAfterDelay: Bool) {
+        guard !rewardedSettled else { return }
+        rewardedSettled = true
+        let completion = rewardedCompletion
+        rewardedCompletion = nil
+        rewardedAd = nil
+        rewardEarned = false
+        if reloadAfterDelay {
+            reloadRewardedAfterDismiss()
+        } else {
+            preloadRewardedIfNeeded()
+        }
+        completion?(earned)
+    }
+
     // MARK: - Helpers
 
-    /// Builds a GADRequest configured for non-personalized ads (required for COPPA).
-    private func makeRequest() -> GADRequest {
-        let request = GADRequest()
-        let extras = GADExtras()
+    /// Builds an ad request configured for non-personalized ads (required for COPPA).
+    private func makeRequest() -> GoogleMobileAds.Request {
+        let request = GoogleMobileAds.Request()
+        let extras = Extras()
         extras.additionalParameters = ["npa": "1"]   // non-personalized
         request.register(extras)
         return request
@@ -347,45 +424,33 @@ final class AdManager: NSObject, ObservableObject {
     private override init() { super.init() }
 }
 
-// MARK: - GADFullScreenContentDelegate
+// MARK: - FullScreenContentDelegate
 
-extension AdManager: GADFullScreenContentDelegate {
+extension AdManager: FullScreenContentDelegate {
 
-    nonisolated func adDidDismissFullScreenContent(_ ad: GADFullScreenPresentingAd) {
+    // Both delegate callbacks below can fire for the SAME presentation (AdMob
+    // has been observed calling didFail AND adDidDismiss). All paths therefore
+    // route through the one-shot settle functions — the second call is a no-op.
+
+    nonisolated func adDidDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
         Task { @MainActor in
             self.isShowingAd = false
 
-            if ad is GADInterstitialAd {
-                let completion = self.interstitialCompletion
-                self.interstitialCompletion = nil
-                self.interstitial = nil
-                self.preloadInterstitialIfNeeded()
-                completion?()
-
-            } else if ad is GADRewardedAd {
+            if ad is InterstitialAd {
+                self.settleInterstitial()
+            } else if ad is RewardedAd {
                 if self.isShowingCoinAd {
                     // Coin-earning rewarded ad dismissed — resolve with whether reward was earned.
-                    let earned = self.coinRewardEarned
-                    let completion = self.coinAdCompletion
-                    self.coinAdCompletion = nil
-                    self.coinRewardEarned = false
-                    self.isShowingCoinAd = false
-                    self.preloadRewardedForCoinsIfNeeded()
-                    completion?(earned)
+                    self.settleCoinAd(earned: self.coinRewardEarned)
                 } else {
                     // Creature-gate rewarded ad dismissed.
-                    let earned = self.rewardEarned
-                    let completion = self.rewardedCompletion
-                    self.rewardedCompletion = nil
-                    self.rewardedAd = nil
-                    self.reloadRewardedAfterDismiss()
-                    completion?(earned)
+                    self.settleRewarded(earned: self.rewardEarned, reloadAfterDelay: true)
                 }
             }
         }
     }
 
-    nonisolated func ad(_ ad: GADFullScreenPresentingAd,
+    nonisolated func ad(_ ad: FullScreenPresentingAd,
                         didFailToPresentFullScreenContentWithError error: Error) {
         Task { @MainActor in
             self.isShowingAd = false
@@ -393,26 +458,13 @@ extension AdManager: GADFullScreenContentDelegate {
             print("[AdManager] Failed to present: \(error.localizedDescription)")
             #endif
 
-            if ad is GADInterstitialAd {
-                let completion = self.interstitialCompletion
-                self.interstitialCompletion = nil
-                self.interstitial = nil
-                self.preloadInterstitialIfNeeded()
-                completion?()
-
-            } else if ad is GADRewardedAd {
+            if ad is InterstitialAd {
+                self.settleInterstitial()
+            } else if ad is RewardedAd {
                 if self.isShowingCoinAd {
-                    let completion = self.coinAdCompletion
-                    self.coinAdCompletion = nil
-                    self.isShowingCoinAd = false
-                    self.preloadRewardedForCoinsIfNeeded()
-                    completion?(false)
+                    self.settleCoinAd(earned: false)
                 } else {
-                    let completion = self.rewardedCompletion
-                    self.rewardedCompletion = nil
-                    self.rewardedAd = nil
-                    self.preloadRewardedIfNeeded()
-                    completion?(false)
+                    self.settleRewarded(earned: false, reloadAfterDelay: false)
                 }
             }
         }

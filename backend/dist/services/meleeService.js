@@ -7,16 +7,39 @@
  * (decisive power gap / deity asymmetry / fatal env), the AI is only asked
  * to narrate. If the verdict is open, the AI picks the winning team.
  */
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getMeleeResult = getMeleeResult;
-const sdk_1 = __importDefault(require("@anthropic-ai/sdk"));
-const dotenv_1 = __importDefault(require("dotenv"));
-dotenv_1.default.config({ override: true });
+const anthropicClient_1 = require("./anthropicClient");
+const sanitize_1 = require("../middleware/sanitize");
 const meleeResolver_1 = require("./meleeResolver");
 const claudeService_1 = require("./claudeService");
+/** Estimate a real-scale tier for each CUSTOM fighter so melee verdicts are
+ *  deterministic & realistic too (no gram-scale custom team beating apex
+ *  predators). Known fighters pass through untouched. */
+/// Estimates a tier for every custom fighter across BOTH teams, making exactly
+/// one Haiku call per distinct creature name. Without this, three "Ladybug"
+/// fighters (or the same name on both teams) would each fire a concurrent,
+/// cache-missing estimate. Returns the two teams with `customTier` filled in.
+async function withCustomTiers(teamA, teamB, signal) {
+    // Map distinct lowercased name -> a representative display name.
+    const distinct = new Map();
+    for (const f of [...teamA, ...teamB]) {
+        if (!(0, claudeService_1.isCustomFighter)(f.id))
+            continue;
+        const display = f.name ?? f.id;
+        distinct.set(display.toLowerCase(), display);
+    }
+    // One estimate per distinct name, run concurrently.
+    const tiers = new Map();
+    await Promise.all([...distinct.entries()].map(async ([key, display]) => {
+        const est = await (0, claudeService_1.estimateCustomTier)(display, signal);
+        tiers.set(key, est?.tier ?? null);
+    }));
+    const fill = (team) => team.map(f => (0, claudeService_1.isCustomFighter)(f.id)
+        ? { ...f, customTier: tiers.get((f.name ?? f.id).toLowerCase()) ?? null }
+        : f);
+    return [fill(teamA), fill(teamB)];
+}
 function profileLine(f) {
     const name = f.name ?? claudeService_1.ANIMAL_NAMES_EXPORT[f.id] ?? f.id;
     const prof = claudeService_1.POWER_PROFILES[f.id];
@@ -49,10 +72,14 @@ function buildMeleePrompt(args) {
         teamBlock('B', args.teamB) + `\n\n` +
         arenaLine +
         `Rules for picking the winning team:\n` +
-        `• Sum up each side's effective combat power (tier, size, arena, weapons).\n` +
+        `• Sum up each side's effective combat power (tier, size${args.environmentName ? ', arena' : ''}, weapons).\n` +
         `• A bigger team has the advantage of numbers, BUT coordination losses and ` +
         `friendly fire mean a single apex predator can beat 2-3 weaker fighters.\n` +
-        `• Survival overrides everything: a sea creature on land is helpless even in a 3v1.\n` +
+        // Survival only exists when there IS an arena — this bullet used to be
+        // unconditional and directly contradicted the NO ARENA rules above it.
+        (args.environmentName
+            ? `• Survival overrides everything: a sea creature on land is helpless even in a 3v1.\n`
+            : '') +
         `• Never give a wildly improbable upset just for drama.\n\n` +
         `Narration requirements — write it EPIC, like a cinematic sports highlight reel for kids:\n` +
         `• EXACTLY 3 vivid sentences in present tense. Do not exceed 3 sentences. Pack them with action.\n` +
@@ -81,14 +108,20 @@ function validateMeleeResult(data, teamA, teamB) {
     const obj = data;
     const winningTeam = obj.winningTeam;
     if (winningTeam !== 'A' && winningTeam !== 'B') {
-        throw new Error(`Invalid winningTeam: ${JSON.stringify(winningTeam)}`);
+        throw new Error('Invalid winningTeam');
     }
-    const narration = obj.narration;
-    if (typeof narration !== 'string' || !narration.trim())
+    // Strip emoji BEFORE the non-empty check so an all-emoji field is rejected
+    // (retry/fallback) instead of shipping a blank card.
+    if (typeof obj.narration !== 'string')
         throw new Error('narration missing');
-    const funFact = obj.funFact;
-    if (typeof funFact !== 'string' || !funFact.trim())
+    const narration = (0, claudeService_1.stripEmoji)(obj.narration).slice(0, 1500);
+    if (!narration.trim() || !(0, sanitize_1.isSafeGeneratedText)(narration))
+        throw new Error('unsafe narration');
+    if (typeof obj.funFact !== 'string')
         throw new Error('funFact missing');
+    const funFact = (0, claudeService_1.stripEmoji)(obj.funFact).slice(0, 500);
+    if (!funFact.trim() || !(0, sanitize_1.isSafeGeneratedText)(funFact))
+        throw new Error('unsafe funFact');
     // mvp must be a fighter from the winning team
     const winningTeamFighters = winningTeam === 'A' ? teamA : teamB;
     let mvp = String(obj.mvp ?? '');
@@ -99,8 +132,8 @@ function validateMeleeResult(data, teamA, teamB) {
     const teamBHealth = Math.min(90, Math.max(10, Math.round(Number(obj.teamBHealth ?? 50))));
     return {
         winningTeam,
-        narration: narration.trim(),
-        funFact: funFact.trim(),
+        narration, // already emoji-stripped + validated non-empty
+        funFact, // already emoji-stripped + validated non-empty
         mvp,
         teamAHealth,
         teamBHealth,
@@ -109,30 +142,39 @@ function validateMeleeResult(data, teamA, teamB) {
 function enforceMeleeVerdict(result, verdict, teamA, teamB) {
     if (verdict.kind !== 'forced')
         return result;
-    if (result.winningTeam === verdict.winningTeam)
-        return result;
-    console.warn(JSON.stringify({
-        event: 'melee_verdict_override',
-        claudeWon: result.winningTeam,
-        forcedWon: verdict.winningTeam,
-        reason: verdict.reason,
-    }));
     const winningTeamFighters = verdict.winningTeam === 'A' ? teamA : teamB;
+    const agreed = result.winningTeam === verdict.winningTeam;
+    if (!agreed) {
+        console.warn(JSON.stringify({
+            event: 'melee_verdict_override',
+            claudeWon: result.winningTeam,
+            forcedWon: verdict.winningTeam,
+        }));
+    }
+    // A forced verdict means the resolver judged this a clearly dominant matchup.
+    // Regardless of whether Claude picked the right winner, the health bars must
+    // reflect that dominance — otherwise an agreed-on win can still render with a
+    // deceptively close (or inverted) score. We keep Claude's narration/MVP when
+    // it agreed, and only override the prose when it picked the wrong winner.
+    const mvpOnWinningTeam = winningTeamFighters.some(f => f.id === result.mvp);
     return {
         winningTeam: verdict.winningTeam,
-        narration: `Team ${verdict.winningTeam} dominated the matchup — overwhelming size, power, and natural advantage carried the day. The other team fought hard but simply could not match what their opponents brought to the fight.`,
+        narration: agreed
+            ? result.narration
+            : `Team ${verdict.winningTeam} dominated the matchup — overwhelming size, power, and natural advantage carried the day. The other team fought hard but simply could not match what their opponents brought to the fight.`,
         funFact: result.funFact,
-        mvp: winningTeamFighters[0].id,
+        mvp: agreed && mvpOnWinningTeam ? result.mvp : winningTeamFighters[0].id,
         teamAHealth: verdict.winningTeam === 'A' ? Math.max(70, result.teamAHealth) : Math.min(25, result.teamAHealth),
         teamBHealth: verdict.winningTeam === 'B' ? Math.max(70, result.teamBHealth) : Math.min(25, result.teamBHealth),
     };
 }
-async function getMeleeResult(teamA, teamB, environmentName) {
-    const client = new sdk_1.default({ apiKey: process.env.ANTHROPIC_API_KEY });
-    const verdict = (0, meleeResolver_1.resolveMelee)({ teamA, teamB, environmentName });
-    const response = await client.messages.create({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 500,
+async function getMeleeResult(teamA, teamB, environmentName, signal) {
+    // Estimate tiers for any custom fighters first, so the resolver can force a
+    // realistic verdict instead of deferring the whole melee to the AI.
+    const [tA, tB] = await withCustomTiers(teamA, teamB, signal);
+    const verdict = (0, meleeResolver_1.resolveMelee)({ teamA: tA, teamB: tB, environmentName });
+    const response = await (0, anthropicClient_1.createMessage)('melee', {
+        max_tokens: 420,
         top_p: 0.9,
         system: 'You are the cinematic narrator for "Who Would Win? Melee" — write like a kids action movie trailer, not a textbook. ' +
             'ACCURACY OVER UPSETS: pick the realistic winner. ' +
@@ -141,9 +183,9 @@ async function getMeleeResult(teamA, teamB, environmentName) {
             'EPIC NARRATION is non-negotiable. Every battle is a movie scene with stakes, sound, dust, and a hero moment. ' +
             'Respond with ONLY valid JSON.',
         messages: [
-            { role: 'user', content: buildMeleePrompt({ teamA, teamB, environmentName, verdict }) },
+            { role: 'user', content: buildMeleePrompt({ teamA: tA, teamB: tB, environmentName, verdict }) },
         ],
-    });
+    }, signal);
     const block = response.content[0];
     if (!block || block.type !== 'text')
         throw new Error('Unexpected response (melee)');

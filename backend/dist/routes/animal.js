@@ -1,57 +1,57 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const sdk_1 = __importDefault(require("@anthropic-ai/sdk"));
-const dotenv_1 = __importDefault(require("dotenv"));
 const rateLimit_1 = require("../middleware/rateLimit");
 const sanitize_1 = require("../middleware/sanitize");
-dotenv_1.default.config({ override: true });
+const anthropicClient_1 = require("../services/anthropicClient");
+const responseStore_1 = require("../services/responseStore");
+const appAttest_1 = require("../services/appAttest");
 const router = (0, express_1.Router)();
-const client = new sdk_1.default({ apiKey: process.env.ANTHROPIC_API_KEY });
-// GET /api/animal?name=wolverine
-// Shares the same per-IP rate limit bucket as /api/battle.
-router.get('/animal', rateLimit_1.rateLimitMiddleware, async (req, res) => {
-    const raw = req.query['name'];
-    // Type-check: query params can technically be arrays if ?name=a&name=b
-    if (typeof raw !== 'string') {
-        res.status(400).json({ error: 'name query parameter must be a single string' });
-        return;
-    }
-    const sanitized = (0, sanitize_1.sanitizeName)(raw);
+const DEFAULT_INFO = { emoji: '🐾', category: 'land', color: '#888888' };
+// Backward compatibility for App Store builds that put child-entered text in a
+// URL. Do not forward those requests to Anthropic; new builds use POST only.
+router.get('/animal', rateLimit_1.animalRateLimit, (_req, res) => {
+    res.setHeader('Deprecation', 'true');
+    res.json(DEFAULT_INFO);
+});
+router.post('/animal', appAttest_1.requireAppAttest, rateLimit_1.animalRateLimit, async (req, res) => {
+    const sanitized = (0, sanitize_1.sanitizeName)(req.body?.['name']);
     if (!sanitized.ok) {
-        // Return a safe default rather than erroring — the app will still work
-        res.json({ emoji: '🐾', category: 'land', color: '#888888' });
+        res.json(DEFAULT_INFO);
         return;
     }
-    const name = sanitized.value;
+    const controller = new AbortController();
+    res.once('close', () => { if (!res.writableEnded)
+        controller.abort(); });
     try {
-        const message = await client.messages.create({
-            model: 'claude-haiku-4-5',
-            max_tokens: 80, // Emoji + category + hex color — 80 tokens is plenty
-            messages: [{
-                    role: 'user',
-                    content: `For the animal or creature named "${name}", respond with ONLY a JSON object (no markdown):\n` +
-                        `{"emoji":"<single emoji>","category":"<land|sea|air|insect>","color":"<hex>"}\n` +
-                        `Use the closest animal emoji if no exact match exists.`,
-                }],
+        const { value } = await (0, responseStore_1.cachedOperation)('animal-info', sanitized.value.toLocaleLowerCase('en-US'), 7 * 24 * 60 * 60 * 1000, async () => {
+            const message = await (0, anthropicClient_1.createMessage)('animal', {
+                max_tokens: 60,
+                messages: [{
+                        role: 'user',
+                        content: `Pick the single best emoji for the creature named "${sanitized.value}" and classify it. ` +
+                            `Respond with only JSON: {"emoji":"<one emoji>","category":"<land|sea|air|insect>","color":"<#RRGGBB>"}`,
+                    }],
+            }, controller.signal);
+            const block = message.content.find(item => item.type === 'text');
+            const text = block && block.type === 'text' ? block.text : '';
+            const match = text.match(/\{[\s\S]*\}/);
+            const parsed = match ? JSON.parse(match[0]) : {};
+            const emoji = typeof parsed['emoji'] === 'string'
+                ? [...parsed['emoji']].slice(0, 4).join('') : DEFAULT_INFO.emoji;
+            const category = ['land', 'sea', 'air', 'insect'].includes(String(parsed['category']))
+                ? String(parsed['category']) : DEFAULT_INFO.category;
+            const color = typeof parsed['color'] === 'string' && /^#[0-9a-f]{6}$/i.test(parsed['color'])
+                ? parsed['color'] : DEFAULT_INFO.color;
+            return { emoji, category, color };
         });
-        const text = message.content[0].text.trim();
-        const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
-        const parsed = JSON.parse(cleaned);
-        // Validate the response shape before forwarding to the client
-        const emoji = typeof parsed['emoji'] === 'string' ? parsed['emoji'] : '🐾';
-        const category = ['land', 'sea', 'air', 'insect'].includes(parsed['category'])
-            ? parsed['category'] : 'land';
-        const color = typeof parsed['color'] === 'string' && /^#[0-9a-fA-F]{6}$/.test(parsed['color'])
-            ? parsed['color'] : '#888888';
-        res.json({ emoji, category, color });
+        res.json(value);
     }
-    catch (err) {
-        console.error('Animal info error:', err);
-        res.json({ emoji: '🐾', category: 'land', color: '#888888' });
+    catch (error) {
+        if (!controller.signal.aborted) {
+            console.error('[animal] lookup failed:', error.message);
+            res.json(DEFAULT_INFO);
+        }
     }
 });
 exports.default = router;

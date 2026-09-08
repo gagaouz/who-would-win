@@ -142,9 +142,10 @@ enum BattleEnvironment: String, CaseIterable, Codable, Identifiable {
         case .ocean:
             switch category {
             case .sea:         return EnvironmentMultiplier(speed: 1.30, power: 1.15, agility: 1.20, defense: 1.10)
-            case .land:        return EnvironmentMultiplier(speed: 0.60, power: 0.80, agility: 0.55, defense: 0.85)
+            case .land, .farm: return EnvironmentMultiplier(speed: 0.60, power: 0.80, agility: 0.55, defense: 0.85)
             case .air:         return EnvironmentMultiplier(speed: 0.50, power: 0.55, agility: 0.40, defense: 0.75)
             case .insect:      return EnvironmentMultiplier(speed: 0.70, power: 0.80, agility: 0.60, defense: 0.80)
+            case .pets:        return EnvironmentMultiplier(speed: 0.55, power: 0.70, agility: 0.55, defense: 0.75)
             case .prehistoric: return EnvironmentMultiplier(speed: 0.85, power: 1.05, agility: 0.80, defense: 1.00)
             case .fantasy:     return EnvironmentMultiplier(speed: 0.90, power: 0.90, agility: 0.90, defense: 0.90)
             case .mythic:      return EnvironmentMultiplier(speed: 0.95, power: 0.95, agility: 0.95, defense: 0.95)
@@ -155,9 +156,10 @@ enum BattleEnvironment: String, CaseIterable, Codable, Identifiable {
         case .sky:
             switch category {
             case .air:         return EnvironmentMultiplier(speed: 1.40, power: 1.10, agility: 1.35, defense: 0.90)
-            case .land:        return EnvironmentMultiplier(speed: 0.70, power: 0.85, agility: 0.50, defense: 0.85)
+            case .land, .farm: return EnvironmentMultiplier(speed: 0.70, power: 0.85, agility: 0.50, defense: 0.85)
             case .sea:         return EnvironmentMultiplier(speed: 0.30, power: 0.50, agility: 0.25, defense: 0.65)
             case .insect:      return EnvironmentMultiplier(speed: 1.10, power: 0.90, agility: 1.20, defense: 0.85)
+            case .pets:        return EnvironmentMultiplier(speed: 0.95, power: 0.85, agility: 0.95, defense: 0.85) // parakeets handle sky fine, dogs not so much
             case .prehistoric: return EnvironmentMultiplier(speed: 0.80, power: 1.00, agility: 0.75, defense: 0.90)
             case .fantasy:     return EnvironmentMultiplier(speed: 1.10, power: 1.10, agility: 1.10, defense: 1.00) // dragons fly
             case .mythic:      return EnvironmentMultiplier(speed: 1.05, power: 1.05, agility: 1.05, defense: 1.00)
@@ -168,9 +170,10 @@ enum BattleEnvironment: String, CaseIterable, Codable, Identifiable {
         case .arctic:
             switch category {
             case .sea:         return EnvironmentMultiplier(speed: 1.10, power: 1.05, agility: 1.10, defense: 1.20)
-            case .land:        return EnvironmentMultiplier(speed: 0.85, power: 0.95, agility: 0.85, defense: 1.10)
+            case .land, .farm: return EnvironmentMultiplier(speed: 0.85, power: 0.95, agility: 0.85, defense: 1.10)
             case .air:         return EnvironmentMultiplier(speed: 0.75, power: 0.80, agility: 0.70, defense: 0.80)
             case .insect:      return EnvironmentMultiplier(speed: 0.40, power: 0.50, agility: 0.40, defense: 0.50)
+            case .pets:        return EnvironmentMultiplier(speed: 0.80, power: 0.85, agility: 0.80, defense: 0.85) // huskies do OK, hamsters not so much
             case .prehistoric: return EnvironmentMultiplier(speed: 0.90, power: 1.10, agility: 0.85, defense: 1.20) // mammoths
             case .fantasy:     return EnvironmentMultiplier(speed: 0.90, power: 0.95, agility: 0.90, defense: 1.00)
             case .mythic:      return EnvironmentMultiplier(speed: 0.95, power: 1.00, agility: 0.95, defense: 1.05)
@@ -180,10 +183,11 @@ enum BattleEnvironment: String, CaseIterable, Codable, Identifiable {
 
         case .desert:
             switch category {
-            case .land:        return EnvironmentMultiplier(speed: 1.15, power: 1.00, agility: 1.10, defense: 0.90)
+            case .land, .farm: return EnvironmentMultiplier(speed: 1.15, power: 1.00, agility: 1.10, defense: 0.90)
             case .sea:         return EnvironmentMultiplier(speed: 0.25, power: 0.50, agility: 0.20, defense: 0.65)
             case .air:         return EnvironmentMultiplier(speed: 1.10, power: 0.95, agility: 1.10, defense: 0.85)
             case .insect:      return EnvironmentMultiplier(speed: 1.20, power: 1.10, agility: 1.20, defense: 1.00) // scorpions rule
+            case .pets:        return EnvironmentMultiplier(speed: 0.85, power: 0.85, agility: 0.85, defense: 0.80) // hot, dehydrated pets struggle
             case .prehistoric: return EnvironmentMultiplier(speed: 0.90, power: 1.05, agility: 0.85, defense: 1.00)
             case .fantasy:     return EnvironmentMultiplier(speed: 0.95, power: 0.95, agility: 0.95, defense: 0.95)
             case .mythic:      return EnvironmentMultiplier(speed: 1.00, power: 1.05, agility: 1.00, defense: 1.00)
@@ -193,10 +197,11 @@ enum BattleEnvironment: String, CaseIterable, Codable, Identifiable {
 
         case .jungle:
             switch category {
-            case .land:        return EnvironmentMultiplier(speed: 0.90, power: 1.05, agility: 1.20, defense: 0.90)
+            case .land, .farm: return EnvironmentMultiplier(speed: 0.90, power: 1.05, agility: 1.20, defense: 0.90)
             case .sea:         return EnvironmentMultiplier(speed: 0.70, power: 0.75, agility: 0.65, defense: 0.80)
             case .air:         return EnvironmentMultiplier(speed: 0.80, power: 0.90, agility: 0.85, defense: 0.90)
             case .insect:      return EnvironmentMultiplier(speed: 1.00, power: 1.15, agility: 1.10, defense: 1.00)
+            case .pets:        return EnvironmentMultiplier(speed: 0.85, power: 0.90, agility: 0.95, defense: 0.85)
             case .prehistoric: return EnvironmentMultiplier(speed: 0.85, power: 1.10, agility: 0.90, defense: 1.00)
             case .fantasy:     return EnvironmentMultiplier(speed: 1.10, power: 1.10, agility: 1.10, defense: 1.00)
             case .mythic:      return EnvironmentMultiplier(speed: 1.05, power: 1.10, agility: 1.10, defense: 1.00)
@@ -206,10 +211,11 @@ enum BattleEnvironment: String, CaseIterable, Codable, Identifiable {
 
         case .volcano:
             switch category {
-            case .land:        return EnvironmentMultiplier(speed: 0.80, power: 1.20, agility: 0.75, defense: 0.90)
+            case .land, .farm: return EnvironmentMultiplier(speed: 0.80, power: 1.20, agility: 0.75, defense: 0.90)
             case .sea:         return EnvironmentMultiplier(speed: 0.40, power: 0.50, agility: 0.35, defense: 0.60)
             case .air:         return EnvironmentMultiplier(speed: 0.75, power: 0.85, agility: 0.70, defense: 0.80)
             case .insect:      return EnvironmentMultiplier(speed: 0.50, power: 0.60, agility: 0.50, defense: 0.55)
+            case .pets:        return EnvironmentMultiplier(speed: 0.65, power: 0.75, agility: 0.65, defense: 0.70) // pets are NOT lava-resistant
             case .prehistoric: return EnvironmentMultiplier(speed: 1.00, power: 1.30, agility: 0.90, defense: 1.20) // ancient heat-resistance
             case .fantasy:     return EnvironmentMultiplier(speed: 1.10, power: 1.25, agility: 1.00, defense: 1.10) // dragons!
             case .mythic:      return EnvironmentMultiplier(speed: 1.05, power: 1.20, agility: 1.00, defense: 1.10)
@@ -219,10 +225,11 @@ enum BattleEnvironment: String, CaseIterable, Codable, Identifiable {
 
         case .night:
             switch category {
-            case .land:        return EnvironmentMultiplier(speed: 0.90, power: 0.95, agility: 1.00, defense: 0.90)
+            case .land, .farm: return EnvironmentMultiplier(speed: 0.90, power: 0.95, agility: 1.00, defense: 0.90)
             case .sea:         return EnvironmentMultiplier(speed: 0.90, power: 0.95, agility: 0.90, defense: 0.90)
             case .air:         return EnvironmentMultiplier(speed: 1.00, power: 1.05, agility: 1.10, defense: 0.95) // owls, bats
             case .insect:      return EnvironmentMultiplier(speed: 1.20, power: 1.10, agility: 1.20, defense: 1.00) // nocturnal insects
+            case .pets:        return EnvironmentMultiplier(speed: 0.95, power: 0.95, agility: 1.05, defense: 0.95) // cats prowl at night
             case .prehistoric: return EnvironmentMultiplier(speed: 0.90, power: 1.00, agility: 0.90, defense: 0.95)
             case .fantasy:     return EnvironmentMultiplier(speed: 1.15, power: 1.20, agility: 1.15, defense: 1.10) // dark creatures
             case .mythic:      return EnvironmentMultiplier(speed: 1.20, power: 1.25, agility: 1.20, defense: 1.10) // mythic beings thrive at night
@@ -232,10 +239,11 @@ enum BattleEnvironment: String, CaseIterable, Codable, Identifiable {
 
         case .storm:
             switch category {
-            case .land:        return EnvironmentMultiplier(speed: 0.75, power: 0.90, agility: 0.70, defense: 0.85)
+            case .land, .farm: return EnvironmentMultiplier(speed: 0.75, power: 0.90, agility: 0.70, defense: 0.85)
             case .sea:         return EnvironmentMultiplier(speed: 1.20, power: 1.15, agility: 1.10, defense: 0.90) // sea creatures ride storms
             case .air:         return EnvironmentMultiplier(speed: 1.25, power: 1.05, agility: 1.20, defense: 0.80) // eagles in wind
             case .insect:      return EnvironmentMultiplier(speed: 0.40, power: 0.50, agility: 0.40, defense: 0.50) // blown away
+            case .pets:        return EnvironmentMultiplier(speed: 0.65, power: 0.80, agility: 0.60, defense: 0.75) // scared of thunder
             case .prehistoric: return EnvironmentMultiplier(speed: 0.80, power: 1.05, agility: 0.75, defense: 0.95)
             case .fantasy:     return EnvironmentMultiplier(speed: 1.10, power: 1.15, agility: 1.05, defense: 1.00)
             case .mythic:      return EnvironmentMultiplier(speed: 1.10, power: 1.15, agility: 1.10, defense: 1.05)

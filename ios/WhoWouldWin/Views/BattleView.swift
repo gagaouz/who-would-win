@@ -182,7 +182,7 @@ struct BattleView: View {
                     HStack(spacing: 6) {
                         GoldCoin(size: 18)
                         Text("+\(coinStore.earnAnimationAmount)")
-                            .font(.system(size: 18, weight: .black, design: .rounded))
+                            .font(Theme.bungee(18))
                             .foregroundColor(Color(hex: "#FFD700"))
                     }
                     .padding(.horizontal, 14)
@@ -307,10 +307,13 @@ struct BattleView: View {
                 let justHitMilestone = UserSettings.shared.justUnlockedFantasy
                 let justHitOlympus   = UserSettings.shared.justUnlockedOlympus
                 let justHitTournament = UserSettings.shared.justUnlockedTournament
-                UserSettings.shared.recordBattle()
+                let streakMilestoneBonus = UserSettings.shared.recordBattle()
                 // Tournament battles don't earn normal battle coins — coin flow is wager-driven.
                 if onTournamentComplete == nil {
-                    CoinStore.shared.earnBattleCoins()
+                    CoinStore.shared.earnBattleCoins(milestoneBonus: streakMilestoneBonus)
+                } else if streakMilestoneBonus > 0 {
+                    // A streak milestone is mode-independent — still pay it in tournament mode.
+                    CoinStore.shared.earn(streakMilestoneBonus)
                 }
 
                 // First custom creature bonus (+50 coins, once ever) — show celebration banner
@@ -409,7 +412,7 @@ struct BattleView: View {
                     Text("VS")
                         .font(.custom("PressStart2P-Regular", size: 26))
                         .foregroundColor(Theme.orange)
-                        .shadow(color: Theme.orange.opacity(0.8), radius: 10, x: 0, y: 0)
+                        .shadow(color: Theme.orange.opacity(0.48), radius: 10, x: 0, y: 0)
                         .scaleEffect(vsScale)
                         .opacity(vsOpacity)
 
@@ -469,12 +472,12 @@ struct BattleView: View {
             }
 
             Text(animal.name.uppercased())
-                .font(.system(size: 14, weight: .black, design: .rounded))
+                .font(Theme.bungee(14))
                 .foregroundColor(accentColor)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
                 .minimumScaleFactor(0.65)
-                .shadow(color: accentColor.opacity(0.3), radius: 4, x: 0, y: 2)
+                .shadow(color: accentColor.opacity(0.18), radius: 4, x: 0, y: 2)
         }
         .padding(.vertical, 22)
         .padding(.horizontal, 10)
@@ -484,7 +487,7 @@ struct BattleView: View {
                 .fill(Color.white.opacity(0.07))
                 .overlay(RoundedRectangle(cornerRadius: 22).stroke(accentColor.opacity(0.3), lineWidth: 1.5))
         )
-        .shadow(color: accentColor.opacity(0.15), radius: 12, x: 0, y: 6)
+        .shadow(color: accentColor.opacity(0.09), radius: 12, x: 0, y: 6)
     }
 
     private func simpleHealthBar(color: Color) -> some View {
@@ -544,11 +547,11 @@ struct BattleView: View {
                     HStack(spacing: 5) {
                         Text(displayEnvironment.emoji).font(.system(size: 13))
                         Text(displayEnvironment.name.uppercased())
-                            .font(.system(size: 9, weight: .black, design: .rounded))
+                            .font(Theme.bungee(9))
                             .foregroundColor(displayEnvironment.accentColor)
                             .tracking(1.5)
                         Text("ARENA")
-                            .font(.system(size: 9, weight: .black, design: .rounded))
+                            .font(Theme.bungee(9))
                             .foregroundColor(displayEnvironment.accentColor.opacity(0.6))
                             .tracking(1.5)
                     }
@@ -621,7 +624,7 @@ struct BattleView: View {
                 Text(animal.emoji).font(.system(size: 26))
             }
             Text(animal.name.uppercased())
-                .font(.system(size: 9, weight: .black, design: .rounded))
+                .font(Theme.bungee(9))
                 .foregroundColor(color)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
@@ -753,7 +756,7 @@ struct BattleView: View {
                                     Text("IT'S A DRAW!")
                                         .font(Theme.bungee(26))
                                         .foregroundColor(Theme.gold)
-                                        .shadow(color: Theme.gold.opacity(0.4), radius: 8, x: 0, y: 0)
+                                        .shadow(color: Theme.gold.opacity(0.24), radius: 8, x: 0, y: 0)
                                     Text("Neither fighter could claim victory — their strengths were too evenly matched.")
                                         .font(Theme.bungee(13))
                                         .foregroundColor(.white.opacity(0.65))
@@ -765,7 +768,7 @@ struct BattleView: View {
                                 VStack(spacing: 6) {
                                     Text("🏆")
                                         .font(.system(size: 60))
-                                        .shadow(color: Theme.gold.opacity(0.6), radius: 12, x: 0, y: 0)
+                                        .shadow(color: Theme.gold.opacity(0.36), radius: 12, x: 0, y: 0)
 
                                     Text("WINNER!")
                                         .font(Theme.bungee(13))
@@ -781,7 +784,7 @@ struct BattleView: View {
                                             )
                                         )
                                         .multilineTextAlignment(.center)
-                                        .shadow(color: winnerAccent.opacity(0.5), radius: 10, x: 0, y: 0)
+                                        .shadow(color: winnerAccent.opacity(0.30), radius: 10, x: 0, y: 0)
                                 }
                             }
 
@@ -790,7 +793,7 @@ struct BattleView: View {
                             HStack(spacing: 5) {
                                 Text(displayEnvironment.emoji).font(.system(size: 12))
                                 Text("\(displayEnvironment.name.uppercased()) ARENA")
-                                    .font(.system(size: 9, weight: .black, design: .rounded))
+                                    .font(Theme.bungee(9))
                                     .foregroundColor(displayEnvironment.accentColor)
                                     .tracking(1)
                             }
@@ -827,7 +830,7 @@ struct BattleView: View {
                                                         lineWidth: 2
                                                     )
                                             )
-                                            .shadow(color: winnerAccent.opacity(0.35), radius: 12, x: 0, y: 6)
+                                            .shadow(color: winnerAccent.opacity(0.21), radius: 12, x: 0, y: 6)
                                             .padding(.horizontal, 12)
                                     case .failure:
                                         EmptyView()
@@ -908,7 +911,7 @@ struct BattleView: View {
                                     HStack(spacing: 6) {
                                         Text("✨")
                                         Text("FUN FACT")
-                                            .font(.system(size: 12, weight: .black, design: .rounded))
+                                            .font(Theme.bungee(12))
                                             .foregroundColor(Theme.teal)
                                             .tracking(1.5)
                                     }
@@ -1006,7 +1009,7 @@ struct BattleView: View {
                             startPoint: .leading, endPoint: .trailing
                         ))
                 )
-                .shadow(color: displayEnvironment.accentColor.opacity(0.4), radius: 10, x: 0, y: 4)
+                .shadow(color: displayEnvironment.accentColor.opacity(0.24), radius: 10, x: 0, y: 4)
             }
             .buttonStyle(PressableButtonStyle())
 
@@ -1292,7 +1295,7 @@ struct BattleView: View {
                     .foregroundColor(.white)
                     .tracking(1.5)
                     .multilineTextAlignment(.center)
-                    .shadow(color: glow.opacity(0.8), radius: 14, x: 0, y: 0)
+                    .shadow(color: glow.opacity(0.48), radius: 14, x: 0, y: 0)
                     .fixedSize(horizontal: false, vertical: true)
                 Text(subtitle)
                     .font(Theme.bungee(15))
@@ -1326,7 +1329,7 @@ struct BattleView: View {
                         RoundedRectangle(cornerRadius: 26)
                             .stroke(glow.opacity(0.7), lineWidth: 2)
                     )
-                    .shadow(color: glow.opacity(0.5), radius: 20, x: 0, y: 0)
+                    .shadow(color: glow.opacity(0.30), radius: 20, x: 0, y: 0)
             )
             .padding(.horizontal, 24)
         }
@@ -1452,7 +1455,7 @@ struct ArenaPickerSheet: View {
                                             .font(.system(size: 28))
                                             .opacity(isUnlocked ? 1.0 : 0.4)
                                         Text(env.name.uppercased())
-                                            .font(.system(size: 9, weight: .black, design: .rounded))
+                                            .font(Theme.bungee(9))
                                             .foregroundColor(isSel ? env.accentColor : .white.opacity(0.6))
                                             .lineLimit(1)
                                             .minimumScaleFactor(0.6)
@@ -1507,7 +1510,7 @@ struct ArenaPickerSheet: View {
                                     startPoint: .leading, endPoint: .trailing
                                 ))
                         )
-                        .shadow(color: selected.accentColor.opacity(0.4), radius: 10, x: 0, y: 5)
+                        .shadow(color: selected.accentColor.opacity(0.24), radius: 10, x: 0, y: 5)
                     }
                     .buttonStyle(PressableButtonStyle())
                     .padding(.horizontal, 16)
@@ -1582,6 +1585,9 @@ struct ConfettiView: View {
             }
         }
         .onAppear {
+            // Respect Reduce Motion — a screenful of falling, spinning pieces is
+            // exactly the large-area motion that setting exists to suppress.
+            guard !UIAccessibility.isReduceMotionEnabled else { return }
             // Small delay before triggering so SwiftUI renders positions first
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                 isAnimating = true
@@ -1609,7 +1615,7 @@ struct AdPromptSheet: View {
                     .padding(.bottom, 14)
 
                 Text("ENJOYING THE APP?")
-                    .font(.system(size: 20, weight: .black, design: .rounded))
+                    .font(Theme.bungee(20))
                     .foregroundColor(.white)
                     .padding(.bottom, 8)
 
@@ -1626,7 +1632,7 @@ struct AdPromptSheet: View {
                     Button {
                         Task {
                             if let product = store.removeAdsProduct {
-                                let success = await store.purchase(product)
+                                let success = await store.purchase(product) == .success
                                 if success { isPresented = false }
                             } else {
                                 #if DEBUG
@@ -1641,7 +1647,7 @@ struct AdPromptSheet: View {
                         HStack(spacing: 8) {
                             Text("🚫")
                             Text(store.removeAdsProduct.map { "Remove Ads — \($0.displayPrice)" } ?? "Remove Ads — $4.99")
-                                .font(.system(size: 16, weight: .black, design: .rounded))
+                                .font(Theme.bungee(16))
                                 .foregroundColor(.white)
                         }
                         .frame(maxWidth: .infinity)
@@ -1650,7 +1656,7 @@ struct AdPromptSheet: View {
                             RoundedRectangle(cornerRadius: 18)
                                 .fill(LinearGradient(colors: [Theme.orange, Theme.yellow], startPoint: .leading, endPoint: .trailing))
                         )
-                        .shadow(color: Theme.orange.opacity(0.45), radius: 10, x: 0, y: 5)
+                        .shadow(color: Theme.orange.opacity(0.27), radius: 10, x: 0, y: 5)
                     }
                     .buttonStyle(PressableButtonStyle())
                     .padding(.horizontal, 24)
@@ -1727,7 +1733,7 @@ struct FirstCustomBanner: View {
                         startPoint: .leading, endPoint: .trailing
                     )
                 )
-                .shadow(color: Theme.neonGrn.opacity(0.6), radius: 8, x: 0, y: 0)
+                .shadow(color: Theme.neonGrn.opacity(0.36), radius: 8, x: 0, y: 0)
                 .multilineTextAlignment(.center)
 
             Text("You created your first custom fighter!")
@@ -1752,7 +1758,7 @@ struct FirstCustomBanner: View {
                         .stroke(Theme.neonGrn.opacity(0.5), lineWidth: 1.5)
                 )
         )
-        .shadow(color: Theme.neonGrn.opacity(0.3), radius: 16, x: 0, y: 6)
+        .shadow(color: Theme.neonGrn.opacity(0.18), radius: 16, x: 0, y: 6)
         .padding(.horizontal, 28)
         .transition(.move(edge: .top).combined(with: .opacity))
         .onAppear {

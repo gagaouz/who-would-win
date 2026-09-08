@@ -156,6 +156,22 @@ struct Tournament: Codable, Equatable, Identifiable {
     var ledger: [LedgerEntry]
     let schemaVersion: Int    // for forward compatibility
 
+    // Payout-resolution bookkeeping. These exist so payouts survive app kills:
+    // the views' @State guards reset on relaunch, and without persisted flags a
+    // kid could re-enter the results/trophy screen and be paid twice. Optionals
+    // with nil-coalescing accessors so tournaments saved before this field
+    // existed still decode.
+    var resolvedRounds: Set<Int>? = []
+    var grandChampionResolved: Bool? = false
+
+    /// True once round `r`'s wager payouts have been credited.
+    func isRoundResolved(_ r: Int) -> Bool { (resolvedRounds ?? []).contains(r) }
+    mutating func markRoundResolved(_ r: Int) {
+        var set = resolvedRounds ?? []
+        set.insert(r)
+        resolvedRounds = set
+    }
+
     static let currentSchemaVersion = 1
 
     /// Convenience: which round's wager phase we're in, if any.

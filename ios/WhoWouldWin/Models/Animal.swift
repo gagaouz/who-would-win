@@ -36,6 +36,8 @@ enum AnimalCategory: String, CaseIterable, Sendable, Codable {
     case sea        = "SEA"
     case air        = "AIR"
     case insect     = "BUGS"
+    case pets       = "PETS"     // free — always unlocked
+    case farm       = "FARM"     // free — always unlocked
     case prehistoric = "DINOS"   // unlocks at 100 battles
     case fantasy    = "FANTASY"  // unlocks at 250 battles
     case mythic     = "MYTHIC"   // unlocks at 500 battles

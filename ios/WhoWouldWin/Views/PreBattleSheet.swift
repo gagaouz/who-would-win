@@ -59,7 +59,7 @@ struct PreBattleSheet: View {
                                 startPoint: .topLeading, endPoint: .bottomTrailing
                             ))
                             .frame(width: 44, height: 44)
-                            .shadow(color: Theme.orange.opacity(0.5), radius: 8)
+                            .shadow(color: Theme.orange.opacity(0.30), radius: 8)
                         Text("VS").pixelText(size: 10, color: .white)
                     }
                     Spacer()
@@ -131,7 +131,7 @@ struct PreBattleSheet: View {
                             .overlay(RoundedRectangle(cornerRadius: 22)
                                 .stroke(Color.white.opacity(0.2), lineWidth: 1))
                     )
-                    .shadow(color: Theme.orange.opacity(0.6), radius: 12, x: 0, y: 6)
+                    .shadow(color: Theme.orange.opacity(0.36), radius: 12, x: 0, y: 6)
                 }
                 .buttonStyle(PressableButtonStyle())
                 .padding(.horizontal, 24)

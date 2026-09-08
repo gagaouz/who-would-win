@@ -1,20 +1,12 @@
 import SwiftUI
 
 /// Lets the player hand-pick fighters for the tournament.
-///
-/// - `.manual` mode: player must select exactly `targetCount` fighters, then CONTINUE is enabled.
-/// - `.hybrid` mode: player may select 1..<targetCount fighters; the remainder will be auto-filled
-///                   when the tournament is created.
-///
-/// On CONTINUE, passes the picked animals out to the parent which calls
-/// `TournamentManager.startNew(size:selectionMode:manualPicks:)`.
 struct TournamentCreaturePickerView: View {
     let targetCount: Int
-    let mode: SelectionMode    // .manual or .hybrid
+    let mode: SelectionMode
     let onContinue: ([Animal]) -> Void
     let onBack: () -> Void
 
-    @Environment(\.colorScheme) private var scheme
     @ObservedObject private var settings = UserSettings.shared
     @ObservedObject private var coinStore = CoinStore.shared
     @StateObject private var pickerVM = AnimalPickerViewModel()
@@ -23,21 +15,33 @@ struct TournamentCreaturePickerView: View {
     @State private var selected: [Animal] = []
     @State private var showNotAffordableAlert = false
 
-    private let columns = Array(repeating: GridItem(.flexible(), spacing: 10), count: 3)
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    private var isIPad: Bool { sizeClass == .regular }
+
+    private var columns: [GridItem] {
+        let count = isIPad ? 5 : 3
+        let spacing: CGFloat = isIPad ? 14 : 10
+        return Array(repeating: GridItem(.flexible(), spacing: spacing), count: count)
+    }
 
     var body: some View {
         ZStack {
-            Theme.battleBg(scheme).ignoresSafeArea()
+            SkyBG(variant: .meadow)
 
-            VStack(spacing: 12) {
-                header
-                searchBar
-                categoryPills
-                selectionStrip
-                gridView
-                continueBar
+            HStack(spacing: 0) {
+                Spacer(minLength: 0)
+                VStack(spacing: isIPad ? 14 : 10) {
+                    header
+                    searchBar
+                    categoryPills
+                    selectionStrip
+                    gridView
+                    continueBar
+                }
+                .padding(.horizontal, isIPad ? 24 : 14)
+                .frame(maxWidth: isIPad ? 880 : .infinity)
+                Spacer(minLength: 0)
             }
-            .padding(.horizontal, 16)
         }
         .navigationBarBackButtonHidden(true)
         .onChange(of: search) { newValue in
@@ -55,25 +59,26 @@ struct TournamentCreaturePickerView: View {
     private var header: some View {
         HStack {
             Button(action: onBack) {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundColor(.white)
-                    .frame(width: 36, height: 36)
-                    .background(Circle().fill(.ultraThinMaterial))
+                Text("←")
+                    .font(Kids.fredoka(isIPad ? 26 : 20, weight: .bold))
+                    .foregroundColor(Kids.ink)
+                    .frame(width: isIPad ? 50 : 38, height: isIPad ? 50 : 38)
+                    .background(Circle().fill(.white).overlay(Circle().stroke(Kids.ink, lineWidth: 2.5)))
             }
+            .buttonStyle(.plain)
             Spacer()
-            VStack(spacing: 2) {
+            VStack(spacing: isIPad ? 4 : 2) {
                 Text(mode == .manual ? "PICK ALL \(targetCount)" : "PICK SOME")
-                    .font(Theme.bungee(18))
-                    .foregroundColor(.white)
+                    .font(Kids.fredoka(isIPad ? 22 : 16, weight: .bold))
+                    .foregroundColor(Kids.ink)
                 Text(progressText)
-                    .font(Theme.bungee(11))
-                    .foregroundColor(.white.opacity(0.75))
+                    .font(Kids.nunito(isIPad ? 14 : 11, weight: .bold))
+                    .foregroundColor(Kids.ink)
             }
             Spacer()
-            Color.clear.frame(width: 36, height: 36)
+            CoinChip(count: coinStore.balance)
         }
-        .padding(.top, 8)
+        .padding(.top, isIPad ? 14 : 8)
     }
 
     private var progressText: String {
@@ -87,92 +92,139 @@ struct TournamentCreaturePickerView: View {
     // MARK: - Search
 
     private var searchBar: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: isIPad ? 12 : 8) {
             Image(systemName: "magnifyingglass")
-                .foregroundColor(.white.opacity(0.6))
+                .font(.system(size: isIPad ? 18 : 14, weight: .semibold))
+                .foregroundColor(Kids.inkSoft)
             TextField("Search or add any fighter…", text: $search)
+                .font(Kids.nunito(isIPad ? 17 : 13, weight: .bold))
+                .foregroundColor(Kids.ink)
+                .autocorrectionDisabled()
                 .textInputAutocapitalization(.never)
-                .autocorrectionDisabled(true)
-                .foregroundColor(.white)
             if !search.isEmpty {
                 Button { search = "" } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.white.opacity(0.5))
-                }
+                        .font(.system(size: isIPad ? 18 : 14))
+                        .foregroundColor(Kids.inkSoft)
+                }.buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-        .background(Color.white.opacity(0.10))
-        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.white.opacity(0.18), lineWidth: 1))
-        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .padding(.horizontal, isIPad ? 16 : 12).padding(.vertical, isIPad ? 13 : 9)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.white)
+                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+        )
+        .shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 2)
     }
 
     // MARK: - Category pills
 
     private var categoryPills: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
+            HStack(spacing: isIPad ? 9 : 6) {
                 ForEach(availableCategories, id: \.self) { cat in
-                    Button { selectedCategory = cat } label: {
-                        HStack(spacing: 5) {
-                            Text(Theme.categoryEmoji(cat))
-                            Text(Theme.categoryLabel(cat).uppercased())
-                                .font(Theme.bungee(11))
-                                .tracking(1)
+                    Button {
+                        HapticsService.shared.tap()
+                        withAnimation(.spring(response: 0.25, dampingFraction: 0.7)) {
+                            selectedCategory = cat
                         }
-                        .foregroundColor(selectedCategory == cat ? .white : .white.opacity(0.6))
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 14)
+                    } label: {
+                        HStack(spacing: isIPad ? 6 : 4) {
+                            Text(categoryEmoji(cat)).font(.system(size: isIPad ? 18 : 14))
+                            Text(categoryLabel(cat))
+                                .font(Kids.fredoka(isIPad ? 15 : 12, weight: .bold))
+                                .foregroundColor(Kids.ink)
+                        }
+                        .padding(.horizontal, isIPad ? 14 : 10).padding(.vertical, isIPad ? 9 : 6)
                         .background(
-                            Capsule()
-                                .fill(selectedCategory == cat
-                                      ? Theme.categoryAccent(cat).opacity(0.45)
-                                      : Color.white.opacity(0.08))
+                            Capsule().fill(selectedCategory == cat ? categoryColor(cat) : .white)
+                                .overlay(selectedCategory == cat ? Capsule().fill(Kids.sheen) : nil)
+                                .overlay(Capsule().stroke(Kids.ink, lineWidth: 2))
                         )
-                        .overlay(
-                            Capsule().stroke(
-                                selectedCategory == cat ? Theme.categoryAccent(cat) : Color.white.opacity(0.15),
-                                lineWidth: selectedCategory == cat ? 1.8 : 1
-                            )
-                        )
+                        .offset(y: selectedCategory == cat ? -1 : 0)
                     }
-                    .buttonStyle(PressableButtonStyle())
+                    .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, 2)
+            .padding(.vertical, 4)
         }
     }
 
-    // MARK: - Selection strip (shows picked fighters)
+    private func categoryEmoji(_ c: AnimalCategory) -> String {
+        switch c {
+        case .all: return "🌈"
+        case .land: return "🌳"
+        case .sea: return "🌊"
+        case .air: return "☁️"
+        case .insect: return "🐛"
+        case .pets: return "🐶"
+        case .farm: return "🚜"
+        case .prehistoric: return "🦖"
+        case .fantasy: return "🐉"
+        case .mythic: return "🔱"
+        case .olympus: return "⚡"
+        }
+    }
+    private func categoryLabel(_ c: AnimalCategory) -> String {
+        switch c {
+        case .all: return "All"
+        case .land: return "Land"
+        case .sea: return "Sea"
+        case .air: return "Air"
+        case .insect: return "Bugs"
+        case .pets: return "Pets"
+        case .farm: return "Farm"
+        case .prehistoric: return "Dinos"
+        case .fantasy: return "Fantasy"
+        case .mythic: return "Mythic"
+        case .olympus: return "Olympus"
+        }
+    }
+    private func categoryColor(_ c: AnimalCategory) -> Color {
+        switch c {
+        case .all: return Kids.pink
+        case .land: return Kids.grass
+        case .sea: return Kids.sky
+        case .air: return Kids.grape
+        case .insect: return Kids.peach
+        case .pets: return Color(hex: "#F4B6C2")
+        case .farm: return Color(hex: "#E8B96E")
+        case .prehistoric: return Kids.sun
+        case .fantasy: return Kids.grape
+        case .mythic: return Kids.sunDeep
+        case .olympus: return Kids.sun
+        }
+    }
+
+    // MARK: - Selection strip
 
     @ViewBuilder
     private var selectionStrip: some View {
         if !selected.isEmpty {
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
+                HStack(spacing: isIPad ? 11 : 8) {
                     ForEach(selected) { animal in
                         Button { toggle(animal) } label: {
-                            HStack(spacing: 6) {
-                                AnimalAvatar(animal: animal, size: 20, cornerRadius: 5)
+                            HStack(spacing: isIPad ? 7 : 5) {
+                                Text(animal.emoji).font(.system(size: isIPad ? 19 : 14))
                                 Text(animal.name)
-                                    .font(Theme.bungee(12))
-                                    .foregroundColor(.white)
-                                Image(systemName: "xmark.circle.fill")
-                                    .font(.system(size: 13))
-                                    .foregroundColor(.white.opacity(0.7))
+                                    .font(Kids.fredoka(isIPad ? 14 : 11, weight: .bold))
+                                    .foregroundColor(Kids.ink)
+                                Text("✕")
+                                    .font(Kids.fredoka(isIPad ? 15 : 12, weight: .bold))
+                                    .foregroundColor(Kids.ink.opacity(0.5))
                             }
-                            .padding(.vertical, 6)
-                            .padding(.horizontal, 10)
+                            .padding(.vertical, isIPad ? 7 : 5).padding(.horizontal, isIPad ? 13 : 10)
                             .background(
-                                Capsule().fill(Theme.gold.opacity(0.35))
+                                Capsule().fill(Kids.sun)
+                                    .overlay(Capsule().stroke(Kids.ink, lineWidth: 1.5))
                             )
-                            .overlay(Capsule().stroke(Theme.gold, lineWidth: 1.2))
                         }
-                        .buttonStyle(PressableButtonStyle())
+                        .buttonStyle(.plain)
                     }
                 }
-                .padding(.horizontal, 2)
+                .padding(.vertical, 2)
             }
         }
     }
@@ -181,40 +233,62 @@ struct TournamentCreaturePickerView: View {
 
     private var gridView: some View {
         ScrollView {
-            VStack(spacing: 12) {
+            VStack(spacing: isIPad ? 16 : 12) {
                 if !filteredAnimals.isEmpty {
-                    LazyVGrid(columns: columns, spacing: 10) {
-                        // Random pick — first cell when browsing (hidden during active search)
+                    LazyVGrid(columns: columns, spacing: isIPad ? 14 : 10) {
                         if search.trimmingCharacters(in: .whitespaces).isEmpty {
-                            RandomPickCard {
-                                if let pick = randomUnlockedPick() {
-                                    toggle(pick)
-                                }
-                            }
+                            surpriseCard
                         }
                         ForEach(filteredAnimals, id: \.id) { animal in
-                            AnimalCard(
+                            TournamentPickCard(
                                 animal: animal,
-                                isSelected: selected.contains(where: { $0.id == animal.id }),
-                                isDisabled: selected.count >= targetCount
-                                    && !selected.contains(where: { $0.id == animal.id }),
-                                isLocked: false,
-                                onTap: { toggle(animal) }
-                            )
+                                selected: selected.contains(where: { $0.id == animal.id }),
+                                disabled: selected.count >= targetCount && !selected.contains(where: { $0.id == animal.id }),
+                                isIPad: isIPad
+                            ) {
+                                HapticsService.shared.tap()
+                                toggle(animal)
+                            }
                         }
                     }
-                    .padding(.horizontal, 4) // prevents scale/badge visual bleed at grid edges
+                    .padding(.horizontal, isIPad ? 6 : 4)
                 }
 
-                // Custom fighter — when search has no built-in matches
                 if filteredAnimals.isEmpty, let custom = pickerVM.customAnimal {
                     customFighterCard(custom)
                 }
             }
-            .padding(.horizontal, 2)
             .padding(.vertical, 4)
         }
-        .clipped() // clips scaleEffect(1.06) overflow from selected cards
+        .clipped()
+    }
+
+    private var surpriseCard: some View {
+        Button {
+            HapticsService.shared.medium()
+            if let pick = randomUnlockedPick() {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.62)) {
+                    toggle(pick)
+                }
+            }
+        } label: {
+            ZStack {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(Kids.grape)
+                    .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Kids.sheen))
+                    .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                    .aspectRatio(1, contentMode: .fit)
+                VStack(spacing: isIPad ? 4 : 2) {
+                    Text("🎲").font(.system(size: isIPad ? 56 : 38))
+                    Text("SURPRISE!")
+                        .font(Kids.fredoka(isIPad ? 13 : 10, weight: .bold))
+                        .foregroundColor(.white)
+                        .lineLimit(1).minimumScaleFactor(0.7)
+                }
+            }
+            .shadow(color: Kids.ink.opacity(0.09), radius: 0, x: 0, y: 3)
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Custom fighter card
@@ -226,31 +300,37 @@ struct TournamentCreaturePickerView: View {
         let alreadyPicked = selected.contains(where: { $0.id == animal.id })
         let slotsFull = selected.count >= targetCount && !alreadyPicked
 
-        VStack(spacing: 12) {
-            HStack(spacing: 12) {
+        VStack(spacing: 10) {
+            HStack(spacing: 10) {
                 Group {
                     if let url = pickerVM.customAnimalImageURL {
                         AsyncImage(url: url) { phase in
-                            if case .success(let img) = phase { img.resizable().scaledToFill() }
-                            else { Text(pickerVM.customAnimalEmoji).font(.system(size: 28)) }
+                            if case .success(let img) = phase {
+                                img.resizable().scaledToFill()
+                            } else {
+                                Text(pickerVM.customAnimalEmoji).font(.system(size: 28))
+                            }
                         }
                     } else {
                         Text(pickerVM.customAnimalEmoji).font(.system(size: 28))
                     }
                 }
-                .frame(width: 48, height: 48)
+                .frame(width: 50, height: 50)
                 .clipShape(Circle())
-                .background(Circle().fill(Color.white.opacity(0.1)))
+                .overlay(Circle().stroke(Kids.ink, lineWidth: 2.5))
 
-                VStack(alignment: .leading, spacing: 3) {
+                VStack(alignment: .leading, spacing: 2) {
                     Text("Add \"\(animal.name)\"")
-                        .font(Theme.bungee(14))
-                        .foregroundColor(.white)
+                        .font(Kids.fredoka(14, weight: .bold))
+                        .foregroundColor(Kids.ink)
                     HStack(spacing: 4) {
-                        Text("Custom fighter · \(cost)")
-                            .font(.system(size: 12, weight: .medium, design: .rounded))
-                            .foregroundColor(.white.opacity(0.5))
-                        GoldCoin(size: 12)
+                        Text("Custom fighter")
+                            .font(Kids.nunito(11, weight: .bold))
+                            .foregroundColor(Kids.inkSoft)
+                        Text("· \(cost)")
+                            .font(Kids.fredoka(11, weight: .bold))
+                            .foregroundColor(Kids.ink)
+                        KidsGoldCoin(size: 12)
                     }
                 }
                 Spacer()
@@ -259,47 +339,47 @@ struct TournamentCreaturePickerView: View {
             if alreadyPicked {
                 Button { toggle(animal) } label: {
                     Text("✓ Added — tap to remove")
-                        .font(Theme.bungee(12))
-                        .foregroundColor(Theme.gold)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 40)
-                        .background(RoundedRectangle(cornerRadius: 12).fill(Theme.gold.opacity(0.15)))
-                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Theme.gold.opacity(0.4), lineWidth: 1))
+                        .font(Kids.fredoka(13, weight: .bold))
+                        .foregroundColor(Kids.ink)
+                        .frame(maxWidth: .infinity, minHeight: 40)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(Kids.grass)
+                                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2))
+                        )
                 }
-                .buttonStyle(PressableButtonStyle())
+                .buttonStyle(.plain)
             } else if slotsFull {
                 Text("Bracket full — remove a fighter first")
-                    .font(Theme.bungee(11))
-                    .foregroundColor(.white.opacity(0.4))
+                    .font(Kids.fredoka(11, weight: .bold))
+                    .foregroundColor(Kids.inkSoft)
                     .frame(maxWidth: .infinity)
             } else {
                 Button {
                     if coinStore.spend(cost) {
                         toggle(animal)
-                        // Clear the search box as visual confirmation that the custom
-                        // fighter was successfully added to the bracket.
                         search = ""
                     } else {
                         showNotAffordableAlert = true
                     }
                 } label: {
-                    let btnBg: AnyShapeStyle = canAfford
-                        ? AnyShapeStyle(LinearGradient(colors: [Theme.gold.opacity(0.4), Theme.gold.opacity(0.2)],
-                                                       startPoint: .leading, endPoint: .trailing))
-                        : AnyShapeStyle(Color.white.opacity(0.07))
-                    let btnStroke: Color = canAfford ? Theme.gold.opacity(0.5) : Color.white.opacity(0.15)
-                    HStack(spacing: 8) {
-                        GoldCoin(size: 18)
+                    HStack(spacing: 6) {
+                        KidsGoldCoin(size: 16)
                         Text("Add for \(cost) coins")
-                            .font(Theme.bungee(14))
-                            .foregroundColor(canAfford ? .white : .white.opacity(0.4))
+                            .font(Kids.fredoka(13, weight: .bold))
+                            .foregroundColor(Kids.ink)
                     }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 46)
-                    .background(RoundedRectangle(cornerRadius: 14).fill(btnBg))
-                    .overlay(RoundedRectangle(cornerRadius: 14).stroke(btnStroke, lineWidth: 1))
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(canAfford ? Kids.sun : Color(hex: "#E8DFF5"))
+                            .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
+                            .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                    )
+                    .shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+                    .opacity(canAfford ? 1.0 : 0.6)
                 }
-                .buttonStyle(PressableButtonStyle())
+                .buttonStyle(.plain)
                 .disabled(!canAfford)
 
                 if !canAfford {
@@ -309,33 +389,29 @@ struct TournamentCreaturePickerView: View {
         }
         .padding(14)
         .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color.white.opacity(0.07))
-                .overlay(RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color.white.opacity(0.18), lineWidth: 1))
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(.white)
+                .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Kids.sun, lineWidth: 3))
         )
+        .shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
     }
 
     // MARK: - Continue bar
 
     private var continueBar: some View {
-        VStack(spacing: 6) {
-            Button {
-                onContinue(selected)
-            } label: {
-                Text(mode == .manual ? "ROLL BRACKET (\(selected.count)/\(targetCount))" : "ROLL BRACKET")
-            }
-            .buttonStyle(MegaButtonStyle(
-                color: continueEnabled ? .orange : .blue,
-                height: 62, cornerRadius: 20, fontSize: 18
-            ))
-            .disabled(!continueEnabled)
-            .opacity(continueEnabled ? 1.0 : 0.5)
+        KidButton(
+            title: mode == .manual ? "ROLL BRACKET (\(selected.count)/\(targetCount))" : "ROLL BRACKET",
+            icon: "🎲",
+            color: continueEnabled ? Kids.grass : Color(hex: "#CDC3E0"),
+            size: .lg
+        ) {
+            HapticsService.shared.tap()
+            onContinue(selected)
         }
-        .padding(.bottom, 6)
+        .disabled(!continueEnabled)
+        .opacity(continueEnabled ? 1.0 : 0.55)
+        .padding(.bottom, 8)
     }
-
-    // MARK: - Derived
 
     private var continueEnabled: Bool {
         switch mode {
@@ -346,7 +422,7 @@ struct TournamentCreaturePickerView: View {
     }
 
     private var availableCategories: [AnimalCategory] {
-        var cats: [AnimalCategory] = [.all, .land, .sea, .air, .insect]
+        var cats: [AnimalCategory] = [.all, .land, .sea, .air, .insect, .pets, .farm]
         if settings.isPrehistoricUnlocked { cats.append(.prehistoric) }
         if settings.isFantasyUnlocked     { cats.append(.fantasy) }
         if settings.isMythicUnlocked      { cats.append(.mythic) }
@@ -357,7 +433,7 @@ struct TournamentCreaturePickerView: View {
     private var unlockedAnimals: [Animal] {
         Animals.all.filter { animal in
             switch animal.category {
-            case .all, .land, .sea, .air, .insect: return true
+            case .all, .land, .sea, .air, .insect, .pets, .farm: return true
             case .prehistoric: return settings.isPrehistoricUnlocked
             case .fantasy:     return settings.isFantasyUnlocked
             case .mythic:      return settings.isMythicUnlocked
@@ -378,12 +454,7 @@ struct TournamentCreaturePickerView: View {
         return list
     }
 
-    // MARK: - Random pick
-
-    /// Random element from the currently-visible unlocked animals that
-    /// aren't already in the selected bracket, and with room to add.
     private func randomUnlockedPick() -> Animal? {
-        // Respect the bracket size — don't add if already full
         if selected.count >= targetCount { return nil }
         let pool = filteredAnimals.filter { animal in
             !selected.contains(where: { $0.id == animal.id })
@@ -391,15 +462,84 @@ struct TournamentCreaturePickerView: View {
         return pool.randomElement()
     }
 
-    // MARK: - Actions
-
     private func toggle(_ animal: Animal) {
         if let idx = selected.firstIndex(where: { $0.id == animal.id }) {
             selected.remove(at: idx)
         } else {
-            if mode == .manual && selected.count >= targetCount { return }
-            if selected.count >= targetCount { return } // hybrid too
+            if selected.count >= targetCount { return }
             selected.append(animal)
         }
+    }
+}
+
+// MARK: - Pick card
+
+private struct TournamentPickCard: View {
+    let animal: Animal
+    let selected: Bool
+    let disabled: Bool
+    let isIPad: Bool
+    let onTap: () -> Void
+
+    private var bundledImage: UIImage? {
+        guard let name = animal.creatureAssetName else { return nil }
+        return UIImage(named: name)
+    }
+
+    private var cardColor: Color {
+        switch animal.category {
+        case .land: return Kids.grass
+        case .sea: return Kids.sky
+        case .air: return Kids.grape
+        case .insect: return Kids.peach
+        case .pets: return Color(hex: "#F4B6C2")
+        case .farm: return Color(hex: "#E8B96E")
+        case .prehistoric: return Kids.sun
+        case .fantasy: return Kids.grape
+        case .mythic: return Kids.pink
+        case .olympus: return Kids.sunDeep
+        case .all: return Kids.pink
+        }
+    }
+
+    var body: some View {
+        Button(action: onTap) {
+            ZStack(alignment: .topTrailing) {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(selected ? cardColor : .white)
+                    .overlay(selected ? RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Kids.sheen) : nil)
+                    .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                    .aspectRatio(1, contentMode: .fit)
+
+                VStack(spacing: isIPad ? 4 : 2) {
+                    if let ui = bundledImage {
+                        Image(uiImage: ui).resizable().scaledToFit().frame(width: isIPad ? 72 : 50, height: isIPad ? 72 : 50)
+                    } else {
+                        Text(animal.emoji).font(.system(size: isIPad ? 50 : 34))
+                    }
+                    Text(animal.name)
+                        .font(Kids.fredoka(isIPad ? 14 : 10, weight: .bold))
+                        .foregroundColor(Kids.ink)
+                        .lineLimit(1).minimumScaleFactor(0.65)
+                        .padding(.horizontal, isIPad ? 6 : 4)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                if selected {
+                    Circle().fill(Kids.grass)
+                        .overlay(Circle().stroke(Kids.ink, lineWidth: 2))
+                        .frame(width: isIPad ? 30 : 22, height: isIPad ? 30 : 22)
+                        .overlay(Text("✓").font(Kids.fredoka(isIPad ? 16 : 12, weight: .bold)).foregroundColor(Kids.ink))
+                        .offset(x: isIPad ? 6 : 4, y: isIPad ? -8 : -6)
+                }
+            }
+            .rotationEffect(.degrees(selected ? -1.5 : 0))
+            .offset(y: selected ? -2 : 0)
+            .opacity(disabled ? 0.4 : 1.0)
+            .shadow(color: Kids.ink.opacity(selected ? 0.16 : 0.08), radius: 0, x: 0, y: selected ? 3 : 2)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: selected)
+        }
+        .buttonStyle(.plain)
+        .disabled(disabled)
     }
 }

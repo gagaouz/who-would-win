@@ -1,61 +1,166 @@
 "use strict";
-/**
- * Shared in-memory rate limiter.
- *
- * Each IP gets a rolling window of MAX_REQUESTS API calls.
- * The window resets after WINDOW_MS milliseconds.
- *
- * IMPORTANT: We intentionally use req.socket.remoteAddress (the real TCP
- * connection address) instead of X-Forwarded-For so that a caller cannot
- * spoof their IP by adding a fake header.  In production behind a trusted
- * reverse-proxy (Railway, Render, etc.) set the TRUST_PROXY env var to "1"
- * and we will use req.ip (which Express resolves from the proxy's forwarded
- * header chain, not from the raw user-supplied header).
- */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.rateLimitMiddleware = rateLimitMiddleware;
-const WINDOW_MS = 60 * 60 * 1000; // 1 hour
-// 50 was too low — a single tournament burns ~10 battles, and active players
-// can hit the cap mid-session. When that happens the iOS app falls back to
-// LOCAL stat resolution, which on older TestFlight builds uses a soft win-
-// curve that lets tiny creatures occasionally upset apex predators. Raising
-// to 300 prevents the fallback path from being hit during normal play.
-const MAX_REQUESTS = 600; // per IP per window
-const store = new Map();
-// Periodically purge expired entries so memory doesn't grow unbounded.
+exports.rateLimitMiddleware = exports.adminRateLimit = exports.diagnosticRateLimit = exports.appAttestRateLimit = exports.publicRateLimit = exports.animalRateLimit = exports.meleeRateLimit = exports.quickRateLimit = exports.battleRateLimit = void 0;
+exports.initRateLimitStore = initRateLimitStore;
+const crypto_1 = require("crypto");
+const database_1 = require("../services/database");
+const memory = new Map();
+let activeAiRequests = 0;
+let tableReady = false;
+let tableInitialization = null;
+const MAX_ACTIVE_AI = positiveInt(process.env.AI_MAX_CONCURRENT, 4);
+function positiveInt(value, fallback) {
+    const parsed = Number(value);
+    return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
+function clientFingerprint(req) {
+    const installId = req.header('x-install-id');
+    const validInstallId = installId && /^[0-9a-f-]{36}$/i.test(installId) ? installId : 'no-install';
+    const ip = (req.ip ?? req.socket.remoteAddress ?? 'unknown').replace(/^::ffff:/, '');
+    const salt = process.env.RATE_LIMIT_SALT ?? process.env.ADMIN_SECRET ?? 'local-development-only';
+    return (0, crypto_1.createHmac)('sha256', salt).update(`${ip}:${validInstallId}`).digest('hex');
+}
+function fixedWindowStart(windowMs) {
+    return Math.floor(Date.now() / windowMs) * windowMs;
+}
+async function initRateLimitStore() {
+    if (tableReady)
+        return;
+    if (tableInitialization)
+        return tableInitialization;
+    tableInitialization = (async () => {
+        const pool = (0, database_1.getDbPool)();
+        if (pool) {
+            await pool.query(`
+        CREATE TABLE IF NOT EXISTS rate_limit_windows (
+          profile TEXT NOT NULL,
+          fingerprint TEXT NOT NULL,
+          window_start TIMESTAMPTZ NOT NULL,
+          count INTEGER NOT NULL,
+          expires_at TIMESTAMPTZ NOT NULL,
+          PRIMARY KEY (profile, fingerprint, window_start)
+        )
+      `);
+        }
+        tableReady = true;
+    })().finally(() => { tableInitialization = null; });
+    return tableInitialization;
+}
+async function increment(profile, fingerprint) {
+    const start = fixedWindowStart(profile.windowMs);
+    const memoryKey = `${profile.name}:${start}:${fingerprint}`;
+    const pool = (0, database_1.getDbPool)();
+    if (!pool) {
+        const entry = memory.get(memoryKey);
+        const next = (entry?.count ?? 0) + 1;
+        memory.set(memoryKey, { count: next, resetAt: start + profile.windowMs });
+        return next;
+    }
+    await initRateLimitStore();
+    const result = await pool.query(`INSERT INTO rate_limit_windows (profile, fingerprint, window_start, count, expires_at)
+     VALUES ($1, $2, to_timestamp($3 / 1000.0), 1, to_timestamp(($3 + $4) / 1000.0))
+     ON CONFLICT (profile, fingerprint, window_start) DO UPDATE
+       SET count = rate_limit_windows.count + 1
+     RETURNING count`, [profile.name, fingerprint, start, profile.windowMs]);
+    return result.rows[0]?.count ?? profile.max + 1;
+}
+async function allowedByGlobalLimit(profile) {
+    if (!profile.globalMax)
+        return true;
+    const count = await increment({ ...profile, name: `global:${profile.name}`, max: profile.globalMax }, 'global');
+    return count <= profile.globalMax;
+}
+function limiter(profile) {
+    return async (req, res, next) => {
+        let concurrencyClaimed = false;
+        const release = () => {
+            if (!concurrencyClaimed)
+                return;
+            concurrencyClaimed = false;
+            activeAiRequests = Math.max(0, activeAiRequests - 1);
+        };
+        try {
+            if (profile.concurrent) {
+                if (activeAiRequests >= MAX_ACTIVE_AI) {
+                    res.setHeader('Retry-After', '5');
+                    res.status(503).json({ error: 'The arena is busy. A local battle will be used.' });
+                    return;
+                }
+                activeAiRequests += 1;
+                concurrencyClaimed = true;
+                res.once('finish', release);
+                res.once('close', release);
+            }
+            const count = await increment(profile, clientFingerprint(req));
+            const globallyAllowed = await allowedByGlobalLimit(profile);
+            const remaining = Math.max(0, profile.max - count);
+            res.setHeader('X-RateLimit-Limit', profile.max);
+            res.setHeader('X-RateLimit-Remaining', remaining);
+            if (count > profile.max || !globallyAllowed) {
+                release();
+                res.setHeader('Retry-After', Math.ceil(profile.windowMs / 1000));
+                res.status(429).json({ error: 'Battle limit reached. The app will use a local result.' });
+                return;
+            }
+            next();
+        }
+        catch (error) {
+            release();
+            console.error('[rate-limit] shared limiter unavailable:', error.message);
+            // Paid routes fail closed. Cheap routes remain available if Postgres has a
+            // temporary issue so health/leaderboard traffic does not amplify it.
+            if (profile.concurrent || profile.failClosed) {
+                res.status(503).json({ error: 'The arena is temporarily using local results.' });
+            }
+            else {
+                next();
+            }
+        }
+    };
+}
+exports.battleRateLimit = limiter({
+    name: 'battle', max: positiveInt(process.env.BATTLE_LIMIT_PER_HOUR, 30),
+    windowMs: 60 * 60 * 1000, globalMax: positiveInt(process.env.BATTLE_GLOBAL_PER_HOUR, 2000), concurrent: true,
+});
+exports.quickRateLimit = limiter({
+    name: 'quick', max: positiveInt(process.env.QUICK_LIMIT_PER_HOUR, 90),
+    windowMs: 60 * 60 * 1000, globalMax: positiveInt(process.env.QUICK_GLOBAL_PER_HOUR, 5000), concurrent: true,
+});
+exports.meleeRateLimit = limiter({
+    name: 'melee', max: positiveInt(process.env.MELEE_LIMIT_PER_HOUR, 20),
+    windowMs: 60 * 60 * 1000, globalMax: positiveInt(process.env.MELEE_GLOBAL_PER_HOUR, 1000), concurrent: true,
+});
+exports.animalRateLimit = limiter({
+    name: 'animal', max: positiveInt(process.env.ANIMAL_LIMIT_PER_HOUR, 20),
+    windowMs: 60 * 60 * 1000, globalMax: positiveInt(process.env.ANIMAL_GLOBAL_PER_HOUR, 1000), concurrent: true,
+});
+exports.publicRateLimit = limiter({
+    name: 'public', max: positiveInt(process.env.PUBLIC_LIMIT_PER_HOUR, 300),
+    windowMs: 60 * 60 * 1000,
+});
+// Key enrollment is cheap but writes short-lived rows to Postgres. Give it a
+// dedicated shared ceiling so a distributed client cannot turn the defensive
+// endpoint itself into unbounded database growth.
+exports.appAttestRateLimit = limiter({
+    name: 'app-attest', max: positiveInt(process.env.APP_ATTEST_LIMIT_PER_HOUR, 120),
+    windowMs: 60 * 60 * 1000,
+    globalMax: positiveInt(process.env.APP_ATTEST_GLOBAL_PER_HOUR, 10000),
+    failClosed: true,
+});
+exports.diagnosticRateLimit = limiter({
+    name: 'diagnostic', max: 5, windowMs: 60 * 60 * 1000,
+});
+exports.adminRateLimit = limiter({
+    name: 'admin', max: 10, windowMs: 15 * 60 * 1000,
+});
+// Backward-compatible name for any route not yet assigned a profile.
+exports.rateLimitMiddleware = exports.publicRateLimit;
 setInterval(() => {
     const now = Date.now();
-    for (const [key, entry] of store) {
-        if (now >= entry.resetAt)
-            store.delete(key);
-    }
-}, 10 * 60 * 1000); // every 10 minutes
-function getClientIp(req) {
-    // If running behind a trusted proxy (configured via TRUST_PROXY=1 env var),
-    // Express populates req.ip from the proxy chain.  Otherwise fall back to the
-    // raw socket address which cannot be spoofed.
-    return (req.ip ?? req.socket.remoteAddress ?? 'unknown').replace(/^::ffff:/, '');
-}
-function rateLimitMiddleware(req, res, next) {
-    const ip = getClientIp(req);
-    const now = Date.now();
-    const entry = store.get(ip);
-    if (!entry || now >= entry.resetAt) {
-        store.set(ip, { count: 1, resetAt: now + WINDOW_MS });
-        res.setHeader('X-RateLimit-Limit', MAX_REQUESTS);
-        res.setHeader('X-RateLimit-Remaining', MAX_REQUESTS - 1);
-        return next();
-    }
-    if (entry.count >= MAX_REQUESTS) {
-        const retryAfterSecs = Math.ceil((entry.resetAt - now) / 1000);
-        res.setHeader('Retry-After', retryAfterSecs);
-        res.status(429).json({
-            error: `Too many requests. You have used all ${MAX_REQUESTS} battles for this hour. Please try again in ${Math.ceil(retryAfterSecs / 60)} minutes.`,
-        });
-        return;
-    }
-    entry.count += 1;
-    res.setHeader('X-RateLimit-Limit', MAX_REQUESTS);
-    res.setHeader('X-RateLimit-Remaining', MAX_REQUESTS - entry.count);
-    next();
-}
+    for (const [key, entry] of memory)
+        if (entry.resetAt <= now)
+            memory.delete(key);
+    const pool = (0, database_1.getDbPool)();
+    if (pool)
+        void pool.query('DELETE FROM rate_limit_windows WHERE expires_at < NOW()').catch(() => undefined);
+}, 10 * 60 * 1000).unref();

@@ -6,7 +6,11 @@ final class AnimalPickerViewModel: ObservableObject {
     @Published var fighter2: Animal? = nil
     @Published var searchText: String = "" {
         didSet {
-            searchTextSubject.send(searchText)
+            if searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+                != oldValue.trimmingCharacters(in: .whitespacesAndNewlines) {
+                customAnimalID = "custom_" + UUID().uuidString.lowercased()
+                    .replacingOccurrences(of: "-", with: "_")
+            }
             // Reset emoji when search changes so we don't show stale info
             if searchText.trimmingCharacters(in: .whitespaces).isEmpty {
                 customAnimalEmoji = "🐾"
@@ -28,27 +32,10 @@ final class AnimalPickerViewModel: ObservableObject {
     /// nil while loading; always set once fetchCustomAnimalInfo() completes.
     @Published var customAnimalImageURL: URL? = nil
 
-    private var cancellables = Set<AnyCancellable>()
-    private let searchTextSubject = PassthroughSubject<String, Never>()
-
-    init() {
-        // Debounce search text changes to fetch custom animal info
-        searchTextSubject
-            .debounce(for: .seconds(0.5), scheduler: DispatchQueue.main)
-            .sink { [weak self] text in
-                guard let self else { return }
-                let trimmed = text.trimmingCharacters(in: .whitespaces)
-                guard !trimmed.isEmpty else { return }
-                // Only fetch if there are no matching built-in animals
-                let hasMatches = Animals.all.contains { $0.name.localizedCaseInsensitiveContains(trimmed) }
-                if !hasMatches {
-                    Task {
-                        await self.fetchCustomAnimalInfo()
-                    }
-                }
-            }
-            .store(in: &cancellables)
-    }
+    // A random identifier prevents child-entered names from becoming durable
+    // identifiers in requests, logs, or database rows.
+    private var customAnimalID = "custom_" + UUID().uuidString.lowercased()
+        .replacingOccurrences(of: "-", with: "_")
 
     // MARK: - Computed
 
@@ -80,10 +67,13 @@ final class AnimalPickerViewModel: ObservableObject {
         guard !searchText.trimmingCharacters(in: .whitespaces).isEmpty,
               filteredAnimals.isEmpty,
               lockedAnimal == nil else { return nil }
-        let name = searchText.trimmingCharacters(in: .whitespaces)
+        // Cap the name length — unbounded names blow out battle headers,
+        // bracket cards, and share-card layouts (which render synchronously
+        // and can't reflow).
+        let name = String(searchText.trimmingCharacters(in: .whitespaces).prefix(24))
         guard ContentFilter.isAppropriate(name) else { return nil }
         return Animal(
-            id: name.lowercased().replacingOccurrences(of: " ", with: "_"),
+            id: customAnimalID,
             name: name.capitalized,
             emoji: customAnimalEmoji,
             category: customAnimalCategory,
@@ -92,28 +82,6 @@ final class AnimalPickerViewModel: ObservableObject {
             isCustom: true,
             imageURL: customAnimalImageURL
         )
-    }
-
-    // MARK: - Custom Animal Info Fetch
-
-    @MainActor
-    func fetchCustomAnimalInfo() async {
-        let name = searchText.trimmingCharacters(in: .whitespaces)
-        guard !name.isEmpty, ContentFilter.isAppropriate(name) else { return }
-
-        // Fetch emoji/category/color and image URL concurrently
-        async let infoTask  = AnimalImageService.shared.fetchAnimalInfo(name: name)
-        async let imageTask = AnimalImageService.shared.imageURL(for: name)
-
-        let (emoji, category, color) = await infoTask
-        let imageURL = await imageTask
-
-        // Only apply if the search text hasn't changed while we were fetching
-        guard searchText.trimmingCharacters(in: .whitespaces) == name else { return }
-        customAnimalEmoji    = emoji
-        customAnimalCategory = category
-        customAnimalColor    = color
-        customAnimalImageURL = imageURL
     }
 
     // MARK: - Selection
@@ -142,6 +110,26 @@ final class AnimalPickerViewModel: ObservableObject {
             guard animal != fighter1 else { return }
             fighter2 = animal
         }
+    }
+
+    /// King-of-the-hill: keep the winner in slot 1 and queue a fresh, unlocked
+    /// opponent the player isn't already fighting.
+    func setupNextChallenger(winner: Animal) {
+        fighter1 = winner
+        fighter2 = randomOpponent(excluding: winner)
+        searchText = ""
+        selectedEnvironment = .grassland
+        arenaEffectsEnabled = false
+    }
+
+    /// A random unlocked opponent, never the given animal. Always returns
+    /// something (the free packs guarantee a non-empty pool).
+    private func randomOpponent(excluding animal: Animal) -> Animal {
+        let unlocked = Animals.all.filter {
+            $0.id != animal.id && !$0.isCustom && UserSettings.shared.isAvailable($0)
+        }
+        if let pick = unlocked.randomElement() { return pick }
+        return Animals.all.first { $0.id != animal.id && !$0.isCustom } ?? animal
     }
 
     func clear(_ slot: Int) {

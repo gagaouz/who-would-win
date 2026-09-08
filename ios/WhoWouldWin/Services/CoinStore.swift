@@ -21,7 +21,8 @@ final class CoinStore: ObservableObject {
     let prehistoricCost    =   300
     let fantasyCost        =   800
     let mythicCost         = 1_500
-    let olympusCost        = 5_000
+    let olympusCost        = 100_000
+    let meleeCost          = 1_500
     let customCreatureCost =   150
 
     // Tournament costs and floors
@@ -95,7 +96,10 @@ final class CoinStore: ObservableObject {
     let streakBonus3Days  = 10   // +10 coins/battle at 3+ day streak
     let streakBonus7Days  = 20   // +20 coins/battle at 7+ day streak
 
-    func earnBattleCoins() {
+    /// Awards coins for a completed battle. `milestoneBonus` (from
+    /// `UserSettings.recordBattle()`) is folded into the SAME `earn()` call so
+    /// the result screen's coins-earned chip reflects the full total in one shot.
+    func earnBattleCoins(milestoneBonus: Int = 0) {
         let settings = UserSettings.shared
         let base = settings.isSubscribed ? coinsPerBattleSub : coinsPerBattle
         var total = base
@@ -109,6 +113,7 @@ final class CoinStore: ObservableObject {
         } else if settings.currentStreak >= 3 {
             total += streakBonus3Days
         }
+        total += max(0, milestoneBonus)
         earn(total)
     }
 
@@ -184,5 +189,8 @@ final class CoinStore: ObservableObject {
         ud.removeObject(forKey: "coin.dailyAdCount")
         ud.removeObject(forKey: "coin.lastBattleDate")
         ud.removeObject(forKey: "coin.tournamentSeedAwarded")
+        // One-time grant flags must also reset so a wiped install re-earns them
+        // (and matches the freshly-wiped cloud state).
+        ud.removeObject(forKey: "coin.firstCustomAwarded")
     }
 }

@@ -137,6 +137,17 @@ final class AchievementTracker {
         earnedSet.contains(achievement.rawValue)
     }
 
+    // MARK: - Public read (in-app Trophy Case)
+
+    /// Raw IDs of every earned achievement.
+    var earnedIDs: Set<String> { earnedSet }
+    /// Total number of achievements that exist.
+    var totalCount: Int { AchievementID.allCases.count }
+    /// How many the player has earned.
+    var earnedCount: Int { earnedSet.count }
+    /// All achievement raw IDs in declaration order (for stable grid display).
+    var allIDs: [String] { AchievementID.allCases.map(\.rawValue) }
+
     private func markEarned(_ achievement: AchievementID) {
         var earned = earnedSet
         guard !earned.contains(achievement.rawValue) else { return }
@@ -144,6 +155,8 @@ final class AchievementTracker {
         defaults.set(Array(earned), forKey: Key.earned)
         GameCenterManager.shared.reportAchievement(achievement.rawValue)
         CloudSyncService.shared.autoSync()
+        // Surface the unlock to SwiftUI so the result screen can celebrate it.
+        AchievementFeed.shared.push(rawId: achievement.rawValue)
     }
 
     // MARK: - Array Tracking Helpers
@@ -167,7 +180,7 @@ final class AchievementTracker {
         fighter1: Animal,
         fighter2: Animal,
         result: BattleResult,
-        environment: BattleEnvironment
+        environment: BattleEnvironment?
     ) {
         let battleCount = UserSettings.shared.totalBattleCount
         let isDraw = result.winner == "draw"
@@ -262,24 +275,30 @@ final class AchievementTracker {
         if loserAnimal.id == "dragon" && !isDraw { markEarned(.dragonSlayer) }
 
         // ── Environment Achievements ──
-        // Track this environment as "won in"
-        addToArrayKey(Key.environmentsWon, value: environment.rawValue)
+        // Only when an arena was actually in play — callers pass nil for
+        // no-arena fights (Quick Fight / quick-mode tournaments), where the
+        // stored environment is an inert sentinel that must not award arena
+        // badges or count toward World Traveler.
+        if let environment {
+            // Track this environment as "won in"
+            addToArrayKey(Key.environmentsWon, value: environment.rawValue)
 
-        // Home Turf: sea creature wins in ocean
-        if winnerAnimal.category == .sea && environment == .ocean { markEarned(.homeTurf) }
+            // Home Turf: sea creature wins in ocean
+            if winnerAnimal.category == .sea && environment == .ocean { markEarned(.homeTurf) }
 
-        // Fish Out of Water: sea creature wins in desert
-        if winnerAnimal.category == .sea && environment == .desert { markEarned(.fishOutOfWater) }
+            // Fish Out of Water: sea creature wins in desert
+            if winnerAnimal.category == .sea && environment == .desert { markEarned(.fishOutOfWater) }
 
-        // Specific environment wins
-        if environment == .volcano { markEarned(.fireWalker) }
-        if environment == .storm  { markEarned(.stormChaser) }
-        if environment == .night  { markEarned(.nightHunter) }
-        if environment == .arctic { markEarned(.frozenFight) }
-        if environment == .jungle { markEarned(.jungleFever) }
+            // Specific environment wins
+            if environment == .volcano { markEarned(.fireWalker) }
+            if environment == .storm  { markEarned(.stormChaser) }
+            if environment == .night  { markEarned(.nightHunter) }
+            if environment == .arctic { markEarned(.frozenFight) }
+            if environment == .jungle { markEarned(.jungleFever) }
 
-        // World Traveler: won in all 9 environments
-        if arrayCount(Key.environmentsWon) >= 9 { markEarned(.worldTraveler) }
+            // World Traveler: won in all 9 environments
+            if arrayCount(Key.environmentsWon) >= 9 { markEarned(.worldTraveler) }
+        }
 
         // ── Battle Outcome Achievements ──
         // Close Call: win with < 20% health
@@ -450,6 +469,15 @@ final class AchievementTracker {
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     /// Call on app launch to reset per-session counters.
+    /// Wipe all achievement progress (backs the "erase all data" path).
+    func eraseAll() {
+        for k in [Key.earned, Key.environmentsWon, Key.customCreaturesUsed,
+                  Key.totalCoinsSpent, Key.tournamentsCompleted, Key.sessionBattleCount,
+                  Key.categoriesBattled, Key.uniqueAnimalsUsed] {
+            defaults.removeObject(forKey: k)
+        }
+    }
+
     func resetSessionCount() {
         defaults.set(0, forKey: Key.sessionBattleCount)
     }

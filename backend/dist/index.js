@@ -1,17 +1,54 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+require("dotenv/config");
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
-const dotenv_1 = __importDefault(require("dotenv"));
 const battle_1 = __importDefault(require("./routes/battle"));
 const animal_1 = __importDefault(require("./routes/animal"));
 const battleLogger_1 = require("./services/battleLogger");
-dotenv_1.default.config();
+const rateLimit_1 = require("./middleware/rateLimit");
+const costControl_1 = require("./services/costControl");
+const responseStore_1 = require("./services/responseStore");
+const appAttest_1 = __importStar(require("./services/appAttest"));
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
+app.disable('x-powered-by');
 // ── Trust proxy ────────────────────────────────────────────────────────────────
 // Set TRUST_PROXY=1 in production when behind Railway / Render / Heroku so that
 // req.ip is resolved from the proxy's X-Forwarded-For chain.
@@ -26,6 +63,11 @@ app.use((_req, res, next) => {
     res.setHeader('X-XSS-Protection', '1; mode=block');
     res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+    res.setHeader('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; style-src 'unsafe-inline'");
+    if (process.env.NODE_ENV === 'production') {
+        res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    }
     next();
 });
 // ── CORS ───────────────────────────────────────────────────────────────────────
@@ -41,18 +83,36 @@ app.use((0, cors_1.default)({
         // Allow requests with no Origin (native mobile, curl, Postman)
         if (!origin)
             return callback(null, true);
-        if (ALLOWED_ORIGINS.length === 0 || ALLOWED_ORIGINS.includes(origin)) {
-            return callback(null, true);
-        }
-        callback(new Error(`Origin ${origin} not allowed`));
+        return callback(null, ALLOWED_ORIGINS.includes(origin));
     },
     methods: ['GET', 'POST'],
 }));
-// ── Body parsing — hard cap at 10 KB ──────────────────────────────────────────
+// ── Crash/hang diagnostics (MetricKit) — its own larger body cap, BEFORE the
+// global 10 KB limit, because a symbolicated crash payload exceeds 10 KB.
+// Just logs to the process output (visible in Railway logs); stores nothing,
+// no PII. ──────────────────────────────────────────────────────────────────────
+if (process.env.DIAGNOSTICS_ENABLED === 'true') {
+    app.post('/api/diag', rateLimit_1.diagnosticRateLimit, express_1.default.json({ limit: '64kb' }), (req, res) => {
+        const encoded = JSON.stringify(req.body ?? {});
+        console.log(JSON.stringify({
+            event: 'client_diagnostic_received',
+            bytes: Buffer.byteLength(encoded),
+            at: new Date().toISOString(),
+        }));
+        res.json({ ok: true });
+    });
+}
+// ── Body parsing — hard cap at 32 KB ──────────────────────────────────────────
 // Prevents a malicious client from sending a huge JSON body to tie up the server.
-app.use(express_1.default.json({ limit: '10kb' }));
+app.use(express_1.default.json({
+    limit: '32kb',
+    verify: (req, _res, buffer) => {
+        req.rawBody = Buffer.from(buffer);
+    },
+}));
 // ── Routes ─────────────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
+app.use('/api', appAttest_1.default);
 app.use('/api', battle_1.default);
 app.use('/api', animal_1.default);
 // ── 404 catch-all ──────────────────────────────────────────────────────────────
@@ -62,7 +122,7 @@ app.use((err, _req, res, _next) => {
     // Propagate HTTP status codes (e.g. 413 PayloadTooLarge from express.json limit)
     const status = err.status ?? err.statusCode ?? 500;
     if (err.type === 'entity.too.large') {
-        res.status(413).json({ error: 'Request body too large (max 10 KB).' });
+        res.status(413).json({ error: 'Request body too large (max 32 KB).' });
         return;
     }
     if (status !== 500) {
@@ -74,8 +134,10 @@ app.use((err, _req, res, _next) => {
 });
 app.listen(PORT, () => {
     console.log(`Who Would Win backend running on port ${PORT}`);
-    // Bootstrap Postgres (no-op if DATABASE_URL is unset).
-    void (0, battleLogger_1.initDb)();
+    // Bootstrap Postgres-backed privacy, cache, and spend-control tables.
+    void Promise.allSettled([
+        (0, battleLogger_1.initDb)(), (0, costControl_1.initCostControl)(), (0, responseStore_1.initResponseStore)(), (0, rateLimit_1.initRateLimitStore)(), (0, appAttest_1.initAppAttest)(),
+    ]);
     // Diagnostic: list every registered route so we can confirm new endpoints
     // are actually mounted in the deployed image. Logged once per boot.
     const seen = [];

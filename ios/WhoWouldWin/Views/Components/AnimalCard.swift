@@ -41,13 +41,13 @@ struct AnimalCard: View {
                                 .font(.system(size: 40))
                         }
                     }
-                    .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 3)
+                    .shadow(color: .black.opacity(0.18), radius: 4, x: 0, y: 3)
                     .blur(radius: isLocked ? 3 : 0)
 
                     Text(animal.name)
                         .font(Theme.bungee(11))
                         .foregroundColor(.white)
-                        .shadow(color: .black.opacity(0.6), radius: 2, x: 0, y: 1)
+                        .shadow(color: .black.opacity(0.36), radius: 2, x: 0, y: 1)
                         .multilineTextAlignment(.center)
                         .lineLimit(2)
                         .minimumScaleFactor(0.65)
@@ -97,7 +97,7 @@ struct AnimalCard: View {
                         )
                 )
                 .shadow(
-                    color: isSelected ? accentColor.opacity(0.5) : .black.opacity(0.2),
+                    color: isSelected ? accentColor.opacity(0.30) : .black.opacity(0.2),
                     radius: isSelected ? 10 : 4,
                     x: 0, y: isSelected ? 4 : 3
                 )
@@ -111,9 +111,9 @@ struct AnimalCard: View {
                             Image(systemName: "lock.fill")
                                 .font(.system(size: 18, weight: .bold))
                                 .foregroundColor(Theme.fantasyAccent)
-                                .shadow(color: Theme.fantasyAccent.opacity(0.6), radius: 4)
+                                .shadow(color: Theme.fantasyAccent.opacity(0.36), radius: 4)
                             Text("LOCKED")
-                                .font(.system(size: 7, weight: .black, design: .rounded))
+                                .font(Theme.bungee(7))
                                 .foregroundColor(Theme.fantasyAccent.opacity(0.9))
                                 .tracking(1)
                         }
@@ -126,7 +126,7 @@ struct AnimalCard: View {
                         Circle()
                             .fill(Theme.red)
                             .frame(width: 20, height: 20)
-                            .shadow(color: Theme.red.opacity(0.5), radius: 3, x: 0, y: 1)
+                            .shadow(color: Theme.red.opacity(0.30), radius: 3, x: 0, y: 1)
                         Image(systemName: "xmark")
                             .font(.system(size: 8, weight: .black))
                             .foregroundColor(.white)

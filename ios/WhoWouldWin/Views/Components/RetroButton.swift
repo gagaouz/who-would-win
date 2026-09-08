@@ -226,7 +226,7 @@ struct GamePanel<Content: View>: View {
                             startPoint: .top, endPoint: .bottom
                         )
                     )
-                    .shadow(color: headerColor.midColor.opacity(0.3), radius: 4, y: 2)
+                    .shadow(color: headerColor.midColor.opacity(0.18), radius: 4, y: 2)
             }
             VStack(spacing: 0) {
                 content()
@@ -246,7 +246,7 @@ struct GamePanel<Content: View>: View {
             RoundedRectangle(cornerRadius: 18)
                 .stroke(borderColor, lineWidth: 3)
         )
-        .shadow(color: .black.opacity(0.25), radius: 10, y: 6)
+        .shadow(color: .black.opacity(0.15), radius: 10, y: 6)
     }
 }
 

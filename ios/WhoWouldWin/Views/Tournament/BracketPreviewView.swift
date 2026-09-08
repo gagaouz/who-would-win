@@ -8,48 +8,65 @@ struct BracketPreviewView: View {
     let onReroll: () -> Void
     let onForfeit: () -> Void
 
-    @Environment(\.colorScheme) private var scheme
     @ObservedObject private var coinStore = CoinStore.shared
+    @ObservedObject private var settings = UserSettings.shared
     @State private var showForfeitConfirm = false
     @State private var showRerollNotAffordable = false
+    @State private var appeared = false
+
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    private var isIPad: Bool { sizeClass == .regular }
 
     private var rerollCost: Int { CoinStore.shared.tournamentBracketRerollCost }
 
     var body: some View {
         ZStack {
-            Theme.battleBg(scheme).ignoresSafeArea()
+            LinearGradient(colors: [Color(hex: "#FFE9BA"), Kids.pink.opacity(0.5), Kids.grape.opacity(0.6)],
+                           startPoint: .top, endPoint: .bottom)
+                .ignoresSafeArea()
 
-            VStack(spacing: 0) {
-                // Header — always visible, never scrolls
-                header
-                    .padding(.horizontal, 18)
-                    .padding(.top, 12)
-                    .padding(.bottom, 10)
+            HStack(spacing: 0) {
+                Spacer(minLength: 0)
+                VStack(spacing: 0) {
+                    header
+                        .padding(.horizontal, isIPad ? 22 : 16)
+                        .padding(.top, isIPad ? 14 : 10)
+                        .padding(.bottom, isIPad ? 12 : 8)
 
-                // Scrollable middle: compact matchup list
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 6) {
-                        Text("ROUND 1 MATCHUPS")
-                            .font(Theme.bungee(10))
-                            .foregroundColor(.white.opacity(0.45))
-                            .tracking(1.5)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.bottom, 2)
+                    ScrollView(showsIndicators: false) {
+                        VStack(spacing: isIPad ? 12 : 8) {
+                            HStack(spacing: isIPad ? 9 : 6) {
+                                Text("⚔️").font(.system(size: isIPad ? 20 : 14))
+                                Text("ROUND 1 MATCH-UPS")
+                                    .font(Kids.fredoka(isIPad ? 15 : 11, weight: .bold))
+                                    .tracking(1.5)
+                                    .foregroundColor(Kids.ink)
+                                Spacer()
+                            }
+                            .padding(.bottom, isIPad ? 4 : 2)
+                            .padding(.horizontal, isIPad ? 6 : 4)
 
-                        ForEach(tournament.bracket.rounds.first ?? []) { matchup in
-                            matchupRow(matchup)
+                            ForEach(tournament.bracket.rounds.first ?? []) { matchup in
+                                matchupRow(matchup)
+                            }
                         }
+                        .padding(.horizontal, isIPad ? 20 : 14)
+                        .padding(.vertical, isIPad ? 14 : 10)
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                }
 
-                // Action buttons — always pinned at bottom
-                actionButtons
-                    .padding(.horizontal, 18)
-                    .padding(.top, 8)
-                    .padding(.bottom, 14)
+                    actionButtons
+                        .padding(.horizontal, isIPad ? 26 : 18)
+                        .padding(.top, isIPad ? 10 : 6)
+                        .padding(.bottom, isIPad ? 24 : 16)
+                }
+                .frame(maxWidth: isIPad ? 720 : .infinity)
+                .scaleEffect(appeared ? 1 : 0.96)
+                .opacity(appeared ? 1 : 0)
+                Spacer(minLength: 0)
             }
+        }
+        .onAppear {
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) { appeared = true }
         }
         .navigationBarBackButtonHidden(true)
         .alert("Forfeit tournament?",
@@ -57,7 +74,9 @@ struct BracketPreviewView: View {
             Button("Forfeit", role: .destructive) { onForfeit() }
             Button("Keep playing", role: .cancel) { }
         } message: {
-            Text("Your bracket will be cleared. Already-spent coins are not refunded.")
+            Text(settings.wageringEnabled
+                 ? "Your bracket will be cleared. Already-spent coins are not refunded."
+                 : "Your bracket will be cleared.")
         }
         .alert("Not enough coins",
                isPresented: $showRerollNotAffordable) {
@@ -72,95 +91,140 @@ struct BracketPreviewView: View {
     private var header: some View {
         HStack {
             Button { showForfeitConfirm = true } label: {
-                Image(systemName: "xmark")
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundColor(.white)
-                    .frame(width: 36, height: 36)
-                    .background(Circle().fill(.ultraThinMaterial))
+                Text("✕")
+                    .font(Kids.fredoka(isIPad ? 22 : 16, weight: .bold))
+                    .foregroundColor(Kids.ink)
+                    .frame(width: isIPad ? 50 : 38, height: isIPad ? 50 : 38)
+                    .background(Circle().fill(.white).overlay(Circle().stroke(Kids.ink, lineWidth: 2.5)))
             }
             Spacer()
-            VStack(spacing: 2) {
+            VStack(spacing: isIPad ? 4 : 2) {
                 Text("\(tournament.size.rawValue)-FIGHTER BRACKET")
-                    .font(Theme.bungee(18))
-                    .foregroundColor(.white)
+                    .font(Kids.fredoka(isIPad ? 22 : 16, weight: .bold))
+                    .foregroundColor(Kids.ink)
                 Text("Preview & confirm")
-                    .font(Theme.bungee(11))
-                    .foregroundColor(.white.opacity(0.7))
+                    .font(Kids.nunito(isIPad ? 15 : 11, weight: .bold))
+                    .foregroundColor(Kids.inkSoft)
             }
             Spacer()
-            CoinBadge(size: .compact)
+            if settings.wageringEnabled {
+                CoinChip(count: coinStore.balance)
+            } else {
+                Color.clear.frame(width: isIPad ? 50 : 38, height: isIPad ? 50 : 38)
+            }
         }
     }
 
-    // MARK: - Matchup row (compact single-line — no wagering yet)
+    // MARK: - Matchup row
 
     private func matchupRow(_ matchup: Matchup) -> some View {
-        HStack(spacing: 6) {
-            AnimalAvatar(animal: matchup.fighter1, size: 22)
+        HStack(spacing: isIPad ? 12 : 8) {
+            FighterMini(animal: matchup.fighter1, isIPad: isIPad)
             Text(matchup.fighter1.name)
-                .font(Theme.bungee(9))
-                .foregroundColor(.white)
+                .font(Kids.fredoka(isIPad ? 15 : 11, weight: .bold))
+                .foregroundColor(Kids.ink)
                 .lineLimit(1)
-                .minimumScaleFactor(0.55)
+                .minimumScaleFactor(0.6)
                 .frame(maxWidth: .infinity, alignment: .leading)
             Text("VS")
-                .font(Theme.bungee(8))
-                .foregroundColor(Theme.gold)
+                .font(Kids.fredoka(isIPad ? 15 : 11, weight: .bold))
+                .foregroundColor(.white)
+                .padding(.horizontal, isIPad ? 9 : 6).padding(.vertical, isIPad ? 3 : 2)
+                .background(Capsule().fill(Kids.pink).overlay(Capsule().stroke(Kids.ink, lineWidth: 1.5)))
                 .fixedSize()
             Text(matchup.fighter2.name)
-                .font(Theme.bungee(9))
-                .foregroundColor(.white)
+                .font(Kids.fredoka(isIPad ? 15 : 11, weight: .bold))
+                .foregroundColor(Kids.ink)
                 .lineLimit(1)
-                .minimumScaleFactor(0.55)
+                .minimumScaleFactor(0.6)
                 .frame(maxWidth: .infinity, alignment: .trailing)
-            AnimalAvatar(animal: matchup.fighter2, size: 22)
+            FighterMini(animal: matchup.fighter2, isIPad: isIPad)
         }
-        .padding(.vertical, 6)
-        .padding(.horizontal, 10)
+        .padding(.vertical, isIPad ? 12 : 8)
+        .padding(.horizontal, isIPad ? 14 : 10)
         .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color.white.opacity(0.07))
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(.white)
+                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
         )
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(Color.white.opacity(0.15), lineWidth: 1)
-        )
+        .shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 2)
     }
 
     // MARK: - Action buttons
 
     private var actionButtons: some View {
-        VStack(spacing: 10) {
-            Button(action: onConfirm) {
-                Text("LOOKS GOOD — CONTINUE")
+        VStack(spacing: isIPad ? 12 : 8) {
+            KidButton(title: "CONTINUE", icon: "🎉",
+                      color: Kids.grass, size: .lg) {
+                HapticsService.shared.tap()
+                onConfirm()
             }
-            .buttonStyle(MegaButtonStyle(color: .orange, height: 60, cornerRadius: 18, fontSize: 18))
 
-            if !tournament.rerollUsed {
+            if !tournament.rerollUsed && settings.wageringEnabled {
                 Button {
                     if coinStore.balance >= rerollCost {
-                        // TournamentManager.rerollBracket() handles the spend + ledger.
+                        HapticsService.shared.tap()
                         onReroll()
                     } else {
                         showRerollNotAffordable = true
                     }
                 } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: "dice.fill")
-                        Text("RE-ROLL BRACKET — \(rerollCost)")
-                        GoldCoin(size: 14)
+                    HStack(spacing: isIPad ? 9 : 6) {
+                        Text("🎲").font(.system(size: isIPad ? 22 : 16))
+                        Text("RE-ROLL BRACKET")
+                            .font(Kids.fredoka(isIPad ? 17 : 13, weight: .bold))
+                            .foregroundColor(Kids.ink)
+                        HStack(spacing: isIPad ? 5 : 3) {
+                            KidsGoldCoin(size: isIPad ? 20 : 14)
+                            Text("\(rerollCost)")
+                                .font(Kids.fredoka(isIPad ? 17 : 13, weight: .bold))
+                                .foregroundColor(Kids.ink)
+                        }
                     }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: isIPad ? 62 : 46)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(Kids.grape)
+                            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Kids.sheen))
+                            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                    )
+                    .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
                 }
-                .buttonStyle(MegaButtonStyle(color: .purple, height: 48, cornerRadius: 16, fontSize: 14))
-
-                if coinStore.balance < rerollCost {
-                    BuyCoinsButton()
-                }
-            } else {
+                .buttonStyle(.plain)
+            } else if tournament.rerollUsed && settings.wageringEnabled {
                 Text("Re-roll already used")
-                    .font(Theme.bungee(11))
-                    .foregroundColor(.white.opacity(0.4))
+                    .font(Kids.fredoka(isIPad ? 15 : 11, weight: .bold))
+                    .foregroundColor(Kids.inkSoft)
             }
+        }
+    }
+}
+
+// MARK: - Tiny fighter avatar for compact rows
+
+private struct FighterMini: View {
+    let animal: Animal
+    let isIPad: Bool
+    private var bundledImage: UIImage? {
+        guard let name = animal.creatureAssetName else { return nil }
+        return UIImage(named: name)
+    }
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(.white)
+                .overlay(Circle().stroke(Kids.ink, lineWidth: 2))
+                .frame(width: isIPad ? 38 : 28, height: isIPad ? 38 : 28)
+            Group {
+                if let ui = bundledImage {
+                    Image(uiImage: ui).resizable().scaledToFill()
+                } else {
+                    Text(animal.emoji).font(.system(size: isIPad ? 22 : 16))
+                }
+            }
+            .frame(width: isIPad ? 30 : 22, height: isIPad ? 30 : 22)
+            .clipShape(Circle())
         }
     }
 }

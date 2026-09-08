@@ -31,6 +31,13 @@ final class SpeechService: NSObject, ObservableObject {
 
     func startListening() {
         guard !isListening else { return }
+        // Clear any stale error so a fresh attempt starts clean.
+        dictationError = nil
+
+        guard speechRecognizer?.isAvailable == true else {
+            dictationError = "Voice typing isn't available right now. You can type the name instead."
+            return
+        }
 
         SFSpeechRecognizer.requestAuthorization { [weak self] status in
             // Callbacks arrive on an arbitrary background thread — dispatch to main.
@@ -76,6 +83,16 @@ final class SpeechService: NSObject, ObservableObject {
         recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
         guard let recognitionRequest else { return }
         recognitionRequest.shouldReportPartialResults = true
+        // Kids privacy: a child's voice must stay ON DEVICE — the privacy
+        // policy promises audio never leaves the phone, so we never fall back
+        // to Apple's server-based recognition. If this device can't do
+        // on-device recognition, voice search is unavailable (typing works).
+        guard speechRecognizer?.supportsOnDeviceRecognition == true else {
+            dictationError = "Voice search isn't available on this device — type the name instead!"
+            stopListening()
+            return
+        }
+        recognitionRequest.requiresOnDeviceRecognition = true
 
         let inputNode = audioEngine.inputNode
         recognitionTask = speechRecognizer?.recognitionTask(with: recognitionRequest) { [weak self] result, error in
@@ -88,7 +105,17 @@ final class SpeechService: NSObject, ObservableObject {
                 self.silenceStopItem = item
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, execute: item)
             }
-            if error != nil || (result?.isFinal == true) {
+            if let error {
+                // Only show a message if we ended up with nothing usable. A
+                // user-initiated stop (or our own silence-timeout cancel) also
+                // reports an error here, but by then we usually have a transcript,
+                // so we stay quiet in that case to avoid nagging.
+                if self.transcript.trimmingCharacters(in: .whitespaces).isEmpty {
+                    self.dictationError = "Didn't catch that — tap the mic to try again, or type the name."
+                    SpeechService.logRecognitionError(error)
+                }
+                self.stopListening()
+            } else if result?.isFinal == true {
                 self.stopListening()
             }
         }
@@ -99,8 +126,20 @@ final class SpeechService: NSObject, ObservableObject {
         }
 
         audioEngine.prepare()
-        try? audioEngine.start()
-        isListening = true
+        do {
+            try audioEngine.start()
+            isListening = true
+        } catch {
+            dictationError = "Couldn't start the microphone — try again, or type the name."
+            SpeechService.logRecognitionError(error)
+            stopListening()
+        }
+    }
+
+    /// Logs a recognition/audio error without leaking the child's transcript.
+    nonisolated private static func logRecognitionError(_ error: Error) {
+        let ns = error as NSError
+        print("SpeechService error: \(ns.domain) #\(ns.code)")
     }
 
     // MARK: - Text-to-speech
