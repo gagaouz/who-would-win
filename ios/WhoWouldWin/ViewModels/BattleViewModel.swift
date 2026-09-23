@@ -91,6 +91,7 @@ final class BattleViewModel: ObservableObject {
                     // is a live random arena in quick-mode tournaments and must
                     // not decide an env-less fight.
                     environment: arenaEffectsEnabled ? environment : .grassland,
+                    arenaEffectsEnabled: arenaEffectsEnabled,
                     markAsOffline: isTrueOffline)
                 let finalFallback = tournamentContext != nil
                     ? breakDrawIfNeeded(fallback)
@@ -144,6 +145,7 @@ final class BattleViewModel: ObservableObject {
                 fighter2: fighter2,
                 // Same effects-off neutralization as the quick path above.
                 environment: arenaEffectsEnabled ? environment : .grassland,
+                arenaEffectsEnabled: arenaEffectsEnabled,
                 markAsOffline: lastFetchErrorWasNetworkUnavailable
             )
         }
@@ -232,6 +234,12 @@ final class BattleViewModel: ObservableObject {
     /// wins) and we don't override draws.
     private func sanityCheckResult(_ result: BattleResult) -> BattleResult {
         guard result.winner != "draw" else { return result }
+        // Two built-in creatures: the server picked the winner from the same
+        // master creature list the phone has — nothing to second-guess, and
+        // the rough local stats below would only flip correct answers.
+        if OnDeviceTiers.isBuiltIn(fighter1.id) && OnDeviceTiers.isBuiltIn(fighter2.id) {
+            return result
+        }
 
         // Identify the declared winner / loser within this matchup.
         let winnerAnimal: Animal

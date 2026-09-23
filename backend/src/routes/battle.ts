@@ -9,9 +9,10 @@ import {
   sanitizeEnvironment, sanitizeFighterId, sanitizeName, sanitizeTournamentContext,
 } from '../middleware/sanitize';
 import { getCustomCreatureReport, purgeAllCustomCreatures } from '../services/customCreatureLogger';
-import { cachedOperation, idempotentOperation } from '../services/responseStore';
+import { cachedOperation, idempotentOperation, nextStoryVariant } from '../services/responseStore';
 import { isAiUnavailable } from '../services/costControl';
 import { requireAppAttest } from '../services/appAttest';
+import { isBuiltIn } from '../data/creatures';
 import {
   logBattle,
   getAnimalLeaderboard,
@@ -67,48 +68,6 @@ function requireAdmin(req: Request, res: Response): boolean {
   return false;
 }
 
-// Whitelist of all valid animal IDs
-const VALID_ANIMALS = new Set<string>([
-  // Land
-  'lion', 'tiger', 'grizzly_bear', 'wolf', 'elephant', 'rhinoceros',
-  'hippopotamus', 'gorilla', 'cheetah', 'crocodile', 'komodo_dragon',
-  'wolverine', 'honey_badger', 'giraffe', 'zebra', 'moose', 'boar',
-  'tarantula', 'scorpion', 'cobra',
-  // Sea
-  'great_white_shark', 'orca', 'giant_squid', 'piranha', 'octopus',
-  'barracuda', 'electric_eel', 'hammerhead_shark', 'mantis_shrimp',
-  'blue_ringed_octopus', 'swordfish', 'coelacanth',
-  // Air
-  'bald_eagle', 'peregrine_falcon', 'harpy_eagle', 'barn_owl',
-  'pterodactyl', 'hornet', 'dragonfly', 'albatross', 'pelican', 'crow',
-  // Bugs
-  'army_ant', 'bombardier_beetle', 'bullet_ant', 'praying_mantis',
-  'fire_ant', 'centipede', 'wasp', 'stag_beetle',
-  // Pets
-  'great_dane', 'german_shepherd', 'golden_retriever', 'labrador',
-  'husky', 'bulldog', 'beagle', 'poodle', 'corgi', 'pug',
-  'dachshund', 'chihuahua', 'tabby_cat', 'persian_cat', 'maine_coon',
-  'parakeet', 'cockatiel', 'canary', 'hamster', 'gerbil',
-  'guinea_pig', 'pet_rabbit', 'goldfish', 'betta_fish', 'leopard_gecko',
-  // Farm
-  'cow', 'bull', 'ox', 'pig', 'piglet', 'sheep', 'lamb', 'ram', 'goat',
-  'horse', 'donkey', 'mule', 'llama', 'alpaca',
-  'chicken', 'rooster', 'duck', 'goose', 'turkey', 'border_collie',
-  // Fantasy
-  'dragon', 'unicorn', 'griffin', 'kraken', 'minotaur', 'werewolf',
-  'hydra', 'phoenix', 'kitsune', 'basilisk', 'cerberus', 'leviathan',
-  // Prehistoric
-  't_rex', 'triceratops', 'velociraptor', 'spinosaurus', 'megalodon',
-  'woolly_mammoth', 'saber_tooth_tiger', 'ankylosaurus', 'pteranodon',
-  'dire_wolf', 'therizinosaurus', 'dodo',
-  // Mythic
-  'thunderbird', 'manticore', 'sphinx', 'chimera', 'wyvern', 'kirin',
-  'roc', 'jackalope', 'baku', 'nue', 'ammit', 'peryton',
-  // Mount Olympus (cheat code)
-  'zeus', 'poseidon', 'hades', 'ares', 'athena', 'apollo',
-  'artemis', 'hermes', 'hephaestus', 'hercules', 'medusa', 'kronos',
-]);
-
 // POST /api/battle
 router.post('/battle', requireAppAttest, battleRateLimit, async (req: Request, res: Response): Promise<void> => {
   const body = req.body as Record<string, unknown>;
@@ -142,8 +101,8 @@ router.post('/battle', requireAppAttest, battleRateLimit, async (req: Request, r
   let fighter1Name: string | undefined;
   let fighter2Name: string | undefined;
 
-  const isCustom1 = !VALID_ANIMALS.has(fighter1);
-  const isCustom2 = !VALID_ANIMALS.has(fighter2);
+  const isCustom1 = !isBuiltIn(fighter1);
+  const isCustom2 = !isBuiltIn(fighter2);
 
   if (isCustom1) {
     if (!rawF1Name) {
@@ -177,17 +136,19 @@ router.post('/battle', requireAppAttest, battleRateLimit, async (req: Request, r
 
   try {
     const generated = await idempotentOperation('battle', req.header('x-request-id'), async () => {
+      const matchup = { fighter1, fighter2, fighter1Name, fighter2Name, environmentName, tournamentContext };
+      const variant = await nextStoryVariant('battle-result', matchup, RESULT_CACHE_TTL_MS);
       const cached = await cachedOperation(
         'battle-result',
-        { fighter1, fighter2, fighter1Name, fighter2Name, environmentName, tournamentContext },
+        { ...matchup, variant },
         RESULT_CACHE_TTL_MS,
         () => getBattleResult(fighter1, fighter2, fighter1Name, fighter2Name,
           environmentName, tournamentContext, signal),
       );
-      return cached.value;
+      return cached;
     });
-    const result = generated.value;
-    res.setHeader('X-Result-Cache', generated.cacheHit ? 'HIT' : 'MISS');
+    const result = generated.value.value;
+    res.setHeader('X-Result-Cache', generated.cacheHit || generated.value.cacheHit ? 'HIT' : 'MISS');
     res.json(result);
     // Log AFTER the response is sent — never blocks the user.
     res.on('finish', () => {
@@ -234,8 +195,8 @@ router.post('/battle/quick', requireAppAttest, quickRateLimit, async (req: Reque
     return;
   }
 
-  const isCustom1 = !VALID_ANIMALS.has(fighter1);
-  const isCustom2 = !VALID_ANIMALS.has(fighter2);
+  const isCustom1 = !isBuiltIn(fighter1);
+  const isCustom2 = !isBuiltIn(fighter2);
 
   let fighter1Name: string | undefined;
   let fighter2Name: string | undefined;
@@ -265,16 +226,18 @@ router.post('/battle/quick', requireAppAttest, quickRateLimit, async (req: Reque
 
   try {
     const generated = await idempotentOperation('quick', req.header('x-request-id'), async () => {
+      const matchup = { fighter1, fighter2, fighter1Name, fighter2Name, environmentName };
+      const variant = await nextStoryVariant('quick-result', matchup, RESULT_CACHE_TTL_MS);
       const cached = await cachedOperation(
         'quick-result',
-        { fighter1, fighter2, fighter1Name, fighter2Name, environmentName },
+        { ...matchup, variant },
         RESULT_CACHE_TTL_MS,
         () => getQuickBattleResult(fighter1, fighter2, fighter1Name, fighter2Name, environmentName, signal),
       );
-      return cached.value;
+      return cached;
     });
-    const result = generated.value;
-    res.setHeader('X-Result-Cache', generated.cacheHit ? 'HIT' : 'MISS');
+    const result = generated.value.value;
+    res.setHeader('X-Result-Cache', generated.cacheHit || generated.value.cacheHit ? 'HIT' : 'MISS');
     res.json(result);
     res.on('finish', () => {
       void logBattle({
@@ -326,7 +289,7 @@ router.post('/battle/melee', requireAppAttest, meleeRateLimit, async (req: Reque
       const id = parsedId.value;
       const rawName = (f as { name?: unknown }).name;
       let name: string | undefined;
-      if (!VALID_ANIMALS.has(id)) {
+      if (!isBuiltIn(id)) {
         const s = sanitizeName(rawName);
         if (!s.ok) return null;
         name = s.value;
@@ -345,15 +308,17 @@ router.post('/battle/melee', requireAppAttest, meleeRateLimit, async (req: Reque
   const signal = abortSignalFor(res);
   try {
     const generated = await idempotentOperation('melee', req.header('x-request-id'), async () => {
+      const matchup = { teamA: normTeamA, teamB: normTeamB, environmentName };
+      const variant = await nextStoryVariant('melee-result', matchup, RESULT_CACHE_TTL_MS);
       const cached = await cachedOperation(
-        'melee-result', { teamA: normTeamA, teamB: normTeamB, environmentName },
+        'melee-result', { ...matchup, variant },
         RESULT_CACHE_TTL_MS,
         () => getMeleeResult(normTeamA, normTeamB, environmentName, signal),
       );
-      return cached.value;
+      return cached;
     });
-    const result: MeleeResult = generated.value;
-    res.setHeader('X-Result-Cache', generated.cacheHit ? 'HIT' : 'MISS');
+    const result: MeleeResult = generated.value.value;
+    res.setHeader('X-Result-Cache', generated.cacheHit || generated.value.cacheHit ? 'HIT' : 'MISS');
     res.json(result);
     // Log a summary row: MVP vs the first fighter on the losing team.
     // Melee data is admin-dashboard-only; the public leaderboard filters mode='full'.
@@ -363,8 +328,8 @@ router.post('/battle/melee', requireAppAttest, meleeRateLimit, async (req: Reque
       const mvp     = winners.find(f => f.id === result.mvp) ?? winners[0];
       const opp     = losers[0];
       if (!mvp || !opp) return;
-      const mvpIsCustom = !VALID_ANIMALS.has(mvp.id);
-      const oppIsCustom = !VALID_ANIMALS.has(opp.id);
+      const mvpIsCustom = !isBuiltIn(mvp.id);
+      const oppIsCustom = !isBuiltIn(opp.id);
       void logBattle({
         fighter1Id: mvp.id,
         fighter2Id: opp.id,

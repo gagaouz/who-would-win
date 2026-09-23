@@ -1,126 +1,31 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ANIMAL_NAMES_EXPORT = exports.LAND_ANIMALS = exports.AIR_ANIMALS = exports.SEA_ANIMALS = exports.POWER_PROFILES = exports.DEITY_IDS = void 0;
+exports.StoryRejectedError = void 0;
 exports.estimateCustomTier = estimateCustomTier;
 exports.isCustomFighter = isCustomFighter;
+exports.buildUserPrompt = buildUserPrompt;
+exports.validateResult = validateResult;
 exports.stripEmoji = stripEmoji;
+exports.generateValidated = generateValidated;
+exports.buildQuickUserPrompt = buildQuickUserPrompt;
 exports.getQuickBattleResult = getQuickBattleResult;
 exports.getBattleResult = getBattleResult;
 const anthropicClient_1 = require("./anthropicClient");
 const sanitize_1 = require("../middleware/sanitize");
+const creatures_1 = require("../data/creatures");
+const storyRules_1 = require("./storyRules");
 // Deterministic battle resolver — picks the winner for clear-cut matchups so
 // Claude is only asked to NARRATE, not to decide. See battleResolver.ts.
 const battleResolver_1 = require("./battleResolver");
-// IDs that represent immortal gods/deities — they always dominate mortals
-exports.DEITY_IDS = new Set([
-    'zeus', 'poseidon', 'hades', 'ares', 'athena', 'apollo',
-    'artemis', 'hermes', 'hephaestus', 'hercules', 'medusa', 'kronos',
-]);
-exports.POWER_PROFILES = {
-    // ─── Land mammals / reptiles / insects (real) ───
-    lion: { tier: 6, blurb: '~190 kg apex savanna predator with bone-crushing bite and pack coordination' },
-    tiger: { tier: 6, blurb: '~260 kg solo ambush hunter, largest living cat, immense strength and claws' },
-    grizzly_bear: { tier: 7, blurb: '~360 kg omnivore with devastating swipes, thick hide, and unmatched bite force for a mammal' },
-    wolf: { tier: 4, blurb: '~45 kg pack hunter, exceptional endurance and bite but small solo' },
-    elephant: { tier: 8, blurb: '~5,000 kg colossus — crushes most predators outright with sheer mass and tusks' },
-    rhinoceros: { tier: 7, blurb: '~2,000 kg armored charger with a lethal horn, near-indestructible hide' },
-    hippopotamus: { tier: 7, blurb: '~1,500 kg aggressive semi-aquatic with the largest jaws of any land mammal' },
-    gorilla: { tier: 6, blurb: '~180 kg great ape with immense upper-body strength, ~10× human strength' },
-    cheetah: { tier: 4, blurb: '~55 kg sprinter (110 km/h) but fragile; built for speed, not fighting' },
-    crocodile: { tier: 7, blurb: '~500 kg ambush reptile with the strongest bite force on earth and armored scales' },
-    alligator: { tier: 6, blurb: '~230 kg powerful semi-aquatic ambush predator with crushing bite (2,900 psi) and armored hide; dominant in water, slower on land' },
-    komodo_dragon: { tier: 5, blurb: '~80 kg venomous reptile with serrated bite and bacteria-laden saliva' },
-    wolverine: { tier: 4, blurb: '~15 kg mustelid, pound-for-pound among the strongest; kills prey many times its size' },
-    honey_badger: { tier: 3, blurb: '~12 kg mustelid famous for fearlessness and tough hide but small' },
-    giraffe: { tier: 5, blurb: '~1,200 kg herbivore with devastating hoof-kick' },
-    zebra: { tier: 4, blurb: '~300 kg equine, dangerous kick but prey animal' },
-    moose: { tier: 6, blurb: '~500 kg cervid with massive antlers and crushing hooves' },
-    boar: { tier: 4, blurb: '~90 kg tusked charger, surprisingly deadly' },
-    tarantula: { tier: 2, blurb: '~100 g spider with venomous bite, small scale' },
-    scorpion: { tier: 2, blurb: '~50 g venomous arachnid with pincers and stinger' },
-    cobra: { tier: 3, blurb: '~6 kg venomous snake, lethal neurotoxin bite' },
-    // ─── Sea (real) ───
-    great_white_shark: { tier: 8, blurb: '~1,100 kg apex ocean predator with serrated bite, completely dominant underwater' },
-    orca: { tier: 9, blurb: '~5,500 kg apex ocean hunter, intelligent pack tactics, kills great whites' },
-    giant_squid: { tier: 7, blurb: '~275 kg cephalopod with 10 m tentacles and beaked crushing bite' },
-    piranha: { tier: 2, blurb: '~3 kg small fish; dangerous only in schools' },
-    octopus: { tier: 3, blurb: '~15 kg intelligent cephalopod, no armor, pure agility' },
-    barracuda: { tier: 4, blurb: '~50 kg torpedo-fast predator fish with razor teeth' },
-    electric_eel: { tier: 4, blurb: '~20 kg fish delivering 600 V stunning shocks' },
-    hammerhead_shark: { tier: 7, blurb: '~500 kg shark with wide head sensor array and powerful bite' },
-    mantis_shrimp: { tier: 2, blurb: '~0.5 kg crustacean with punches that break aquarium glass (small scale)' },
-    blue_ringed_octopus: { tier: 3, blurb: '~0.1 kg but carries enough tetrodotoxin to kill 20 humans' },
-    swordfish: { tier: 5, blurb: '~650 kg billfish with a bladed rostrum, top ocean speeds' },
-    coelacanth: { tier: 3, blurb: '~90 kg living-fossil fish, mostly defensive' },
-    // ─── Air (real) ───
-    bald_eagle: { tier: 4, blurb: '~6 kg raptor, fierce talons but tiny vs land megafauna' },
-    peregrine_falcon: { tier: 3, blurb: '~1 kg falcon, fastest diving bird (320 km/h) but small and fragile' },
-    harpy_eagle: { tier: 4, blurb: '~9 kg largest eagle, crushing talon grip, apex of the canopy — but no match for ground megafauna or mythic beasts' },
-    barn_owl: { tier: 2, blurb: '~0.5 kg silent nocturnal hunter of rodents' },
-    hornet: { tier: 1, blurb: '~5 g insect, painful venom; tiny' },
-    dragonfly: { tier: 1, blurb: '~1 g insect with fast flight, minuscule combat presence' },
-    albatross: { tier: 2, blurb: '~10 kg seabird with enormous wingspan, not a fighter' },
-    pelican: { tier: 2, blurb: '~10 kg fish-scooping bird, not built for combat' },
-    crow: { tier: 2, blurb: '~1 kg clever corvid, opportunist not fighter' },
-    // ─── Insects / bugs ───
-    army_ant: { tier: 1, blurb: '0.01 g individual; devastating only as a swarm' },
-    bombardier_beetle: { tier: 1, blurb: '~1 g beetle with boiling chemical spray; tiny' },
-    bullet_ant: { tier: 1, blurb: '~0.03 g ant with the most painful insect sting; tiny' },
-    praying_mantis: { tier: 1, blurb: '~5 g ambush predator with spiked forelegs; tiny' },
-    fire_ant: { tier: 1, blurb: '~0.005 g individual, dangerous only in swarms' },
-    centipede: { tier: 1, blurb: '~30 g venomous arthropod; small combat scale' },
-    wasp: { tier: 1, blurb: '~0.1 g stinging insect; tiny' },
-    stag_beetle: { tier: 1, blurb: '~5 g beetle with jaw pincers; tiny' },
-    // ─── Fantasy / mythic creatures ───
-    dragon: { tier: 9, blurb: 'massive legendary fire-breathing winged reptile, armored scales — apex fantasy creature' },
-    unicorn: { tier: 6, blurb: 'magical horned horse with enchanted horn and healing magic; combat-capable but not brutal' },
-    griffin: { tier: 7, blurb: 'eagle-lion hybrid, lion-sized with eagle wings and talons — apex aerial-land hybrid' },
-    kraken: { tier: 9, blurb: 'colossal legendary sea monster with ship-crushing tentacles — ocean-domain god' },
-    minotaur: { tier: 6, blurb: 'bull-headed humanoid warrior with labyrinthine cunning and immense strength' },
-    werewolf: { tier: 6, blurb: 'lycanthrope with enhanced strength, claws, regeneration — especially dangerous at night' },
-    hydra: { tier: 9, blurb: 'massive multi-headed serpent with regenerating heads and venomous blood — a mortal-killer of legend' },
-    phoenix: { tier: 8, blurb: 'immortal fire-bird that resurrects from its own ashes; firestorm breath' },
-    kitsune: { tier: 6, blurb: 'nine-tailed fox spirit wielding illusion and elemental magic' },
-    basilisk: { tier: 8, blurb: 'king of serpents, petrifying gaze and lethally venomous bite' },
-    cerberus: { tier: 8, blurb: 'three-headed guardian hound of the underworld, unkillable by ordinary means' },
-    leviathan: { tier: 9, blurb: 'biblical sea-serpent the size of a cruise ship, nigh-invincible' },
-    // ─── Prehistoric ───
-    t_rex: { tier: 8, blurb: '~7,000 kg apex Cretaceous predator with bone-shearing bite (6× a lion\'s)' },
-    triceratops: { tier: 7, blurb: '~8,000 kg horned dinosaur with massive frill and charging horns' },
-    velociraptor: { tier: 5, blurb: '~15 kg feathered pack hunter with hyperextended sickle claws; agile but small' },
-    spinosaurus: { tier: 8, blurb: '~7,500 kg semi-aquatic theropod, longer than T-Rex, dominant in water and land' },
-    megalodon: { tier: 9, blurb: '~50,000 kg prehistoric shark (3× great white), largest predatory fish ever' },
-    woolly_mammoth: { tier: 7, blurb: '~6,000 kg ice-age proboscidean with huge curved tusks' },
-    saber_tooth_tiger: { tier: 6, blurb: '~400 kg smilodon with 28 cm canines and powerful forelimbs' },
-    ankylosaurus: { tier: 7, blurb: '~6,000 kg armored tank-dinosaur with a bone-crushing club tail' },
-    pteranodon: { tier: 5, blurb: '~25 kg pterosaur with a 7 m wingspan, fragile close-range fighter' },
-    pterodactyl: { tier: 3, blurb: '~5 kg small pterosaur, fragile' },
-    dire_wolf: { tier: 5, blurb: '~80 kg prehistoric wolf, 25% larger than modern gray wolf' },
-    therizinosaurus: { tier: 6, blurb: '~5,000 kg herbivorous theropod with 1 m scythe-claws' },
-    dodo: { tier: 1, blurb: '~15 kg flightless bird famous for being defenseless' },
-    // ─── Mythic (upper tier) ───
-    thunderbird: { tier: 9, blurb: 'giant Native American myth-bird that commands lightning and storms' },
-    manticore: { tier: 7, blurb: 'lion-bodied beast with human face, bat wings, and venomous scorpion tail' },
-    sphinx: { tier: 7, blurb: 'winged lion-bodied riddler with human head; magical and strong' },
-    chimera: { tier: 8, blurb: 'lion-goat-serpent fusion that breathes fire; apex Greek myth beast' },
-    wyvern: { tier: 7, blurb: 'smaller dragon cousin — two-legged flying reptile with venomous tail' },
-    kirin: { tier: 7, blurb: 'Eastern celestial chimera-deer with elemental magic and near-invincibility' },
-    roc: { tier: 8, blurb: 'mountain-sized legendary bird that carries off elephants in its talons' },
-    jackalope: { tier: 3, blurb: 'folk-hybrid rabbit with antlers; mostly mischievous, not a heavy hitter' },
-    baku: { tier: 6, blurb: 'Japanese chimera that devours nightmares; bear-sized and magical' },
-    nue: { tier: 7, blurb: 'yōkai chimera with monkey head, tiger body, snake tail — vengeful storm-summoner' },
-    ammit: { tier: 7, blurb: 'Egyptian soul-devourer — crocodile head, lion torso, hippo rear — devourer of hearts' },
-    peryton: { tier: 5, blurb: 'winged stag of ill omen, larger than a horse; competent combatant' },
-};
-// Returns an explicit profile line for the fighter, or falls back to a generic
-// string for custom/unknown fighters so the model can still reason.
+// Every built-in fighter's name, habitat, tier and profile lives in the master
+// list (data/creatures.json). Custom/user fighters get an estimated tier below.
+/** Profile line for the prompt: tier + a kid-safe blurb for built-ins, the
+ *  estimated tier for custom creatures. */
 function getPowerProfile(id, name) {
-    const p = exports.POWER_PROFILES[id];
-    if (p) {
-        return `${name} — TIER ${p.tier}/10 — ${p.blurb}`;
-    }
-    if (exports.DEITY_IDS.has(id)) {
-        return `${name} — TIER 10/10 — Olympian god with divine powers; dominates all mortal creatures`;
+    const c = (0, creatures_1.getCreature)(id);
+    if (c) {
+        const tier = c.habitat === 'deity' ? 'TIER 10/10 (god)' : `TIER ${c.tier}/10`;
+        return `${name} — ${tier} — ${c.blurb}. Verified fact: ${c.fact}`;
     }
     // Custom creature: use the estimated tier (populated by estimateCustomTier
     // before the prompt is built) so the narration is anchored to real scale.
@@ -128,7 +33,7 @@ function getPowerProfile(id, name) {
     if (est) {
         return `${name} — TIER ${est.tier}/10 (estimated) — ${est.blurb}`;
     }
-    return `${name} — tier unknown (custom/user-defined creature) — judge from your own knowledge of this creature\'s real-world or fictional abilities`;
+    return `${name} — tier unknown (custom/user-defined creature) — judge from your own knowledge of this creature's real-world or fictional abilities`;
 }
 // ───────────────────────────────────────────────────────────────────────────
 // Custom-creature tier estimation
@@ -140,16 +45,16 @@ function getPowerProfile(id, name) {
 // into the deterministic resolver, so REAL physical scale decides the winner —
 // consistent, realistic, educational. Falls back to the AI path on any failure.
 const customTierCache = new Map();
-const TIER_RUBRIC_SYSTEM = `You classify a creature into a COMBAT TIER from 1 to 10 for a kids' "who would win" game. ` +
-    `The tier reflects REAL physical size, mass, and lethal capability in a 1-on-1 fight to the finish.\n\n` +
+const TIER_RUBRIC_SYSTEM = `You classify a creature into a POWER TIER from 1 to 10 for a kids' "who would win" game. ` +
+    `The tier reflects REAL physical size, mass, and fighting ability in a 1-on-1 contest.\n\n` +
     `ABSOLUTE SCALE DOMINATES. Being "strong for its size" does NOT raise the tier — a beetle that ` +
     `lifts 50× its gram-scale body is still TIER 1, because a wolf outweighs it ten-thousand-fold.\n\n` +
     `Tier anchors:\n` +
-    `1 = gram-scale invertebrate / insect / bug (ant, beetle, wasp, mantis, hornet) or famously defenseless (dodo)\n` +
-    `2 = small (tarantula, scorpion, crow ~1kg, piranha, small lizard)\n` +
-    `3 = small-but-dangerous ~6–15kg (cobra, octopus, honey badger, small venomous snake)\n` +
-    `4 = medium predator ~15–55kg (wolf, cheetah, eagle, boar, barracuda)\n` +
-    `5 = large ~80–1200kg, not apex (komodo dragon, giraffe, velociraptor, swordfish)\n` +
+    `1 = gram-scale invertebrate / insect / bug (ant, beetle, wasp, mantis, hornet), tiny pets (hamster, goldfish, canary) or famously defenseless (dodo)\n` +
+    `2 = small (tarantula, scorpion, crow ~1kg, piranha, house cat, small dog, chicken)\n` +
+    `3 = small-but-dangerous ~6–30kg (cobra, octopus, honey badger, medium dog, sheep, goat)\n` +
+    `4 = medium ~15–250kg (wolf, cheetah, eagle, boar, large dog, donkey)\n` +
+    `5 = large ~80–1200kg, not apex (komodo dragon, giraffe, horse, bull, swordfish)\n` +
     `6 = apex land predator / great ape ~180–500kg (lion, tiger, gorilla, saber-tooth, moose)\n` +
     `7 = heavy/armored megafauna ~360–2000kg (grizzly, crocodile, rhino, hippo, giant squid, griffin)\n` +
     `8 = giant ~1100–7000kg (elephant, great white shark, T-Rex, phoenix, chimera)\n` +
@@ -158,7 +63,7 @@ const TIER_RUBRIC_SYSTEM = `You classify a creature into a COMBAT TIER from 1 to
     `Rules: judge a REAL animal by its typical adult size; a mythical/fictional one by its established lore size. ` +
     `Insects and bugs are TIER 1 no matter their reputation. A small real animal can NEVER be tier 5+. ` +
     `If the name is vague, estimate conservatively from the most likely real creature it names.\n` +
-    `Output ONLY a JSON object: {"tier": <1-10 integer>, "blurb": "<=12 words: typical weight + why>"}`;
+    `Output ONLY a JSON object: {"tier": <1-10 integer>, "blurb": "<=12 kid-friendly words: typical weight + standout ability>"}`;
 async function estimateCustomTier(name, signal) {
     const key = name.trim().toLowerCase();
     if (!key)
@@ -183,7 +88,8 @@ async function estimateCustomTier(name, signal) {
             return null;
         tier = Math.max(1, Math.min(10, tier));
         const rawBlurb = String(parsed.blurb ?? '').slice(0, 80);
-        const result = { tier, blurb: (0, sanitize_1.isSafeGeneratedText)(rawBlurb) ? rawBlurb : '' };
+        const blurb = (0, sanitize_1.storyProblem)(rawBlurb, 'narration', [name]) === null ? rawBlurb : '';
+        const result = { tier, blurb };
         if (customTierCache.size >= 1000) {
             const oldest = customTierCache.keys().next().value;
             if (oldest)
@@ -196,9 +102,9 @@ async function estimateCustomTier(name, signal) {
         return null; // never block a battle — fall back to the AI-judged path
     }
 }
-/** A fighter is custom when it has no built-in tier profile and isn't a deity. */
+/** A fighter is custom when it isn't one of the app's built-in creatures. */
 function isCustomFighter(id) {
-    return !(id in exports.POWER_PROFILES) && !exports.DEITY_IDS.has(id);
+    return !(0, creatures_1.isBuiltIn)(id);
 }
 /**
  * Estimate tiers for whichever fighters are custom (concurrently). Returns the
@@ -212,99 +118,20 @@ async function estimateCustomTiers(fighter1Id, fighter1Name, fighter2Id, fighter
     ]);
     return { customTier1: e1?.tier ?? null, customTier2: e2?.tier ?? null };
 }
-// Mapping of animal IDs to human-readable display names
-const ANIMAL_NAMES = {
-    lion: 'Lion',
-    tiger: 'Tiger',
-    grizzly_bear: 'Grizzly Bear',
-    wolf: 'Wolf',
-    elephant: 'Elephant',
-    rhinoceros: 'Rhinoceros',
-    hippopotamus: 'Hippopotamus',
-    gorilla: 'Gorilla',
-    cheetah: 'Cheetah',
-    crocodile: 'Crocodile',
-    alligator: 'Alligator',
-    komodo_dragon: 'Komodo Dragon',
-    wolverine: 'Wolverine',
-    honey_badger: 'Honey Badger',
-    giraffe: 'Giraffe',
-    zebra: 'Zebra',
-    moose: 'Moose',
-    boar: 'Boar',
-    tarantula: 'Tarantula',
-    scorpion: 'Scorpion',
-    cobra: 'Cobra',
-    great_white_shark: 'Great White Shark',
-    orca: 'Orca',
-    giant_squid: 'Giant Squid',
-    piranha: 'Piranha',
-    octopus: 'Octopus',
-    barracuda: 'Barracuda',
-    electric_eel: 'Electric Eel',
-    hammerhead_shark: 'Hammerhead Shark',
-    mantis_shrimp: 'Mantis Shrimp',
-    blue_ringed_octopus: 'Blue-Ringed Octopus',
-    swordfish: 'Swordfish',
-    coelacanth: 'Coelacanth',
-    bald_eagle: 'Bald Eagle',
-    peregrine_falcon: 'Peregrine Falcon',
-    harpy_eagle: 'Harpy Eagle',
-    barn_owl: 'Barn Owl',
-    pterodactyl: 'Pterodactyl',
-    hornet: 'Hornet',
-    dragonfly: 'Dragonfly',
-    albatross: 'Albatross',
-    pelican: 'Pelican',
-    crow: 'Crow',
-    army_ant: 'Army Ant',
-    bombardier_beetle: 'Bombardier Beetle',
-    bullet_ant: 'Bullet Ant',
-    praying_mantis: 'Praying Mantis',
-    fire_ant: 'Fire Ant',
-    centipede: 'Centipede',
-    wasp: 'Wasp',
-    stag_beetle: 'Stag Beetle',
-    // Prehistoric
-    t_rex: 'T-Rex', triceratops: 'Triceratops', velociraptor: 'Velociraptor',
-    spinosaurus: 'Spinosaurus', megalodon: 'Megalodon', woolly_mammoth: 'Woolly Mammoth',
-    saber_tooth_tiger: 'Saber-Tooth Tiger', ankylosaurus: 'Ankylosaurus',
-    pteranodon: 'Pteranodon', dire_wolf: 'Dire Wolf', therizinosaurus: 'Therizinosaurus',
-    dodo: 'Dodo',
-    // Mythic
-    thunderbird: 'Thunderbird', manticore: 'Manticore', sphinx: 'Sphinx',
-    chimera: 'Chimera', wyvern: 'Wyvern', kirin: 'Kirin', roc: 'Roc',
-    jackalope: 'Jackalope', baku: 'Baku', nue: 'Nue', ammit: 'Ammit', peryton: 'Peryton',
-    // Mount Olympus
-    zeus: 'Zeus',
-    poseidon: 'Poseidon',
-    hades: 'Hades',
-    ares: 'Ares',
-    athena: 'Athena',
-    apollo: 'Apollo',
-    artemis: 'Artemis',
-    hermes: 'Hermes',
-    hephaestus: 'Hephaestus',
-    hercules: 'Hercules',
-    medusa: 'Medusa',
-    kronos: 'Kronos',
-};
-const SYSTEM_PROMPT = 'You are the referee for "Who Would Win?" — a fun, educational battle game for kids. ' +
-    'Your job is to give ACCURATE, REALISTIC outcomes based on real biology, physics, and established lore. Accuracy is the core value of this app — kids are learning real facts about animals. Never give a surprising upset just to be interesting. Give the result that would actually happen.\n\n' +
+const SYSTEM_PROMPT = 'You are the storyteller for "Who Would Win?" — a fun, educational battle game for kids aged 6–12. ' +
+    'Outcomes must be ACCURATE and REALISTIC, based on real biology, physics, and established lore. Accuracy is the core value of this app — kids are learning real facts about animals. Never give a surprising upset just to be interesting.\n\n' +
     'POWER TIERS (ground truth — never override these with guesses):\n' +
-    '• Treat every tier number in FIGHTER PROFILES as absolute fact about that creature\'s size, power, and lethality.\n' +
-    '• A 2-tier gap: higher-tier creature wins the large majority of the time.\n' +
-    '• A 3-tier gap: higher-tier creature wins decisively — only an extreme arena mismatch changes this.\n' +
-    '• A 4+ tier gap: higher-tier creature wins almost certainly — arena cannot overcome this.\n' +
-    '• NEVER let a small creature (bug, small snake, small bird) defeat a large apex predator (alligator, lion, elephant, T-Rex) unless the small creature has an explicit instant-kill mechanism (neurotoxin, etc.) AND the large creature has no defense.\n\n' +
+    '• Treat every tier number in FIGHTER PROFILES as fact about that creature\'s size and power.\n' +
+    '• A 2-tier gap: the higher-tier creature wins the large majority of the time.\n' +
+    '• A 3-tier gap: the higher-tier creature wins decisively — only an extreme arena mismatch changes this.\n' +
+    '• A 4+ tier gap: the higher-tier creature wins almost certainly — the arena cannot overcome this.\n' +
+    '• NEVER let a small creature (bug, small snake, small bird) beat a large apex animal unless it has an overwhelming special ability (like very strong venom) AND the large animal has no defense.\n\n' +
     'ARENA RULES (apply these strictly when an arena is given):\n' +
-    '• SURVIVAL FIRST: If a creature cannot survive the arena environment, it loses automatically. A land animal in deep ocean drowns. A sea fish on land suffocates. A non-flying creature in the sky falls. These are not disadvantages — they are automatic losses.\n' +
-    '• EFFECTIVENESS: A creature in its home environment fights at 100%. A creature outside its home environment fights at 10–40% of normal ability. A lion in the ocean is almost useless vs a shark. A shark on land is almost helpless vs a lion.\n' +
-    '• Arena can decide a close matchup (1–2 tier gap) but CANNOT override a 4+ tier gap.\n' +
-    '• NO ARENA: When no arena is given, judge purely on the creatures\' natural abilities. No terrain bonuses or penalties.\n\n' +
-    'REAL ANIMALS: Base results on verified biology — mass, bite force, natural weapons, venom lethality, armor, speed, and hunting behavior. A 230 kg alligator beats a 1 kg bug every single time, no exceptions.\n\n' +
-    'MYTHOLOGICAL/FANTASY: Use their established legendary abilities from mythology and folklore. Gods (Zeus, Poseidon, Hades, etc.) beat all mortal creatures convincingly. Two gods fighting each other can go either way.\n\n' +
-    'NARRATION: 2-3 vivid, descriptive sentences. Be specific — name the key move, the decisive moment, the weapon or ability that won it. Sports announcer energy, kid-friendly, no graphic violence.\n\n' +
+    '• SURVIVAL FIRST: a land animal in deep ocean cannot breathe, a fish on land is stranded, and a creature that cannot fly is helpless in the sky. These decide the fight.\n' +
+    '• EFFECTIVENESS: a creature in its home environment is at full strength; outside it, it is much weaker.\n' +
+    '• NO ARENA: judge purely on the creatures\' natural abilities. No terrain bonuses or penalties.\n\n' +
+    'MYTHOLOGICAL/FANTASY: use their established legendary abilities from mythology and folklore. Gods beat all mortal creatures.\n\n' +
+    'STORY: follow the tone rules in the request exactly — exciting and specific, but a contest, never an injury.\n\n' +
     'FORMAT: Respond with ONLY valid JSON matching the exact schema. No markdown, no text outside the JSON.';
 const ENVIRONMENT_DESCRIPTIONS = {
     Grassland: 'open savanna with tall grass and a wide sky — neutral terrain with no water nearby',
@@ -317,62 +144,14 @@ const ENVIRONMENT_DESCRIPTIONS = {
     Night: 'a dark wilderness at night under a full moon — low visibility, shadows everywhere',
     Storm: 'a raging thunderstorm with lightning strikes, gale-force winds, and torrential rain',
 };
-// Animals that are native to each element — used for survival warnings
-exports.SEA_ANIMALS = new Set([
-    'great_white_shark', 'orca', 'giant_squid', 'piranha', 'octopus', 'barracuda',
-    'electric_eel', 'hammerhead_shark', 'mantis_shrimp', 'blue_ringed_octopus',
-    'swordfish', 'coelacanth', 'megalodon', 'kraken', 'leviathan',
-]);
-exports.AIR_ANIMALS = new Set([
-    'bald_eagle', 'peregrine_falcon', 'harpy_eagle', 'barn_owl', 'pterodactyl',
-    'hornet', 'dragonfly', 'albatross', 'pelican', 'crow', 'thunderbird', 'roc', 'pteranodon',
-]);
-exports.LAND_ANIMALS = new Set(Object.keys(ANIMAL_NAMES).filter(id => !exports.SEA_ANIMALS.has(id) && !exports.AIR_ANIMALS.has(id)));
-exports.ANIMAL_NAMES_EXPORT = ANIMAL_NAMES;
-function getSurvivalWarning(id, name, environmentName) {
-    const isSea = exports.SEA_ANIMALS.has(id);
-    const isAir = exports.AIR_ANIMALS.has(id);
-    const isLand = exports.LAND_ANIMALS.has(id);
-    if (environmentName === 'Ocean') {
-        if (isLand)
-            return `⚠️ SURVIVAL WARNING: ${name} is a land animal — it cannot breathe underwater and will drown in minutes. It is at an extreme, near-certain disadvantage in this arena.\n`;
-        if (isAir)
-            return `⚠️ SURVIVAL WARNING: ${name} is an air animal — it cannot breathe underwater and will drown in minutes. It is at an extreme disadvantage in this arena.\n`;
-    }
-    if (environmentName === 'Sky') {
-        if (isLand && !['dragon', 'griffin', 'wyvern', 'phoenix', 'thunderbird', 'roc'].includes(id))
-            return `⚠️ SURVIVAL WARNING: ${name} cannot fly — it will fall and is helpless in this airborne arena.\n`;
-        if (isSea)
-            return `⚠️ SURVIVAL WARNING: ${name} is an aquatic animal — it cannot fly and is helpless in a sky arena.\n`;
-    }
-    if (environmentName === 'Desert') {
-        if (isSea)
-            return `⚠️ SURVIVAL WARNING: ${name} is an aquatic animal — it cannot survive out of water in a desert and will quickly die from dehydration.\n`;
-    }
-    if (environmentName === 'Arctic') {
-        if (isSea && !['orca', 'great_white_shark', 'hammerhead_shark', 'megalodon'].includes(id))
-            return `⚠️ NOTE: ${name} is a warm-water sea animal and will struggle in freezing arctic conditions.\n`;
-        if (isLand) {
-            // Arctic land — most land animals freeze. Skip warning for arctic-native ones.
-            const arcticNative = new Set(['polar_bear', 'arctic_fox', 'arctic_wolf', 'reindeer', 'snow_leopard', 'moose', 'wolverine', 'bison']);
-            if (!arcticNative.has(id))
-                return `⚠️ NOTE: ${name} is not adapted to arctic conditions and will suffer from extreme cold.\n`;
-        }
-    }
-    // Grassland, Jungle, Desert, Volcano — all are LAND arenas. Sea creatures are
-    // beached, immobile, and dying out of water. This was missing before, which
-    // led to outcomes like an orca beating a harpy eagle on grassland.
-    if (environmentName === 'Grassland' || environmentName === 'Jungle' ||
-        environmentName === 'Volcano' || environmentName === 'Desert') {
-        if (isSea) {
-            return `⚠️ SURVIVAL WARNING: ${name} is an aquatic animal — out of water on land it is beached, immobile, and suffocating. It is at an extreme, near-certain disadvantage in this arena. A non-aquatic opponent of even modest power should win.\n`;
-        }
-    }
-    return '';
+/** Prompt tier for the gap note: built-in tier, 10 for gods, null for customs. */
+function promptTier(id) {
+    const c = (0, creatures_1.getCreature)(id);
+    return c ? c.tier : null;
 }
 function buildUserPrompt(fighter1Id, fighter2Id, fighter1Name, fighter2Name, environmentName, tournamentContext, verdict) {
-    const name1 = fighter1Name ?? ANIMAL_NAMES[fighter1Id] ?? fighter1Id;
-    const name2 = fighter2Name ?? ANIMAL_NAMES[fighter2Id] ?? fighter2Id;
+    const name1 = (0, creatures_1.displayName)(fighter1Id, fighter1Name);
+    const name2 = (0, creatures_1.displayName)(fighter2Id, fighter2Name);
     // 🔒 Deterministic verdict — when present, locks in the winner so Claude
     // only writes the narration. Forced verdicts are emitted at the very top so
     // they dominate every other instruction the model sees.
@@ -382,16 +161,16 @@ function buildUserPrompt(fighter1Id, fighter2Id, fighter1Name, fighter2Name, env
     const tournamentLine = tournamentContext
         ? `TOURNAMENT CONTEXT: ${tournamentContext}\n\n`
         : '';
-    const isDeity1 = exports.DEITY_IDS.has(fighter1Id);
-    const isDeity2 = exports.DEITY_IDS.has(fighter2Id);
+    const isDeity1 = (0, creatures_1.isDeity)(fighter1Id);
+    const isDeity2 = (0, creatures_1.isDeity)(fighter2Id);
     const deityNote = (isDeity1 || isDeity2)
-        ? `Note: ${[isDeity1 ? name1 : null, isDeity2 ? name2 : null].filter(Boolean).join(' and ')} ${isDeity1 && isDeity2 ? 'are legendary figures from Greek mythology with extraordinary divine powers. This is an epic clash; either could win.' : 'is a legendary figure from Greek mythology with extraordinary powers — use those mythological abilities when deciding the outcome.'}\n\n`
+        ? `Note: ${[isDeity1 ? name1 : null, isDeity2 ? name2 : null].filter(Boolean).join(' and ')} ${isDeity1 && isDeity2 ? 'are legendary figures from Greek mythology with extraordinary divine powers.' : 'is a legendary figure from Greek mythology with extraordinary powers — use those mythological abilities in the story.'}\n\n`
         : '';
-    const customNote1 = !exports.DEITY_IDS.has(fighter1Id) && !(fighter1Id in ANIMAL_NAMES) && fighter1Name
-        ? `Note: "${fighter1Name}" is a user-defined fighter — assess its power based on everything you know about it (biology, mythology, fiction, pop culture, etc.).\n`
+    const customNote1 = isCustomFighter(fighter1Id) && fighter1Name
+        ? `Note: "${fighter1Name}" is a user-defined fighter — describe it from everything you know about it (biology, mythology, fiction, pop culture, etc.).\n`
         : '';
-    const customNote2 = !exports.DEITY_IDS.has(fighter2Id) && !(fighter2Id in ANIMAL_NAMES) && fighter2Name
-        ? `Note: "${fighter2Name}" is a user-defined fighter — assess its power based on everything you know about it (biology, mythology, fiction, pop culture, etc.).\n`
+    const customNote2 = isCustomFighter(fighter2Id) && fighter2Name
+        ? `Note: "${fighter2Name}" is a user-defined fighter — describe it from everything you know about it (biology, mythology, fiction, pop culture, etc.).\n`
         : '';
     const arenaDesc = environmentName && ENVIRONMENT_DESCRIPTIONS[environmentName]
         ? ENVIRONMENT_DESCRIPTIONS[environmentName]
@@ -400,53 +179,37 @@ function buildUserPrompt(fighter1Id, fighter2Id, fighter1Name, fighter2Name, env
         ? `ARENA: ${environmentName} — ${arenaDesc}.\n` +
             `CRITICAL RULES — apply these to EVERY creature including custom, mythical, and fictional ones:\n` +
             `(1) The entire fight stays here — neither fighter escapes to another environment.\n` +
-            `(2) SURVIVAL: Can it physically survive here? A land animal in deep ocean drowns. A sea fish in a desert suffocates. A non-flying creature in the sky falls. A cold-blooded insect in arctic freezes. A creature that cannot survive loses automatically unless it has a special ability.\n` +
-            `(3) EFFECTIVENESS: Even if a creature can survive, does this arena cripple it? A lion can swim briefly but is nearly useless in deep ocean vs a sea creature. A shark on land can thrash but has no mobility. A jungle creature loses its agility advantage in an open desert. A desert creature overheats on a volcano. Score each fighter's combat effectiveness in THIS arena — not in their home environment.\n` +
-            `(4) HOME ADVANTAGE: A creature native to this environment fights at full strength. An outsider fights at a fraction of its normal ability. Weight this heavily — it often decides the outcome.\n\n`
-        : `There is NO arena environment for this battle. Judge each fighter purely on their natural strengths, biology, and abilities. Do NOT apply any terrain advantage or disadvantage — neither fighter has a home-environment bonus or penalty. Base the outcome entirely on the fighters themselves.\n` +
-            // Wording rules too, not just outcome rules — the quick + melee prompts
-            // already ban terrain words in env-less narration; the full prompt was
-            // the one place a no-arena story could still say "on the savanna".
+            `(2) SURVIVAL: Can it physically survive here? A land animal in deep ocean cannot breathe. A fish in a desert is stranded. A creature that cannot fly is helpless in the sky. A creature that cannot survive loses unless it has a special ability.\n` +
+            `(3) EFFECTIVENESS: Even if a creature can survive, does this arena hold it back? Judge each fighter in THIS arena — not in its home environment.\n` +
+            `(4) HOME ADVANTAGE: A creature native to this environment fights at full strength. An outsider fights at a fraction of its normal ability.\n\n`
+        : `There is NO arena environment for this battle. Judge each fighter purely on their natural strengths, biology, and abilities. Do NOT apply any terrain advantage or disadvantage — neither fighter has a home-environment bonus or penalty.\n` +
             `NARRATION WORDING (strict, because there is no arena): do NOT mention savanna, ocean, jungle, sky, land, water, or any terrain. Do NOT use habitat descriptors like "ocean giant" or "savanna king" — refer to fighters by NAME. Do NOT describe anyone as "out of its element", "stranded", "beached", or "in its home".\n\n`;
-    const warn1 = environmentName ? getSurvivalWarning(fighter1Id, name1, environmentName) : '';
-    const warn2 = environmentName ? getSurvivalWarning(fighter2Id, name2, environmentName) : '';
-    // Tier profiles — ground truth on size and capability. Also compute the tier
-    // gap and emit an explicit guidance line when the gap is wide, so the model
-    // doesn't hand a kraken-vs-hawk matchup to the hawk just because it's in the sky.
+    const warn1 = environmentName ? (0, creatures_1.survivalWarning)(fighter1Id, name1, environmentName) : '';
+    const warn2 = environmentName ? (0, creatures_1.survivalWarning)(fighter2Id, name2, environmentName) : '';
+    // Tier profiles — ground truth on size and capability. Also emit an explicit
+    // guidance line when the gap is wide, so the model doesn't hand a
+    // kraken-vs-hawk matchup to the hawk just because it's in the sky.
     const profile1 = getPowerProfile(fighter1Id, name1);
     const profile2 = getPowerProfile(fighter2Id, name2);
-    const tier1 = exports.POWER_PROFILES[fighter1Id]?.tier ?? (exports.DEITY_IDS.has(fighter1Id) ? 10 : null);
-    const tier2 = exports.POWER_PROFILES[fighter2Id]?.tier ?? (exports.DEITY_IDS.has(fighter2Id) ? 10 : null);
+    const tier1 = promptTier(fighter1Id);
+    const tier2 = promptTier(fighter2Id);
     let tierGapLine = '';
-    if (tier1 !== null && tier2 !== null) {
+    if (tier1 !== null && tier2 !== null && tier1 !== tier2) {
         const gap = Math.abs(tier1 - tier2);
-        // Check whether the stronger fighter would actually be crippled by the arena.
-        // A tier-7 orca on grassland is helpless — tier gap must NOT override survival.
         const strongerId = tier1 > tier2 ? fighter1Id : fighter2Id;
         const strongerName = tier1 > tier2 ? name1 : name2;
-        const strongerIsSea = exports.SEA_ANIMALS.has(strongerId);
-        const strongerIsLand = exports.LAND_ANIMALS.has(strongerId);
-        const arenaIsLand = environmentName === 'Grassland' || environmentName === 'Jungle' ||
-            environmentName === 'Volcano' || environmentName === 'Desert' ||
-            environmentName === 'Arctic';
-        const arenaIsOcean = environmentName === 'Ocean';
-        const arenaIsSky = environmentName === 'Sky';
-        const strongerArenaIncompatible = (strongerIsSea && arenaIsLand) ||
-            (strongerIsSea && arenaIsSky) ||
-            (strongerIsLand && arenaIsOcean);
-        if (strongerArenaIncompatible) {
-            // The stronger fighter is in a fatal arena — tier gap does NOT save it.
-            // Explicitly tell the model not to apply the tier-gap shortcut here.
-            tierGapLine = `TIER GAP NOTE: ${strongerName} is far more powerful on paper, BUT this arena is catastrophically lethal to it specifically (see SURVIVAL WARNING above). Survival overrides tier gap — the weaker but environment-compatible fighter wins decisively.\n\n`;
+        // A tier-9 orca on grassland is helpless — tier gap must NOT override survival.
+        if (environmentName && (0, creatures_1.envModifier)(strongerId, environmentName) <= 0.10) {
+            tierGapLine = `TIER GAP NOTE: ${strongerName} is far more powerful on paper, BUT it cannot function in this arena (see SURVIVAL WARNING above). Survival overrides the tier gap.\n\n`;
         }
         else if (gap >= 4) {
-            tierGapLine = `TIER GAP: ${gap} tiers. ${strongerName} is dramatically more powerful and should win decisively unless this arena is catastrophically lethal to it specifically (see any SURVIVAL WARNING above). Otherwise, terrain cannot overcome this gap.\n\n`;
+            tierGapLine = `TIER GAP: ${gap} tiers. ${strongerName} is dramatically more powerful and wins decisively; terrain cannot overcome this gap.\n\n`;
         }
         else if (gap === 3) {
-            tierGapLine = `TIER GAP: 3 tiers. ${strongerName} has a decisive size/power advantage and should win unless the arena is catastrophically lethal to it specifically.\n\n`;
+            tierGapLine = `TIER GAP: 3 tiers. ${strongerName} has a decisive size and power advantage.\n\n`;
         }
     }
-    const profilesBlock = `FIGHTER PROFILES (use these as ground truth for size, weight, and combat capability — do NOT upgrade a small creature past its tier):\n` +
+    const profilesBlock = `FIGHTER PROFILES (use these as ground truth for size, weight, and ability — do NOT upgrade a small creature past its tier):\n` +
         `  • ${profile1}\n` +
         `  • ${profile2}\n\n` +
         tierGapLine;
@@ -465,7 +228,7 @@ function buildUserPrompt(fighter1Id, fighter2Id, fighter1Name, fighter2Name, env
         `Respond with ONLY a JSON object:\n\n` +
         `{\n` +
         `  "winner": "<${fighter1Id} or ${fighter2Id} or \\"draw\\">",\n` +
-        `  "narration": "<EXACTLY 3 EPIC sentences as described in the Narration rules below>",\n` +
+        `  "narration": "<EXACTLY 3 sentences as described in the Narration rules below>",\n` +
         `  "funFact": "<a WHOA-DID-YOU-KNOW reveal — see Fun Fact rules>",\n` +
         `  "why": "<see Why rules below>",\n` +
         `  "winnerHealthPercent": <integer 10-90>,\n` +
@@ -476,21 +239,17 @@ function buildUserPrompt(fighter1Id, fighter2Id, fighter1Name, fighter2Name, env
         `- winnerHealthPercent: 10–90 (higher = more dominant win)\n` +
         `- loserHealthPercent: 0–89, always strictly less than winnerHealthPercent\n\n` +
         `Why rules — a single crisp takeaway a kid actually learns from:\n` +
-        `- ONE short sentence (max ~14 words) naming the SPECIFIC thing that decided it: a real weapon, ability, size, speed, venom, armor, or legendary power. e.g. "A wolf's pack-hunting bite is far too strong for a tiny beetle." or "Medusa's stone-turning stare ends the fight instantly."\n` +
-        `- Be concrete and accurate — NOT generic ("bigger and stronger", "too powerful"). Name the actual deciding factor.\n` +
-        `- Kid-friendly, no jargon (no "tier"/"stat"). Don't just repeat the narration.\n\n` +
-        `Narration rules — write it CINEMATIC, like a kids action movie trailer:\n` +
-        `- EXACTLY 3 sentences, present tense, every sentence pulses with action. Do not exceed 3 sentences.\n` +
-        `- Use punchy verbs (charges, slams, vaults, gores, rips, soars, crashes) and sensory hits (dust kicks up, the ground shakes, a roar splits the air).\n` +
-        `- Open with a dramatic moment, not a bland intro. End with a triumphant beat: "stands roaring over the arena", "lifts its head as the crowd erupts".\n` +
-        `- Name AT LEAST ONE specific signature move/weapon ("a bone-shattering bite", "a 5-ton hip-check", "a swooping talon strike").\n` +
-        `- Kid-friendly — no gore, no blood. PG-rated impact.\n` +
-        `- FORBIDDEN bland phrases: "ultimately won", "proved too much", "fought bravely", "stood victorious", "couldn't keep up", "no match for".\n` +
-        `- FORBIDDEN system jargon: NEVER mention "tier", "tier gap", "stat", "rating", "power level", or numerical size/weight categories. These are internal mechanics — they must NEVER appear in the story. Describe size and strength with imagery ("massive frame", "thunderous mass"), not numbers or labels.\n\n` +
-        `Fun-fact rules — make it a WHOA-DID-YOU-KNOW reveal kids will want to repeat:\n` +
-        `- 1–2 sentences. Hit them with a surprising number or biological/mythical detail.\n` +
-        `- Tie it to WHY the winner won — what biological superpower or quirk made the difference.\n` +
-        `- Speak like a kid is reading it. Avoid jargon like "tier" or "stat".\n`);
+        storyRules_1.WHY_RULES + `\n` +
+        `Narration rules — like a kids' action-movie trailer:\n` +
+        `- EXACTLY 3 sentences, present tense, every sentence full of action. Do not exceed 3 sentences.\n` +
+        `- Use punchy verbs (charges, slams, vaults, soars, crashes, pounces, dodges, zaps) and sensory moments (dust kicks up, the ground shakes, a roar echoes).\n` +
+        `- Open with a dramatic moment, not a bland intro. End with a triumphant beat: "stands tall over the arena", "lifts its head as the crowd erupts".\n` +
+        storyRules_1.SIGNATURE_MOVE_RULE +
+        storyRules_1.SOLO_RULE +
+        storyRules_1.TONE_RULES + `\n` +
+        `Fun-fact rules — a WHOA-DID-YOU-KNOW reveal kids will want to repeat:\n` +
+        `- 1–2 sentences.\n` +
+        storyRules_1.FACT_RULES);
 }
 function stripMarkdownFences(text) {
     // Remove ```json ... ``` or ``` ... ``` wrappers if present
@@ -499,64 +258,87 @@ function stripMarkdownFences(text) {
         .replace(/\s*```\s*$/, '')
         .trim();
 }
-function validateResult(data, fighter1Id, fighter2Id) {
+/** Thrown when a generated story breaks the kid-safety or format rules. The
+ *  caller regenerates once; anything else (API errors) is not retried. */
+class StoryRejectedError extends Error {
+    constructor(reason) {
+        super(`story rejected: ${reason}`);
+        this.name = 'StoryRejectedError';
+    }
+}
+exports.StoryRejectedError = StoryRejectedError;
+function validateResult(data, fighter1Id, fighter2Id, fighterNames = [], minNarrationSentences = 2) {
     if (typeof data !== 'object' || data === null) {
-        throw new Error('Response is not an object');
+        throw new StoryRejectedError('response is not an object');
     }
     const obj = data;
     const winner = obj['winner'];
     if (winner !== fighter1Id && winner !== fighter2Id && winner !== 'draw') {
-        throw new Error('Invalid winner value');
+        throw new StoryRejectedError('invalid winner value');
     }
     // Strip emoji BEFORE the non-empty check — an all-emoji field is non-empty raw
     // but would strip to "", and we must reject it (retry/fallback) rather than
     // ship a blank card.
     const narrationRaw = obj['narration'];
     if (typeof narrationRaw !== 'string') {
-        throw new Error('narration must be a non-empty string');
+        throw new StoryRejectedError('narration missing');
     }
-    const narration = stripEmoji(narrationRaw).slice(0, 1200);
-    if (narration.trim() === '' || !(0, sanitize_1.isSafeGeneratedText)(narration)) {
-        throw new Error('narration must be a non-empty string');
+    const narrationText = stripEmoji(narrationRaw).slice(0, 1200);
+    if (narrationText.trim() === '')
+        throw new StoryRejectedError('narration empty');
+    const narration = (0, sanitize_1.repairStory)(narrationText, 'narration', fighterNames, minNarrationSentences);
+    if (narration === null) {
+        throw new StoryRejectedError(`narration ${(0, sanitize_1.storyProblem)(narrationText, 'narration', fighterNames)}`);
     }
+    if (narration !== narrationText)
+        logRepair('narration', narrationText, fighterNames);
     const funFactRaw = obj['funFact'];
     if (typeof funFactRaw !== 'string') {
-        throw new Error('funFact must be a non-empty string');
+        throw new StoryRejectedError('funFact missing');
     }
-    const funFact = stripEmoji(funFactRaw).slice(0, 500);
-    if (funFact.trim() === '' || !(0, sanitize_1.isSafeGeneratedText)(funFact)) {
-        throw new Error('funFact must be a non-empty string');
+    const funFactText = stripEmoji(funFactRaw).slice(0, 500);
+    if (funFactText.trim() === '')
+        throw new StoryRejectedError('funFact empty');
+    const funFact = (0, sanitize_1.repairStory)(funFactText, 'fact', fighterNames, 1);
+    if (funFact === null) {
+        throw new StoryRejectedError(`funFact ${(0, sanitize_1.storyProblem)(funFactText, 'fact', fighterNames)}`);
     }
+    if (funFact !== funFactText)
+        logRepair('funFact', funFactText, fighterNames);
     const rawWinner = Number(obj['winnerHealthPercent']);
     if (isNaN(rawWinner)) {
-        throw new Error('winnerHealthPercent is not a number');
+        throw new StoryRejectedError('winnerHealthPercent is not a number');
     }
     const winnerHealthPercent = Math.min(90, Math.max(10, Math.round(rawWinner)));
     const rawLoser = Number(obj['loserHealthPercent']);
     if (isNaN(rawLoser)) {
-        throw new Error('loserHealthPercent is not a number');
+        throw new StoryRejectedError('loserHealthPercent is not a number');
     }
     // Clamp loser, then ensure it's strictly less than winner for non-draws
     let loserHealthPercent = Math.min(89, Math.max(0, Math.round(rawLoser)));
     if (winner !== 'draw' && loserHealthPercent >= winnerHealthPercent) {
         loserHealthPercent = Math.max(0, winnerHealthPercent - 1);
     }
-    // Optional: the one-line "why". Missing/blank → undefined (iOS falls back to
-    // its local reason). Cap length so a runaway sentence can't bloat the card.
+    // Optional: the one-line "why". Missing/blank/unsafe → undefined (iOS falls
+    // back to its local reason). Cap length so a runaway sentence can't bloat the card.
     const rawWhy = obj['why'];
     const whyStripped = typeof rawWhy === 'string' ? stripEmoji(rawWhy) : '';
-    // Blank (incl. all-emoji that stripped to "") → undefined so iOS falls back to
-    // its local BattleInsight reason.
-    const why = whyStripped !== '' && (0, sanitize_1.isSafeGeneratedText)(whyStripped)
+    const why = whyStripped !== '' && (0, sanitize_1.storyProblem)(whyStripped, 'narration', fighterNames) === null
         ? whyStripped.slice(0, 160) : undefined;
     return {
         winner: winner,
-        narration, // already emoji-stripped + validated non-empty
-        funFact, // already emoji-stripped + validated non-empty
+        narration, // already emoji-stripped + validated
+        funFact, // already emoji-stripped + validated
         winnerHealthPercent,
         loserHealthPercent,
         why,
     };
+}
+function logRepair(field, original, fighterNames) {
+    const part = field === 'narration' ? 'narration' : 'fact';
+    console.warn(JSON.stringify({
+        event: 'story_repaired', field, reason: (0, sanitize_1.storyProblem)(original, part, fighterNames),
+    }));
 }
 /// Removes emoji / pictographic symbols from AI copy. The narration model
 /// sometimes sprinkles in emoji that render as empty placeholder boxes (tofu) in
@@ -572,15 +354,39 @@ function stripEmoji(s) {
         .trim();
 }
 /**
+ * Parse + validate a model reply, regenerating ONCE when the story breaks the
+ * rules (unsafe word, bad JSON, missing field). API/budget errors are never
+ * retried — the app's local result covers those.
+ */
+async function generateValidated(label, generate, parse) {
+    let retryNote;
+    for (let attempt = 1;; attempt++) {
+        const text = await generate(retryNote);
+        try {
+            return parse(text);
+        }
+        catch (error) {
+            const retryable = error instanceof StoryRejectedError || error instanceof SyntaxError;
+            const reason = error.message.slice(0, 120);
+            console.warn(JSON.stringify({ event: 'story_rejected', label, attempt, reason }));
+            if (!retryable || attempt >= 2)
+                throw error;
+            // Tell the model exactly what went wrong — far more effective than
+            // simply asking again.
+            retryNote = `\n\nIMPORTANT: a previous draft was rejected (${reason.replace(/^story rejected: /, '')}). ` +
+                `Write a completely new answer that follows every tone rule and returns valid JSON.`;
+        }
+    }
+}
+/**
  * Builds a partial assistant prefill that commits Claude to the arena ruling
  * before it generates JSON. Claude must continue from this voice — it cannot
  * contradict what it has already "said".
  */
 function buildArenaPrefill(fighter1Id, fighter2Id, name1, name2, environmentName) {
-    const warn1 = getSurvivalWarning(fighter1Id, name1, environmentName)
-        .replace(/⚠️ SURVIVAL WARNING: |⚠️ NOTE: /g, '').trim();
-    const warn2 = getSurvivalWarning(fighter2Id, name2, environmentName)
-        .replace(/⚠️ SURVIVAL WARNING: |⚠️ NOTE: /g, '').trim();
+    const clean = (s) => s.replace(/^(SURVIVAL WARNING|NOTE): /, '').trim();
+    const warn1 = clean((0, creatures_1.survivalWarning)(fighter1Id, name1, environmentName));
+    const warn2 = clean((0, creatures_1.survivalWarning)(fighter2Id, name2, environmentName));
     let prefill = `Arena: ${environmentName}. Survival & effectiveness check:\n`;
     prefill += warn1 ? `- ${name1}: ${warn1}\n` : `- ${name1}: can function in this arena.\n`;
     prefill += warn2 ? `- ${name2}: ${warn2}\n` : `- ${name2}: can function in this arena.\n`;
@@ -588,8 +394,8 @@ function buildArenaPrefill(fighter1Id, fighter2Id, name1, name2, environmentName
     return prefill;
 }
 async function callClaude(fighter1Id, fighter2Id, topP, fighter1Name, fighter2Name, environmentName, tournamentContext, signal) {
-    const name1 = fighter1Name ?? ANIMAL_NAMES[fighter1Id] ?? fighter1Id;
-    const name2 = fighter2Name ?? ANIMAL_NAMES[fighter2Id] ?? fighter2Id;
+    const name1 = (0, creatures_1.displayName)(fighter1Id, fighter1Name);
+    const name2 = (0, creatures_1.displayName)(fighter2Id, fighter2Name);
     // 🔒 Step 1: Resolve the battle deterministically. For custom creatures we
     // first estimate a real-scale tier so even user-typed fighters get a
     // realistic, forced outcome (no gram-scale beetle beating a wolf). If the
@@ -607,34 +413,31 @@ async function callClaude(fighter1Id, fighter2Id, topP, fighter1Name, fighter2Na
     const prefill = environmentName
         ? buildArenaPrefill(fighter1Id, fighter2Id, name1, name2, environmentName)
         : null;
-    const messages = [
-        {
-            role: 'user',
-            content: buildUserPrompt(fighter1Id, fighter2Id, fighter1Name, fighter2Name, environmentName, tournamentContext, verdict),
-        },
-    ];
-    if (prefill) {
-        messages.push({ role: 'assistant', content: prefill });
-    }
-    const response = await (0, anthropicClient_1.createMessage)('battle', {
-        max_tokens: 450,
-        top_p: topP,
-        system: SYSTEM_PROMPT,
-        messages,
-    }, signal);
-    const block = response.content[0];
-    if (!block || block.type !== 'text') {
-        throw new Error('Unexpected response format from Claude');
-    }
-    // The prefill ends with '{' — prepend it so the response is valid JSON.
-    const responseText = prefill ? '{' + block.text : block.text;
-    const cleaned = stripMarkdownFences(responseText);
-    const parsed = JSON.parse(cleaned);
-    const result = validateResult(parsed, fighter1Id, fighter2Id);
+    const userPrompt = buildUserPrompt(fighter1Id, fighter2Id, fighter1Name, fighter2Name, environmentName, tournamentContext, verdict);
+    const result = await generateValidated('battle', async (retryNote) => {
+        const messages = [
+            { role: 'user', content: userPrompt + (retryNote ?? '') },
+        ];
+        if (prefill) {
+            messages.push({ role: 'assistant', content: prefill });
+        }
+        const response = await (0, anthropicClient_1.createMessage)('battle', {
+            max_tokens: 450,
+            top_p: topP,
+            system: SYSTEM_PROMPT,
+            messages,
+        }, signal);
+        const block = response.content[0];
+        if (!block || block.type !== 'text') {
+            throw new Error('Unexpected response format from Claude');
+        }
+        // The prefill ends with '{' — prepend it so the response is valid JSON.
+        return prefill ? '{' + block.text : block.text;
+    }, text => validateResult(JSON.parse(stripMarkdownFences(text)), fighter1Id, fighter2Id, [name1, name2]));
     // 🔒 Step 2: enforce the verdict. If Claude defied a forced verdict, override
     // the winner field and rewrite a sensible narration explaining why. The fun
     // fact and health percents are preserved from Claude's response.
-    return enforceVerdict(result, verdict, fighter1Id, fighter2Id, name1, name2);
+    return enforceVerdict(result, verdict, name1, name2, fighter1Id);
 }
 /**
  * Compare Claude's chosen winner against the resolver's forced verdict. If
@@ -642,41 +445,42 @@ async function callClaude(fighter1Id, fighter2Id, topP, fighter1Name, fighter2Na
  * line of defense — should rarely fire because the prompt already tells the
  * model the verdict is final.
  */
-function enforceVerdict(result, verdict, fighter1Id, fighter2Id, name1, name2) {
+function enforceVerdict(result, verdict, name1, name2, fighter1Id) {
     if (verdict.kind !== 'forced')
         return result;
     if (result.winner === verdict.winnerId)
         return result;
-    // Override.
     const winnerName = verdict.winnerId === fighter1Id ? name1 : name2;
     const loserName = verdict.winnerId === fighter1Id ? name2 : name1;
     console.warn(JSON.stringify({
         event: 'verdict_override',
-        fighter1Type: isCustomFighter(fighter1Id) ? 'custom' : 'built-in',
-        fighter2Type: isCustomFighter(fighter2Id) ? 'custom' : 'built-in',
+        fighter1Type: isCustomFighter(verdict.winnerId) ? 'custom' : 'built-in',
+        fighter2Type: isCustomFighter(verdict.loserId) ? 'custom' : 'built-in',
     }));
     return {
         winner: verdict.winnerId,
-        // Terrain-neutral on purpose: this override can fire in ANY arena (or no
-        // arena at all) — "dust kicks up, the ground shakes" read absurd mid-ocean.
-        narration: `The ${winnerName} charges in with a thunderous roar and overwhelms the ${loserName} from the first second. Blow after blow lands until one final crushing strike seals it — the ${winnerName} stands triumphant as the crowd erupts.`,
+        // Terrain-neutral and name-safe on purpose: this override can fire in ANY
+        // arena (or none), and the names may be people or objects a kid typed.
+        narration: `${winnerName} takes charge from the very first moment and never lets ${loserName} settle in. ` +
+            `One last burst of power and speed seals it, and ${winnerName} wins as the crowd erupts!`,
         funFact: result.funFact, // keep Claude's fun fact — usually still accurate
         winnerHealthPercent: Math.max(70, result.winnerHealthPercent),
         loserHealthPercent: Math.min(25, result.loserHealthPercent),
+        // `why` omitted: Claude's would argue for the wrong winner; iOS recomputes.
     };
 }
 // ── Quick Battle ─────────────────────────────────────────────────────────────
-// Lightweight prompt: just picks a winner using the same tier/profile logic.
-// Uses much fewer tokens than a full battle — ideal for tournament quick mode.
+// Lightweight prompt: same resolver, shorter story. Used by tournaments and
+// the 1v1 Quick Fight.
 function buildQuickUserPrompt(fighter1Id, fighter2Id, fighter1Name, fighter2Name, environmentName, verdict) {
-    const name1 = fighter1Name ?? ANIMAL_NAMES[fighter1Id] ?? fighter1Id;
-    const name2 = fighter2Name ?? ANIMAL_NAMES[fighter2Id] ?? fighter2Id;
+    const name1 = (0, creatures_1.displayName)(fighter1Id, fighter1Name);
+    const name2 = (0, creatures_1.displayName)(fighter2Id, fighter2Name);
     // 🔒 Forced verdict line — if present, locks in the winner.
     const verdictLine = verdict ? (0, battleResolver_1.verdictPromptLine)(verdict, name1, name2, fighter1Id) : '';
     const profile1 = getPowerProfile(fighter1Id, name1);
     const profile2 = getPowerProfile(fighter2Id, name2);
-    const tier1 = exports.POWER_PROFILES[fighter1Id]?.tier ?? (exports.DEITY_IDS.has(fighter1Id) ? 10 : null);
-    const tier2 = exports.POWER_PROFILES[fighter2Id]?.tier ?? (exports.DEITY_IDS.has(fighter2Id) ? 10 : null);
+    const tier1 = promptTier(fighter1Id);
+    const tier2 = promptTier(fighter2Id);
     let tierGapLine = '';
     if (tier1 !== null && tier2 !== null) {
         const gap = Math.abs(tier1 - tier2);
@@ -685,10 +489,10 @@ function buildQuickUserPrompt(fighter1Id, fighter2Id, fighter1Name, fighter2Name
             tierGapLine = `TIER GAP: ${gap} — ${stronger} is dramatically more powerful and should win.\n\n`;
         }
     }
-    const customNote1 = !exports.DEITY_IDS.has(fighter1Id) && !(fighter1Id in ANIMAL_NAMES) && fighter1Name
+    const customNote1 = isCustomFighter(fighter1Id) && fighter1Name
         ? `Note: "${fighter1Name}" is a user-defined fighter — judge from your own knowledge of it.\n`
         : '';
-    const customNote2 = !exports.DEITY_IDS.has(fighter2Id) && !(fighter2Id in ANIMAL_NAMES) && fighter2Name
+    const customNote2 = isCustomFighter(fighter2Id) && fighter2Name
         ? `Note: "${fighter2Name}" is a user-defined fighter — judge from your own knowledge of it.\n`
         : '';
     const arenaDesc = environmentName && ENVIRONMENT_DESCRIPTIONS[environmentName]
@@ -697,17 +501,15 @@ function buildQuickUserPrompt(fighter1Id, fighter2Id, fighter1Name, fighter2Name
             `  • Do NOT mention savanna, ocean, jungle, sky, land, water, or any terrain.\n` +
             `  • Do NOT use habitat descriptors like "ocean giant" or "savanna king" — refer to fighters by NAME.\n` +
             `  • Do NOT treat anyone as "out of their element", "stranded", "beached", or "in its home".\n` +
-            `  • No environmental bonus or penalty for either side. Judge purely on biology, size, weapons.\n`;
-    const warn1 = environmentName ? getSurvivalWarning(fighter1Id, name1, environmentName) : '';
-    const warn2 = environmentName ? getSurvivalWarning(fighter2Id, name2, environmentName) : '';
+            `  • No environmental bonus or penalty for either side. Judge purely on biology, size, abilities.\n`;
+    const warn1 = environmentName ? (0, creatures_1.survivalWarning)(fighter1Id, name1, environmentName) : '';
+    const warn2 = environmentName ? (0, creatures_1.survivalWarning)(fighter2Id, name2, environmentName) : '';
     const survivalBlock = (warn1 || warn2)
-        ? `SURVIVAL RULES — these override everything else:\n` +
-            (warn1 ? `❌ ${warn1}` : '') +
-            (warn2 ? `❌ ${warn2}` : '') +
-            `A creature that cannot survive the arena LOSES automatically.\n\n`
+        ? `SURVIVAL RULES — these override everything else:\n` + warn1 + warn2 +
+            `A creature that cannot survive the arena LOSES.\n\n`
         : '';
     return (verdictLine +
-        `Quick battle decision: ${name1} vs ${name2}.\n\n` +
+        `Quick battle: ${name1} vs ${name2}.\n\n` +
         `FIGHTER PROFILES (ground truth — do not override with guesses):\n  • ${profile1}\n  • ${profile2}\n\n` +
         tierGapLine +
         customNote1 +
@@ -715,20 +517,25 @@ function buildQuickUserPrompt(fighter1Id, fighter2Id, fighter1Name, fighter2Name
         arenaDesc +
         survivalBlock +
         `Pick the accurate winner based on biology, power tier, and arena. Respond with ONLY valid JSON — no markdown:\n` +
-        `{"winner":"<${fighter1Id} or ${fighter2Id}>","narration":"<see Narration rules>","funFact":"<see Fun-Fact rules>","why":"<see Why rule>","winnerHealthPercent":<10-90>,"loserHealthPercent":<0-40>}\n\n` +
-        `Why rule — ONE short sentence (≤14 words) naming the SPECIFIC deciding factor (a real weapon, ability, venom, armor, size, or speed), kid-friendly, no jargon, not a repeat of the narration. Be concrete, never generic like "bigger and stronger".\n\n` +
-        `Narration rules — EPIC and CINEMATIC, like a kids action movie:\n` +
-        `• EXACTLY 2 punchy sentences in present tense. Do not exceed 2 sentences.\n` +
-        `• Use punchy verbs (charges, slams, rips, soars, crashes) and sensory hits (dust kicks up, the ground shakes, a roar splits the air).\n` +
-        `• Name at least one specific signature move or weapon ("bone-shattering bite", "5-ton hip-check", "swooping talon strike").\n` +
-        `• End with a triumphant beat ("stands roaring over the arena", "lifts its head as the crowd erupts").\n` +
-        `• Kid-friendly — PG impact, no blood.\n` +
-        `• FORBIDDEN bland phrases: "ultimately won", "proved too much", "fought bravely", "stood victorious", "couldn't keep up", "no match for".\n` +
-        `• FORBIDDEN system jargon: NEVER mention "tier", "tier gap", "stat", "rating", "power level", or numerical size/weight categories. Describe size with imagery ("massive frame", "thunderous mass"), not numbers or labels.\n\n` +
-        `Fun-Fact rules — a WHOA-DID-YOU-KNOW reveal kids will want to repeat:\n` +
-        `• 1 sentence. Hit them with a surprising biology/mythology number that ties to WHY the winner won.\n` +
-        `• Speak like a kid is reading it — no jargon like "tier" or "stat".`);
+        `{"winner":"<${fighter1Id} or ${fighter2Id}>","narration":"<see Narration rules>","funFact":"<see Fun-Fact rules>","why":"<see Why rules>","winnerHealthPercent":<10-90>,"loserHealthPercent":<0-40>}\n\n` +
+        `Why rules:\n` + storyRules_1.WHY_RULES + `\n` +
+        `Narration rules — like a kids' action-movie trailer:\n` +
+        `- EXACTLY 2 punchy sentences in present tense. Do not exceed 2 sentences.\n` +
+        `- Use punchy verbs (charges, slams, soars, crashes, pounces, dodges, zaps) and sensory moments (dust kicks up, the ground shakes, a roar echoes).\n` +
+        `- End with a triumphant beat ("stands tall over the arena", "lifts its head as the crowd erupts").\n` +
+        storyRules_1.SIGNATURE_MOVE_RULE +
+        storyRules_1.SOLO_RULE +
+        storyRules_1.TONE_RULES + `\n` +
+        `Fun-fact rules:\n- 1 sentence.\n` +
+        storyRules_1.FACT_RULES);
 }
+const QUICK_SYSTEM_PROMPT = 'You are the storyteller for "Who Would Win?" — an educational battle game for kids aged 6–12. ' +
+    'ACCURACY IS EVERYTHING: give the result that would realistically happen. Never give a surprising upset just to be interesting.\n' +
+    'POWER TIERS: treat tier numbers as ground truth. A 3-tier gap is decisive. A 4+ tier gap is essentially certain — the arena cannot overcome it.\n' +
+    'ARENA SURVIVAL: a creature that cannot survive the arena loses — a land animal in deep ocean cannot breathe, a fish on land is stranded, a creature that cannot fly is helpless in the sky.\n' +
+    'REAL BIOLOGY: base results on verified size, abilities, and biology — not random chance.\n' +
+    'Never return a draw — always pick the realistic winner.\n' +
+    'Follow the tone rules in the request exactly. Always respond with ONLY valid JSON. No markdown, no explanation outside the JSON.';
 async function getQuickBattleResult(fighter1Id, fighter2Id, fighter1Name, fighter2Name, environmentName, signal) {
     // 🔒 Resolve deterministically first (estimating a real-scale tier for any
     // custom creature so it can't win on vibes); verdict is appended to the
@@ -740,29 +547,27 @@ async function getQuickBattleResult(fighter1Id, fighter2Id, fighter1Name, fighte
         environmentName,
         customTier1, customTier2,
     });
-    const response = await (0, anthropicClient_1.createMessage)('quick', {
-        max_tokens: 360,
-        top_p: 0.85,
-        system: 'You are the cinematic narrator for "Who Would Win?" — write like a kids action movie trailer. ' +
-            'ACCURACY IS EVERYTHING: Give the result that would realistically happen. Never give a surprising upset just to be interesting.\n' +
-            'POWER TIERS: Treat tier numbers as absolute ground truth. A 3-tier gap is decisive. A 4+ tier gap is essentially certain — arena cannot overcome it. NEVER let a small creature beat a large apex predator without an explicit instant-kill mechanism.\n' +
-            'ARENA SURVIVAL: If a creature cannot survive the arena, it loses automatically — no exceptions. Land animal in ocean = drowns = loses. Sea animal on land = suffocates = loses. Non-flier in sky = falls = loses.\n' +
-            'ARENA EFFECTIVENESS: A creature outside its home environment fights at 10–40% effectiveness. Weight this heavily for close matchups.\n' +
-            'REAL BIOLOGY: A 230 kg alligator beats a bug every time. A great white shark in the ocean beats almost any land animal. Base results on verified size, weapons, and biology — not random chance.\n' +
-            'Never return a draw — always pick the realistic winner.\n' +
-            'Always respond with ONLY valid JSON. No markdown, no explanation outside the JSON.',
-        messages: [{ role: 'user', content: buildQuickUserPrompt(fighter1Id, fighter2Id, fighter1Name, fighter2Name, environmentName, verdict) }],
-    }, signal);
-    const block = response.content[0];
-    if (!block || block.type !== 'text') {
-        throw new Error('Unexpected response format from Claude (quick)');
-    }
-    const cleaned = stripMarkdownFences(block.text);
-    const parsed = JSON.parse(cleaned);
-    let result = validateResult(parsed, fighter1Id, fighter2Id);
-    // Quick battles must always have a winner — break any draw randomly.
+    const name1 = (0, creatures_1.displayName)(fighter1Id, fighter1Name);
+    const name2 = (0, creatures_1.displayName)(fighter2Id, fighter2Name);
+    const quickPrompt = buildQuickUserPrompt(fighter1Id, fighter2Id, fighter1Name, fighter2Name, environmentName, verdict);
+    let result = await generateValidated('quick', async (retryNote) => {
+        const response = await (0, anthropicClient_1.createMessage)('quick', {
+            max_tokens: 360,
+            top_p: 0.85,
+            system: QUICK_SYSTEM_PROMPT,
+            messages: [{ role: 'user', content: quickPrompt + (retryNote ?? '') }],
+        }, signal);
+        const block = response.content[0];
+        if (!block || block.type !== 'text') {
+            throw new Error('Unexpected response format from Claude (quick)');
+        }
+        return block.text;
+    }, text => validateResult(JSON.parse(stripMarkdownFences(text)), fighter1Id, fighter2Id, [name1, name2], 1));
+    // Quick battles must always have a winner. A draw can only come from an
+    // open verdict (a custom fighter without an estimate); break it by id so a
+    // rematch gives the same answer.
     if (result.winner === 'draw') {
-        const winnerId = Math.random() < 0.5 ? fighter1Id : fighter2Id;
+        const winnerId = fighter1Id < fighter2Id ? fighter1Id : fighter2Id;
         result = {
             ...result,
             winner: winnerId,
@@ -772,12 +577,11 @@ async function getQuickBattleResult(fighter1Id, fighter2Id, fighter1Name, fighte
     }
     // 🔒 Enforce the deterministic verdict — if Claude defied a forced ruling
     // (e.g. picked the bullet ant over the harpy eagle), override the winner.
-    const name1 = fighter1Name ?? ANIMAL_NAMES[fighter1Id] ?? fighter1Id;
-    const name2 = fighter2Name ?? ANIMAL_NAMES[fighter2Id] ?? fighter2Id;
-    return enforceVerdict(result, verdict, fighter1Id, fighter2Id, name1, name2);
+    return enforceVerdict(result, verdict, name1, name2, fighter1Id);
 }
 async function getBattleResult(fighter1Id, fighter2Id, fighter1Name, fighter2Name, environmentName, tournamentContext, signal) {
-    // One attempt only. The SDK is also configured with maxRetries=0; callers
-    // use idempotency and the app's local fallback instead of multiplying spend.
+    // One generation, plus one regeneration only when the story breaks the
+    // rules. The SDK is configured with maxRetries=0; API failures fall back to
+    // the app's local result instead of multiplying spend.
     return callClaude(fighter1Id, fighter2Id, 0.85, fighter1Name, fighter2Name, environmentName, tournamentContext, signal);
 }

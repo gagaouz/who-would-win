@@ -333,9 +333,9 @@ struct GrownUpZoneView: View {
             Text("🛡️ SAFE FOR KIDS")
                 .font(Kids.fredoka(12, weight: .bold)).foregroundColor(Kids.ink)
             safetyRow("Purchases & external links are behind a grown-up gate.")
-            safetyRow("No personal data is collected or sold.")
-            safetyRow("Ads are limited and child-directed (COPPA-compliant).")
-            safetyRow("All battle stories are filtered to stay kid-friendly.")
+            safetyRow("We never sell data. Voice search stays on this device.")
+            safetyRow("Ads are limited, non-personalized and child-directed.")
+            safetyRow("Battle stories follow strict kid-friendly rules and are checked before they're shown.")
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)

@@ -63,6 +63,7 @@ struct KidsCoinShopSheet: View {
                                     .foregroundColor(Kids.ink)
                             }
                         }.buttonStyle(.plain)
+                        .accessibilityLabel("Close")
                     }
                     .padding(.horizontal, 14).padding(.top, 6)
 

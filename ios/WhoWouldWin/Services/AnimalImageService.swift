@@ -20,6 +20,11 @@ actor AnimalImageService {
     /// Animal name (lowercased) → resolved image URL (for SwiftUI AsyncImage)
     private var urlCache:    [String: URL]     = [:]
     private let maxImageBytes = 5 * 1024 * 1024
+    /// Hosts Wikipedia serves article photos from. Wikipedia moved thumbnails
+    /// from upload.wikimedia.org to thumb.wikimedia.org in 2026; accepting only
+    /// the old host silently rejected EVERY real photo, so every custom
+    /// creature fell back to the slow AI cartoon (or a blank placeholder).
+    static let wikipediaImageHosts: Set<String> = ["upload.wikimedia.org", "thumb.wikimedia.org"]
     private let maxCachedImages = 100
     private let maxCachedURLs = 200
 
@@ -145,7 +150,8 @@ actor AnimalImageService {
                let source    = thumbnail["source"] as? String {
                 guard let result = URL(string: source),
                       result.scheme == "https",
-                      result.host?.lowercased() == "upload.wikimedia.org" else { return nil }
+                      let host = result.host?.lowercased(),
+                      Self.wikipediaImageHosts.contains(host) else { return nil }
                 return result
             }
         } catch {}
@@ -191,7 +197,7 @@ actor AnimalImageService {
     /// but we don't want to block the battle intro screen indefinitely.
     private func downloadImage(from url: URL) async -> UIImage? {
         do {
-            let allowedHosts = Set(["upload.wikimedia.org", "image.pollinations.ai"])
+            let allowedHosts = Self.wikipediaImageHosts.union(["image.pollinations.ai"])
             guard url.scheme == "https", let host = url.host?.lowercased(),
                   allowedHosts.contains(host) else { return nil }
             var request = URLRequest(url: url)

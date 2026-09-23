@@ -24,28 +24,33 @@ enum OnDeviceResolver {
     }
 
     /// Environment effectiveness multiplier (0 = can't function, 1 = home turf).
-    /// Mirrors battleResolver.ts `envModifier`.
-    private static func envMod(_ id: String, _ env: BattleEnvironment, arenaEnabled: Bool) -> Double {
+    /// Mirrors the server's `envModifier` in backend/src/data/creatures.ts.
+    static func envMod(_ id: String, _ env: BattleEnvironment, arenaEnabled: Bool) -> Double {
         guard arenaEnabled else { return 1.0 }
         if OnDeviceTiers.deities.contains(id) { return 1.0 }
+        guard OnDeviceTiers.isBuiltIn(id) else {
+            // Custom creature — habitat unknown, so mild neutral values.
+            switch env {
+            case .ocean: return 0.6
+            case .sky: return 0.5
+            case .grassland, .jungle, .volcano, .desert, .arctic: return 0.9
+            case .night, .storm: return 1.0
+            }
+        }
         let isSea = OnDeviceTiers.sea.contains(id)
         let isAir = OnDeviceTiers.air.contains(id)
-        let semi  = OnDeviceTiers.semiAquatic.contains(id)
-        // land = not sea, not air (matches the backend's LAND_ANIMALS definition)
-        let isLand = !isSea && !isAir
         switch env {
         case .ocean:
             if isSea { return 1.0 }
-            if semi  { return 0.5 }
-            return 0.10                       // air/land drown
+            if OnDeviceTiers.swimmers.contains(id) { return 0.5 }
+            return 0.10                       // can't breathe underwater
         case .sky:
-            if isAir { return 1.0 }
-            return 0.05                       // sea/land can't fly
+            if isAir || OnDeviceTiers.fliers.contains(id) { return 1.0 }
+            return 0.05                       // can't fly
         case .grassland, .jungle, .volcano, .desert, .arctic:
-            if isSea && !semi { return 0.05 } // beached, suffocating
-            if isLand { return 1.0 }
-            if isAir  { return 0.85 }
-            return 0.9
+            if isSea { return 0.05 }          // stranded out of water
+            if isAir { return 0.85 }
+            return 1.0
         case .night, .storm:
             return 1.0                        // generic, no strong preference
         }
@@ -94,13 +99,11 @@ enum OnDeviceResolver {
         let p1 = power(f1, environment, arenaEnabled: arenaEffectsEnabled)
         let p2 = power(f2, environment, arenaEnabled: arenaEffectsEnabled)
 
-        // Higher power wins, deterministically. Exact ties break by size, then
-        // by id (both symmetric, so the result never depends on argument order).
+        // Higher power wins, deterministically. Exact ties break by id — the
+        // same rule as the server, so both always name the same winner.
         let f1Wins: Bool
         if p1 != p2 {
             f1Wins = p1 > p2
-        } else if f1.size != f2.size {
-            f1Wins = f1.size > f2.size
         } else {
             f1Wins = f1.id < f2.id
         }

@@ -164,8 +164,8 @@ actor BattleService {
             body["environment"]     = environment.rawValue
             body["environmentName"] = environment.name
         }
-        // Tournament context: a short server-trusted string describing the round.
-        // When present, the backend skips its result cache so each round gets fresh narration.
+        // Tournament context: a short server-trusted string describing the round
+        // (the backend keys its story cache on it, so finals read differently).
         if let tournamentContext, !tournamentContext.isEmpty {
             body["tournamentContext"] = tournamentContext
         }
@@ -355,42 +355,66 @@ actor BattleService {
         }
     }
 
-    /// Offline fallback for melees — sums each team's env-adjusted stat total
-    /// and picks the winner with a sharp curve (k=3) like the 1v1 fallback.
-    /// MVP is the highest-stat fighter from the winning side.
+    /// Offline fallback for melees. DETERMINISTIC and, for all-built-in teams,
+    /// the same math as the server's meleeResolver: a team with a god wins;
+    /// otherwise each side's `2^(tier) × arena` is summed with a mild
+    /// coordination decay (0.92 per extra fighter), and a team that can't
+    /// function in the arena loses. Teams with a custom creature compare
+    /// arena-adjusted stats instead. MVP is the strongest winner.
     func generateMeleeFallback(teamA: [Animal], teamB: [Animal],
                                environment: BattleEnvironment = .grassland,
+                               arenaEffectsEnabled: Bool = true,
                                markAsOffline: Bool = true) -> MeleeResult {
+        let allBuiltIn = (teamA + teamB).allSatisfy { OnDeviceTiers.isBuiltIn($0.id) }
+        let statEnv: BattleEnvironment = arenaEffectsEnabled ? environment : .grassland
         let scoreFor: (Animal) -> Double = { animal in
-            let s = AnimalStats.generate(for: animal, environment: environment)
+            if allBuiltIn {
+                return pow(2.0, OnDeviceTiers.effectiveTier(for: animal.id))
+                    * OnDeviceResolver.envMod(animal.id, environment, arenaEnabled: arenaEffectsEnabled)
+            }
+            let s = AnimalStats.generate(for: animal, environment: statEnv)
             return Double(s.speed + s.power + s.agility + s.defense)
         }
-        // Sum each team's power, then apply mild coordination decay so a 4v1
-        // isn't worth a full 4× a single fighter.
-        let coordA = pow(0.92, Double(teamA.count - 1))
-        let coordB = pow(0.92, Double(teamB.count - 1))
-        let powerA = teamA.map(scoreFor).reduce(0, +) * coordA
-        let powerB = teamB.map(scoreFor).reduce(0, +) * coordB
-        let s1 = pow(max(powerA, 1), 3)
-        let s2 = pow(max(powerB, 1), 3)
-        let total = s1 + s2
-        let pAChance = total > 0 ? s1 / total : 0.5
-        let aWins = Double.random(in: 0..<1) < pAChance
+        let power: ([Animal]) -> Double = { team in
+            team.map(scoreFor).reduce(0, +) * pow(0.92, Double(team.count - 1))
+        }
+        let avgEnv: ([Animal]) -> Double = { team in
+            team.map { OnDeviceResolver.envMod($0.id, environment, arenaEnabled: arenaEffectsEnabled) }
+                .reduce(0, +) / Double(max(team.count, 1))
+        }
+
+        let aHasGod = teamA.contains { OnDeviceTiers.deities.contains($0.id) }
+        let bHasGod = teamB.contains { OnDeviceTiers.deities.contains($0.id) }
+        let powerA = power(teamA), powerB = power(teamB)
+        let aWins: Bool
+        if aHasGod != bHasGod {
+            aWins = aHasGod
+        } else if allBuiltIn && avgEnv(teamA) <= 0.10 && avgEnv(teamB) >= 0.5 {
+            aWins = false
+        } else if allBuiltIn && avgEnv(teamB) <= 0.10 && avgEnv(teamA) >= 0.5 {
+            aWins = true
+        } else {
+            aWins = powerA >= powerB   // exact tie → team A, same as the server
+        }
 
         let winnerSide = aWins ? teamA : teamB
         let loserSide  = aWins ? teamB : teamA
         let mvp = winnerSide.max { scoreFor($0) < scoreFor($1) } ?? winnerSide[0]
+        let (w, l) = aWins ? (powerA, powerB) : (powerB, powerA)
+        let dominance = (w + l) > 0 ? w / (w + l) : 0.55
 
         let narration = MeleeFallbackStory.narrate(winners: winnerSide, losers: loserSide, mvp: mvp)
         let funFact   = MeleeFallbackStory.funFact(winners: winnerSide, losers: loserSide)
+        let winnerHealth = min(90, 55 + Int(dominance * 35))
+        let loserHealth = max(8, Int((1 - dominance) * 30))
 
         return MeleeResult(
             winningTeam: aWins ? .A : .B,
             narration: narration,
             funFact: funFact,
             mvp: mvp.id,
-            teamAHealth: aWins ? Int.random(in: 65...90) : Int.random(in: 8...25),
-            teamBHealth: aWins ? Int.random(in: 8...25) : Int.random(in: 65...90),
+            teamAHealth: aWins ? winnerHealth : loserHealth,
+            teamBHealth: aWins ? loserHealth : winnerHealth,
             isOfflineFallback: markAsOffline
         )
     }
@@ -450,85 +474,64 @@ actor BattleService {
 
     // MARK: - Offline / Local Fallback
 
-    /// Determines winner based on size with some randomness.
-    /// Larger size wins ~70% of matchups, 10% draw chance.
+    /// The phone's own result, used when the cloud can't answer (offline,
+    /// server busy, spending cap). DETERMINISTIC, like the server: built-in
+    /// creatures go through `OnDeviceResolver` (the same master list and rules
+    /// the cloud uses), so the offline winner always matches the online one.
+    /// Custom creatures have no tier on the phone, so they compare arena-
+    /// adjusted stats — still no dice.
     ///
     /// `markAsOffline` controls whether the result is flagged with
     /// `isOfflineFallback = true`. Pass `true` only when the device is
     /// genuinely offline (no internet); pass `false` when this is a local
     /// fallback for a server slowdown / 5xx / rate-limit so the user does NOT
     /// see a misleading "⚡ Offline result" badge while they're online.
-    func generateFallbackResult(fighter1: Animal, fighter2: Animal, environment: BattleEnvironment = .grassland, markAsOffline: Bool = true) -> BattleResult {
-        let roll = Double.random(in: 0..<1)
-
-        // Compute environment-adjusted total power for each fighter
-        let stats1 = AnimalStats.generate(for: fighter1, environment: environment)
-        let stats2 = AnimalStats.generate(for: fighter2, environment: environment)
-        let score1 = Double(stats1.speed + stats1.power + stats1.agility + stats1.defense)
-        let score2 = Double(stats2.speed + stats2.power + stats2.agility + stats2.defense)
-
-        let winner: String
+    func generateFallbackResult(fighter1: Animal, fighter2: Animal, environment: BattleEnvironment = .grassland,
+                                arenaEffectsEnabled: Bool = true, markAsOffline: Bool = true) -> BattleResult {
         let winnerAnimal: Animal
         let loserAnimal: Animal
+        let dominance: Double
 
-        if roll < 0.05 {
-            // 5% draw (small chance — only triggers on truly even matchups; the
-            // sharper win-curve below already makes lopsided matches deterministic)
-            winner = "draw"
-            winnerAnimal = fighter1
-            loserAnimal = fighter2
+        if OnDeviceTiers.isBuiltIn(fighter1.id) && OnDeviceTiers.isBuiltIn(fighter2.id) {
+            let verdict = OnDeviceResolver.resolve(fighter1, fighter2, environment: environment,
+                                                   arenaEffectsEnabled: arenaEffectsEnabled)
+            winnerAnimal = verdict.winner
+            loserAnimal = verdict.loser
+            dominance = verdict.dominance
         } else {
-            // Sharper win curve: score1^k / (score1^k + score2^k) with k=3.
-            // For a 2:1 stat ratio this gives ~89% to the stronger fighter; for
-            // a 7:1 ratio (e.g. pteranodon vs army ant) it gives ~99.7%. Avoids
-            // the old formula's 80% cap, which let obviously-weaker fighters win
-            // ~20% of the time even in absurd mismatches.
-            let k: Double = 3.0
-            let s1 = pow(max(score1, 1), k)
-            let s2 = pow(max(score2, 1), k)
-            let total = s1 + s2
-            let p1WinChance = total > 0 ? s1 / total : 0.5
-            let r = (roll - 0.05) / 0.95     // normalize remaining roll to [0, 1)
-            if r < p1WinChance {
-                winner = fighter1.id
-                winnerAnimal = fighter1
-                loserAnimal = fighter2
-            } else {
-                winner = fighter2.id
-                winnerAnimal = fighter2
-                loserAnimal = fighter1
-            }
+            let statEnv: BattleEnvironment = arenaEffectsEnabled ? environment : .grassland
+            let stats1 = AnimalStats.generate(for: fighter1, environment: statEnv)
+            let stats2 = AnimalStats.generate(for: fighter2, environment: statEnv)
+            let score1 = Double(stats1.speed + stats1.power + stats1.agility + stats1.defense)
+            let score2 = Double(stats2.speed + stats2.power + stats2.agility + stats2.defense)
+            let f1Wins = score1 != score2 ? score1 > score2
+                : fighter1.size != fighter2.size ? fighter1.size > fighter2.size
+                : fighter1.id < fighter2.id
+            winnerAnimal = f1Wins ? fighter1 : fighter2
+            loserAnimal = f1Wins ? fighter2 : fighter1
+            let (w, l) = f1Wins ? (score1, score2) : (score2, score1)
+            dominance = (w + l) > 0 ? w / (w + l) : 0.55
         }
-
-        let isDraw = winner == "draw"
 
         // Generic, name-respectful copy (no "The", no "creature/heavyweight"
         // assumptions) so it reads fine for ANY fighter — animal, person, or
-        // anything a kid types. This only ever shows if the cloud AI is
-        // unreachable, so it must never embarrass.
-        let narration: String
-        if isDraw {
-            narration = "\(fighter1.name) and \(fighter2.name) went toe-to-toe in an all-out clash — and neither would back down. It's a draw!"
-        } else {
-            narration = "\(winnerAnimal.name) came out on top after a hard-fought battle! \(loserAnimal.name) gave it everything, but \(winnerAnimal.name) had just enough to take the win."
-        }
+        // anything a kid types.
+        let narration = "\(winnerAnimal.name) came out on top after a hard-fought battle! \(loserAnimal.name) gave it everything, but \(winnerAnimal.name) had just enough to take the win."
 
+        // A real, hand-checked fact about the winner when we have one.
         let funFact: String
-        if isDraw {
-            funFact = "A matchup this even is rare — two opponents so closely matched that no one could be crowned!"
+        if let fact = AnimalFacts.facts(for: winnerAnimal.id) {
+            funFact = "\(winnerAnimal.name) fact: \(fact.coolFact)"
         } else {
             funFact = "When two go head-to-head, it often comes down to who keeps their cool under pressure — and today, that was \(winnerAnimal.name)."
         }
 
-        let winnerHealthPercent = isDraw ? 50 : Int.random(in: 55...90)
-        let loserHealthPercent = isDraw ? 50 : Int.random(in: 5...25)
-
         var result = BattleResult(
-            winner: winner,
+            winner: winnerAnimal.id,
             narration: narration,
             funFact: funFact,
-            winnerHealthPercent: winnerHealthPercent,
-            loserHealthPercent: loserHealthPercent
+            winnerHealthPercent: min(90, 55 + Int(dominance * 35)),
+            loserHealthPercent: max(5, Int((1 - dominance) * 30))
         )
         result.isOfflineFallback = markAsOffline
         return result

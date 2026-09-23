@@ -35,6 +35,24 @@ enum ContentFilter {
         "rape", "murder", "kill", "suicide", "terrorist", "terrorism", "genocide",
         "torture", "massacre", "stabbing", "shooting", "assault", "molest",
         "molestation", "pedophile", "pedophilia", "incest", "necrophilia", "bestiality",
+        // Hate, extremism and notorious killers — real photos now show for
+        // custom names, so these must never become a fighter. KEEP IN SYNC
+        // with backend/src/middleware/sanitize.ts.
+        "hitler", "adolf", "nazi", "nazis", "neonazi", "swastika", "goebbels", "himmler",
+        "mussolini", "stalin", "kkk", "klan", "supremacist", "osama", "binladen",
+        "alqaeda", "taliban", "dahmer",
+        // Weapons and gore
+        "gun", "guns", "handgun", "pistol", "rifle", "shotgun", "ak47", "machinegun",
+        "bomb", "bombs", "grenade", "grenades", "nuke", "nukes", "knife", "knives",
+        "explosive", "explosives", "shooter", "corpse", "behead", "decapitate", "gore",
+    ]
+
+    /// Multi-word names blocked as a whole (matched on whole words).
+    private static let blockedPhrases: [String] = [
+        "bin laden", "ku klux klan", "al qaeda", "al qaida", "islamic state",
+        "white power", "white supremacy", "pol pot", "ted bundy", "charles manson",
+        "jeffrey dahmer", "school shooter", "school shooting", "mass shooting",
+        "machine gun", "ak 47", "ar 15", "atomic bomb", "nuclear bomb",
     ]
 
     /// Legitimate real animals whose names collide with a blocked whole word
@@ -45,6 +63,7 @@ enum ContentFilter {
         "african wild ass", "asiatic wild ass", "asian wild ass",
         "indian wild ass", "mongolian wild ass", "somali wild ass",
         "persian wild ass", "tibetan wild ass", "wild ass",
+        "maine coon", "pistol shrimp", "knife fish",
     ]
 
     /// Returns `true` if the text is safe to use as a custom fighter name.
@@ -75,6 +94,8 @@ enum ContentFilter {
         .map(String.init)
 
         if words.contains(where: { blockedWords.contains($0) }) { return false }
+        let joined = " " + words.joined(separator: " ") + " "
+        if blockedPhrases.contains(where: { joined.contains(" \($0) ") }) { return false }
 
         // Catch punctuation-separated spelling such as f.u.c.k.
         var singleLetterRun = ""

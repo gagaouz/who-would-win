@@ -162,7 +162,7 @@ private struct DiagramMini: View {
                 if let ui = bundledImage {
                     Image(uiImage: ui).resizable().scaledToFill()
                 } else {
-                    Text(animal.emoji).font(.system(size: isIPad ? 16 : 12))
+                    CreatureGlyph(animal: animal, size: isIPad ? 16 : 12)
                 }
             }
             .frame(width: inner, height: inner)

@@ -47,6 +47,7 @@ final class MeleeViewModel: ObservableObject {
             let fb = await BattleService.shared.generateMeleeFallback(
                 teamA: teamA, teamB: teamB,
                 environment: statEnvironment,
+                arenaEffectsEnabled: arenaEffectsEnabled,
                 markAsOffline: isTrueOffline)
             result = validatedMVP(sanityCheck(fb))
         }
@@ -81,6 +82,9 @@ final class MeleeViewModel: ObservableObject {
         // indexes [0] on the winning side). Shouldn't happen — setup requires
         // ≥1 per team — but never crash on a guardable condition.
         guard !teamA.isEmpty, !teamB.isEmpty else { return r }
+        // All built-in creatures: the server decided from the same master
+        // list the phone has, so don't second-guess it with rough local stats.
+        if (teamA + teamB).allSatisfy({ OnDeviceTiers.isBuiltIn($0.id) }) { return r }
         let scoreFor: (Animal) -> Double = { a in
             let s = AnimalStats.generate(for: a, environment: self.statEnvironment)
             return Double(s.speed + s.power + s.agility + s.defense)

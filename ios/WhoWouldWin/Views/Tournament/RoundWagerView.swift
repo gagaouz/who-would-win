@@ -442,7 +442,7 @@ private struct TournyFighterMini: View {
                 if let ui = bundledImage {
                     Image(uiImage: ui).resizable().scaledToFill()
                 } else {
-                    Text(animal.emoji).font(.system(size: size * 0.55))
+                    CreatureGlyph(animal: animal, size: size * 0.55)
                 }
             }
             .frame(width: size - 6, height: size - 6)
@@ -764,7 +764,7 @@ private struct SwapPickCard: View {
                     if let ui = bundledImage {
                         Image(uiImage: ui).resizable().scaledToFit().frame(width: isIPad ? 62 : 46, height: isIPad ? 62 : 46)
                     } else {
-                        Text(animal.emoji).font(.system(size: isIPad ? 42 : 30))
+                        CreatureGlyph(animal: animal, size: isIPad ? 42 : 30)
                     }
                     Text(animal.name)
                         .font(Kids.fredoka(isIPad ? 13 : 10, weight: .bold))

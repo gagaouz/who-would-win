@@ -20,13 +20,7 @@
  * "Pikachu vs Sonic the Hedgehog" from a table.
  */
 
-import {
-  DEITY_IDS,
-  POWER_PROFILES,
-  SEA_ANIMALS,
-  AIR_ANIMALS,
-  LAND_ANIMALS,
-} from './claudeService';
+import { effectiveTier, envModifier, isBuiltIn, isDeity } from '../data/creatures';
 
 export type Verdict =
   | {
@@ -64,80 +58,6 @@ export interface ResolveArgs {
   customTier2?: number | null;
 }
 
-// Animals that, despite being categorized as land or air, can survive in an
-// alien arena because they're famously cross-environmental.
-const SEMI_AQUATIC = new Set(['hippopotamus', 'alligator', 'crocodile']);
-
-// Fine-grained realism nudges WITHIN a tier (fractional). The integer tier
-// table is coarse — these express well-established 1v1 edges between same-tier
-// creatures without bumping anyone a full tier. Effective power is
-// 2^(tier + adjust). KEEP IN SYNC with the iOS app's OnDeviceTiers.tierAdjust.
-//   • Tiger beats Lion: bigger, more muscular, a solitary fighter (lions evolved
-//     for pack combat). Historical staged fights + expert consensus favor tigers.
-const TIER_ADJUST: Record<string, number> = {
-  tiger: 0.45,   // edges its tier-6 peers (lion, gorilla) in single combat
-};
-
-function isKnown(id: string): boolean {
-  return id in POWER_PROFILES || DEITY_IDS.has(id);
-}
-
-function getTier(id: string): number | null {
-  if (DEITY_IDS.has(id)) return 10;
-  return POWER_PROFILES[id]?.tier ?? null;
-}
-
-/** Integer tier + fractional realism nudge. */
-function getEffectiveTier(id: string): number | null {
-  const t = getTier(id);
-  return t === null ? null : t + (TIER_ADJUST[id] ?? 0);
-}
-
-/**
- * Environment-effectiveness modifier (0.0 = literally cannot fight, 1.0 = home
- * advantage). This is what mathematically lets a tier-4 eagle beat a tier-9
- * orca on grassland — the orca's effective power is multiplied by 0.05.
- */
-function envModifier(id: string, environmentName: string | undefined): number {
-  if (!environmentName) return 1.0;
-
-  const isSea  = SEA_ANIMALS.has(id);
-  const isAir  = AIR_ANIMALS.has(id);
-  const isLand = LAND_ANIMALS.has(id);
-  const semi   = SEMI_AQUATIC.has(id);
-  const arena  = environmentName;
-
-  // Deities ignore arena.
-  if (DEITY_IDS.has(id)) return 1.0;
-
-  // Fantasy / mythic / prehistoric flexibility — let the AI judge.
-  // Most of those don't appear in SEA/AIR/LAND sets, so this falls through to 1.0 anyway.
-
-  if (arena === 'Ocean') {
-    if (isSea) return 1.0;
-    if (semi)  return 0.5;
-    if (isAir) return 0.10;  // drowns
-    if (isLand) return 0.10; // drowns
-    return 0.6;
-  }
-  if (arena === 'Sky') {
-    if (isAir) return 1.0;
-    if (isSea) return 0.05;  // can't fly, no water
-    if (isLand) return 0.05; // falls
-    return 0.5;
-  }
-  if (arena === 'Grassland' || arena === 'Jungle' ||
-      arena === 'Volcano'   || arena === 'Desert' ||
-      arena === 'Arctic') {
-    if (isSea && !semi) return 0.05; // beached, suffocating
-    if (isLand) return 1.0;
-    if (isAir)  return 0.85;         // can fly but loses altitude advantage in a land brawl
-    return 0.9;
-  }
-  // Night / Storm — generic, no strong preference.
-  return 1.0;
-}
-
 /**
  * Power score = 2^tier × envModifier. Exponential tier scaling makes a 3-tier
  * gap = 8× advantage, which is the threshold above which we treat a battle as
@@ -147,8 +67,8 @@ function powerScore(id: string, environmentName: string | undefined,
                     customTier?: number | null): number {
   // A custom creature uses its estimated tier (no fractional realism nudge);
   // a known creature uses its profile tier + nudge.
-  const tier = isKnown(id)
-    ? getEffectiveTier(id)
+  const tier = isBuiltIn(id)
+    ? effectiveTier(id)
     : (customTier != null ? customTier : null);
   if (tier === null) return 0; // unknown — caller will skip force
   const env  = envModifier(id, environmentName);
@@ -158,8 +78,8 @@ function powerScore(id: string, environmentName: string | undefined,
 export function resolveBattle(args: ResolveArgs): Verdict {
   const { fighter1Id, fighter2Id, environmentName, customTier1, customTier2 } = args;
 
-  const f1Known = isKnown(fighter1Id);
-  const f2Known = isKnown(fighter2Id);
+  const f1Known = isBuiltIn(fighter1Id);
+  const f2Known = isBuiltIn(fighter2Id);
   // A custom fighter is "resolvable" once we have an estimated tier for it.
   const f1Resolvable = f1Known || (customTier1 != null);
   const f2Resolvable = f2Known || (customTier2 != null);
@@ -171,8 +91,8 @@ export function resolveBattle(args: ResolveArgs): Verdict {
   }
 
   // ── Deity vs mortal ─────────────────────────────────────────────────────
-  const d1 = DEITY_IDS.has(fighter1Id);
-  const d2 = DEITY_IDS.has(fighter2Id);
+  const d1 = isDeity(fighter1Id);
+  const d2 = isDeity(fighter2Id);
   if (d1 && !d2) {
     return { kind: 'forced', winnerId: fighter1Id, loserId: fighter2Id, reason: 'deity vs mortal' };
   }
@@ -228,10 +148,10 @@ export function verdictPromptLine(v: Verdict, name1: string, name2: string,
   const winnerName = v.winnerId === fighter1Id ? name1 : name2;
   const loserName  = v.winnerId === fighter1Id ? name2 : name1;
   return (
-    `\n🔒 OUTCOME ALREADY DECIDED: ${winnerName} WINS (${v.reason}).\n` +
+    `\n🔒 OUTCOME ALREADY DECIDED: ${winnerName} WINS.\n` +
     `This verdict is FINAL — the game's referee has already ruled. Your job is to ` +
-    `write the narration explaining WHY ${winnerName} defeats ${loserName} in a way ` +
-    `kids will find satisfying. Cite real biology, size, weapons, or arena conditions. ` +
+    `write the narration explaining WHY ${winnerName} beats ${loserName} in a way ` +
+    `kids will find satisfying. Cite real biology, size, abilities, or arena conditions. ` +
     `DO NOT pick a different winner — the JSON's "winner" field MUST be ` +
     `"${v.winnerId}". Any other value will be rejected and the response thrown out.\n\n`
   );

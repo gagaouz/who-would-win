@@ -365,17 +365,32 @@ struct CustomCreatureImage: View {
     var imageURL: URL? = nil
     var side: CGFloat
     @State private var resolved: URL? = nil
+    /// The AI-cartoon fallback can take 45 s+ to draw a brand-new name and
+    /// sometimes fails outright; AsyncImage never retries on its own. Each
+    /// bump re-creates ONLY the inner AsyncImage (not this view, so any
+    /// animation on the parent bubble is untouched) for another try — by then
+    /// the picture is usually ready.
+    @State private var attempt = 0
 
     var body: some View {
         Group {
             if let url = resolved {
                 AsyncImage(url: url) { phase in
-                    if case .success(let img) = phase {
+                    switch phase {
+                    case .success(let img):
                         img.resizable().scaledToFill()
-                    } else {
+                    case .failure:
+                        placeholder.task {
+                            guard attempt < 2 else { return }
+                            try? await Task.sleep(nanoseconds: 3_000_000_000)
+                            guard !Task.isCancelled else { return }
+                            attempt += 1
+                        }
+                    default:
                         placeholder
                     }
                 }
+                .id(attempt)
             } else {
                 placeholder
             }
@@ -386,6 +401,7 @@ struct CustomCreatureImage: View {
             // Reset first: this view gets REUSED with a new creature (king-of-
             // the-hill swaps fighters in place), and holding the previous URL
             // would flash the old creature's photo under the new name.
+            attempt = 0
             resolved = imageURL
             if resolved == nil {
                 let url = await AnimalImageService.shared.imageURL(for: name)
@@ -446,6 +462,21 @@ struct CreatureIcon: View {
                 .frame(width: size, height: size)
         } else {
             Text(animal.emoji).font(.system(size: size * 0.82))
+        }
+    }
+}
+
+/// Emoji-sized creature glyph for dense tournament chips: a custom creature
+/// shows its searched photo (never a stand-in emoji); built-ins keep their
+/// curated emoji. `size` matches the emoji point size it replaces.
+struct CreatureGlyph: View {
+    let animal: Animal
+    var size: CGFloat
+    var body: some View {
+        if animal.isCustom {
+            CustomCreatureImage(name: animal.name, imageURL: animal.imageURL, side: size * 1.15)
+        } else {
+            Text(animal.emoji).font(.system(size: size))
         }
     }
 }
@@ -800,5 +831,70 @@ struct StreakPill: View {
             StickerShape(shape: Capsule(), fill: Kids.peach, strokeWidth: isIPad ? 4 : 3)
         )
         .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
+    }
+}
+
+// MARK: - Confetti View
+// Falling confetti for wins (1v1 result, tournament champion, mystery sticker).
+struct ConfettiView: View {
+    private struct Piece: Identifiable {
+        let id: Int
+        let color: Color
+        let xFraction: CGFloat
+        let size: CGSize
+        let fallDuration: Double
+        let delay: Double
+        let rotationStart: Double
+        let rotationEnd: Double
+    }
+
+    private let pieces: [Piece] = {
+        let colors: [Color] = [
+            Theme.gold, Theme.orange, Theme.purple, Theme.cyan, Theme.teal, Theme.red, .white,
+            Color(hex: "#FF69B4"), Color(hex: "#7CFC00"), Color(hex: "#00BFFF")
+        ]
+        return (0..<55).map { i in
+            Piece(
+                id: i,
+                color: colors[i % colors.count],
+                xFraction: CGFloat(i) / 55.0 * 0.92 + 0.04,
+                size: CGSize(width: CGFloat.random(in: 7...15), height: CGFloat.random(in: 5...9)),
+                fallDuration: Double.random(in: 1.8...3.5),
+                delay: Double.random(in: 0...1.4),
+                rotationStart: Double.random(in: 0...360),
+                rotationEnd: Double.random(in: 400...760)
+            )
+        }
+    }()
+
+    @State private var isAnimating = false
+
+    var body: some View {
+        GeometryReader { geo in
+            ForEach(pieces) { piece in
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(piece.color)
+                    .frame(width: piece.size.width, height: piece.size.height)
+                    .rotationEffect(.degrees(isAnimating ? piece.rotationEnd : piece.rotationStart))
+                    .position(
+                        x: piece.xFraction * geo.size.width,
+                        y: isAnimating ? geo.size.height + 30 : -20
+                    )
+                    .opacity(isAnimating ? 0 : 0.9)
+                    .animation(
+                        .easeIn(duration: piece.fallDuration).delay(piece.delay),
+                        value: isAnimating
+                    )
+            }
+        }
+        .onAppear {
+            // Respect Reduce Motion — a screenful of falling, spinning pieces is
+            // exactly the large-area motion that setting exists to suppress.
+            guard !UIAccessibility.isReduceMotionEnabled else { return }
+            // Small delay before triggering so SwiftUI renders positions first
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                isAnimating = true
+            }
+        }
     }
 }

@@ -229,7 +229,7 @@ private struct GrandPickCard: View {
                     if let ui = bundledImage {
                         Image(uiImage: ui).resizable().scaledToFit().frame(width: isIPad ? 68 : 50, height: isIPad ? 68 : 50)
                     } else {
-                        Text(animal.emoji).font(.system(size: isIPad ? 46 : 34))
+                        CreatureGlyph(animal: animal, size: isIPad ? 46 : 34)
                     }
                     Text(animal.name)
                         .font(Kids.fredoka(isIPad ? 13 : 10, weight: .bold))

@@ -107,6 +107,7 @@ struct TournamentCreaturePickerView: View {
                         .font(.system(size: isIPad ? 18 : 14))
                         .foregroundColor(Kids.inkSoft)
                 }.buttonStyle(.plain)
+                .accessibilityLabel("Clear search")
             }
         }
         .padding(.horizontal, isIPad ? 16 : 12).padding(.vertical, isIPad ? 13 : 9)
@@ -207,7 +208,7 @@ struct TournamentCreaturePickerView: View {
                     ForEach(selected) { animal in
                         Button { toggle(animal) } label: {
                             HStack(spacing: isIPad ? 7 : 5) {
-                                Text(animal.emoji).font(.system(size: isIPad ? 19 : 14))
+                                CreatureGlyph(animal: animal, size: isIPad ? 19 : 14)
                                 Text(animal.name)
                                     .font(Kids.fredoka(isIPad ? 14 : 11, weight: .bold))
                                     .foregroundColor(Kids.ink)
@@ -515,7 +516,7 @@ private struct TournamentPickCard: View {
                     if let ui = bundledImage {
                         Image(uiImage: ui).resizable().scaledToFit().frame(width: isIPad ? 72 : 50, height: isIPad ? 72 : 50)
                     } else {
-                        Text(animal.emoji).font(.system(size: isIPad ? 50 : 34))
+                        CreatureGlyph(animal: animal, size: isIPad ? 50 : 34)
                     }
                     Text(animal.name)
                         .font(Kids.fredoka(isIPad ? 14 : 10, weight: .bold))

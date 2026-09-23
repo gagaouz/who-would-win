@@ -75,6 +75,7 @@ struct KidsUnlockSheet: View {
                         }
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel("Close")
                 }
                 .padding(.horizontal, 16).padding(.top, 12)
 

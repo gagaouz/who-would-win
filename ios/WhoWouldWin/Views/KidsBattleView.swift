@@ -463,6 +463,12 @@ private struct BattleContent: View {
         }
         .frame(maxWidth: .infinity)
         .contentShape(Rectangle())
+        // One VoiceOver element per fighter, announced as a button, instead
+        // of a pile of emoji and meters read one by one.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(isPick ? "Cheer for \(a.name). Your pick." : "Cheer for \(a.name)")
+        .accessibilityHint("Tap to cheer for who you think will win")
+        .accessibilityAddTraits(.isButton)
         .onTapGesture {
             guard !isJudging else { return }
             onCheer(side)

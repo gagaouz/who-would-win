@@ -315,7 +315,7 @@ private struct FighterPickerMini: View {
                 if let ui = bundledImage {
                     Image(uiImage: ui).resizable().scaledToFill()
                 } else {
-                    Text(animal.emoji).font(.system(size: isIPad ? 22 : 16))
+                    CreatureGlyph(animal: animal, size: isIPad ? 22 : 16)
                 }
             }
             .frame(width: inner, height: inner)

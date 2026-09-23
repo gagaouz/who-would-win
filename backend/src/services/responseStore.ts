@@ -129,6 +129,74 @@ export async function cachedOperation<T>(
   }
 }
 
+// ── Story rotation ──────────────────────────────────────────────────────────
+// Results are cached per matchup to keep AI spend low, but a single cached
+// story meant Rematch showed the exact same text. Each matchup now keeps a
+// small pool of stories and hands them out in turn: request 1 → story A,
+// request 2 → story B, … so a rematch reads fresh. The winner never changes
+// (the resolver decides it); only the telling does. At most STORY_VARIANTS
+// generations per matchup per cache window.
+const STORY_VARIANTS = (() => {
+  const n = Number(process.env.STORY_VARIANTS);
+  return Number.isInteger(n) && n >= 1 && n <= 10 ? n : 3;
+})();
+const rotationMemory = new Map<string, { counter: number; expiresAt: number }>();
+let rotationReady = false;
+
+async function initRotationTable(): Promise<void> {
+  if (rotationReady) return;
+  const pool = getDbPool();
+  if (!pool) return;
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS story_rotation (
+      rotation_key TEXT PRIMARY KEY,
+      counter BIGINT NOT NULL,
+      expires_at TIMESTAMPTZ NOT NULL
+    );
+  `);
+  rotationReady = true;
+  setInterval(() => {
+    void pool.query('DELETE FROM story_rotation WHERE expires_at < NOW()').catch(() => undefined);
+  }, 60 * 60 * 1000).unref();
+}
+
+/** Which story slot (0 … variants-1) this request should get for a matchup. */
+export async function nextStoryVariant(
+  namespace: string, cacheInput: unknown, ttlMs: number, variants = STORY_VARIANTS,
+): Promise<number> {
+  if (variants <= 1) return 0;
+  const key = digest(`rotation:${namespace}`, cacheInput);
+  const pool = getDbPool();
+  if (!pool) {
+    const now = Date.now();
+    const entry = rotationMemory.get(key);
+    const counter = entry && entry.expiresAt > now ? entry.counter + 1 : 0;
+    if (rotationMemory.size >= MAX_MEMORY_ENTRIES && !entry) {
+      const oldest = rotationMemory.keys().next().value as string | undefined;
+      if (oldest) rotationMemory.delete(oldest);
+    }
+    rotationMemory.set(key, { counter, expiresAt: now + ttlMs });
+    return counter % variants;
+  }
+  try {
+    await initRotationTable();
+    const result = await pool.query<{ counter: string }>(
+      `INSERT INTO story_rotation (rotation_key, counter, expires_at)
+       VALUES ($1, 0, NOW() + ($2 * INTERVAL '1 millisecond'))
+       ON CONFLICT (rotation_key) DO UPDATE
+         SET counter = CASE WHEN story_rotation.expires_at < NOW() THEN 0
+                            ELSE story_rotation.counter + 1 END,
+             expires_at = EXCLUDED.expires_at
+       RETURNING counter`,
+      [key, ttlMs],
+    );
+    return Number(result.rows[0]?.counter ?? 0) % variants;
+  } catch (error) {
+    console.error('[response-store] rotation failed:', (error as Error).message);
+    return Math.floor(Math.random() * variants);
+  }
+}
+
 export function isValidRequestId(value: unknown): value is string {
   return typeof value === 'string'
     && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);

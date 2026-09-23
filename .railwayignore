@@ -14,3 +14,11 @@ backend/dist/
 backend/.env
 backend/.env.*
 *.log
+android/
+marketing/
+docs/
+scripts/
+*.jks
+*.keystore
+keystore.properties
+secrets.properties

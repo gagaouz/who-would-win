@@ -190,6 +190,7 @@ struct KidsAnimalPickerView: View {
                         .font(.system(size: isIPad ? 18 : 14))
                         .foregroundColor(Kids.inkSoft)
                 }.buttonStyle(.plain)
+                .accessibilityLabel("Clear search")
             }
 
             Button {
@@ -746,6 +747,12 @@ private struct KidsAnimalCard: View {
         .offset(y: selected ? -2 : 0)
         .shadow(color: Kids.ink.opacity(selected ? 0.18 : 0.1), radius: 0, x: 0, y: selected ? 4 : 3)
         .animation(.spring(response: 0.3, dampingFraction: 0.6), value: selected)
+        // Read as "Lion, selected" / "Dragon, locked" rather than emoji names.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(animal.name)
+        .accessibilityValue(locked ? "Locked" : selected ? "Selected" : "")
+        .accessibilityHint(locked ? "Tap to see how to unlock" : "Tap to pick this fighter")
+        .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
     }
 }
 

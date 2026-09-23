@@ -11,7 +11,7 @@ exports.getAnimalLeaderboard = getAnimalLeaderboard;
 exports.getCustomCreatureLeaderboard = getCustomCreatureLeaderboard;
 exports.purgeCustomCreatureNames = purgeCustomCreatureNames;
 exports.getRecentActivity = getRecentActivity;
-const claudeService_1 = require("./claudeService");
+const creatures_1 = require("../data/creatures");
 const database_1 = require("./database");
 // ── Schema bootstrap ───────────────────────────────────────────────────────────
 let initialized = false;
@@ -174,7 +174,7 @@ async function getAnimalLeaderboard(limit = 25) {
         WHERE mode = 'full' AND is_custom1 = FALSE AND is_custom2 = FALSE`);
         const enriched = rows.map(r => ({
             id: r.id,
-            name: claudeService_1.ANIMAL_NAMES_EXPORT[r.id] ?? r.id,
+            name: (0, creatures_1.displayName)(r.id),
             wins: r.wins,
             battles: r.battles,
             winRate: r.battles > 0 ? r.wins / r.battles : 0,
@@ -275,8 +275,8 @@ async function getRecentActivity(limit = 200) {
        ORDER BY created_at DESC
        LIMIT $1`, [limit]);
         return rows.map(r => {
-            const f1Display = r.fighter1_name ?? claudeService_1.ANIMAL_NAMES_EXPORT[r.fighter1_id] ?? r.fighter1_id;
-            const f2Display = r.fighter2_name ?? claudeService_1.ANIMAL_NAMES_EXPORT[r.fighter2_id] ?? r.fighter2_id;
+            const f1Display = (0, creatures_1.displayName)(r.fighter1_id, r.fighter1_name ?? undefined);
+            const f2Display = (0, creatures_1.displayName)(r.fighter2_id, r.fighter2_name ?? undefined);
             let winnerDisplay;
             if (r.winner_id === 'draw') {
                 winnerDisplay = 'Draw';

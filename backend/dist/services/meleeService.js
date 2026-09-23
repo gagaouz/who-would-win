@@ -11,6 +11,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getMeleeResult = getMeleeResult;
 const anthropicClient_1 = require("./anthropicClient");
 const sanitize_1 = require("../middleware/sanitize");
+const creatures_1 = require("../data/creatures");
+const storyRules_1 = require("./storyRules");
 const meleeResolver_1 = require("./meleeResolver");
 const claudeService_1 = require("./claudeService");
 /** Estimate a real-scale tier for each CUSTOM fighter so melee verdicts are
@@ -40,13 +42,16 @@ async function withCustomTiers(teamA, teamB, signal) {
         : f);
     return [fill(teamA), fill(teamB)];
 }
+function fighterName(f) {
+    return (0, creatures_1.displayName)(f.id, f.name);
+}
 function profileLine(f) {
-    const name = f.name ?? claudeService_1.ANIMAL_NAMES_EXPORT[f.id] ?? f.id;
-    const prof = claudeService_1.POWER_PROFILES[f.id];
-    if (prof)
-        return `${name} (tier ${prof.tier}, ${prof.blurb})`;
-    if (claudeService_1.DEITY_IDS.has(f.id))
-        return `${name} (tier 10, Greek deity)`;
+    const name = fighterName(f);
+    const c = (0, creatures_1.getCreature)(f.id);
+    if (c)
+        return `${name} (tier ${c.tier}, ${c.blurb}. Verified fact: ${c.fact})`;
+    if (f.customTier != null)
+        return `${name} (custom fighter, estimated tier ${f.customTier})`;
     return `${name} (custom fighter — judge from your own knowledge)`;
 }
 function teamBlock(label, team) {
@@ -64,8 +69,8 @@ function buildMeleePrompt(args) {
             `  • There is NO environmental advantage or disadvantage for ANY fighter — judge purely on inherent biology, size, weapons, and team coordination.\n`;
     const aIds = args.teamA.map(f => f.id).join(', ');
     const bIds = args.teamB.map(f => f.id).join(', ');
-    const aNames = args.teamA.map(f => f.name ?? f.id).join(', ');
-    const bNames = args.teamB.map(f => f.name ?? f.id).join(', ');
+    const aNames = args.teamA.map(fighterName).join(', ');
+    const bNames = args.teamB.map(fighterName).join(', ');
     return (verdictLine +
         `Melee team battle.\n\n` +
         teamBlock('A', args.teamA) + `\n\n` +
@@ -81,47 +86,51 @@ function buildMeleePrompt(args) {
             ? `• Survival overrides everything: a sea creature on land is helpless even in a 3v1.\n`
             : '') +
         `• Never give a wildly improbable upset just for drama.\n\n` +
-        `Narration requirements — write it EPIC, like a cinematic sports highlight reel for kids:\n` +
-        `• EXACTLY 3 vivid sentences in present tense. Do not exceed 3 sentences. Pack them with action.\n` +
-        `• Use punchy verbs (charges, slams, vaults, gores, rips, soars, crashes) and sensory hits (dust kicks up, the ground shakes, a roar splits the air, water explodes).\n` +
-        `• Mention EVERY fighter by name AT LEAST ONCE — Team A: ${aNames}. Team B: ${bNames}.\n` +
-        `• Open with a dramatic moment — "the bell rings", "the ground shakes", "a war cry splits the air". Don't open with a bland intro.\n` +
-        `• Describe how teammates work together OR get in each other's way — herd tactics, double-teams, friendly fire, distractions, covering each other. Make this a HUGE part of the drama.\n` +
-        `• Name AT LEAST ONE signature move or weapon and give it a memorable beat — "a bone-shattering bite", "a swooping talon strike", "a 5-ton hip-check".\n` +
-        `• Build to a climactic finishing blow, then end with a triumphant beat: "stands roaring over the arena", "lifts its head as the crowd erupts".\n` +
-        `• Kid-friendly — no gore, no blood. Battles are decisive but PG.\n` +
-        `• AVOID bland phrasing like "ultimately won", "proved too much", "couldn't keep up", "stood victorious", "fought bravely". These are forbidden.\n\n` +
-        `Fun-fact requirements — make it a WHOA-DID-YOU-KNOW reveal, not a textbook analysis:\n` +
-        `• 1–2 sentences. Hit kids with something they'll want to repeat to their friends.\n` +
-        `• Connect the two teams: how did the winners' superpower hard-counter the losers' weakness? (Speed beat bulk. Wings beat ground. Venom beat armor. Pack tactics beat solo defense.)\n` +
-        `• Drop a real, surprising biological/mythical number when you can ("Orcas are smart enough to teach hunting tactics to their pod!").\n` +
-        `• AVOID jargon like "tier", "stat", "coordination losses". Speak like a kid is reading it.\n\n` +
+        `Narration requirements — like a cinematic sports highlight reel for kids:\n` +
+        `- EXACTLY 3 vivid sentences in present tense. Do not exceed 3 sentences.\n` +
+        `- Use punchy verbs (charges, slams, vaults, soars, crashes, pounces, dodges) and sensory moments (dust kicks up, the ground shakes, a roar echoes, water explodes).\n` +
+        `- Mention EVERY fighter by name AT LEAST ONCE — Team A: ${aNames}. Team B: ${bNames}.\n` +
+        `- Open with a dramatic moment — "the bell rings", "the ground shakes". Don't open with a bland intro.\n` +
+        `- Show how teammates work together OR get in each other's way — double-teams, distractions, covering each other. Make this a big part of the drama.\n` +
+        storyRules_1.SIGNATURE_MOVE_RULE +
+        `- Build to a final winning moment, then end with a triumphant beat: "stands tall over the arena", "the crowd erupts".\n` +
+        storyRules_1.TONE_RULES + `\n` +
+        `Fun-fact requirements — a WHOA-DID-YOU-KNOW reveal, not a textbook analysis:\n` +
+        `- 1–2 sentences, ideally about how the winners' real ability countered the losers (speed beat bulk, wings beat ground, armor beat claws).\n` +
+        storyRules_1.FACT_RULES + `\n` +
         `Respond with ONLY JSON, no markdown:\n` +
-        `{"winningTeam":"<A or B>","narration":"<4-6 sentences as described above>","funFact":"<1-2 sentences as described above>","mvp":"<id of MVP from winning team — one of: ${args.verdict.kind === 'forced' && args.verdict.winningTeam === 'A' ? aIds : args.verdict.kind === 'forced' && args.verdict.winningTeam === 'B' ? bIds : aIds + ', ' + bIds}>","teamAHealth":<10-90>,"teamBHealth":<10-90>}`);
+        `{"winningTeam":"<A or B>","narration":"<EXACTLY 3 sentences as described above>","funFact":"<1-2 sentences as described above>","mvp":"<id of MVP from winning team — one of: ${args.verdict.kind === 'forced' && args.verdict.winningTeam === 'A' ? aIds : args.verdict.kind === 'forced' && args.verdict.winningTeam === 'B' ? bIds : aIds + ', ' + bIds}>","teamAHealth":<10-90>,"teamBHealth":<10-90>}`);
 }
 function stripMarkdownFences(text) {
     return text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
 }
 function validateMeleeResult(data, teamA, teamB) {
     if (typeof data !== 'object' || data === null)
-        throw new Error('Not an object');
+        throw new claudeService_1.StoryRejectedError('not an object');
     const obj = data;
     const winningTeam = obj.winningTeam;
     if (winningTeam !== 'A' && winningTeam !== 'B') {
-        throw new Error('Invalid winningTeam');
+        throw new claudeService_1.StoryRejectedError('invalid winningTeam');
     }
+    const names = [...teamA, ...teamB].map(fighterName);
     // Strip emoji BEFORE the non-empty check so an all-emoji field is rejected
     // (retry/fallback) instead of shipping a blank card.
     if (typeof obj.narration !== 'string')
-        throw new Error('narration missing');
-    const narration = (0, claudeService_1.stripEmoji)(obj.narration).slice(0, 1500);
-    if (!narration.trim() || !(0, sanitize_1.isSafeGeneratedText)(narration))
-        throw new Error('unsafe narration');
+        throw new claudeService_1.StoryRejectedError('narration missing');
+    const narrationText = (0, claudeService_1.stripEmoji)(obj.narration).slice(0, 1500);
+    if (!narrationText.trim())
+        throw new claudeService_1.StoryRejectedError('narration empty');
+    const narration = (0, sanitize_1.repairStory)(narrationText, 'narration', names, 2);
+    if (narration === null)
+        throw new claudeService_1.StoryRejectedError(`narration ${(0, sanitize_1.storyProblem)(narrationText, 'narration', names)}`);
     if (typeof obj.funFact !== 'string')
-        throw new Error('funFact missing');
-    const funFact = (0, claudeService_1.stripEmoji)(obj.funFact).slice(0, 500);
-    if (!funFact.trim() || !(0, sanitize_1.isSafeGeneratedText)(funFact))
-        throw new Error('unsafe funFact');
+        throw new claudeService_1.StoryRejectedError('funFact missing');
+    const funFactText = (0, claudeService_1.stripEmoji)(obj.funFact).slice(0, 500);
+    if (!funFactText.trim())
+        throw new claudeService_1.StoryRejectedError('funFact empty');
+    const funFact = (0, sanitize_1.repairStory)(funFactText, 'fact', names, 1);
+    if (funFact === null)
+        throw new claudeService_1.StoryRejectedError(`funFact ${(0, sanitize_1.storyProblem)(funFactText, 'fact', names)}`);
     // mvp must be a fighter from the winning team
     const winningTeamFighters = winningTeam === 'A' ? teamA : teamB;
     let mvp = String(obj.mvp ?? '');
@@ -161,7 +170,8 @@ function enforceMeleeVerdict(result, verdict, teamA, teamB) {
         winningTeam: verdict.winningTeam,
         narration: agreed
             ? result.narration
-            : `Team ${verdict.winningTeam} dominated the matchup — overwhelming size, power, and natural advantage carried the day. The other team fought hard but simply could not match what their opponents brought to the fight.`,
+            : `${winningTeamFighters.map(fighterName).join(' and ')} take charge from the very first moment and never give up an inch. ` +
+                `Size, speed and teamwork carry the day, and the crowd erupts as Team ${verdict.winningTeam} wins!`,
         funFact: result.funFact,
         mvp: agreed && mvpOnWinningTeam ? result.mvp : winningTeamFighters[0].id,
         teamAHealth: verdict.winningTeam === 'A' ? Math.max(70, result.teamAHealth) : Math.min(25, result.teamAHealth),
@@ -173,24 +183,23 @@ async function getMeleeResult(teamA, teamB, environmentName, signal) {
     // realistic verdict instead of deferring the whole melee to the AI.
     const [tA, tB] = await withCustomTiers(teamA, teamB, signal);
     const verdict = (0, meleeResolver_1.resolveMelee)({ teamA: tA, teamB: tB, environmentName });
-    const response = await (0, anthropicClient_1.createMessage)('melee', {
-        max_tokens: 420,
-        top_p: 0.9,
-        system: 'You are the cinematic narrator for "Who Would Win? Melee" — write like a kids action movie trailer, not a textbook. ' +
-            'ACCURACY OVER UPSETS: pick the realistic winner. ' +
-            'NUMBERS MATTER but so does power tier — a single tier-9 monster can beat 3 tier-3 ones. ' +
-            'SURVIVAL: any creature that cannot live in the arena is essentially out of the fight. ' +
-            'EPIC NARRATION is non-negotiable. Every battle is a movie scene with stakes, sound, dust, and a hero moment. ' +
-            'Respond with ONLY valid JSON.',
-        messages: [
-            { role: 'user', content: buildMeleePrompt({ teamA: tA, teamB: tB, environmentName, verdict }) },
-        ],
-    }, signal);
-    const block = response.content[0];
-    if (!block || block.type !== 'text')
-        throw new Error('Unexpected response (melee)');
-    const cleaned = stripMarkdownFences(block.text);
-    const parsed = JSON.parse(cleaned);
-    const raw = validateMeleeResult(parsed, teamA, teamB);
+    const prompt = buildMeleePrompt({ teamA: tA, teamB: tB, environmentName, verdict });
+    const raw = await (0, claudeService_1.generateValidated)('melee', async (retryNote) => {
+        const response = await (0, anthropicClient_1.createMessage)('melee', {
+            max_tokens: 420,
+            top_p: 0.9,
+            system: 'You are the storyteller for "Who Would Win? Melee" — a team battle game for kids aged 6–12. Write like a kids action movie trailer, not a textbook. ' +
+                'ACCURACY OVER UPSETS: pick the realistic winner. ' +
+                'NUMBERS MATTER but so does power tier — a single tier-9 monster can beat 3 tier-3 ones. ' +
+                'SURVIVAL: any creature that cannot live in the arena is essentially out of the fight. ' +
+                'Every battle is an exciting scene with sound, dust, and a hero moment — follow the tone rules exactly. ' +
+                'Respond with ONLY valid JSON.',
+            messages: [{ role: 'user', content: prompt + (retryNote ?? '') }],
+        }, signal);
+        const block = response.content[0];
+        if (!block || block.type !== 'text')
+            throw new Error('Unexpected response (melee)');
+        return block.text;
+    }, text => validateMeleeResult(JSON.parse(stripMarkdownFences(text)), teamA, teamB));
     return enforceMeleeVerdict(raw, verdict, teamA, teamB);
 }

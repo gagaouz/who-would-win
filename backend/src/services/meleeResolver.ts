@@ -18,13 +18,7 @@
  * monsters without making a 4v1 swing meaningless.
  */
 
-import {
-  DEITY_IDS,
-  POWER_PROFILES,
-  SEA_ANIMALS,
-  AIR_ANIMALS,
-  LAND_ANIMALS,
-} from './claudeService';
+import { effectiveTier, envModifier, isBuiltIn, isDeity } from '../data/creatures';
 
 export interface MeleeFighter {
   id: string;
@@ -52,54 +46,12 @@ export type MeleeVerdict =
       reason: string;
     };
 
-const SEMI_AQUATIC = new Set(['hippopotamus', 'alligator', 'crocodile']);
-
-function isKnown(id: string): boolean {
-  return id in POWER_PROFILES || DEITY_IDS.has(id);
-}
-function getTier(id: string, customTier?: number | null): number | null {
-  if (DEITY_IDS.has(id)) return 10;
-  const t = POWER_PROFILES[id]?.tier;
-  if (t != null) return t;
-  return customTier ?? null;   // custom fighter uses its estimated tier
-}
-
-function envModifier(id: string, env: string | undefined): number {
-  if (!env) return 1.0;
-  const isSea  = SEA_ANIMALS.has(id);
-  const isAir  = AIR_ANIMALS.has(id);
-  const isLand = LAND_ANIMALS.has(id);
-  const semi   = SEMI_AQUATIC.has(id);
-  if (DEITY_IDS.has(id)) return 1.0;
-  if (env === 'Ocean') {
-    if (isSea) return 1.0;
-    if (semi)  return 0.5;
-    return 0.10;
-  }
-  if (env === 'Sky') {
-    if (isAir) return 1.0;
-    return 0.05;
-  }
-  if (['Grassland','Jungle','Volcano','Desert','Arctic'].includes(env)) {
-    if (isSea && !semi) return 0.05;
-    if (isLand) return 1.0;
-    if (isAir)  return 0.85;
-    return 0.9;
-  }
-  return 1.0;
-}
-
-// Same fractional realism nudges as the 1v1 resolver. KEEP IN SYNC with
-// battleResolver.ts TIER_ADJUST and the iOS OnDeviceTiers.tierAdjust.
-const TIER_ADJUST: Record<string, number> = {
-  tiger: 0.45,
-};
-
-/** 2^(tier + realism nudge) × envModifier — same as 1v1 resolver. */
+/** 2^(tier + realism nudge) × envModifier — same as the 1v1 resolver. A
+ *  custom fighter uses its estimated tier. */
 function fighterPower(f: MeleeFighter, env: string | undefined): number {
-  const t = getTier(f.id, f.customTier);
+  const t = isBuiltIn(f.id) ? effectiveTier(f.id) : (f.customTier ?? null);
   if (t === null) return 0;
-  return Math.pow(2, t + (TIER_ADJUST[f.id] ?? 0)) * envModifier(f.id, env);
+  return Math.pow(2, t) * envModifier(f.id, env);
 }
 
 /**
@@ -125,7 +77,7 @@ export function resolveMelee(args: MeleeArgs): MeleeVerdict {
   // Force a verdict when EVERY fighter is resolvable — known in the tier table
   // OR a custom fighter with an estimated tier. Only fall back to the AI when a
   // custom fighter has no estimate at all.
-  const resolvable = (f: MeleeFighter) => isKnown(f.id) || f.customTier != null;
+  const resolvable = (f: MeleeFighter) => isBuiltIn(f.id) || f.customTier != null;
   const allResolvable = teamA.every(resolvable) && teamB.every(resolvable);
   if (!allResolvable) {
     return { kind: 'open', reason: 'custom fighter without a tier estimate — AI decides' };
@@ -133,8 +85,8 @@ export function resolveMelee(args: MeleeArgs): MeleeVerdict {
 
   // Deity asymmetry: a team with a deity beats a team without one outright,
   // unless the opposing team also has a deity.
-  const aHasDeity = teamA.some(f => DEITY_IDS.has(f.id));
-  const bHasDeity = teamB.some(f => DEITY_IDS.has(f.id));
+  const aHasDeity = teamA.some(f => isDeity(f.id));
+  const bHasDeity = teamB.some(f => isDeity(f.id));
   if (aHasDeity && !bHasDeity) {
     return { kind: 'forced', winningTeam: 'A', reason: 'team A has a deity' };
   }
@@ -174,7 +126,7 @@ export function resolveMelee(args: MeleeArgs): MeleeVerdict {
 export function meleeVerdictPromptLine(v: MeleeVerdict): string {
   if (v.kind !== 'forced') return '';
   return (
-    `\n🔒 OUTCOME ALREADY DECIDED: Team ${v.winningTeam} WINS (${v.reason}).\n` +
+    `\n🔒 OUTCOME ALREADY DECIDED: Team ${v.winningTeam} WINS.\n` +
     `This verdict is FINAL — the referee has already ruled. Your job is to write ` +
     `the narration explaining WHY team ${v.winningTeam} won, citing real biology, ` +
     `size differences, or arena conditions. The JSON's "winningTeam" field MUST be ` +

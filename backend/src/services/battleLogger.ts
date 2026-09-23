@@ -3,7 +3,7 @@
 // All exports are safe to call when DATABASE_URL is unset: log calls no-op,
 // reads return empty data. Lets local dev run with zero Postgres setup.
 
-import { ANIMAL_NAMES_EXPORT } from './claudeService';
+import { displayName } from '../data/creatures';
 import { getDbPool } from './database';
 
 // ── Schema bootstrap ───────────────────────────────────────────────────────────
@@ -215,7 +215,7 @@ export async function getAnimalLeaderboard(limit = 25): Promise<AnimalLeaderboar
 
     const enriched: AnimalRow[] = rows.map(r => ({
       id: r.id as string,
-      name: ANIMAL_NAMES_EXPORT[r.id as string] ?? (r.id as string),
+      name: displayName(r.id as string),
       wins: r.wins as number,
       battles: r.battles as number,
       winRate: r.battles > 0 ? r.wins / r.battles : 0,
@@ -346,8 +346,8 @@ export async function getRecentActivity(limit = 200): Promise<RecentBattleRow[]>
     );
 
     return rows.map(r => {
-      const f1Display = r.fighter1_name ?? ANIMAL_NAMES_EXPORT[r.fighter1_id] ?? r.fighter1_id;
-      const f2Display = r.fighter2_name ?? ANIMAL_NAMES_EXPORT[r.fighter2_id] ?? r.fighter2_id;
+      const f1Display = displayName(r.fighter1_id, r.fighter1_name ?? undefined);
+      const f2Display = displayName(r.fighter2_id, r.fighter2_name ?? undefined);
       let winnerDisplay: string;
       if (r.winner_id === 'draw') {
         winnerDisplay = 'Draw';
