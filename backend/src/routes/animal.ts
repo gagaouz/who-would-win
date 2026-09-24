@@ -4,6 +4,7 @@ import { sanitizeName } from '../middleware/sanitize';
 import { createMessage } from '../services/anthropicClient';
 import { cachedOperation } from '../services/responseStore';
 import { requireAppAttest } from '../services/appAttest';
+import { logCustomCreatureLookup } from '../services/customCreatureLogger';
 
 const router = Router();
 const DEFAULT_INFO = { emoji: '🐾', category: 'land', color: '#888888' } as const;
@@ -21,6 +22,10 @@ router.post('/animal', requireAppAttest, animalRateLimit, async (req: Request, r
     res.json(DEFAULT_INFO);
     return;
   }
+
+  // Keep the complete available list of accepted custom lookups in temporary
+  // memory, including lookups whose classification later falls back or fails.
+  logCustomCreatureLookup(sanitized.value);
 
   const controller = new AbortController();
   res.once('close', () => { if (!res.writableEnded) controller.abort(); });
@@ -57,7 +62,7 @@ router.post('/animal', requireAppAttest, animalRateLimit, async (req: Request, r
     res.json(value);
   } catch (error) {
     if (!controller.signal.aborted) {
-      console.error('[animal] lookup failed:', (error as Error).message);
+      console.error('[animal] lookup failed');
       res.json(DEFAULT_INFO);
     }
   }

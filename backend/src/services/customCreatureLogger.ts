@@ -1,124 +1,167 @@
 /**
- * Custom Creature Logger
- *
- * Tracks the custom (user-typed) creature NAMES kids battle, so we can see what
- * creatures to add. Privacy-conscious for a kids app:
- *   - The raw kid-typed name is NOT written to the permanent process log
- *     anymore (only an anonymous event + arena), so it isn't retained "forever"
- *     in Railway logs.
- *   - The in-memory tally (which keeps names for the report) is BOUNDED: it
- *     ages out entries older than RETENTION_DAYS and caps the store size.
- *   - purgeAll() wipes everything (backs the parent "delete my data" path).
+ * Private, temporary creature-request tally. Names are never written to a
+ * database or process logs, and no app, device, or network identity is stored.
+ * A restart clears the list. Entries also expire after 90 days of inactivity.
  */
+import { CREATURES } from '../data/creatures';
+import { sanitizeName } from '../middleware/sanitize';
 
 const RETENTION_DAYS = 90;
 const MAX_ENTRIES = 5000;
+const RETENTION_MS = RETENTION_DAYS * 24 * 60 * 60 * 1000;
 
 export interface CustomCreatureEntry {
-  name: string;          // normalized (lowercase, trimmed)
-  displayName: string;   // original display name as typed by user
+  name: string;
+  displayName: string;
+  /** Completed battle appearances, separate from creature lookups. */
   count: number;
+  lookupCount: number;
+  attemptCount: number;
   wins: number;
-  firstSeen: string;     // ISO timestamp
-  lastSeen: string;      // ISO timestamp
-  opponentNames: string[]; // up to 10 recent opponents (for context)
+  firstSeen: string;
+  lastSeen: string;
+  opponentNames: string[];
 }
 
-// In-memory store: normalized name → entry
+// Insertion order is last-seen order, so pruning never sorts the whole store.
 const store = new Map<string, CustomCreatureEntry>();
+let capturedSince = new Date(Date.now()).toISOString();
+let evictedCount = 0;
+let expiredCount = 0;
 
 function normalize(name: string): string {
-  return name.toLowerCase().trim().replace(/\s+/g, ' ');
+  return name.normalize('NFKC').toLocaleLowerCase('en-US').trim().replace(/\s+/g, ' ');
 }
 
-/**
- * Log a custom creature request. Call this whenever a battle involves a
- * custom (non-whitelist) fighter.
- */
+const builtInNames = new Set(CREATURES.flatMap(creature => [
+  normalize(creature.name), normalize(creature.id), normalize(creature.id.replace(/_/g, ' ')),
+]));
+
+function safeName(value: string): string | undefined {
+  const result = sanitizeName(value);
+  return result.ok ? result.value : undefined;
+}
+
+/** Prune on writes, reads, and hourly even when no requests arrive. */
+function pruneStore(): void {
+  const cutoff = Date.now() - RETENTION_MS;
+  for (const [key, entry] of store) {
+    if (Date.parse(entry.lastSeen) > cutoff) break;
+    store.delete(key);
+    expiredCount += 1;
+  }
+  while (store.size > MAX_ENTRIES) {
+    const oldest = store.keys().next().value as string | undefined;
+    if (!oldest) break;
+    store.delete(oldest);
+    evictedCount += 1;
+  }
+}
+
+setInterval(pruneStore, 60 * 60 * 1000).unref();
+
+function record(name: string, kind: 'lookup' | 'attempt' | 'completed', opponentName?: string, won = false): void {
+  const accepted = safeName(name);
+  if (!accepted) return;
+  if (kind === 'lookup' && (builtInNames.has(normalize(accepted)) || builtInNames.has(normalize(name)))) return;
+
+  pruneStore();
+  const key = normalize(accepted);
+  const now = new Date(Date.now()).toISOString();
+  const entry: CustomCreatureEntry = store.get(key) ?? {
+    name: key,
+    displayName: accepted,
+    count: 0,
+    lookupCount: 0,
+    attemptCount: 0,
+    wins: 0,
+    firstSeen: now,
+    lastSeen: now,
+    opponentNames: [],
+  };
+  entry.lastSeen = now;
+  if (kind === 'lookup') {
+    entry.lookupCount += 1;
+  } else if (kind === 'attempt') {
+    entry.attemptCount += 1;
+  } else {
+    entry.count += 1;
+    if (won) entry.wins += 1;
+    const opponent = opponentName ? safeName(opponentName) : undefined;
+    if (opponent) {
+      entry.opponentNames.push(opponent);
+      if (entry.opponentNames.length > 10) entry.opponentNames.shift();
+    }
+  }
+  store.delete(key);
+  store.set(key, entry);
+  pruneStore();
+}
+
+/** An accepted classification request, even if AI generation later fails. */
+export function logCustomCreatureLookup(name: string): void {
+  record(name, 'lookup');
+}
+
+/** An accepted battle attempt, recorded before generation so failures remain visible. */
+export function logCustomCreatureAttempt(name: string): void {
+  record(name, 'attempt');
+}
+
+/** A completed cloud battle appearance. Keep retries out at the route layer. */
 export function logCustomCreature(
   customName: string,
   opponentName: string,
-  arena?: string,
+  _arena?: string,
   won = false,
 ): void {
-  const key = normalize(customName);
-  const now = new Date().toISOString();
-
-  // Update in-memory tally
-  const existing = store.get(key);
-  if (existing) {
-    existing.count += 1;
-    if (won) existing.wins += 1;
-    existing.lastSeen = now;
-    if (existing.opponentNames.length < 10) {
-      existing.opponentNames.push(opponentName);
-    } else {
-      existing.opponentNames.shift();
-      existing.opponentNames.push(opponentName);
-    }
-  } else {
-    store.set(key, {
-      name: key,
-      displayName: customName.trim(),
-      count: 1,
-      wins: won ? 1 : 0,
-      firstSeen: now,
-      lastSeen: now,
-      opponentNames: [opponentName],
-    });
-  }
-
-  // Bound retention: age out stale entries and cap the store size so kid-typed
-  // names are never kept indefinitely.
-  pruneStore();
-
-  // Anonymous metric only — the raw kid-typed name is intentionally NOT written
-  // to the permanent process log. Names live only in the bounded in-memory
-  // tally above (for the "what creatures do kids want" report).
-  console.log(JSON.stringify({
-    event: 'custom_creature_battle',
-    arena: arena ?? null,
-    timestamp: now,
-  }));
+  record(customName, 'completed', opponentName, won);
 }
 
-/** Drop entries older than RETENTION_DAYS, then trim to MAX_ENTRIES by recency. */
-function pruneStore(): void {
-  const cutoff = Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000;
-  for (const [key, entry] of store) {
-    if (new Date(entry.lastSeen).getTime() < cutoff) store.delete(key);
-  }
-  if (store.size > MAX_ENTRIES) {
-    const sorted = Array.from(store.entries())
-      .sort((a, b) => new Date(b[1].lastSeen).getTime() - new Date(a[1].lastSeen).getTime());
-    store.clear();
-    for (const [k, v] of sorted.slice(0, MAX_ENTRIES)) store.set(k, v);
-  }
-}
-
-/** Wipe all stored custom-creature data (backs the "delete my data" path). */
+/** Wipe the list and its reporting window, without retaining name tombstones. */
 export function purgeAllCustomCreatures(): number {
-  const n = store.size;
+  const count = store.size;
   store.clear();
-  return n;
+  capturedSince = new Date(Date.now()).toISOString();
+  evictedCount = 0;
+  expiredCount = 0;
+  return count;
 }
 
-/**
- * Return the current in-memory tally, sorted by count descending.
- */
+/** Every available name is returned; pagination belongs to the dashboard. */
 export function getCustomCreatureReport(): {
   totalUniqueCreatures: number;
   totalBattles: number;
+  totalLookups: number;
+  totalAttempts: number;
   topCreatures: CustomCreatureEntry[];
   generatedAt: string;
+  capturedSince: string;
+  retentionDays: number;
+  capacity: number;
+  storageMode: 'temporary-memory';
+  evictedCount: number;
+  expiredCount: number;
+  truncated: boolean;
 } {
-  const entries = Array.from(store.values()).sort((a, b) => b.count - a.count);
-  const totalBattles = entries.reduce((sum, e) => sum + e.count, 0);
-
+  pruneStore();
+  const entries = Array.from(store.values())
+    .sort((a, b) => b.count - a.count || (b.lookupCount + b.attemptCount) - (a.lookupCount + a.attemptCount)
+      || b.lastSeen.localeCompare(a.lastSeen) || a.name.localeCompare(b.name))
+    .map(entry => ({ ...entry, opponentNames: [...entry.opponentNames] }));
   return {
     totalUniqueCreatures: entries.length,
-    totalBattles,
+    totalBattles: entries.reduce((sum, entry) => sum + entry.count, 0),
+    totalLookups: entries.reduce((sum, entry) => sum + entry.lookupCount, 0),
+    totalAttempts: entries.reduce((sum, entry) => sum + entry.attemptCount, 0),
     topCreatures: entries,
-    generatedAt: new Date().toISOString(),
+    generatedAt: new Date(Date.now()).toISOString(),
+    capturedSince,
+    retentionDays: RETENTION_DAYS,
+    capacity: MAX_ENTRIES,
+    storageMode: 'temporary-memory',
+    evictedCount,
+    expiredCount,
+    truncated: evictedCount > 0,
   };
 }

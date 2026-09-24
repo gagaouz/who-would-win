@@ -6,6 +6,7 @@ const sanitize_1 = require("../middleware/sanitize");
 const anthropicClient_1 = require("../services/anthropicClient");
 const responseStore_1 = require("../services/responseStore");
 const appAttest_1 = require("../services/appAttest");
+const customCreatureLogger_1 = require("../services/customCreatureLogger");
 const router = (0, express_1.Router)();
 const DEFAULT_INFO = { emoji: '🐾', category: 'land', color: '#888888' };
 // Backward compatibility for App Store builds that put child-entered text in a
@@ -20,6 +21,9 @@ router.post('/animal', appAttest_1.requireAppAttest, rateLimit_1.animalRateLimit
         res.json(DEFAULT_INFO);
         return;
     }
+    // Keep the complete available list of accepted custom lookups in temporary
+    // memory, including lookups whose classification later falls back or fails.
+    (0, customCreatureLogger_1.logCustomCreatureLookup)(sanitized.value);
     const controller = new AbortController();
     res.once('close', () => { if (!res.writableEnded)
         controller.abort(); });
@@ -49,7 +53,7 @@ router.post('/animal', appAttest_1.requireAppAttest, rateLimit_1.animalRateLimit
     }
     catch (error) {
         if (!controller.signal.aborted) {
-            console.error('[animal] lookup failed:', error.message);
+            console.error('[animal] lookup failed');
             res.json(DEFAULT_INFO);
         }
     }

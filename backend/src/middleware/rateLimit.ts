@@ -183,6 +183,12 @@ export const adminRateLimit = limiter({
   name: 'admin', max: 10, windowMs: 15 * 60 * 1000,
 });
 
+// Only select this profile after verifying an admin credential or session.
+// Reading the dashboard should not consume the stricter login-attempt budget.
+export const adminReadRateLimit = limiter({
+  name: 'admin-read', max: 60, windowMs: 60 * 1000,
+});
+
 // Backward-compatible name for any route not yet assigned a profile.
 export const rateLimitMiddleware = publicRateLimit;
 

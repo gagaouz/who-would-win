@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.rateLimitMiddleware = exports.adminRateLimit = exports.diagnosticRateLimit = exports.appAttestRateLimit = exports.publicRateLimit = exports.animalRateLimit = exports.meleeRateLimit = exports.quickRateLimit = exports.battleRateLimit = void 0;
+exports.rateLimitMiddleware = exports.adminReadRateLimit = exports.adminRateLimit = exports.diagnosticRateLimit = exports.appAttestRateLimit = exports.publicRateLimit = exports.animalRateLimit = exports.meleeRateLimit = exports.quickRateLimit = exports.battleRateLimit = void 0;
 exports.initRateLimitStore = initRateLimitStore;
 const crypto_1 = require("crypto");
 const database_1 = require("../services/database");
@@ -152,6 +152,11 @@ exports.diagnosticRateLimit = limiter({
 });
 exports.adminRateLimit = limiter({
     name: 'admin', max: 10, windowMs: 15 * 60 * 1000,
+});
+// Only select this profile after verifying an admin credential or session.
+// Reading the dashboard should not consume the stricter login-attempt budget.
+exports.adminReadRateLimit = limiter({
+    name: 'admin-read', max: 60, windowMs: 60 * 1000,
 });
 // Backward-compatible name for any route not yet assigned a profile.
 exports.rateLimitMiddleware = exports.publicRateLimit;
