@@ -238,6 +238,55 @@ export async function getAnimalLeaderboard(limit = 25): Promise<AnimalLeaderboar
   });
 }
 
+// ── Read: admin overview (aggregate counts only) ──────────────────────────────
+
+export interface AdminOverview {
+  totalBattles: number;
+  battles24h: number;
+  battles7d: number;
+  customBattles: number;
+  customAppearances: number;
+  lastActivityAt: string | null;
+}
+
+export async function getAdminOverview(): Promise<AdminOverview> {
+  return cached('admin-overview', async () => {
+    const p = getDbPool();
+    if (!p || !initialized) {
+      return {
+        totalBattles: 0,
+        battles24h: 0,
+        battles7d: 0,
+        customBattles: 0,
+        customAppearances: 0,
+        lastActivityAt: null,
+      };
+    }
+
+    const { rows } = await p.query(`
+      SELECT COUNT(*)::int AS total_battles,
+             (COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '24 hours'))::int AS battles_24h,
+             (COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '7 days'))::int AS battles_7d,
+             (COUNT(*) FILTER (WHERE is_custom1 OR is_custom2))::int AS custom_battles,
+             COALESCE(SUM(
+               (CASE WHEN is_custom1 THEN 1 ELSE 0 END)
+               + (CASE WHEN is_custom2 THEN 1 ELSE 0 END)
+             ), 0)::int AS custom_appearances,
+             MAX(created_at) AS last_activity_at
+        FROM battles
+    `);
+    const row = rows[0] ?? {};
+    return {
+      totalBattles: row.total_battles ?? 0,
+      battles24h: row.battles_24h ?? 0,
+      battles7d: row.battles_7d ?? 0,
+      customBattles: row.custom_battles ?? 0,
+      customAppearances: row.custom_appearances ?? 0,
+      lastActivityAt: row.last_activity_at ? (row.last_activity_at as Date).toISOString() : null,
+    };
+  });
+}
+
 // ── Read: custom creature leaderboard (admin-only) ─────────────────────────────
 
 export interface CustomCreatureRow {

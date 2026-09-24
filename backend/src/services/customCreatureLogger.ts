@@ -18,6 +18,7 @@ export interface CustomCreatureEntry {
   name: string;          // normalized (lowercase, trimmed)
   displayName: string;   // original display name as typed by user
   count: number;
+  wins: number;
   firstSeen: string;     // ISO timestamp
   lastSeen: string;      // ISO timestamp
   opponentNames: string[]; // up to 10 recent opponents (for context)
@@ -37,7 +38,8 @@ function normalize(name: string): string {
 export function logCustomCreature(
   customName: string,
   opponentName: string,
-  arena?: string
+  arena?: string,
+  won = false,
 ): void {
   const key = normalize(customName);
   const now = new Date().toISOString();
@@ -46,6 +48,7 @@ export function logCustomCreature(
   const existing = store.get(key);
   if (existing) {
     existing.count += 1;
+    if (won) existing.wins += 1;
     existing.lastSeen = now;
     if (existing.opponentNames.length < 10) {
       existing.opponentNames.push(opponentName);
@@ -58,6 +61,7 @@ export function logCustomCreature(
       name: key,
       displayName: customName.trim(),
       count: 1,
+      wins: won ? 1 : 0,
       firstSeen: now,
       lastSeen: now,
       opponentNames: [opponentName],

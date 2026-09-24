@@ -8,6 +8,7 @@ exports.initDb = initDb;
 exports.pruneAgedCustomNames = pruneAgedCustomNames;
 exports.logBattle = logBattle;
 exports.getAnimalLeaderboard = getAnimalLeaderboard;
+exports.getAdminOverview = getAdminOverview;
 exports.getCustomCreatureLeaderboard = getCustomCreatureLeaderboard;
 exports.purgeCustomCreatureNames = purgeCustomCreatureNames;
 exports.getRecentActivity = getRecentActivity;
@@ -192,6 +193,42 @@ async function getAnimalLeaderboard(limit = 25) {
                 .slice(0, limit),
             totalBattles: totalBattlesQ.rows[0]?.n ?? 0,
             generatedAt: new Date().toISOString(),
+        };
+    });
+}
+async function getAdminOverview() {
+    return cached('admin-overview', async () => {
+        const p = (0, database_1.getDbPool)();
+        if (!p || !initialized) {
+            return {
+                totalBattles: 0,
+                battles24h: 0,
+                battles7d: 0,
+                customBattles: 0,
+                customAppearances: 0,
+                lastActivityAt: null,
+            };
+        }
+        const { rows } = await p.query(`
+      SELECT COUNT(*)::int AS total_battles,
+             (COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '24 hours'))::int AS battles_24h,
+             (COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '7 days'))::int AS battles_7d,
+             (COUNT(*) FILTER (WHERE is_custom1 OR is_custom2))::int AS custom_battles,
+             COALESCE(SUM(
+               (CASE WHEN is_custom1 THEN 1 ELSE 0 END)
+               + (CASE WHEN is_custom2 THEN 1 ELSE 0 END)
+             ), 0)::int AS custom_appearances,
+             MAX(created_at) AS last_activity_at
+        FROM battles
+    `);
+        const row = rows[0] ?? {};
+        return {
+            totalBattles: row.total_battles ?? 0,
+            battles24h: row.battles_24h ?? 0,
+            battles7d: row.battles_7d ?? 0,
+            customBattles: row.custom_battles ?? 0,
+            customAppearances: row.custom_appearances ?? 0,
+            lastActivityAt: row.last_activity_at ? row.last_activity_at.toISOString() : null,
         };
     });
 }

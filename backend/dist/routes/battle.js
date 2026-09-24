@@ -31,6 +31,16 @@ function aiFailure(res, error, label) {
         error: guarded ? 'Cloud narration is unavailable. Use the local result.' : 'Failed to generate the result.',
     });
 }
+function recordCustomMatchup(fighter1, fighter2, fighter1Name, fighter2Name, winnerId, environment) {
+    const label1 = fighter1Name ?? (0, creatures_1.displayName)(fighter1);
+    const label2 = fighter2Name ?? (0, creatures_1.displayName)(fighter2);
+    if (!(0, creatures_1.isBuiltIn)(fighter1) && fighter1Name) {
+        (0, customCreatureLogger_1.logCustomCreature)(fighter1Name, label2, environment, winnerId === fighter1);
+    }
+    if (!(0, creatures_1.isBuiltIn)(fighter2) && fighter2Name) {
+        (0, customCreatureLogger_1.logCustomCreature)(fighter2Name, label1, environment, winnerId === fighter2);
+    }
+}
 function secretMatches(provided) {
     const expected = process.env.ADMIN_SECRET;
     if (!expected || !provided)
@@ -220,6 +230,7 @@ router.post('/battle', appAttest_1.requireAppAttest, rateLimit_1.battleRateLimit
         res.json(result);
         // Log AFTER the response is sent — never blocks the user.
         res.on('finish', () => {
+            recordCustomMatchup(fighter1, fighter2, fighter1Name, fighter2Name, result.winner, environmentName);
             void (0, battleLogger_1.logBattle)({
                 fighter1Id: fighter1,
                 fighter2Id: fighter2,
@@ -301,6 +312,7 @@ router.post('/battle/quick', appAttest_1.requireAppAttest, rateLimit_1.quickRate
         res.setHeader('X-Result-Cache', generated.cacheHit || generated.value.cacheHit ? 'HIT' : 'MISS');
         res.json(result);
         res.on('finish', () => {
+            recordCustomMatchup(fighter1, fighter2, fighter1Name, fighter2Name, result.winner, environmentName);
             void (0, battleLogger_1.logBattle)({
                 fighter1Id: fighter1,
                 fighter2Id: fighter2,
@@ -382,6 +394,17 @@ router.post('/battle/melee', appAttest_1.requireAppAttest, rateLimit_1.meleeRate
         res.on('finish', () => {
             const winners = result.winningTeam === 'A' ? normTeamA : normTeamB;
             const losers = result.winningTeam === 'A' ? normTeamB : normTeamA;
+            const label = (fighter) => fighter.name ?? (0, creatures_1.displayName)(fighter.id);
+            for (const fighter of normTeamA) {
+                if (!(0, creatures_1.isBuiltIn)(fighter.id) && fighter.name) {
+                    (0, customCreatureLogger_1.logCustomCreature)(fighter.name, normTeamB.slice(0, 3).map(label).join(', '), environmentName, result.winningTeam === 'A');
+                }
+            }
+            for (const fighter of normTeamB) {
+                if (!(0, creatures_1.isBuiltIn)(fighter.id) && fighter.name) {
+                    (0, customCreatureLogger_1.logCustomCreature)(fighter.name, normTeamA.slice(0, 3).map(label).join(', '), environmentName, result.winningTeam === 'B');
+                }
+            }
             const mvp = winners.find(f => f.id === result.mvp) ?? winners[0];
             const opp = losers[0];
             if (!mvp || !opp)
@@ -490,124 +513,302 @@ router.get('/admin/dashboard', rateLimit_1.adminRateLimit, async (req, res) => {
         return;
     }
     try {
-        const [custom, animals, recent] = await Promise.all([
-            (0, battleLogger_1.getCustomCreatureLeaderboard)(50),
+        const [overview, animals, recent] = await Promise.all([
+            (0, battleLogger_1.getAdminOverview)(),
             (0, battleLogger_1.getAnimalLeaderboard)(50),
             (0, battleLogger_1.getRecentActivity)(200),
         ]);
-        res.type('text/html').send(renderDashboardHtml({ custom, animals, recent }));
+        const custom = (0, customCreatureLogger_1.getCustomCreatureReport)();
+        const nonce = (0, crypto_1.randomBytes)(18).toString('base64');
+        res.setHeader('Content-Security-Policy', `default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; style-src 'unsafe-inline'; script-src 'nonce-${nonce}'`);
+        res.type('text/html').send(renderDashboardHtml({ overview, custom, animals, recent }, nonce));
     }
     catch (err) {
         console.error('Dashboard error:', err);
         res.status(500).type('text/html').send('<h1>500 Internal Server Error</h1>');
     }
 });
-function renderDashboardHtml(data) {
+function renderDashboardHtml(data, nonce) {
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    const customRows = data.custom.map(c => `
-    <tr>
-      <td>${esc(c.name)}</td>
-      <td class="num">${c.battles}</td>
-      <td class="num">${c.wins}</td>
-      <td class="num">${c.battles ? ((c.wins / c.battles) * 100).toFixed(1) + '%' : '—'}</td>
-      <td>${esc(c.sampleOpponent)}</td>
-      <td class="num">${esc(c.lastSeen.slice(0, 16).replace('T', ' '))}</td>
-    </tr>`).join('');
-    const renderAnimalTable = (rows, valueLabel, valueFn) => rows.map((r, i) => `
-    <tr>
-      <td class="num">${i + 1}</td>
-      <td>${esc(r.name)}</td>
-      <td class="num">${valueFn(r)}</td>
-      <td class="num">${r.battles}</td>
-    </tr>`).join('');
-    const recentRows = data.recent.map(r => `
-    <tr>
-      <td class="num">${esc(r.createdAt.slice(0, 16).replace('T', ' '))}</td>
-      <td>${esc(r.fighter1)}</td>
-      <td>${esc(r.fighter2)}</td>
-      <td><b>${esc(r.winner)}</b></td>
-      <td>${esc(r.environment ?? '—')}</td>
-      <td><span class="badge ${esc(r.mode)}">${esc(r.mode)}</span></td>
-    </tr>`).join('');
+    const n = (value) => value.toLocaleString('en-US');
+    const customCards = data.custom.topCreatures.map(c => {
+        const rate = c.count ? Math.round((c.wins / c.count) * 100) : 0;
+        const opponents = c.opponentNames.slice(-3).reverse().join(', ');
+        const search = `${c.displayName} ${opponents}`.toLowerCase();
+        return `<article class="request-card custom-filterable" data-search="${esc(search)}">
+      <div class="card-topline"><span class="request-name">${esc(c.displayName)}</span><span class="request-count">${n(c.count)} request${c.count === 1 ? '' : 's'}</span></div>
+      <div class="request-stats">
+        <div><b>${n(c.wins)}</b><span>wins</span></div>
+        <div><b>${rate}%</b><span>win rate</span></div>
+        <div><b><time data-time="${esc(c.lastSeen)}">${esc(c.lastSeen.slice(0, 16).replace('T', ' '))}</time></b><span>last seen</span></div>
+      </div>
+      <div class="opponents"><span>Recent opponents</span>${esc(opponents || 'None yet')}</div>
+    </article>`;
+    }).join('');
+    const recentCards = data.recent.map(r => {
+        const search = `${r.fighter1} ${r.fighter2} ${r.winner} ${r.environment ?? ''} ${r.mode}`.toLowerCase();
+        return `<article class="battle-card activity-filterable" data-mode="${esc(r.mode)}" data-search="${esc(search)}">
+      <div class="battle-meta"><time data-time="${esc(r.createdAt)}">${esc(r.createdAt.slice(0, 16).replace('T', ' '))}</time><span class="mode ${esc(r.mode)}">${esc(r.mode)}</span></div>
+      <div class="matchup"><span>${esc(r.fighter1)}</span><i>VS</i><span>${esc(r.fighter2)}</span></div>
+      <div class="result"><span>Winner</span><b>${esc(r.winner)}</b></div>
+      <div class="arena">${r.environment ? `Arena · ${esc(r.environment)}` : 'Default arena'}</div>
+    </article>`;
+    }).join('');
+    const ranking = (title, note, rows, metric) => `<section class="ranking-panel">
+    <div class="ranking-head"><div><h3>${esc(title)}</h3><p>${esc(note)}</p></div></div>
+    <ol>${rows.slice(0, 15).map((row, index) => `<li>
+      <span class="rank">${index + 1}</span>
+      <span class="animal-name">${esc(row.name)}</span>
+      <strong>${esc(metric(row))}</strong>
+      <small>${n(row.battles)} battles</small>
+    </li>`).join('')}</ol>
+  </section>`;
+    const lastActivity = data.overview.lastActivityAt
+        ? `<time data-time="${esc(data.overview.lastActivityAt)}">${esc(data.overview.lastActivityAt.slice(0, 16).replace('T', ' '))}</time>`
+        : 'No activity';
     return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>AvA admin dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#07111c">
+<title>Battle Pulse · Animal vs Animal</title>
 <style>
-  :root { color-scheme: light dark; }
-  body { font: 14px/1.4 -apple-system, system-ui, sans-serif; max-width: 1200px; margin: 24px auto; padding: 0 16px; }
-  h1 { margin: 0 0 4px; }
-  .muted { color: #888; font-size: 12px; }
-  h2 { margin-top: 32px; padding-bottom: 4px; border-bottom: 1px solid #ccc4; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th, td { padding: 6px 8px; text-align: left; border-bottom: 1px solid #ccc4; }
-  th { background: #f4f4f44d; position: sticky; top: 0; }
-  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
-  .badge { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-  .badge.full  { background: #6ECC6E33; color: #2a7d2a; }
-  .badge.quick { background: #FFD43B33; color: #8a6500; }
-  .badge.melee { background: #C77DFF33; color: #5a2d8a; }
-  .scroll { max-height: 600px; overflow: auto; border: 1px solid #ccc4; border-radius: 6px; }
-  .header { display: flex; align-items: start; justify-content: space-between; gap: 16px; }
-  .logout { border: 1px solid #ccc6; border-radius: 6px; padding: 6px 10px; background: transparent; color: inherit; cursor: pointer; }
+  :root { color-scheme: dark; --bg:#07111c; --panel:#0d1b29; --panel2:#122336; --line:#23384b; --text:#eef6fb; --muted:#91a4b7; --amber:#ffb84d; --amber2:#ff8a3d; --green:#58d68d; --blue:#55b7ff; --purple:#b88cff; }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin:0; min-height:100vh; background:radial-gradient(circle at 80% -10%, #17344f 0, transparent 34rem), var(--bg); color:var(--text); font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+  button,input { font:inherit; }
+  button,a { -webkit-tap-highlight-color:transparent; }
+  .shell { width:min(1280px,100%); margin:0 auto; padding:20px 22px 72px; }
+  .hero { position:relative; overflow:hidden; padding:28px; border:1px solid #2a4358; border-radius:24px; background:linear-gradient(135deg,#11263a 0%,#0c1926 62%,#251a19 100%); box-shadow:0 24px 70px #0006; }
+  .hero:after { content:""; position:absolute; width:260px; height:260px; right:-90px; top:-130px; border-radius:50%; background:#ff9f4330; filter:blur(4px); }
+  .hero-top { position:relative; z-index:1; display:flex; justify-content:space-between; gap:24px; align-items:flex-start; }
+  .eyebrow { margin:0 0 8px; color:var(--amber); font-size:12px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; }
+  h1 { margin:0; max-width:680px; font-size:clamp(34px,6vw,64px); line-height:.95; letter-spacing:-.05em; }
+  .hero-copy { margin:14px 0 0; color:#bed0df; max-width:650px; font-size:16px; }
+  .hero-actions { display:flex; gap:10px; align-items:center; }
+  .btn { min-height:42px; display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:9px 14px; border:1px solid #38526a; border-radius:12px; color:var(--text); background:#102235; text-decoration:none; cursor:pointer; font-weight:700; white-space:nowrap; }
+  .btn:hover { border-color:#64829c; background:#162b40; }
+  .btn.ghost { background:transparent; }
+  .status-row { position:relative; z-index:1; display:flex; flex-wrap:wrap; gap:10px 18px; align-items:center; margin-top:24px; color:var(--muted); font-size:13px; }
+  .live { display:inline-flex; align-items:center; gap:8px; color:#bdf7d5; font-weight:750; }
+  .live:before { content:""; width:9px; height:9px; border-radius:50%; background:var(--green); box-shadow:0 0 0 5px #58d68d1c; }
+  .section-nav { position:sticky; z-index:5; top:0; display:flex; gap:8px; margin:16px 0; padding:8px; overflow:auto; border:1px solid #20364a; border-radius:15px; background:#081522e8; backdrop-filter:blur(14px); }
+  .section-nav a { flex:1; min-width:max-content; padding:9px 12px; border-radius:9px; color:#aebfd0; text-align:center; text-decoration:none; font-weight:750; }
+  .section-nav a:hover { color:#fff; background:#17293a; }
+  .metrics { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; margin:16px 0 28px; }
+  .metric { min-height:122px; padding:18px; border:1px solid var(--line); border-radius:17px; background:linear-gradient(155deg,#102235,#0b1825); }
+  .metric span { display:block; color:var(--muted); font-size:12px; font-weight:750; text-transform:uppercase; letter-spacing:.08em; }
+  .metric strong { display:block; margin-top:8px; font-size:clamp(25px,3vw,39px); line-height:1; letter-spacing:-.04em; font-variant-numeric:tabular-nums; }
+  .metric small { display:block; margin-top:10px; color:#8299ae; }
+  .metric.accent { border-color:#6c4c28; background:linear-gradient(155deg,#2b2018,#171a20); }
+  .metric.accent strong { color:var(--amber); }
+  .section { scroll-margin-top:76px; margin-top:24px; padding:22px; border:1px solid var(--line); border-radius:21px; background:#091725d9; box-shadow:0 16px 40px #0003; }
+  .section-head { display:flex; justify-content:space-between; align-items:flex-end; gap:18px; margin-bottom:18px; }
+  .section-head h2 { margin:0; font-size:clamp(22px,3vw,31px); letter-spacing:-.03em; }
+  .section-head p { margin:5px 0 0; color:var(--muted); }
+  .section-kicker { color:var(--amber); font-size:11px; font-weight:850; letter-spacing:.12em; text-transform:uppercase; }
+  .tools { display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; }
+  .search { width:min(290px,100%); min-height:42px; padding:9px 13px; border:1px solid #314a61; border-radius:11px; outline:none; color:#fff; background:#0a1724; }
+  .search:focus { border-color:var(--blue); box-shadow:0 0 0 3px #55b7ff22; }
+  .filters { display:flex; gap:6px; padding:4px; border:1px solid #2b4053; border-radius:11px; background:#07121d; }
+  .filter { border:0; border-radius:8px; padding:6px 10px; color:#8ea4b8; background:transparent; cursor:pointer; font-weight:750; text-transform:capitalize; }
+  .filter[aria-pressed="true"] { color:#fff; background:#243c51; }
+  .privacy-note { margin:0 0 16px; padding:12px 14px; border-left:3px solid var(--blue); border-radius:0 10px 10px 0; color:#a8bed1; background:#0d2133; font-size:13px; }
+  .request-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+  .request-card { padding:17px; border:1px solid #263c50; border-radius:15px; background:linear-gradient(155deg,#102235,#0a1723); }
+  .card-topline { display:flex; gap:12px; justify-content:space-between; align-items:flex-start; }
+  .request-name { font-size:18px; font-weight:850; overflow-wrap:anywhere; }
+  .request-count { flex:0 0 auto; padding:4px 8px; border-radius:99px; color:#17120b; background:var(--amber); font-size:11px; font-weight:850; }
+  .request-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:16px 0; }
+  .request-stats div { min-width:0; padding:9px; border-radius:10px; background:#07131f; }
+  .request-stats b,.request-stats span { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .request-stats b { font-size:15px; }
+  .request-stats span { margin-top:2px; color:var(--muted); font-size:10px; text-transform:uppercase; }
+  .opponents { color:#c1d0dc; font-size:13px; }
+  .opponents span { display:block; color:var(--muted); font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; }
+  .activity-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  .battle-card { padding:15px 16px; border:1px solid #21384b; border-radius:14px; background:#0c1b29; }
+  .battle-meta,.result { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .battle-meta { color:var(--muted); font-size:12px; }
+  .mode { padding:3px 8px; border-radius:99px; font-size:10px; font-weight:850; letter-spacing:.06em; text-transform:uppercase; }
+  .mode.full { color:#aaf2c7; background:#183e2a; }
+  .mode.quick { color:#ffe09b; background:#493719; }
+  .mode.melee { color:#dcc7ff; background:#352653; }
+  .matchup { display:grid; grid-template-columns:1fr auto 1fr; gap:9px; align-items:center; margin:14px 0; font-size:16px; font-weight:800; }
+  .matchup span:last-child { text-align:right; }
+  .matchup i { color:var(--amber); font-size:10px; font-style:normal; letter-spacing:.1em; }
+  .result { padding-top:12px; border-top:1px solid #203447; }
+  .result span { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.08em; }
+  .result b { color:var(--green); }
+  .arena { margin-top:7px; color:#7f96aa; font-size:12px; text-align:right; }
+  .result-count { min-width:64px; color:var(--muted); font-size:12px; text-align:right; }
+  .rankings { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+  .ranking-panel { overflow:hidden; border:1px solid #263c50; border-radius:15px; background:#0c1a27; }
+  .ranking-head { padding:16px; border-bottom:1px solid #23384a; }
+  .ranking-head h3 { margin:0; font-size:17px; }
+  .ranking-head p { margin:3px 0 0; color:var(--muted); font-size:12px; }
+  .ranking-panel ol { max-height:540px; overflow:auto; margin:0; padding:7px; list-style:none; }
+  .ranking-panel li { display:grid; grid-template-columns:28px minmax(0,1fr) auto; grid-template-areas:"rank name metric" "rank detail detail"; gap:1px 9px; align-items:center; padding:9px; border-radius:9px; }
+  .ranking-panel li:nth-child(-n+3) { background:#172a3b; }
+  .rank { grid-area:rank; display:grid; place-items:center; width:27px; height:27px; border-radius:8px; color:#a9bed0; background:#07131f; font-weight:850; }
+  .animal-name { grid-area:name; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:750; }
+  .ranking-panel strong { grid-area:metric; color:var(--amber); font-variant-numeric:tabular-nums; }
+  .ranking-panel small { grid-area:detail; color:#748ba0; }
+  .empty { grid-column:1/-1; padding:34px 18px; border:1px dashed #365169; border-radius:15px; text-align:center; color:var(--muted); background:#0a1825; }
+  .empty b { display:block; margin-bottom:6px; color:#dce9f2; font-size:17px; }
+  [hidden] { display:none !important; }
+  @media (max-width:980px) { .metrics { grid-template-columns:repeat(3,1fr); } .request-grid,.rankings { grid-template-columns:1fr 1fr; } .ranking-panel:last-child { grid-column:1/-1; } }
+  @media (max-width:700px) {
+    .shell { padding:12px 12px calc(48px + env(safe-area-inset-bottom)); }
+    .hero { padding:20px; border-radius:19px; }
+    .hero-top,.section-head { display:block; }
+    .hero-actions { margin-top:20px; }
+    .hero-actions .btn { flex:1; }
+    .section-nav { margin:10px 0; }
+    .metrics { grid-template-columns:1fr 1fr; gap:9px; margin-bottom:20px; }
+    .metric { min-height:108px; padding:15px; }
+    .metric:first-child { grid-column:1/-1; }
+    .section { padding:16px; border-radius:17px; }
+    .section-head .tools { justify-content:stretch; margin-top:14px; }
+    .search { width:100%; }
+    .filters { width:100%; overflow:auto; }
+    .filter { flex:1; }
+    .request-grid,.activity-grid,.rankings { grid-template-columns:1fr; }
+    .ranking-panel:last-child { grid-column:auto; }
+    .request-stats { grid-template-columns:1fr 1fr 1fr; }
+    .matchup { font-size:15px; }
+  }
+  @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
 </style>
 </head>
 <body>
-<div class="header">
-  <div>
-    <h1>🐾 Animal vs Animal — Admin Dashboard</h1>
-    <div class="muted">Total full-mode battles: ${data.animals.totalBattles.toLocaleString()} · Generated ${esc(data.animals.generatedAt)}</div>
-  </div>
-  <form method="post" action="/api/admin/logout"><button class="logout" type="submit">Sign out</button></form>
-</div>
+<main class="shell">
+  <header class="hero">
+    <div class="hero-top">
+      <div>
+        <p class="eyebrow">Animal vs Animal · Live operations</p>
+        <h1>Battle Pulse</h1>
+        <p class="hero-copy">See what players are battling, which creatures are winning, and what they want added next.</p>
+      </div>
+      <div class="hero-actions">
+        <a class="btn" href="/api/admin/dashboard">↻ Refresh</a>
+        <form method="post" action="/api/admin/logout"><button class="btn ghost" type="submit">Sign out</button></form>
+      </div>
+    </div>
+    <div class="status-row"><span class="live">Backend online</span><span>Last battle · ${lastActivity}</span><span>Updated · <time data-time="${esc(data.animals.generatedAt)}">${esc(data.animals.generatedAt.slice(0, 16).replace('T', ' '))}</time></span></div>
+  </header>
 
-<h2>Top 50 custom creatures (all modes)</h2>
-<div class="scroll">
-<table>
-  <thead>
-    <tr><th>Name</th><th class="num">Battles</th><th class="num">Wins</th><th class="num">Win rate</th><th>Sample opponent</th><th class="num">Last seen (UTC)</th></tr>
-  </thead>
-  <tbody>${customRows || '<tr><td colspan="6" class="muted">No custom creatures logged yet.</td></tr>'}</tbody>
-</table>
-</div>
+  <nav class="section-nav" aria-label="Dashboard sections">
+    <a href="#requests">Requests</a><a href="#activity">Battles</a><a href="#leaders">Leaders</a>
+  </nav>
 
-<h2>Top built-in animals (full mode)</h2>
-<div class="grid">
-  <div>
-    <h3>By wins</h3>
-    <table>
-      <thead><tr><th class="num">#</th><th>Animal</th><th class="num">Wins</th><th class="num">Battles</th></tr></thead>
-      <tbody>${renderAnimalTable(data.animals.topByWins, 'wins', r => r.wins.toString())}</tbody>
-    </table>
-  </div>
-  <div>
-    <h3>By win rate (min 10 battles)</h3>
-    <table>
-      <thead><tr><th class="num">#</th><th>Animal</th><th class="num">Rate</th><th class="num">Battles</th></tr></thead>
-      <tbody>${renderAnimalTable(data.animals.topByWinRate, 'winRate', r => (r.winRate * 100).toFixed(1) + '%')}</tbody>
-    </table>
-  </div>
-  <div>
-    <h3>By popularity</h3>
-    <table>
-      <thead><tr><th class="num">#</th><th>Animal</th><th class="num">Battles</th><th class="num">Wins</th></tr></thead>
-      <tbody>${renderAnimalTable(data.animals.topByPopularity, 'battles', r => r.battles.toString())}</tbody>
-    </table>
-  </div>
-</div>
+  <section class="metrics" aria-label="Battle overview">
+    <article class="metric"><span>All battles</span><strong>${n(data.overview.totalBattles)}</strong><small>Every recorded mode</small></article>
+    <article class="metric"><span>Last 24 hours</span><strong>${n(data.overview.battles24h)}</strong><small>Fresh activity</small></article>
+    <article class="metric"><span>Last 7 days</span><strong>${n(data.overview.battles7d)}</strong><small>Weekly volume</small></article>
+    <article class="metric accent"><span>Custom requests</span><strong>${n(data.overview.customAppearances)}</strong><small>${n(data.overview.customBattles)} battles involved one</small></article>
+    <article class="metric"><span>Named requests now</span><strong>${n(data.custom.totalUniqueCreatures)}</strong><small>Private, in-memory tally</small></article>
+  </section>
 
-<h2>Recent activity (last 200)</h2>
-<div class="scroll">
-<table>
-  <thead>
-    <tr><th class="num">Time (UTC)</th><th>Fighter 1</th><th>Fighter 2</th><th>Winner</th><th>Arena</th><th>Mode</th></tr>
-  </thead>
-  <tbody>${recentRows || '<tr><td colspan="6" class="muted">No battles yet.</td></tr>'}</tbody>
-</table>
-</div>
+  <section class="section" id="requests">
+    <div class="section-head">
+      <div><span class="section-kicker">Product demand</span><h2>Custom creature requests</h2><p>The clearest signal for what to add to the roster next.</p></div>
+      ${data.custom.topCreatures.length ? '<div class="tools"><input class="search" id="custom-search" type="search" placeholder="Search requests or opponents" aria-label="Search custom requests"><span class="result-count" id="custom-count"></span></div>' : ''}
+    </div>
+    <p class="privacy-note">Typed names are held only in this running server’s bounded memory and never written to permanent logs or the battle database. Anonymous custom-request totals remain available above.</p>
+    <div class="request-grid" id="custom-list">${customCards || '<div class="empty"><b>No named requests on this server yet</b>The next custom battle will appear here immediately. Historical custom activity is still counted in the overview.</div>'}</div>
+  </section>
 
+  <section class="section" id="activity">
+    <div class="section-head">
+      <div><span class="section-kicker">Live feed</span><h2>Recent battle results</h2><p>The latest 200 matchups, newest first.</p></div>
+      <div class="tools">
+        <input class="search" id="activity-search" type="search" placeholder="Search fighters, winners or arenas" aria-label="Search recent battles">
+        <div class="filters" aria-label="Filter by battle mode">
+          <button class="filter" type="button" data-mode-filter="all" aria-pressed="true">All</button>
+          <button class="filter" type="button" data-mode-filter="full" aria-pressed="false">Full</button>
+          <button class="filter" type="button" data-mode-filter="quick" aria-pressed="false">Quick</button>
+          <button class="filter" type="button" data-mode-filter="melee" aria-pressed="false">Melee</button>
+        </div>
+        <span class="result-count" id="activity-count"></span>
+      </div>
+    </div>
+    <div class="activity-grid" id="activity-list">${recentCards || '<div class="empty"><b>No battles recorded yet</b>Completed battles will show up here.</div>'}</div>
+  </section>
+
+  <section class="section" id="leaders">
+    <div class="section-head"><div><span class="section-kicker">Roster performance</span><h2>Built-in creature leaders</h2><p>Full-mode results only. Win-rate rankings require at least 10 battles.</p></div></div>
+    <div class="rankings">
+      ${ranking('Most wins', 'Consistent champions', data.animals.topByWins, row => `${n(row.wins)} wins`)}
+      ${ranking('Best win rate', 'Minimum 10 battles', data.animals.topByWinRate, row => `${(row.winRate * 100).toFixed(1)}%`)}
+      ${ranking('Most popular', 'Most often selected', data.animals.topByPopularity, row => `${n(row.battles)} picks`)}
+    </div>
+  </section>
+</main>
+<script nonce="${esc(nonce)}">
+  (function () {
+    var rtf = typeof Intl.RelativeTimeFormat === 'function' ? new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' }) : null;
+    function relative(iso) {
+      var then = new Date(iso).getTime();
+      var delta = then - Date.now();
+      var abs = Math.abs(delta);
+      var unit = abs < 3600000 ? 'minute' : abs < 86400000 ? 'hour' : 'day';
+      var size = unit === 'minute' ? 60000 : unit === 'hour' ? 3600000 : 86400000;
+      var value = Math.round(delta / size);
+      return rtf ? rtf.format(value, unit) : new Date(iso).toLocaleString();
+    }
+    document.querySelectorAll('time[data-time]').forEach(function (el) {
+      var iso = el.getAttribute('data-time');
+      el.textContent = relative(iso);
+      el.setAttribute('title', new Date(iso).toLocaleString());
+    });
+
+    var activityMode = 'all';
+    var activitySearch = document.getElementById('activity-search');
+    var activityCards = Array.prototype.slice.call(document.querySelectorAll('.activity-filterable'));
+    var activityCount = document.getElementById('activity-count');
+    function filterActivity() {
+      var query = (activitySearch && activitySearch.value || '').trim().toLowerCase();
+      var shown = 0;
+      activityCards.forEach(function (card) {
+        var visible = (activityMode === 'all' || card.getAttribute('data-mode') === activityMode)
+          && (!query || (card.getAttribute('data-search') || '').indexOf(query) !== -1);
+        card.hidden = !visible;
+        if (visible) shown += 1;
+      });
+      if (activityCount) activityCount.textContent = shown + ' shown';
+    }
+    if (activitySearch) activitySearch.addEventListener('input', filterActivity);
+    document.querySelectorAll('[data-mode-filter]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        activityMode = button.getAttribute('data-mode-filter') || 'all';
+        document.querySelectorAll('[data-mode-filter]').forEach(function (item) {
+          item.setAttribute('aria-pressed', item === button ? 'true' : 'false');
+        });
+        filterActivity();
+      });
+    });
+    filterActivity();
+
+    var customSearch = document.getElementById('custom-search');
+    var customCards = Array.prototype.slice.call(document.querySelectorAll('.custom-filterable'));
+    var customCount = document.getElementById('custom-count');
+    function filterCustom() {
+      var query = (customSearch && customSearch.value || '').trim().toLowerCase();
+      var shown = 0;
+      customCards.forEach(function (card) {
+        var visible = !query || (card.getAttribute('data-search') || '').indexOf(query) !== -1;
+        card.hidden = !visible;
+        if (visible) shown += 1;
+      });
+      if (customCount) customCount.textContent = shown + ' shown';
+    }
+    if (customSearch) customSearch.addEventListener('input', filterCustom);
+    filterCustom();
+  }());
+</script>
 </body>
 </html>`;
 }

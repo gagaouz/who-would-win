@@ -26,13 +26,15 @@ function normalize(name) {
  * Log a custom creature request. Call this whenever a battle involves a
  * custom (non-whitelist) fighter.
  */
-function logCustomCreature(customName, opponentName, arena) {
+function logCustomCreature(customName, opponentName, arena, won = false) {
     const key = normalize(customName);
     const now = new Date().toISOString();
     // Update in-memory tally
     const existing = store.get(key);
     if (existing) {
         existing.count += 1;
+        if (won)
+            existing.wins += 1;
         existing.lastSeen = now;
         if (existing.opponentNames.length < 10) {
             existing.opponentNames.push(opponentName);
@@ -47,6 +49,7 @@ function logCustomCreature(customName, opponentName, arena) {
             name: key,
             displayName: customName.trim(),
             count: 1,
+            wins: won ? 1 : 0,
             firstSeen: now,
             lastSeen: now,
             opponentNames: [opponentName],
