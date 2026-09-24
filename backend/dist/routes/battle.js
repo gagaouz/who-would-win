@@ -14,6 +14,8 @@ const creatures_1 = require("../data/creatures");
 const battleLogger_1 = require("../services/battleLogger");
 const router = (0, express_1.Router)();
 const RESULT_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+const ADMIN_SESSION_COOKIE = 'ava_admin_session';
+const ADMIN_SESSION_TTL_SECONDS = 8 * 60 * 60;
 function abortSignalFor(res) {
     const controller = new AbortController();
     res.once('close', () => { if (!res.writableEnded)
@@ -37,6 +39,54 @@ function secretMatches(provided) {
     const b = Buffer.from(expected);
     return a.length === b.length && (0, crypto_1.timingSafeEqual)(a, b);
 }
+function parseCookie(req, name) {
+    const cookies = req.header('cookie');
+    if (!cookies)
+        return undefined;
+    for (const part of cookies.split(';')) {
+        const separator = part.indexOf('=');
+        if (separator < 0 || part.slice(0, separator).trim() !== name)
+            continue;
+        try {
+            return decodeURIComponent(part.slice(separator + 1).trim());
+        }
+        catch {
+            return undefined;
+        }
+    }
+    return undefined;
+}
+function adminSessionSignature(payload) {
+    const secret = process.env.ADMIN_SECRET;
+    if (!secret)
+        return undefined;
+    return (0, crypto_1.createHmac)('sha256', secret).update(payload).digest('hex');
+}
+function createAdminSession() {
+    const payload = `${Math.floor(Date.now() / 1000)}.${(0, crypto_1.randomBytes)(16).toString('hex')}`;
+    const signature = adminSessionSignature(payload);
+    return signature ? `${payload}.${signature}` : undefined;
+}
+function hasValidAdminSession(req) {
+    const session = parseCookie(req, ADMIN_SESSION_COOKIE);
+    if (!session)
+        return false;
+    const lastSeparator = session.lastIndexOf('.');
+    if (lastSeparator < 0)
+        return false;
+    const payload = session.slice(0, lastSeparator);
+    const providedSignature = session.slice(lastSeparator + 1);
+    const expectedSignature = adminSessionSignature(payload);
+    if (!expectedSignature)
+        return false;
+    const provided = Buffer.from(providedSignature);
+    const expected = Buffer.from(expectedSignature);
+    if (provided.length !== expected.length || !(0, crypto_1.timingSafeEqual)(provided, expected))
+        return false;
+    const issuedAt = Number(payload.slice(0, payload.indexOf('.')));
+    const ageSeconds = Math.floor(Date.now() / 1000) - issuedAt;
+    return Number.isSafeInteger(issuedAt) && ageSeconds >= 0 && ageSeconds <= ADMIN_SESSION_TTL_SECONDS;
+}
 function adminSecret(req) {
     const header = req.header('x-admin-secret');
     if (header)
@@ -52,12 +102,54 @@ function adminSecret(req) {
         return undefined;
     }
 }
+function isAdminAuthorized(req) {
+    return secretMatches(adminSecret(req)) || hasValidAdminSession(req);
+}
 function requireAdmin(req, res) {
-    if (secretMatches(adminSecret(req)))
+    if (isAdminAuthorized(req))
         return true;
     res.setHeader('WWW-Authenticate', 'Basic realm="Animal vs Animal admin", charset="UTF-8"');
     res.status(401).json({ error: 'Unauthorized' });
     return false;
+}
+function adminSessionCookie(value, maxAge = ADMIN_SESSION_TTL_SECONDS) {
+    return `${ADMIN_SESSION_COOKIE}=${encodeURIComponent(value)}; Path=/api/admin; Max-Age=${maxAge}; HttpOnly; Secure; SameSite=Strict`;
+}
+function renderAdminLoginHtml(invalid = false) {
+    return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Animal vs Animal admin</title>
+<style>
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  body { min-height: 100vh; margin: 0; display: grid; place-items: center; padding: 24px; font: 16px/1.45 -apple-system, system-ui, sans-serif; background: #111827; color: #f9fafb; }
+  main { width: min(100%, 420px); padding: 32px; border: 1px solid #ffffff22; border-radius: 16px; background: #1f2937; box-shadow: 0 20px 50px #0008; }
+  h1 { margin: 0 0 8px; font-size: 24px; }
+  p { margin: 0 0 24px; color: #cbd5e1; }
+  label { display: block; margin-bottom: 8px; font-weight: 650; }
+  input { width: 100%; padding: 12px 14px; border: 1px solid #64748b; border-radius: 9px; background: #0f172a; color: #fff; font: inherit; }
+  button { width: 100%; margin-top: 16px; padding: 12px 16px; border: 0; border-radius: 9px; background: #f59e0b; color: #111827; font: inherit; font-weight: 750; cursor: pointer; }
+  .error { margin: 0 0 16px; padding: 10px 12px; border-radius: 8px; background: #7f1d1d; color: #fecaca; }
+  .note { margin: 18px 0 0; font-size: 13px; color: #94a3b8; }
+</style>
+</head>
+<body>
+<main>
+  <h1>🐾 Admin dashboard</h1>
+  <p>Sign in with the admin password. Your session lasts eight hours.</p>
+  ${invalid ? '<div class="error" role="alert">That password is not valid.</div>' : ''}
+  <form method="post" action="/api/admin/login">
+    <label for="password">Admin password</label>
+    <input id="password" name="password" type="password" required autofocus autocomplete="current-password">
+    <button type="submit">Open dashboard</button>
+  </form>
+  <div class="note">The password stays out of the URL, browser history, and server access logs.</div>
+</main>
+</body>
+</html>`;
 }
 // POST /api/battle
 router.post('/battle', appAttest_1.requireAppAttest, rateLimit_1.battleRateLimit, async (req, res) => {
@@ -356,17 +448,45 @@ router.get('/leaderboard', rateLimit_1.publicRateLimit, async (_req, res) => {
         res.status(500).json({ error: 'Failed to load leaderboard.' });
     }
 });
+// GET + POST /admin/login — browser-friendly admin authentication.
+// The password is submitted in the request body and exchanged for a short-lived,
+// signed HttpOnly cookie. It is never placed in a URL or persisted server-side.
+router.get('/admin/login', rateLimit_1.adminRateLimit, (req, res) => {
+    if (isAdminAuthorized(req)) {
+        res.redirect(303, '/api/admin/dashboard');
+        return;
+    }
+    res.type('text/html').send(renderAdminLoginHtml());
+});
+router.post('/admin/login', rateLimit_1.adminRateLimit, (0, express_1.urlencoded)({ extended: false, limit: '2kb' }), (req, res) => {
+    const password = typeof req.body?.password === 'string' ? req.body.password : undefined;
+    if (!secretMatches(password)) {
+        res.status(401).type('text/html').send(renderAdminLoginHtml(true));
+        return;
+    }
+    const session = createAdminSession();
+    if (!session) {
+        res.status(503).type('text/html').send('<h1>Admin login is not configured.</h1>');
+        return;
+    }
+    res.setHeader('Set-Cookie', adminSessionCookie(session));
+    res.redirect(303, '/api/admin/dashboard');
+});
+router.post('/admin/logout', rateLimit_1.adminRateLimit, (_req, res) => {
+    res.setHeader('Set-Cookie', adminSessionCookie('', 0));
+    res.redirect(303, '/api/admin/login');
+});
 // GET /admin/dashboard — PRIVATE HTML PAGE
 // Renders a self-contained admin dashboard with three tables:
 //   1. Top custom creatures (case-insensitive name aggregation)
 //   2. Top built-in animals
 //   3. Recent activity (last 200 battles)
-// Uses HTTP Basic auth in browsers or x-admin-secret for API clients. Secrets
-// are never accepted in URLs, where they leak into history and access logs.
+// Uses the signed login cookie in browsers, while retaining HTTP Basic auth or
+// x-admin-secret for API clients. Secrets are never accepted in URLs, where
+// they leak into history and access logs.
 router.get('/admin/dashboard', rateLimit_1.adminRateLimit, async (req, res) => {
-    if (!requireAdmin(req, res)) {
-        if (!res.headersSent)
-            res.status(401).type('text/html').send('<h1>401 Unauthorized</h1>');
+    if (!isAdminAuthorized(req)) {
+        res.redirect(303, '/api/admin/login');
         return;
     }
     try {
@@ -430,11 +550,18 @@ function renderDashboardHtml(data) {
   .badge.quick { background: #FFD43B33; color: #8a6500; }
   .badge.melee { background: #C77DFF33; color: #5a2d8a; }
   .scroll { max-height: 600px; overflow: auto; border: 1px solid #ccc4; border-radius: 6px; }
+  .header { display: flex; align-items: start; justify-content: space-between; gap: 16px; }
+  .logout { border: 1px solid #ccc6; border-radius: 6px; padding: 6px 10px; background: transparent; color: inherit; cursor: pointer; }
 </style>
 </head>
 <body>
-<h1>🐾 Animal vs Animal — Admin Dashboard</h1>
-<div class="muted">Total full-mode battles: ${data.animals.totalBattles.toLocaleString()} · Generated ${esc(data.animals.generatedAt)}</div>
+<div class="header">
+  <div>
+    <h1>🐾 Animal vs Animal — Admin Dashboard</h1>
+    <div class="muted">Total full-mode battles: ${data.animals.totalBattles.toLocaleString()} · Generated ${esc(data.animals.generatedAt)}</div>
+  </div>
+  <form method="post" action="/api/admin/logout"><button class="logout" type="submit">Sign out</button></form>
+</div>
 
 <h2>Top 50 custom creatures (all modes)</h2>
 <div class="scroll">
