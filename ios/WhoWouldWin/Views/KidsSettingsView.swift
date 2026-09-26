@@ -146,7 +146,7 @@ struct KidsSettingsView: View {
                 RetroPanelShape(cornerRadius: 22, style: .continuous)
                     .fill(Kids.grape)
                     .overlay(RetroPanelShape(cornerRadius: 22, style: .continuous).fill(Kids.sheen))
-                    .overlay(RetroPanelShape(cornerRadius: 22, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                    .overlay(RetroPanelShape(cornerRadius: 22, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                     .frame(width: isIPad ? 88 : 70, height: isIPad ? 88 : 70)
                 RetroSymbol("🦊", size: isIPad ? 50 : 40)
             }
@@ -165,7 +165,7 @@ struct KidsSettingsView: View {
         }
         .padding(isIPad ? 18 : 14)
         .background(KidsSettingsCard())
-        .compositingGroup().shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 4)
     }
 
     // MARK: - Toggles (Light Mode removed — it was wired to nothing)
@@ -240,7 +240,7 @@ struct KidsSettingsView: View {
                         .font(Kids.fredoka(isIPad ? 13 : 11, weight: .bold))
                         .foregroundColor(Kids.ink)
                         .padding(.horizontal, isIPad ? 10 : 8).padding(.vertical, isIPad ? 5 : 4)
-                        .background(RetroPanelShape().fill(Kids.sun).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
+                        .background(RetroPanelShape().fill(Kids.sun).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
                 }
             }
             gcRow(emoji: "🏆", label: "Achievements", caption: "76 to unlock") {
@@ -258,7 +258,7 @@ struct KidsSettingsView: View {
         }
         .padding(isIPad ? 18 : 14)
         .background(KidsSettingsCard())
-        .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 3)
     }
 
     private func gcRow(emoji: String, label: String, caption: String, action: @escaping () -> Void) -> some View {
@@ -276,7 +276,7 @@ struct KidsSettingsView: View {
             .background(
                 RetroPanelShape(cornerRadius: 14, style: .continuous)
                     .fill(Kids.panel)
-                    .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink.opacity(0.2), lineWidth: 1.5))
+                    .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.outline, lineWidth: 1))
             )
         }
         .buttonStyle(.plain)
@@ -363,7 +363,7 @@ struct KidsShopView: View {
                         }
                         packCard(emoji: "⚡", title: "Mythic Beasts",
                                  subtitle: "Thunderbird, Manticore, Roc +9 more",
-                                 color: Kids.sunDeep, unlocked: settings.isMythicUnlocked,
+                                 color: Kids.sun, unlocked: settings.isMythicUnlocked,
                                  product: store.mythicPackProduct, fallbackPrice: "$2.99") {
                             Task {
                                 if let p = store.mythicPackProduct { await purchaseAndNotify(p) }
@@ -414,7 +414,7 @@ struct KidsShopView: View {
         .alert("Store Unavailable", isPresented: $showStoreAlert) {
             Button("OK", role: .cancel) {}
         } message: { Text("Couldn't load products. Please check your connection and try again.") }
-        .alert("📨 Asked your grown-up!", isPresented: $showAskToBuyNotice) {
+        .alert("Asked your grown-up!", isPresented: $showAskToBuyNotice) {
             Button("OK", role: .cancel) {}
         } message: {
             Text("Your purchase will unlock when they say yes.")
@@ -512,7 +512,7 @@ struct KidsShopView: View {
         }
         .padding(isIPad ? 18 : 14)
         .background(KidsSettingsCard())
-        .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 3)
     }
 
     private func earnRow(amount: String, label: String, emphasize: Bool = false) -> some View {
@@ -546,7 +546,7 @@ struct KidsShopView: View {
                         RetroPanelShape(cornerRadius: 14, style: .continuous)
                             .fill(Kids.sun)
                             .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
-                            .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                            .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                             .frame(width: isIPad ? 56 : 46, height: isIPad ? 56 : 46)
                         RetroSymbol("🎁", size: isIPad ? 28 : 24)
                     }
@@ -565,7 +565,7 @@ struct KidsShopView: View {
                         .tracking(1)
                         .foregroundColor(Kids.ink)
                         .padding(.horizontal, isIPad ? 9 : 7).padding(.vertical, isIPad ? 5 : 4)
-                        .background(RetroPanelShape().fill(Kids.pink).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
+                        .background(RetroPanelShape().fill(Kids.pink).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
                 }
 
                 KidsPurchaseButton(
@@ -585,9 +585,9 @@ struct KidsShopView: View {
             .background(
                 RetroPanelShape(cornerRadius: 20, style: .continuous)
                     .fill(.white)
-                    .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.sun, lineWidth: 3.5))
+                    .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.sun, lineWidth: 2))
             )
-            .compositingGroup().shadow(color: Kids.ink.opacity(0.10), radius: 0, x: 0, y: 4)
+            .compositingGroup().shadow(color: Kids.shadow.opacity(0.10), radius: 4, x: 0, y: 4)
         }
     }
 
@@ -603,7 +603,7 @@ struct KidsShopView: View {
                     RetroPanelShape(cornerRadius: 14, style: .continuous)
                         .fill(color)
                         .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
-                        .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                        .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                         .frame(width: isIPad ? 56 : 46, height: isIPad ? 56 : 46)
                     RetroSymbol(emoji, size: isIPad ? 28 : 24)
                 }
@@ -622,7 +622,7 @@ struct KidsShopView: View {
                         .font(Kids.fredoka(isIPad ? 12 : 10, weight: .bold))
                         .foregroundColor(Kids.ink)
                         .padding(.horizontal, isIPad ? 10 : 8).padding(.vertical, isIPad ? 5 : 4)
-                        .background(RetroPanelShape().fill(Kids.grass).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
+                        .background(RetroPanelShape().fill(Kids.grass).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
                 }
             }
 
@@ -638,7 +638,7 @@ struct KidsShopView: View {
         }
         .padding(isIPad ? 18 : 14)
         .background(KidsSettingsCard())
-        .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 3)
     }
 
     // MARK: - Remove ads
@@ -649,7 +649,7 @@ struct KidsShopView: View {
                 ZStack {
                     RetroPanelShape(cornerRadius: 14, style: .continuous)
                         .fill(Kids.peach)
-                        .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                        .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                         .frame(width: isIPad ? 56 : 46, height: isIPad ? 56 : 46)
                     RetroSymbol("🚫", size: isIPad ? 26 : 22)
                 }
@@ -689,7 +689,7 @@ struct KidsShopView: View {
         }
         .padding(isIPad ? 18 : 14)
         .background(KidsSettingsCard())
-        .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 3)
     }
 
     // MARK: - Premium
@@ -701,7 +701,7 @@ struct KidsShopView: View {
                     RetroPanelShape(cornerRadius: 14, style: .continuous)
                         .fill(Kids.sun)
                         .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
-                        .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                        .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                         .frame(width: isIPad ? 56 : 46, height: isIPad ? 56 : 46)
                     RetroSymbol("👑", size: isIPad ? 26 : 22)
                 }
@@ -771,7 +771,7 @@ struct KidsShopView: View {
                         .font(Kids.fredoka(isIPad ? 10 : 8, weight: .bold))
                         .foregroundColor(Kids.ink)
                         .padding(.horizontal, isIPad ? 8 : 6).padding(.vertical, isIPad ? 3 : 2)
-                        .background(RetroPanelShape().fill(Kids.pink).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5)))
+                        .background(RetroPanelShape().fill(Kids.pink).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1)))
                         .offset(x: -10, y: -7)
                         .rotationEffect(.degrees(8))
                 }
@@ -779,7 +779,7 @@ struct KidsShopView: View {
         }
         .padding(isIPad ? 18 : 14)
         .background(KidsSettingsCard())
-        .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 3)
     }
 
     private func premiumFeature(_ text: String) -> some View {
@@ -807,7 +807,7 @@ struct KidsShopView: View {
                 ZStack {
                     RetroPanelShape(cornerRadius: 12, style: .continuous)
                         .fill(.white)
-                        .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                        .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                         .frame(width: isIPad ? 50 : 40, height: isIPad ? 50 : 40)
                     Image(systemName: "arrow.clockwise").foregroundColor(Kids.ink).font(.system(size: isIPad ? 20 : 16, weight: .bold))
                 }
@@ -823,7 +823,7 @@ struct KidsShopView: View {
             }
             .padding(.horizontal, isIPad ? 18 : 14).padding(.vertical, isIPad ? 14 : 10)
             .background(KidsSettingsCard())
-            .compositingGroup().shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 3)
+            .compositingGroup().shadow(color: Kids.shadow.opacity(0.06), radius: 4, x: 0, y: 3)
         }
         .buttonStyle(.plain)
         .disabled(store.isPurchasing)
@@ -862,7 +862,7 @@ struct KidsSettingsCard: View {
     var body: some View {
         RetroPanelShape(cornerRadius: 20, style: .continuous)
             .fill(Color.white)
-            .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+            .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
     }
 }
 
@@ -881,7 +881,7 @@ struct KidsNavRow: View {
                 RetroPanelShape(cornerRadius: 14, style: .continuous)
                     .fill(tint)
                     .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
-                    .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                    .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                     .frame(width: isIPad ? 56 : 46, height: isIPad ? 56 : 46)
                 RetroSymbol(emoji, size: isIPad ? 28 : 24)
             }
@@ -901,7 +901,7 @@ struct KidsNavRow: View {
         }
         .padding(isIPad ? 16 : 13)
         .background(KidsSettingsCard())
-        .compositingGroup().shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 3)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.06), radius: 4, x: 0, y: 3)
     }
 }
 
@@ -927,9 +927,9 @@ struct KidsPurchaseButton: View {
                     RetroPanelShape(cornerRadius: 14, style: .continuous)
                         .fill(color)
                         .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
-                        .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                        .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                 )
-                .compositingGroup().shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
+                .compositingGroup().shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 3)
         }
         .buttonStyle(.plain)
     }
@@ -949,7 +949,7 @@ private struct StatChip: View {
         .padding(.horizontal, 7).padding(.vertical, 2)
         .background(
             RetroPanelShape().fill(color)
-                .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
+                .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
         )
     }
 }
@@ -967,7 +967,7 @@ private struct SettingRow: View {
                 RetroPanelShape(cornerRadius: 12, style: .continuous)
                     .fill(bg)
                     .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).fill(Kids.sheen))
-                    .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                    .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                     .frame(width: 40, height: 40)
                 RetroSymbol(icon, size: 20)
             }
@@ -986,8 +986,8 @@ private struct SettingRow: View {
         .background(
             RetroPanelShape(cornerRadius: 16, style: .continuous)
                 .fill(.white)
-                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
-        .compositingGroup().shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 2)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.06), radius: 4, x: 0, y: 2)
     }
 }

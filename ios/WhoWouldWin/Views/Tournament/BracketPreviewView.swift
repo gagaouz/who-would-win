@@ -93,7 +93,7 @@ struct BracketPreviewView: View {
                     .font(Kids.fredoka(isIPad ? 22 : 16, weight: .bold))
                     .foregroundColor(Kids.ink)
                     .frame(width: isIPad ? 50 : 44, height: isIPad ? 50 : 44)
-                    .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5)))
+                    .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
             }
             Spacer()
             VStack(spacing: isIPad ? 4 : 2) {
@@ -128,7 +128,7 @@ struct BracketPreviewView: View {
                 .font(Kids.fredoka(isIPad ? 15 : 11, weight: .bold))
                 .foregroundColor(Kids.ink)
                 .padding(.horizontal, isIPad ? 9 : 6).padding(.vertical, isIPad ? 3 : 2)
-                .background(RetroPanelShape().fill(Kids.pink).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5)))
+                .background(RetroPanelShape().fill(Kids.pink).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1)))
                 .fixedSize()
             Text(matchup.fighter2.name)
                 .font(Kids.fredoka(isIPad ? 15 : 11, weight: .bold))
@@ -143,9 +143,9 @@ struct BracketPreviewView: View {
         .background(
             RetroPanelShape(cornerRadius: 14, style: .continuous)
                 .fill(.white)
-                .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
-        .compositingGroup().shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 2)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.06), radius: 4, x: 0, y: 2)
     }
 
     // MARK: - Action buttons
@@ -185,9 +185,9 @@ struct BracketPreviewView: View {
                         RetroPanelShape(cornerRadius: 16, style: .continuous)
                             .fill(Kids.grape)
                             .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).fill(Kids.sheen))
-                            .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                            .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                     )
-                    .compositingGroup().shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
+                    .compositingGroup().shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 3)
                 }
                 .buttonStyle(.plain)
             } else if tournament.rerollUsed && settings.wageringEnabled {

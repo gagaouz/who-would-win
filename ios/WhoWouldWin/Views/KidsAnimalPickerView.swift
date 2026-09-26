@@ -39,7 +39,7 @@ struct KidsAnimalPickerView: View {
         ]
         list.append((.prehistoric, "Dinos",   "🦖", Kids.sun))
         list.append((.fantasy,     "Fantasy", "🐉", Kids.grape))
-        list.append((.mythic,      "Mythic",  "🔱", Kids.sunDeep))
+        list.append((.mythic,      "Mythic",  "🔱", Kids.sun))
         if cheat.olympusUnlocked || settings.isOlympusVisible {
             list.append((.olympus, "Olympus", "⚡", Kids.sun))
         }
@@ -159,9 +159,9 @@ struct KidsAnimalPickerView: View {
         .background(
             RetroPanelShape(cornerRadius: 26, style: .continuous)
                 .fill(.white)
-                .overlay(RetroPanelShape(cornerRadius: 26, style: .continuous).stroke(Kids.ink, lineWidth: 3.5))
+                .overlay(RetroPanelShape(cornerRadius: 26, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
-        .compositingGroup().shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 4)
         .padding(.horizontal, isIPad ? 20 : 14)
         .padding(.top, isIPad ? 16 : 12)
     }
@@ -204,7 +204,7 @@ struct KidsAnimalPickerView: View {
             } label: {
                 ZStack {
                     RetroPanelShape().fill(speech.isListening ? Kids.pink : Color.white)
-                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
+                        .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                         .frame(width: isIPad ? 40 : 30, height: isIPad ? 40 : 30)
                     Image(systemName: speech.isListening ? "mic.fill" : "mic")
                         .font(.system(size: isIPad ? 17 : 13, weight: .bold))
@@ -216,9 +216,9 @@ struct KidsAnimalPickerView: View {
         .background(
             RetroPanelShape(cornerRadius: 16, style: .continuous)
                 .fill(Color.white)
-                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
-        .compositingGroup().shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 2)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.06), radius: 4, x: 0, y: 2)
         .padding(.horizontal, isIPad ? 20 : 14)
         .padding(.top, isIPad ? 14 : 10)
     }
@@ -231,7 +231,7 @@ struct KidsAnimalPickerView: View {
                 .foregroundColor(Kids.ink)
         }
         .padding(.horizontal, isIPad ? 16 : 12).padding(.vertical, isIPad ? 6 : 4)
-        .background(RetroPanelShape().fill(Kids.sun.opacity(0.5)).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5)))
+        .background(RetroPanelShape().fill(Kids.sun.opacity(0.5)).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1)))
         .padding(.top, isIPad ? 8 : 6)
         .onAppear { customHintShownCount += 1 }
     }
@@ -347,7 +347,7 @@ struct KidsAnimalPickerView: View {
                 RetroPanelShape(cornerRadius: 22, style: .continuous)
                     .fill(Kids.grape)
                     .overlay(RetroPanelShape(cornerRadius: 22, style: .continuous).fill(Kids.sheen))
-                    .overlay(RetroPanelShape(cornerRadius: 22, style: .continuous).stroke(Kids.ink, lineWidth: 3.5))
+                    .overlay(RetroPanelShape(cornerRadius: 22, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                     .aspectRatio(1, contentMode: .fit)
                 VStack(spacing: isIPad ? 3 : 2) {
                     RetroSymbol("🎲", size: isIPad ? 50 : 42)
@@ -358,7 +358,7 @@ struct KidsAnimalPickerView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .compositingGroup().shadow(color: Kids.ink.opacity(0.10), radius: 0, x: 0, y: 4)
+            .compositingGroup().shadow(color: Kids.shadow.opacity(0.10), radius: 4, x: 0, y: 4)
         }
         .buttonStyle(.plain)
     }
@@ -374,7 +374,7 @@ struct KidsAnimalPickerView: View {
                 RetroPanelShape(cornerRadius: 22, style: .continuous)
                     .fill(Kids.pink)
                     .overlay(RetroPanelShape(cornerRadius: 22, style: .continuous).fill(Kids.sheen))
-                    .overlay(RetroPanelShape(cornerRadius: 22, style: .continuous).stroke(Kids.ink, lineWidth: 3.5))
+                    .overlay(RetroPanelShape(cornerRadius: 22, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                     .aspectRatio(1, contentMode: .fit)
                 VStack(spacing: isIPad ? 3 : 2) {
                     RetroSymbol("✏️", size: isIPad ? 48 : 40)
@@ -385,7 +385,7 @@ struct KidsAnimalPickerView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .compositingGroup().shadow(color: Kids.ink.opacity(0.10), radius: 0, x: 0, y: 4)
+            .compositingGroup().shadow(color: Kids.shadow.opacity(0.10), radius: 4, x: 0, y: 4)
         }
         .buttonStyle(.plain)
     }
@@ -429,13 +429,13 @@ struct KidsAnimalPickerView: View {
             .font(Kids.fredoka(isIPad ? 15 : 12, weight: .bold))
             .foregroundColor(Kids.ink)
             .padding(.horizontal, isIPad ? 16 : 12).padding(.vertical, isIPad ? 8 : 6)
-            .background(RetroPanelShape().fill(Kids.grape).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
+            .background(RetroPanelShape().fill(Kids.grape).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
         }
         .padding(isIPad ? 16 : 12)
         .background(
             RetroPanelShape(cornerRadius: 18, style: .continuous)
                 .fill(.white)
-                .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
         .padding(.horizontal, isIPad ? 20 : 14)
         .padding(.top, isIPad ? 18 : 14)
@@ -491,7 +491,7 @@ struct KidsAnimalPickerView: View {
                         .background(
                             RetroPanelShape(cornerRadius: 14, style: .continuous)
                                 .fill(canAfford ? Kids.sun : Kids.panel)
-                                .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2))
+                                .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                         )
                     }
                     .disabled(!canAfford)
@@ -510,7 +510,7 @@ struct KidsAnimalPickerView: View {
                         .background(
                             RetroPanelShape(cornerRadius: 14, style: .continuous)
                                 .fill(Kids.grass)
-                                .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2))
+                                .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                         )
                     }
                 }
@@ -520,9 +520,9 @@ struct KidsAnimalPickerView: View {
         .background(
             RetroPanelShape(cornerRadius: 18, style: .continuous)
                 .fill(.white)
-                .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.sun, lineWidth: 3))
+                .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.sun, lineWidth: 2))
         )
-        .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 3)
         .padding(.horizontal, isIPad ? 20 : 14)
         .padding(.top, isIPad ? 18 : 14)
     }
@@ -558,8 +558,8 @@ struct KidsAnimalPickerView: View {
                         .foregroundColor(Kids.ink)
                 }
                 .padding(.horizontal, isIPad ? 20 : 14).padding(.vertical, isIPad ? 12 : 9)
-                .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5)))
-                .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+                .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
+                .compositingGroup().shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 3)
             }
         }
         .padding(.bottom, isIPad ? 36 : 30)
@@ -627,13 +627,13 @@ private struct KidsFighterSlot: View {
                     .padding(.horizontal, isIPad ? 11 : 8).padding(.vertical, isIPad ? 5 : 3)
                     .background(
                         RetroPanelShape().fill(tint)
-                            .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
+                            .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                     )
                     .frame(maxWidth: isIPad ? 140 : 100)
             } else {
                 ZStack {
                     RetroPanelShape()
-                        .strokeBorder(Kids.ink.opacity(0.35), style: StrokeStyle(lineWidth: 3, dash: [6, 4]))
+                        .strokeBorder(Kids.outlineStrong, style: StrokeStyle(lineWidth: 1.5, dash: [6, 4]))
                         .background(RetroPanelShape().fill(Color.white.opacity(0.5)))
                         .frame(width: bubbleSize, height: bubbleSize)
                     Text("?").font(Kids.fredoka(isIPad ? 44 : 32, weight: .bold)).foregroundColor(Kids.ink.opacity(0.4))
@@ -670,9 +670,9 @@ private struct KidsCategoryPill: View {
         .background(
             RetroPanelShape().fill(locked ? Kids.panel : (active ? color : .white))
                 .overlay(active && !locked ? RetroPanelShape().fill(Kids.sheen) : nil)
-                .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
         )
-        .compositingGroup().shadow(color: Kids.ink.opacity(active ? 0.18 : 0.08), radius: 0, x: 0, y: active ? 3 : 2)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(active ? 0.18 : 0.08), radius: 4, x: 0, y: active ? 3 : 2)
         .offset(y: active ? -1 : 0)
     }
 }
@@ -697,7 +697,7 @@ private struct KidsAnimalCard: View {
         case .prehistoric: return Kids.sun
         case .fantasy:     return Kids.grape
         case .mythic:      return Kids.pink
-        case .olympus:     return Kids.sunDeep
+        case .olympus:     return Kids.sun
         case .all:         return Kids.pink
         }
     }
@@ -713,7 +713,7 @@ private struct KidsAnimalCard: View {
                 )
                 .overlay(
                     RetroPanelShape(cornerRadius: 20, style: .continuous)
-                        .stroke(Kids.ink, lineWidth: 3)
+                        .stroke(Kids.outline, lineWidth: 1.25)
                 )
                 .aspectRatio(1, contentMode: .fit)
 
@@ -737,7 +737,7 @@ private struct KidsAnimalCard: View {
 
             if selected {
                 RetroPanelShape().fill(Kids.grass)
-                    .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
+                    .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                     .frame(width: isIPad ? 32 : 26, height: isIPad ? 32 : 26)
                     .overlay(Text("✓").font(Kids.fredoka(isIPad ? 17 : 14, weight: .bold)).foregroundColor(Kids.ink))
                     .offset(x: isIPad ? 6 : 4, y: isIPad ? -8 : -6)
@@ -745,7 +745,7 @@ private struct KidsAnimalCard: View {
         }
 
         .offset(y: selected ? -2 : 0)
-        .compositingGroup().shadow(color: Kids.ink.opacity(selected ? 0.18 : 0.1), radius: 0, x: 0, y: selected ? 4 : 3)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(selected ? 0.18 : 0.1), radius: 4, x: 0, y: selected ? 4 : 3)
         .animation(reduceMotion ? nil : .easeOut(duration: 0.15), value: selected)
         // Read as "Lion, selected" / "Dragon, locked" rather than emoji names.
         .accessibilityElement(children: .ignore)

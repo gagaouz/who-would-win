@@ -222,10 +222,10 @@ private struct BattleContent: View {
                     .padding(.horizontal, 12).padding(.vertical, 6)
                     .background(
                         RetroPanelShape().fill(.white)
-                            .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
+                            .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                     )
                     .compositingGroup()
-                    .shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+                    .shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 3)
                 }
                 Spacer()
                 Color.clear.frame(width: 44, height: 44)
@@ -240,10 +240,10 @@ private struct BattleContent: View {
                 .background(
                     RetroPanelShape(cornerRadius: 18, style: .continuous)
                         .fill(Kids.sun)
-                        .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                        .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                 )
                 .compositingGroup()
-                .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
+                .shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 4)
                 .rotationEffect(.degrees(-1.5))
                 .scaleEffect(vsPulse * 0.95)
                 .padding(.top, 14)
@@ -271,7 +271,7 @@ private struct BattleContent: View {
                     .padding(.horizontal, 12).padding(.vertical, 5)
                     .background(
                         RetroPanelShape().fill(preview.isClose ? Kids.grass : Kids.sky)
-                            .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
+                            .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                     )
                     .padding(.top, 12)
             }
@@ -308,10 +308,10 @@ private struct BattleContent: View {
             .background(
                 RetroPanelShape(cornerRadius: 20, style: .continuous)
                     .fill(.white)
-                    .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                    .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
             )
             .compositingGroup()
-            .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
+            .shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 4)
             .padding(.horizontal, 18)
             .padding(.top, 18)
             .animation(.easeInOut(duration: 0.25), value: isJudging)
@@ -368,7 +368,7 @@ private struct BattleContent: View {
                         .font(Kids.fredoka(9, weight: .bold))
                         .foregroundColor(Kids.ink)
                         .padding(.horizontal, 7).padding(.vertical, 2)
-                        .background(RetroPanelShape().fill(Kids.sun).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5)))
+                        .background(RetroPanelShape().fill(Kids.sun).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1)))
                         .offset(y: -10)
                         .transition(.scale.combined(with: .opacity))
                 }
@@ -380,7 +380,7 @@ private struct BattleContent: View {
                 .padding(.horizontal, 10).padding(.vertical, 3)
                 .background(
                     RetroPanelShape().fill(tint)
-                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
+                        .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                 )
             // This fighter's own crowd-cheer meter.
             ProgressPill(progress: fill, fill: tint)
@@ -461,10 +461,10 @@ struct JudgingIndicator: View {
                 .padding(.horizontal, 18).padding(.vertical, 11)
                 .background(
                     RetroPanelShape().fill(.white)
-                        .overlay(RetroPanelShape().stroke(Kids.ink.opacity(0.45), lineWidth: 2.5))
+                        .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                 )
                 .compositingGroup()
-                .shadow(color: Kids.ink.opacity(0.10), radius: 0, x: 0, y: 4)
+                .shadow(color: Kids.shadow.opacity(0.10), radius: 4, x: 0, y: 4)
                 .transition(.scale.combined(with: .opacity))
                 .onAppear {
                     // Bouncing emoji — continuous spring motion (skip under Reduce Motion).
@@ -510,7 +510,7 @@ private struct TraitChip: View {
             Text(label).font(Kids.fredoka(10, weight: .bold)).foregroundColor(Kids.ink)
         }
         .padding(.horizontal, 8).padding(.vertical, 3)
-        .background(RetroPanelShape().fill(color).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
+        .background(RetroPanelShape().fill(color).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
     }
 }
 
@@ -855,7 +855,7 @@ private struct ResultContent: View {
             .padding(.horizontal, 13).padding(.vertical, 6)
             .background(
                 RetroPanelShape().fill(tint)
-                    .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
+                    .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
             )
     }
 
@@ -871,10 +871,10 @@ private struct ResultContent: View {
         .padding(.horizontal, 16).padding(.vertical, 7)
         .background(
             RetroPanelShape().fill(Kids.sun)
-                .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 3))
+                .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
         )
         .compositingGroup()
-        .shadow(color: Kids.ink.opacity(0.12), radius: 0, x: 0, y: 4)
+        .shadow(color: Kids.shadow.opacity(0.12), radius: 4, x: 0, y: 4)
         .transition(.scale.combined(with: .opacity))
     }
 
@@ -887,7 +887,7 @@ private struct ResultContent: View {
                 .font(Kids.fredoka(11, weight: .bold))
                 .foregroundColor(Kids.ink)
                 .padding(.horizontal, 10).padding(.vertical, 4)
-                .background(RetroPanelShape().fill(tagColor).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
+                .background(RetroPanelShape().fill(tagColor).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
             Text(text)
                 .accessibilityIdentifier(tag == "BATTLE STORY" ? "battle.narration" : "battle.info.\(tag)")
                 .font(Kids.nunito(13, weight: .bold))
@@ -899,10 +899,10 @@ private struct ResultContent: View {
         .background(
             RetroPanelShape(cornerRadius: 20, style: .continuous)
                 .fill(.white)
-                .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
         .compositingGroup()
-        .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
+        .shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 4)
         .padding(.horizontal, 18)
         .opacity(appeared ? 1 : 0)
     }
@@ -927,10 +927,10 @@ private struct ResultContent: View {
             .background(
                 RetroPanelShape().fill(Kids.sky)
                     .overlay(RetroPanelShape().fill(Kids.sheen))
-                    .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
+                    .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
             )
             .compositingGroup()
-            .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
+            .shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 3)
         }
         .buttonStyle(.plain)
         .padding(.top, 6)
@@ -1091,10 +1091,10 @@ struct KidsMiniButton: View {
                 RetroPanelShape(cornerRadius: 14, style: .continuous)
                     .fill(color)
                     .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
-                    .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                    .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
             )
             .compositingGroup()
-            .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
+            .shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 3)
         }
         .buttonStyle(.plain)
     }
@@ -1111,9 +1111,9 @@ struct FighterPortrait: View {
         RetroCreatureArtwork(animal: animal, size: size - 22)
             .frame(width: size, height: size)
             .background(RetroPanelShape().fill(ringColor.opacity(0.24)))
-            .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 3))
+            .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
             .compositingGroup()
-            .shadow(color: Kids.ink.opacity(0.11), radius: 0, x: 0, y: 5)
+            .shadow(color: Kids.shadow.opacity(0.11), radius: 4, x: 0, y: 5)
             .accessibilityLabel(animal.name)
     }
 }

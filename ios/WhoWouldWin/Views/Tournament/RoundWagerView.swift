@@ -132,7 +132,7 @@ struct RoundWagerView: View {
                 ZStack {
                     RetroPanelShape(cornerRadius: 12, style: .continuous)
                         .fill(quickMode ? Kids.sun : Kids.panel)
-                        .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                        .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                         .frame(width: isIPad ? 60 : 44, height: isIPad ? 60 : 44)
                     Text(quickMode ? "⚡" : "🐢").font(.system(size: isIPad ? 30 : 22))
                 }
@@ -150,7 +150,7 @@ struct RoundWagerView: View {
             }
             .padding(.horizontal, isIPad ? 18 : 12).padding(.vertical, isIPad ? 14 : 10)
             .background(card)
-            .compositingGroup().shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 3)
+            .compositingGroup().shadow(color: Kids.shadow.opacity(0.06), radius: 4, x: 0, y: 3)
         }
         .buttonStyle(.plain)
     }
@@ -195,7 +195,7 @@ struct RoundWagerView: View {
                 .background(
                     RetroPanelShape(cornerRadius: 14, style: .continuous)
                         .fill(Kids.grass)
-                        .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2))
+                        .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                 )
             }
             .buttonStyle(.plain)
@@ -220,7 +220,7 @@ struct RoundWagerView: View {
                     .background(
                         RetroPanelShape(cornerRadius: 14, style: .continuous)
                             .fill(Kids.sun)
-                            .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2))
+                            .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                     )
                 }
                 .buttonStyle(.plain)
@@ -245,7 +245,7 @@ struct RoundWagerView: View {
                 .fill(.white)
                 .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.sun, lineWidth: 2.5))
         )
-        .compositingGroup().shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 3)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.06), radius: 4, x: 0, y: 3)
     }
 
     // MARK: - Matchups card
@@ -266,7 +266,7 @@ struct RoundWagerView: View {
         }
         .padding(isIPad ? 20 : 14)
         .background(card)
-        .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 4)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 4)
     }
 
     private func matchupWagerRow(_ matchup: Matchup) -> some View {
@@ -291,9 +291,9 @@ struct RoundWagerView: View {
                     HStack(spacing: isIPad ? 9 : 6) {
                         Text("✓")
                             .font(Kids.fredoka(isIPad ? 17 : 13, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(Kids.ink)
                             .frame(width: isIPad ? 24 : 18, height: isIPad ? 24 : 18)
-                            .background(RetroPanelShape().fill(Kids.grass).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5)))
+                            .background(RetroPanelShape().fill(Kids.grass).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1)))
                         let name = matchup.wager?.pickedFighterId == matchup.fighter1.id ? matchup.fighter1.name : matchup.fighter2.name
                         Text("\(wager.amount)")
                             .font(Kids.fredoka(isIPad ? 17 : 13, weight: .bold))
@@ -317,7 +317,7 @@ struct RoundWagerView: View {
                 RetroPanelShape(cornerRadius: 14, style: .continuous)
                     .fill(matchup.wager != nil ? Kids.sun.opacity(0.2) : Kids.panel)
                     .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous)
-                        .stroke(matchup.wager != nil ? Kids.sun : Kids.ink.opacity(0.2),
+                        .stroke(matchup.wager != nil ? Kids.grassDeep : Kids.outline,
                                 lineWidth: matchup.wager != nil ? 2 : 1.5))
             )
         }
@@ -347,7 +347,7 @@ struct RoundWagerView: View {
                 HStack(spacing: isIPad ? 14 : 10) {
                     TournyFighterMini(animal: pick, size: isIPad ? 60 : 44)
                     VStack(alignment: .leading, spacing: isIPad ? 4 : 2) {
-                        Text("👑 GRAND CHAMPION PICK")
+                        Text("GRAND CHAMPION PICK")
                             .font(Kids.fredoka(isIPad ? 13 : 10, weight: .bold))
                             .tracking(1.5)
                             .foregroundColor(Kids.ink)
@@ -368,9 +368,9 @@ struct RoundWagerView: View {
                     if !alive {
                         Text("OUT")
                             .font(Kids.fredoka(isIPad ? 13 : 10, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(Kids.ink)
                             .padding(.horizontal, isIPad ? 12 : 8).padding(.vertical, isIPad ? 6 : 4)
-                            .background(RetroPanelShape().fill(Kids.pink).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5)))
+                            .background(RetroPanelShape().fill(Kids.pink).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1)))
                     }
                 }
                 if tournament.canSwapGrandChampion {
@@ -386,7 +386,7 @@ struct RoundWagerView: View {
                                 RetroPanelShape(cornerRadius: 12, style: .continuous)
                                     .fill(Kids.grape)
                                     .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).fill(Kids.sheen))
-                                    .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.ink, lineWidth: 2))
+                                    .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                             )
                     }
                     .buttonStyle(.plain)
@@ -402,7 +402,7 @@ struct RoundWagerView: View {
                     .fill(.white)
                     .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.sun, lineWidth: 2.5))
             )
-            .compositingGroup().shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 3)
+            .compositingGroup().shadow(color: Kids.shadow.opacity(0.06), radius: 4, x: 0, y: 3)
         }
     }
 
@@ -418,7 +418,7 @@ struct RoundWagerView: View {
     private var card: some View {
         RetroPanelShape(cornerRadius: 16, style: .continuous)
             .fill(Color.white)
-            .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+            .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
     }
 }
 
@@ -510,9 +510,9 @@ private struct MatchupWagerSheet: View {
                                     .fill(picked == nil || amountInt < minWager || amountInt > maxWager
                                           ? Kids.creamDeep : Kids.grass)
                                     .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
-                                    .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                                    .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                             )
-                            .compositingGroup().shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
+                            .compositingGroup().shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 3)
                         }
                         .buttonStyle(.plain)
                         .disabled(picked == nil || amountInt < minWager || amountInt > maxWager)
@@ -568,7 +568,7 @@ private struct MatchupWagerSheet: View {
             }
             .padding(isIPad ? 20 : 14)
             .background(card)
-            .compositingGroup().shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 3)
+            .compositingGroup().shadow(color: Kids.shadow.opacity(0.06), radius: 4, x: 0, y: 3)
             .padding(.horizontal, isIPad ? 26 : 18)
         } else if maxWager == minWager {
             VStack(spacing: isIPad ? 9 : 6) {
@@ -627,9 +627,9 @@ private struct MatchupWagerSheet: View {
                 RetroPanelShape(cornerRadius: 16, style: .continuous)
                     .fill(picked == a.id ? Kids.sun : Color.white)
                     .overlay(picked == a.id ? RetroPanelShape(cornerRadius: 16, style: .continuous).fill(Kids.sheen) : nil)
-                    .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: picked == a.id ? 3 : 2.5))
+                    .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(picked == a.id ? Kids.grassDeep : Kids.outline, lineWidth: picked == a.id ? 2 : 1.25))
             )
-            .compositingGroup().shadow(color: Kids.ink.opacity(picked == a.id ? 0.18 : 0.08), radius: 0, x: 0, y: picked == a.id ? 4 : 2)
+            .compositingGroup().shadow(color: Kids.shadow.opacity(picked == a.id ? 0.18 : 0.08), radius: 4, x: 0, y: picked == a.id ? 4 : 2)
         }
         .buttonStyle(.plain)
     }
@@ -637,7 +637,7 @@ private struct MatchupWagerSheet: View {
     private var card: some View {
         RetroPanelShape(cornerRadius: 16, style: .continuous)
             .fill(Color.white)
-            .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+            .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
     }
 }
 
@@ -703,7 +703,7 @@ private struct GrandChampionSwapSheet: View {
                                 RetroPanelShape(cornerRadius: 14, style: .continuous)
                                     .fill(picked == nil ? Kids.creamDeep : Kids.grape)
                                     .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
-                                    .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                                    .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                             )
                         }
                         .buttonStyle(.plain)
@@ -731,7 +731,7 @@ private struct SwapPickCard: View {
                 RetroPanelShape(cornerRadius: 14, style: .continuous)
                     .fill(selected ? Kids.grape : Color.white)
                     .overlay(selected ? RetroPanelShape(cornerRadius: 14, style: .continuous).fill(Kids.sheen) : nil)
-                    .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                    .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                     .aspectRatio(1, contentMode: .fit)
                 VStack(spacing: isIPad ? 4 : 2) {
                     RetroCreatureArtwork(animal: animal, size: isIPad ? 62 : 46)
@@ -743,7 +743,7 @@ private struct SwapPickCard: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 if selected {
                     RetroPanelShape().fill(Kids.grass)
-                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
+                        .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                         .frame(width: isIPad ? 28 : 20, height: isIPad ? 28 : 20)
                         .overlay(Text("✓").font(Kids.fredoka(isIPad ? 15 : 11, weight: .bold)).foregroundColor(Kids.ink))
                         .offset(x: 4, y: -4)

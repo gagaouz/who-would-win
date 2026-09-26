@@ -55,7 +55,7 @@ struct TrophyCaseView: View {
                     .font(Kids.fredoka(isIPad ? 22 : 16, weight: .bold))
                     .foregroundColor(Kids.ink)
                     .frame(width: isIPad ? 50 : 44, height: isIPad ? 50 : 44)
-                    .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5)))
+                    .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
             }
             .buttonStyle(.plain)
             Spacer()
@@ -89,7 +89,7 @@ struct TrophyCaseView: View {
         .background(
             RetroPanelShape(cornerRadius: 18, style: .continuous)
                 .fill(.white)
-                .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
     }
 
@@ -101,8 +101,8 @@ struct TrophyCaseView: View {
                     .fill(unlocked ? Kids.sun : Color.white.opacity(0.55))
                     .overlay(
                         RetroPanelShape(cornerRadius: 16, style: .continuous)
-                            .stroke(unlocked ? Kids.ink : Kids.ink.opacity(0.35),
-                                    style: StrokeStyle(lineWidth: unlocked ? 3 : 2,
+                            .stroke(unlocked ? Kids.outlineStrong : Kids.outline,
+                                    style: StrokeStyle(lineWidth: unlocked ? 1.5 : 1,
                                                        dash: unlocked ? [] : [5, 3]))
                     )
                     .aspectRatio(1, contentMode: .fit)

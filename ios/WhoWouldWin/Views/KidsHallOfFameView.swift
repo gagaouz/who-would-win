@@ -72,7 +72,7 @@ struct KidsHallOfFameView: View {
                     .font(Kids.fredoka(isIPad ? 22 : 16, weight: .bold))
                     .foregroundColor(Kids.ink)
                     .frame(width: isIPad ? 50 : 44, height: isIPad ? 50 : 44)
-                    .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5)))
+                    .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
             }
             .buttonStyle(.plain)
             Spacer()
@@ -108,7 +108,7 @@ struct KidsHallOfFameView: View {
                     .background(
                         RetroPanelShape()
                             .fill(selectedTab == tab ? Kids.sun : Color.white)
-                            .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
+                            .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                     )
                     .compositingGroup().shadow(color: Kids.ink.opacity(selectedTab == tab ? 0.10 : 0.04),
                             radius: 0, x: 0, y: 2)
@@ -196,16 +196,16 @@ struct KidsHallOfFameView: View {
         .background(
             RetroPanelShape(cornerRadius: 16, style: .continuous)
                 .fill(.white)
-                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
-        .compositingGroup().shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 2)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.06), radius: 4, x: 0, y: 2)
     }
 
     @ViewBuilder
     private func rankBadge(_ rank: Int) -> some View {
         let (fill, txt) = rankStyle(rank)
         ZStack {
-            RetroPanelShape().fill(fill).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
+            RetroPanelShape().fill(fill).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                 .frame(width: isIPad ? 34 : 28, height: isIPad ? 34 : 28)
             Text(txt)
                 .font(Kids.fredoka(isIPad ? 14 : 12, weight: .bold))
@@ -234,7 +234,7 @@ struct KidsHallOfFameView: View {
     private var placeholder: some View {
         RetroPanelShape()
             .fill(Kids.creamDeep)
-            .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
+            .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
             .frame(width: isIPad ? 60 : 48, height: isIPad ? 60 : 48)
             .overlay(Text("?").font(Kids.fredoka(20, weight: .bold)).foregroundColor(Kids.ink))
     }
@@ -261,7 +261,7 @@ struct KidsHallOfFameView: View {
             .background(
                 RetroPanelShape()
                     .fill(color)
-                    .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
+                    .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
             )
     }
 
@@ -303,7 +303,7 @@ struct KidsHallOfFameView: View {
                         .padding(.horizontal, isIPad ? 12 : 10)
                         .padding(.vertical, isIPad ? 6 : 4)
                         .background(
-                            RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5))
+                            RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1))
                         )
                     }
                     .buttonStyle(.plain)

@@ -1,0 +1,63 @@
+[
+  {
+    "key": "motion_land",
+    "ids": [
+      "tiger",
+      "grizzly_bear",
+      "wolf",
+      "elephant"
+    ],
+    "prompt": "Use case: stylized-concept. Create a production animation sprite atlas for Animal vs Animal, preserving the creature identities and detailed 16/32-bit pixel-art style of the reference atlases. Square 2048x2048 transparent RGBA PNG. Exactly FOUR ROWS and FOUR COLUMNS, 16 isolated complete sprites, one creature per row, same creature proportions and palette across that row. Every creature faces RIGHT in all four columns. Columns from left to right: idle stance, crouched anticipation/windup, clear forward attack/action pose, recoil/reaction leaning back. Each is an actually different drawn anatomical pose, not a translated or distorted copy. Preserve same body scale across each row, foot baseline aligned. Keep ALL creature pixels INSIDE their equal cell with generous transparent gutters, at least 40 pixels, no overlap into adjacent cells. No labels, cell lines, text, shadows, floor, scene, motion streaks, separate effects, icons, debris, or checkerboard. Full true transparency between connected creature silhouettes. Child-friendly confident animals, dark plum outlines, warm pixel shading, crisp readable detail; match the existing lion's four-pose quality in reference one. Image 1 is style/action reference only; other images identify exact creature designs. ONLY the requested four creatures below appear. Row1: orange black-striped TIGER with white cheeks/belly. Idle four paws planted; crouch; forward pounce with right forepaw extended; recoil sitting slightly back. Row2: brown GRIZZLY BEAR. Idle quadruped; lowered shoulders; assertive forward paw swipe; recoil head back. Row3: gray WOLF with cream muzzle/belly. Idle; low stalking crouch; long low leaping stride with mouth open; backward braced reaction. Row4: gray ELEPHANT, two ivory tusks, broad ears, long trunk. Idle; lowered head with trunk curled; charging step with extended trunk; recoil with trunk raised. Keep trunk/tail attached and accurate anatomy.",
+    "referenceAssets": [
+      "retro_core",
+      "retro_anatomy",
+      "retro_clean_a"
+    ]
+  },
+  {
+    "key": "motion_airsea",
+    "ids": [
+      "great_white_shark",
+      "orca",
+      "bald_eagle",
+      "cobra"
+    ],
+    "prompt": "Use case: stylized-concept. Create a production animation sprite atlas for Animal vs Animal, preserving the creature identities and detailed 16/32-bit pixel-art style of the reference atlases. Square 2048x2048 transparent RGBA PNG. Exactly FOUR ROWS and FOUR COLUMNS, 16 isolated complete sprites, one creature per row, same creature proportions and palette across that row. Every creature faces RIGHT in all four columns. Columns from left to right: idle stance, crouched anticipation/windup, clear forward attack/action pose, recoil/reaction leaning back. Each is an actually different drawn anatomical pose, not a translated or distorted copy. Preserve same body scale across each row, foot baseline aligned. Keep ALL creature pixels INSIDE their equal cell with generous transparent gutters, at least 40 pixels, no overlap into adjacent cells. No labels, cell lines, text, shadows, floor, scene, motion streaks, separate effects, icons, debris, or checkerboard. Full true transparency between connected creature silhouettes. Child-friendly confident animals, dark plum outlines, warm pixel shading, crisp readable detail; match the existing lion's four-pose quality in reference one. Image 1 is style/action reference only; other images identify exact creature designs. ONLY the requested four creatures below appear. Row1: blue GREAT WHITE SHARK, ivory belly, yellow eye. Idle swimming; tail curled windup; mouth-open forward snap with tail stroke; recoil nose lifted and tail curved. Row2: dark navy ORCA with white patches. Idle; tucked tail windup; strong tail-propelled forward lunge mouth open; leaned-back reaction flippers raised. Row3: brown BALD EAGLE, white head/tail, gold beak and talons. Idle with wings raised; wings folded down preparing; forward diving talon reach with wings swept BACK; recoil raised wings and tucked talons. Make four visibly different wing positions. Row4: gold/dark-brown COBRA. Idle upright hood and coiled lower body; tightly coiled S-neck windup; head/neck striking forward while tail stays coiled; pulled-back S-neck recoil. Match creatures in references. Flying/swimming poses have consistent body scale and no floor.",
+    "referenceAssets": [
+      "retro_core",
+      "retro_clean_a",
+      "retro_sea",
+      "retro_anatomy"
+    ]
+  },
+  {
+    "key": "motion_prehistoric",
+    "ids": [
+      "dragon",
+      "t_rex",
+      "triceratops",
+      "velociraptor"
+    ],
+    "prompt": "Use case: stylized-concept. Create a production animation sprite atlas for Animal vs Animal, preserving the creature identities and detailed 16/32-bit pixel-art style of the reference atlases. Square 2048x2048 transparent RGBA PNG. Exactly FOUR ROWS and FOUR COLUMNS, 16 isolated complete sprites, one creature per row, same creature proportions and palette across that row. Every creature faces RIGHT in all four columns. Columns from left to right: idle stance, crouched anticipation/windup, clear forward attack/action pose, recoil/reaction leaning back. Each is an actually different drawn anatomical pose, not a translated or distorted copy. Preserve same body scale across each row, foot baseline aligned. Keep ALL creature pixels INSIDE their equal cell with generous transparent gutters, at least 40 pixels, no overlap into adjacent cells. No labels, cell lines, text, shadows, floor, scene, motion streaks, separate effects, icons, debris, or checkerboard. Full true transparency between connected creature silhouettes. Child-friendly confident animals, dark plum outlines, warm pixel shading, crisp readable detail; match the existing lion's four-pose quality in reference one. Image 1 is style/action reference only; other images identify exact creature designs. ONLY the requested four creatures below appear. Row1: crimson red DRAGON with orange bat wings, cream horns/spines and belly, four legs and long tail. Idle wings high; low windup wings partly folded; forward lunging foreclaw swipe wings swept back; recoil chest raised wings folded. No flame or separated effect. Row2: olive green T REX with cream belly, large head, two small forearms, two muscular legs and tail. Idle; head low windup; forward open-jaw snap and strong step; head recoils upward. Row3: olive TRICERATOPS with cream three horns and scalloped frill. Idle; head lowered windup; forward horn-first charging step; head raised braced reaction. Row4: orange feathered VELOCIRAPTOR with cream underside/wing edges as reference. Idle; crouching; agile forward leaping claw kick with arms spread; recoil balanced on tailward leg. Preserve anatomy, constant body scale, each row right-facing.",
+    "referenceAssets": [
+      "retro_core",
+      "retro_clean_b",
+      "retro_clean_c"
+    ]
+  },
+  {
+    "key": "motion_wild",
+    "ids": [
+      "crocodile",
+      "rhinoceros",
+      "tarantula",
+      "giant_squid"
+    ],
+    "prompt": "Use case: stylized-concept. Create a production animation sprite atlas for Animal vs Animal, preserving the creature identities and detailed 16/32-bit pixel-art style of the reference atlases. Square 2048x2048 transparent RGBA PNG. Exactly FOUR ROWS and FOUR COLUMNS, 16 isolated complete sprites, one creature per row, same creature proportions and palette across that row. Every creature faces RIGHT in all four columns. Columns from left to right: idle stance, crouched anticipation/windup, clear forward attack/action pose, recoil/reaction leaning back. Each is an actually different drawn anatomical pose, not a translated or distorted copy. Preserve same body scale across each row, foot baseline aligned. Keep ALL creature pixels INSIDE their equal cell with generous transparent gutters, at least 40 pixels, no overlap into adjacent cells. No labels, cell lines, text, shadows, floor, scene, motion streaks, separate effects, icons, debris, or checkerboard. Full true transparency between connected creature silhouettes. Child-friendly confident animals, dark plum outlines, warm pixel shading, crisp readable detail; match the existing lion's four-pose quality in reference one. Image 1 is style/action reference only; other images identify exact creature designs. ONLY the requested four creatures below appear. Row1: green CROCODILE with dark armored back, cream belly and long tail. Idle; low crouch with jaw tucked; open-jaw forward snap and front-leg step; head raised recoil. Row2: gray RHINOCEROS with two ivory horns. Idle; head low windup; strong horn-first charging step; braced reaction leaning back. Row3: fuzzy brown TARANTULA with orange leg bands, eight legs and small fangs. Idle eight splayed legs; crouched low; front pair raised in a lunge with other legs visibly stepping; recoil legs drawn inward. No missing or extra legs. Row4: orange-red GIANT SQUID with pointed mantle, gold eye, eight arms and two longer feeding tentacles (10 appendages total), all connected to its head. Idle arms curled forward to right; arms curled inward preparing; two long feeding tentacles shoot forward RIGHT with remaining arms trailing/curling; reaction arms retract and curl. Entire mantle/body faces right across all frames. Keep the squid readable with clean separated tentacle shapes.",
+    "referenceAssets": [
+      "retro_core",
+      "retro_land",
+      "retro_sea"
+    ]
+  }
+]

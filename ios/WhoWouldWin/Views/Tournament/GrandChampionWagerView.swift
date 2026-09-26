@@ -86,7 +86,7 @@ struct GrandChampionWagerView: View {
                 .fill(Color.white)
                 .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.sun, lineWidth: 2.5))
         )
-        .compositingGroup().shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 3)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.06), radius: 4, x: 0, y: 3)
     }
 
     private var pickerGrid: some View {
@@ -132,7 +132,7 @@ struct GrandChampionWagerView: View {
             }
             .padding(isIPad ? 20 : 14)
             .background(card)
-            .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+            .compositingGroup().shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 3)
         } else if maxWager == minWager && minWager > 0 {
             VStack(spacing: isIPad ? 9 : 6) {
                 HStack {
@@ -154,7 +154,7 @@ struct GrandChampionWagerView: View {
             }
             .padding(isIPad ? 20 : 14)
             .background(card)
-            .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+            .compositingGroup().shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 3)
             .onAppear { amount = Double(minWager) }
         } else {
             VStack(spacing: isIPad ? 14 : 10) {
@@ -194,7 +194,7 @@ struct GrandChampionWagerView: View {
     private var card: some View {
         RetroPanelShape(cornerRadius: 16, style: .continuous)
             .fill(Color.white)
-            .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+            .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
     }
 }
 
@@ -214,7 +214,7 @@ private struct GrandPickCard: View {
                     .overlay(selected ? RetroPanelShape(cornerRadius: 16, style: .continuous).fill(Kids.sheen) : nil)
                     .overlay(
                         RetroPanelShape(cornerRadius: 16, style: .continuous)
-                            .stroke(Kids.ink, lineWidth: selected ? 3 : 2.5)
+                            .stroke(selected ? Kids.grassDeep : Kids.outline, lineWidth: selected ? 2 : 1.25)
                     )
                     .aspectRatio(1, contentMode: .fit)
 
@@ -230,14 +230,14 @@ private struct GrandPickCard: View {
 
                 if selected {
                     RetroPanelShape().fill(Kids.grass)
-                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
+                        .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                         .frame(width: isIPad ? 32 : 24, height: isIPad ? 32 : 24)
                         .overlay(Text("✓").font(Kids.fredoka(isIPad ? 17 : 13, weight: .bold)).foregroundColor(Kids.ink))
                         .offset(x: 4, y: -6)
                 }
             }
 
-            .compositingGroup().shadow(color: Kids.ink.opacity(selected ? 0.18 : 0.08), radius: 0, x: 0, y: selected ? 3 : 2)
+            .compositingGroup().shadow(color: Kids.shadow.opacity(selected ? 0.18 : 0.08), radius: 4, x: 0, y: selected ? 3 : 2)
             .animation(.spring(response: 0.3, dampingFraction: 0.6), value: selected)
         }
         .buttonStyle(.plain)

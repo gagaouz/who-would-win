@@ -1,5 +1,5 @@
 // Single source of truth for application versioning on the 2.0 line.
 MARKETING_VERSION = 2.0
-CURRENT_PROJECT_VERSION = 110
+CURRENT_PROJECT_VERSION = 111
 // Allocation verified against ASC and maintenance 1.1.7; see BuildAllocation.json.
 AVA_BUILD_ALLOCATION = confirmed

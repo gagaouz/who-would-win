@@ -48,7 +48,7 @@ struct GrownUpZoneView: View {
         .background(
             RetroPanelShape(cornerRadius: 16, style: .continuous)
                 .fill(Kids.panel)
-                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
     }
 
@@ -93,7 +93,7 @@ struct GrownUpZoneView: View {
                             .background(
                                 RetroPanelShape(cornerRadius: 16, style: .continuous)
                                     .fill(.white)
-                                    .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                                    .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                             )
                     }
                     .buttonStyle(.plain)
@@ -173,7 +173,7 @@ struct GrownUpZoneView: View {
                     RetroPanelShape(cornerRadius: 12, style: .continuous)
                         .fill(Kids.grape)
                         .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).fill(Kids.sheen))
-                        .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                        .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                         .frame(width: 40, height: 40)
                     RetroSymbol("🪙", size: 20)
                 }
@@ -193,9 +193,9 @@ struct GrownUpZoneView: View {
             .background(
                 RetroPanelShape(cornerRadius: 16, style: .continuous)
                     .fill(.white)
-                    .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                    .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
             )
-            .compositingGroup().shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 2)
+            .compositingGroup().shadow(color: Kids.shadow.opacity(0.06), radius: 4, x: 0, y: 2)
         }
         .buttonStyle(.plain)
     }
@@ -219,7 +219,7 @@ struct GrownUpZoneView: View {
             .background(
                 RetroPanelShape()
                     .fill(on ? Kids.grass : Kids.creamDeep)
-                    .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
+                    .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
             )
     }
 
@@ -292,7 +292,7 @@ struct GrownUpZoneView: View {
         .background(
             RetroPanelShape(cornerRadius: 16, style: .continuous)
                 .fill(.white)
-                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
     }
 
@@ -322,7 +322,7 @@ struct GrownUpZoneView: View {
         .background(
             RetroPanelShape(cornerRadius: 16, style: .continuous)
                 .fill(.white)
-                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
     }
 
@@ -340,7 +340,7 @@ struct GrownUpZoneView: View {
         .background(
             RetroPanelShape(cornerRadius: 16, style: .continuous)
                 .fill(Kids.panel)
-                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
     }
 

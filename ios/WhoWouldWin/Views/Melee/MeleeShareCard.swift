@@ -39,12 +39,12 @@ struct MeleeShareCard: View {
             VStack(spacing: 0) {
                 // Branding pill
                 HStack(spacing: 5) {
-                    RetroSymbol("⚔️", size: 12)
+                    RetroSymbol("⚔️", size: 12, color: Kids.sun)
                     Text("MELEE MODE")
                         .font(Kids.fredoka(11, weight: .bold))
                         .tracking(2.5)
                         .foregroundColor(.white)
-                    RetroSymbol("⚔️", size: 12)
+                    RetroSymbol("⚔️", size: 12, color: Kids.sun)
                 }
                 .padding(.horizontal, 14).padding(.vertical, 6)
                 .background(RetroPanelShape().fill(Kids.ink).overlay(RetroPanelShape().stroke(.white, lineWidth: 2)))
@@ -111,7 +111,7 @@ struct MeleeShareCard: View {
                     AnimalBubble(animal: mvp, size: 144, tint: Kids.sun)
                 }
             }
-            .compositingGroup().shadow(color: Kids.ink.opacity(0.15), radius: 0, x: 0, y: 5)
+            .compositingGroup().shadow(color: Kids.shadow.opacity(0.15), radius: 4, x: 0, y: 5)
 
             HStack(spacing: 5) {
                 Text("MVP")
@@ -128,7 +128,7 @@ struct MeleeShareCard: View {
             .padding(.horizontal, 12).padding(.vertical, 5)
             .background(
                 RetroPanelShape().fill(Kids.sun)
-                    .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
+                    .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
             )
         }
     }
@@ -144,21 +144,21 @@ struct MeleeShareCard: View {
                     .foregroundColor(Kids.ink)
                     .tracking(1.5)
                     .padding(.horizontal, 10).padding(.vertical, 3)
-                    .background(RetroPanelShape().fill(tint).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
+                    .background(RetroPanelShape().fill(tint).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
                 if isWinner {
                     Text("WINNERS")
                         .font(Kids.fredoka(9, weight: .bold))
                         .foregroundColor(Kids.ink)
                         .tracking(1)
                         .padding(.horizontal, 8).padding(.vertical, 3)
-                        .background(RetroPanelShape().fill(Kids.sun).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5)))
+                        .background(RetroPanelShape().fill(Kids.sun).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1)))
                 } else {
                     Text("DEFEATED")
                         .font(Kids.fredoka(9, weight: .bold))
                         .foregroundColor(Kids.ink.opacity(0.7))
                         .tracking(1)
                         .padding(.horizontal, 8).padding(.vertical, 3)
-                        .background(RetroPanelShape().fill(Color.white.opacity(0.7)).overlay(RetroPanelShape().stroke(Kids.ink.opacity(0.4), lineWidth: 1.5)))
+                        .background(RetroPanelShape().fill(Color.white.opacity(0.7)).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1)))
                 }
                 Spacer(minLength: 0)
                 Text("\(healthPct)%")
@@ -184,10 +184,10 @@ struct MeleeShareCard: View {
                 .fill(Color.white.opacity(isWinner ? 0.92 : 0.55))
                 .overlay(
                     RetroPanelShape(cornerRadius: 18, style: .continuous)
-                        .stroke(Kids.ink, lineWidth: isWinner ? 3 : 2)
+                        .stroke(isWinner ? Kids.grassDeep : Kids.outline, lineWidth: isWinner ? 2 : 1)
                 )
         )
-        .compositingGroup().shadow(color: Kids.ink.opacity(isWinner ? 0.16 : 0.08), radius: 0, x: 0, y: 4)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(isWinner ? 0.16 : 0.08), radius: 4, x: 0, y: 4)
         .opacity(isWinner ? 1.0 : 0.85)
     }
 
@@ -207,7 +207,7 @@ struct MeleeShareCard: View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
                 RetroPanelShape().fill(Color.white.opacity(0.65))
-                    .overlay(RetroPanelShape().stroke(Kids.ink.opacity(0.3), lineWidth: 1))
+                    .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1))
                 RetroPanelShape()
                     .fill(accent)
                     .frame(width: max(2, geo.size.width * CGFloat(pct) / 100))
@@ -224,7 +224,7 @@ struct MeleeShareCard: View {
                 .font(Kids.fredoka(9, weight: .bold))
                 .foregroundColor(Kids.ink)
                 .padding(.horizontal, 8).padding(.vertical, 3)
-                .background(RetroPanelShape().fill(Kids.pink).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5)))
+                .background(RetroPanelShape().fill(Kids.pink).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1)))
             Text("\u{201C}\(narrationExcerpt)\u{201D}")
                 .font(Kids.nunito(13, weight: .bold))
                 .foregroundColor(Kids.ink)
@@ -237,7 +237,7 @@ struct MeleeShareCard: View {
         .background(
             RetroPanelShape(cornerRadius: 14, style: .continuous)
                 .fill(Color.white)
-                .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
     }
 
@@ -247,7 +247,7 @@ struct MeleeShareCard: View {
                 .font(Kids.fredoka(9, weight: .bold))
                 .foregroundColor(Kids.ink)
                 .padding(.horizontal, 8).padding(.vertical, 3)
-                .background(RetroPanelShape().fill(Kids.sun).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5)))
+                .background(RetroPanelShape().fill(Kids.sun).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1)))
             Text(result.funFact.withoutEmoji)
                 .font(Kids.nunito(13, weight: .bold))
                 .foregroundColor(Kids.ink)
@@ -260,7 +260,7 @@ struct MeleeShareCard: View {
         .background(
             RetroPanelShape(cornerRadius: 14, style: .continuous)
                 .fill(Color.white)
-                .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
     }
 
@@ -275,7 +275,7 @@ struct MeleeShareCard: View {
                     .frame(width: 52, height: 52)
                     .padding(5)
                     .background(RetroPanelShape(cornerRadius: 10).fill(.white))
-                    .overlay(RetroPanelShape(cornerRadius: 10).stroke(Kids.ink, lineWidth: 2))
+                    .overlay(RetroPanelShape(cornerRadius: 10).stroke(Kids.outline, lineWidth: 1.25))
             }
             VStack(alignment: .leading, spacing: 4) {
                 Text("Animal vs Animal")
@@ -297,7 +297,7 @@ struct MeleeShareCard: View {
             RetroPanelShape(cornerRadius: 14, style: .continuous)
                 .fill(Kids.sun)
                 .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
-                .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
     }
 

@@ -51,9 +51,9 @@ struct MysteryStickerSheet: View {
                         .background(
                             RetroPanelShape().fill(Kids.grass)
                                 .overlay(RetroPanelShape().fill(Kids.sheen))
-                                .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 3))
+                                .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                         )
-                        .compositingGroup().shadow(color: Kids.ink.opacity(0.15), radius: 0, x: 0, y: 5)
+                        .compositingGroup().shadow(color: Kids.shadow.opacity(0.15), radius: 4, x: 0, y: 5)
                 }
                 .buttonStyle(.plain)
                 .padding(.top, 8)

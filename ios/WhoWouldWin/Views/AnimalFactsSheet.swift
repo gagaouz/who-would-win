@@ -31,13 +31,13 @@ struct AnimalFactsSheet: View {
                                 fontSize: 28, tilt: -2)
 
                     if wins > 0 {
-                        Text("🏆 \(wins) win\(wins == 1 ? "" : "s") in your battles")
+                        Text("\(wins) win\(wins == 1 ? "" : "s") in your battles")
                             .font(Kids.fredoka(13, weight: .bold))
                             .foregroundColor(Kids.ink)
                             .padding(.horizontal, 14).padding(.vertical, 6)
                             .background(
                                 RetroPanelShape().fill(Kids.peach.opacity(0.9))
-                                    .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
+                                    .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                             )
                     }
 
@@ -56,7 +56,7 @@ struct AnimalFactsSheet: View {
                                 .font(Kids.fredoka(11, weight: .bold))
                                 .foregroundColor(Kids.ink)
                                 .padding(.horizontal, 10).padding(.vertical, 4)
-                                .background(RetroPanelShape().fill(Kids.grass).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
+                                .background(RetroPanelShape().fill(Kids.grass).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
                             Text(f.coolFact)
                                 .font(Kids.nunito(14, weight: .bold))
                                 .foregroundColor(Kids.ink)
@@ -67,7 +67,7 @@ struct AnimalFactsSheet: View {
                         .background(
                             RetroPanelShape(cornerRadius: 20, style: .continuous)
                                 .fill(.white)
-                                .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                                .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                         )
                         .padding(.horizontal, 18)
 
@@ -87,7 +87,7 @@ struct AnimalFactsSheet: View {
                             .padding(.horizontal, 20).padding(.vertical, 10)
                             .background(
                                 RetroPanelShape().fill(Kids.sky)
-                                    .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
+                                    .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                             )
                         }
                         .buttonStyle(.plain)
@@ -126,7 +126,7 @@ struct AnimalFactsSheet: View {
         .background(
             RetroPanelShape(cornerRadius: 16, style: .continuous)
                 .fill(.white)
-                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
     }
 

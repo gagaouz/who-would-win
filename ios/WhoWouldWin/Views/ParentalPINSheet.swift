@@ -103,7 +103,7 @@ struct ParentalPINSheet: View {
                 RetroPanelShape()
                     .fill(i < active ? Kids.ink : Color.white)
                     .frame(width: isIPad ? 22 : 18, height: isIPad ? 22 : 18)
-                    .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
+                    .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                     .scaleEffect(i < active ? 1.0 : 0.85)
                     .animation(.spring(response: 0.25, dampingFraction: 0.6), value: active)
             }
@@ -140,9 +140,9 @@ struct ParentalPINSheet: View {
                 .frame(width: keySize, height: keySize)
                 .background(
                     RetroPanelShape().fill(.white)
-                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
+                        .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                 )
-                .compositingGroup().shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
+                .compositingGroup().shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 3)
         }
         .buttonStyle(.plain)
     }
@@ -157,9 +157,9 @@ struct ParentalPINSheet: View {
                 .frame(width: keySize, height: keySize)
                 .background(
                     RetroPanelShape().fill(Kids.peach)
-                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
+                        .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                 )
-                .compositingGroup().shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
+                .compositingGroup().shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 3)
         }
         .buttonStyle(.plain)
     }

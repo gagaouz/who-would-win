@@ -27,6 +27,7 @@
 		1D44717152A03289CC97C3CF /* HowToPlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75B724AC8DB2196C8B54CF8C /* HowToPlayView.swift */; };
 		1DEC09ADC3F5BF78A062131C /* GrownUpZoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A3D0E4C0E68656414310E57 /* GrownUpZoneView.swift */; };
 		1E38ECD9D9BCB5AF7AD342CC /* RetroTestFixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E1697BA11D042BD1AE97316 /* RetroTestFixtures.swift */; };
+		2648C3E0F0021166BD261B9F /* RetroMotionRig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DCF77709D6A769247643DCD /* RetroMotionRig.swift */; };
 		2853D491587ACCADB09883F8 /* RetroAssetStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE10C0E201FCE77649E60AE /* RetroAssetStore.swift */; };
 		2AA1C981742ABFF0F3FEDE42 /* RetroAssetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEB63ED8CF17AB5BE777BA82 /* RetroAssetTests.swift */; };
 		2B60ADE6C43D692BEE926BAA /* KidsCoinShopSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA51E39CE6F71550794C76C6 /* KidsCoinShopSheet.swift */; };
@@ -83,6 +84,7 @@
 		A546FA4E8924B2E52C7C8AFB /* CheatState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4C2FC23BA4D81F4A58A1051 /* CheatState.swift */; };
 		A97D7AB618B1BD8D20050E37 /* TournamentCompleteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C870A52CDE33E9820E0472E9 /* TournamentCompleteView.swift */; };
 		B76311001B1DC6E68A8D6DC8 /* win.wav in Resources */ = {isa = PBXBuildFile; fileRef = 97EA4F7671340D534594DF04 /* win.wav */; };
+		B8E072FC410F27193A87B50A /* RetroMotionRigTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1B7EECAD3E7659CD866B696 /* RetroMotionRigTests.swift */; };
 		BBD6EA9C1130BE0F2CA495B4 /* BattleViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEAED077984C4F478AE2DAA6 /* BattleViewModel.swift */; };
 		BC30D01130A09D4479A5C386 /* LeaderboardService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F46964DBAD7BA5981FA39FF /* LeaderboardService.swift */; };
 		BDF61597BE64F7711A0C5736 /* MeleeUnlockSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 080AAA467285205204459C10 /* MeleeUnlockSheet.swift */; };
@@ -151,6 +153,7 @@
 		06B91C795B6ECBFAD1C58006 /* QuickMatchups.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickMatchups.swift; sourceTree = "<group>"; };
 		080AAA467285205204459C10 /* MeleeUnlockSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeleeUnlockSheet.swift; sourceTree = "<group>"; };
 		0C566F18C074E83FE59AB3D3 /* KidsChampionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidsChampionView.swift; sourceTree = "<group>"; };
+		0DCF77709D6A769247643DCD /* RetroMotionRig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroMotionRig.swift; sourceTree = "<group>"; };
 		0F46964DBAD7BA5981FA39FF /* LeaderboardService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaderboardService.swift; sourceTree = "<group>"; };
 		0FBD2631ECC1D1B6785FAB49 /* CrashReportingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportingService.swift; sourceTree = "<group>"; };
 		12CF19201B46E6369B66E3B7 /* BadgeToast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeToast.swift; sourceTree = "<group>"; };
@@ -239,6 +242,7 @@
 		CAAF8C94E94E4ECA5D745672 /* WhoWouldWin.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = WhoWouldWin.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CBF66D36EDF2D84B17175CC6 /* TournamentShareCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TournamentShareCard.swift; sourceTree = "<group>"; };
 		D086884958CA28B9548E6CB2 /* TrophyCaseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrophyCaseView.swift; sourceTree = "<group>"; };
+		D1B7EECAD3E7659CD866B696 /* RetroMotionRigTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroMotionRigTests.swift; sourceTree = "<group>"; };
 		D4D9856C80F072357F87346A /* NarrationLabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NarrationLabView.swift; sourceTree = "<group>"; };
 		DA92F6056F5482C747E734AE /* charge.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = charge.wav; sourceTree = "<group>"; };
 		DDAC5A52A3792082117A817E /* ParentalPIN.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParentalPIN.swift; sourceTree = "<group>"; };
@@ -322,6 +326,7 @@
 				150517DC8B8F3841C1A22A4C /* BattleServiceTests.swift */,
 				BEB63ED8CF17AB5BE777BA82 /* RetroAssetTests.swift */,
 				61F5766B9D255BC4B33D0606 /* RetroBattleTests.swift */,
+				D1B7EECAD3E7659CD866B696 /* RetroMotionRigTests.swift */,
 			);
 			path = WhoWouldWinTests;
 			sourceTree = "<group>";
@@ -474,6 +479,7 @@
 				05BDFC39CDD11C0A91B84A05 /* RetroBattleScene.swift */,
 				C0500B44F0AA7CF335FB38EE /* RetroBattleStage.swift */,
 				3C65729E6EFC07EBB3D9BBAE /* RetroCreatureArtwork.swift */,
+				0DCF77709D6A769247643DCD /* RetroMotionRig.swift */,
 				E7F87FBB7856961D4744C7F7 /* RetroSpriteManifest.json */,
 				9E1697BA11D042BD1AE97316 /* RetroTestFixtures.swift */,
 			);
@@ -711,6 +717,7 @@
 				406F5AC5F64DCAA7CDA6FCA9 /* BattleServiceTests.swift in Sources */,
 				2AA1C981742ABFF0F3FEDE42 /* RetroAssetTests.swift in Sources */,
 				3DD8DF65431CAB53952B2F8B /* RetroBattleTests.swift in Sources */,
+				B8E072FC410F27193A87B50A /* RetroMotionRigTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -792,6 +799,7 @@
 				FAD3DE8649F758AA8F59DF89 /* RetroBattleStage.swift in Sources */,
 				F27C3D38A86DC144F1049B53 /* RetroButton.swift in Sources */,
 				3FAAAA7CC95589FD02080221 /* RetroCreatureArtwork.swift in Sources */,
+				2648C3E0F0021166BD261B9F /* RetroMotionRig.swift in Sources */,
 				1E38ECD9D9BCB5AF7AD342CC /* RetroTestFixtures.swift in Sources */,
 				CC0D80C996C7BACF9AD59233 /* RoundResultsView.swift in Sources */,
 				5F8FF2B4A10DCF0FD24E0CDA /* RoundWagerView.swift in Sources */,
@@ -872,13 +880,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				GENERATE_INFOPLIST_FILE = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.whowouldin.WhoWouldWinTests;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -890,13 +898,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				GENERATE_INFOPLIST_FILE = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.whowouldin.WhoWouldWinTests;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1111,13 +1119,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				GENERATE_INFOPLIST_FILE = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.whowouldin.WhoWouldWinTests;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";

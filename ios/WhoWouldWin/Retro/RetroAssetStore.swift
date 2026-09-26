@@ -148,17 +148,24 @@ final class RetroAssetStore: ObservableObject {
     }
 
     func image(for animal: Animal, pose: RetroPose = .idle) -> UIImage? {
-        let key = animal.isCustom ? Self.customCacheKey(for: animal.name) : "\(animal.id).\(pose.rawValue)"
+        let key = animal.isCustom ? "\(Self.customCacheKey(for: animal.name)).\(pose.rawValue)" : "\(animal.id).\(pose.rawValue)"
         if let image = images.object(forKey: key as NSString) { return image }
         let image: UIImage?
         if animal.isCustom {
             let recipe = RetroCustomRecipe.make(name: animal.name)
-            let source: UIImage?
+            let sprite: RetroSpriteManifest.Sprite?
             switch recipe.source {
-            case .catalog(let id): source = cropped(manifest?.sprites[id], pose: .idle)
-            case .base(let id): source = cropped(manifest?.customBases?[id], pose: .idle)
+            case .catalog(let id): sprite = manifest?.sprites[id]
+            case .base(let id): sprite = manifest?.customBases?[id]
             }
-            image = RetroLocalAvatarRenderer.render(recipe: recipe, source: source)
+            let source = cropped(sprite, pose: pose)
+            // Every pose uses one scale and one foot baseline. Fitting each pose
+            // independently makes an extended attack visibly shrink its body.
+            let familyExtent = sprite?.frames.values.compactMap { frame -> Int? in
+                guard frame.count == 4 else { return nil }
+                return max(frame[2], frame[3])
+            }.max().map { CGFloat($0) }
+            image = RetroLocalAvatarRenderer.render(recipe: recipe, source: source, familyExtent: familyExtent)
         } else { image = cropped(manifest?.sprites[animal.id], pose: pose) }
         guard let image else { return nil }
         let cost = (image.cgImage?.bytesPerRow ?? 0) * (image.cgImage?.height ?? 0)
@@ -208,14 +215,14 @@ final class RetroAssetStore: ObservableObject {
 /// pixel geometry; they never alter creature identity, attributes or outcomes.
 @MainActor
 private enum RetroLocalAvatarRenderer {
-    static func render(recipe: RetroCustomRecipe, source: UIImage?) -> UIImage {
+    static func render(recipe: RetroCustomRecipe, source: UIImage?, familyExtent: CGFloat?) -> UIImage {
         let format = UIGraphicsImageRendererFormat(); format.scale = 1
         let canvas = CGSize(width: 128, height: 128)
         let base = UIGraphicsImageRenderer(size: canvas, format: format).image { renderer in
             let c = renderer.cgContext
             c.interpolationQuality = .none; c.setAllowsAntialiasing(false)
             if let source {
-                let scale = min(116 / source.size.width, 116 / source.size.height)
+                let scale = 116 / max(familyExtent ?? max(source.size.width, source.size.height), 1)
                 let size = CGSize(width: (source.size.width * scale).rounded(), height: (source.size.height * scale).rounded())
                 source.draw(in: CGRect(x: ((128 - size.width) / 2).rounded(), y: 122 - size.height, width: size.width, height: size.height))
             } else {

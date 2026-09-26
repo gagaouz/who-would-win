@@ -80,7 +80,7 @@ struct TournamentSetupView: View {
     private var header: some View {
         VStack(spacing: isIPad ? 10 : 6) {
             RetroSymbol("🏆", size: isIPad ? 84 : 56)
-                .compositingGroup().shadow(color: Kids.ink.opacity(0.09), radius: 0, x: 0, y: 4)
+                .compositingGroup().shadow(color: Kids.shadow.opacity(0.09), radius: 4, x: 0, y: 4)
 
             StickerWord(text: "TOURNAMENT", fill: Kids.sun, fontSize: isIPad ? 42 : 28, tilt: -2)
                 .rotationEffect(.degrees(-2))
@@ -109,7 +109,7 @@ struct TournamentSetupView: View {
         }
         .padding(isIPad ? 20 : 14)
         .background(card)
-        .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 4)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 4)
     }
 
     private var modeSection: some View {
@@ -141,7 +141,7 @@ struct TournamentSetupView: View {
         }
         .padding(isIPad ? 20 : 14)
         .background(card)
-        .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 4)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 4)
     }
 
     private func sectionLabel(icon: String, text: String) -> some View {
@@ -157,7 +157,7 @@ struct TournamentSetupView: View {
     private var card: some View {
         RetroPanelShape(cornerRadius: 20, style: .continuous)
             .fill(Color.white)
-            .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+            .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
     }
 }
 
@@ -186,9 +186,9 @@ private struct SizeChoiceChip: View {
                 RetroPanelShape(cornerRadius: 14, style: .continuous)
                     .fill(isSelected ? Kids.sun : Color.white)
                     .overlay(isSelected ? RetroPanelShape(cornerRadius: 14, style: .continuous).fill(Kids.sheen) : nil)
-                    .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: isSelected ? 3 : 2))
+                    .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(isSelected ? Kids.grassDeep : Kids.outline, lineWidth: isSelected ? 2 : 1.25))
             )
-            .compositingGroup().shadow(color: Kids.ink.opacity(isSelected ? 0.18 : 0.08), radius: 0, x: 0, y: isSelected ? 4 : 2)
+            .compositingGroup().shadow(color: Kids.shadow.opacity(isSelected ? 0.18 : 0.08), radius: 4, x: 0, y: isSelected ? 4 : 2)
             .scaleEffect(isSelected ? 1.04 : 1)
             .animation(.spring(response: 0.25, dampingFraction: 0.65), value: isSelected)
         }
@@ -214,7 +214,7 @@ private struct ModeRow: View {
                     RetroPanelShape(cornerRadius: isIPad ? 16 : 12, style: .continuous)
                         .fill(color)
                         .overlay(RetroPanelShape(cornerRadius: isIPad ? 16 : 12, style: .continuous).fill(Kids.sheen))
-                        .overlay(RetroPanelShape(cornerRadius: isIPad ? 16 : 12, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                        .overlay(RetroPanelShape(cornerRadius: isIPad ? 16 : 12, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                         .frame(width: isIPad ? 60 : 44, height: isIPad ? 60 : 44)
                     RetroSymbol(emoji, size: isIPad ? 30 : 22)
                 }
@@ -230,7 +230,7 @@ private struct ModeRow: View {
                 ZStack {
                     RetroPanelShape()
                         .fill(isSelected ? Kids.grass : Color.white)
-                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
+                        .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                         .frame(width: isIPad ? 34 : 26, height: isIPad ? 34 : 26)
                     if isSelected {
                         Text("✓").font(Kids.fredoka(isIPad ? 18 : 14, weight: .bold)).foregroundColor(Kids.ink)
@@ -241,7 +241,7 @@ private struct ModeRow: View {
             .background(
                 RetroPanelShape(cornerRadius: 14, style: .continuous)
                     .fill(isSelected ? color.opacity(0.18) : Kids.panel)
-                    .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink.opacity(isSelected ? 0.45 : 0.2), lineWidth: isSelected ? 2 : 1.5))
+                    .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(isSelected ? Kids.grassDeep : Kids.outline, lineWidth: isSelected ? 2 : 1.25))
             )
         }
         .buttonStyle(.plain)

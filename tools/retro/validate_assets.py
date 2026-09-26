@@ -61,6 +61,10 @@ icon = Image.open(icon_folder / icon_metadata['images'][0]['filename'])
 assert icon.size == (1024, 1024), 'App icon must be 1024 square'
 assert icon.mode == 'RGB' or (icon.mode == 'RGBA' and icon.getchannel('A').getextrema() == (255, 255)), 'App icon must be opaque'
 missing = sorted(known - set(sprites))
-print(json.dumps({'catalog': len(known), 'covered': len(sprites), 'customBases': len(custom_bases), 'atlases': len(opened), 'missing': missing}, indent=2))
+authored = [aid for aid, sprite in sprites.items()
+            if len({tuple(sprite['frames'].get(pose, sprite['frames']['idle']))
+                    for pose in ('idle', 'anticipation', 'attack', 'reaction')}) == 4]
+print(json.dumps({'catalog': len(known), 'covered': len(sprites), 'customBases': len(custom_bases),
+                  'atlases': len(opened), 'authoredPoseSets': len(authored), 'missing': missing}, indent=2))
 if args.require_complete and missing:
     raise SystemExit('Release blocked: incomplete retro artwork')

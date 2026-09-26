@@ -1,12 +1,12 @@
 {
   "version": "2.0",
-  "build": "110",
-  "ascVerifiedAt": "2026-09-26T16:00:47.039385+00:00",
-  "evidence": "docs/v2.0/evidence/asc-allocation-2026-09-26.json",
+  "build": "111",
+  "ascVerifiedAt": "2026-09-26T16:56:52.047435+00:00",
+  "evidence": "docs/v2.0/evidence/asc-allocation-2026-09-26T165652Z.json",
   "distributionScope": "internal-testflight",
   "allocatedBranch": "develop/2.0",
-  "highestUploadedBuildAtCheck": 109,
+  "highestUploadedBuildAtCheck": 110,
   "maintenanceSourceBuild": "109",
-  "nextUnallocatedBuildAtCheck": 111,
-  "note": "Build 110 allocated locally for this 2.0 candidate; ASC read-only checks do not reserve numbers. Recheck before upload; maintenance work must allocate a different number."
+  "nextUnallocatedBuildAtCheck": 112,
+  "note": "Build 111 allocated locally for the next 2.0 visual iteration; ASC read-only checks do not reserve numbers. Build 110 remains the verified prior internal beta. Recheck before upload; maintenance must allocate a different number."
 }

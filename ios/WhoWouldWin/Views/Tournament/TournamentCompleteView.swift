@@ -47,9 +47,9 @@ struct TournamentCompleteView: View {
                             .padding(.horizontal, isIPad ? 26 : 18).padding(.vertical, isIPad ? 10 : 7)
                             .background(
                                 RetroPanelShape().fill(Kids.ink)
-                                    .overlay(RetroPanelShape().stroke(Kids.sun, lineWidth: 3))
+                                    .overlay(RetroPanelShape().stroke(Kids.sun, lineWidth: 2))
                             )
-                            .compositingGroup().shadow(color: Kids.ink.opacity(0.21), radius: 0, x: 0, y: 5)
+                            .compositingGroup().shadow(color: Kids.shadow.opacity(0.21), radius: 4, x: 0, y: 5)
 
                             .scaleEffect(appeared ? 1 : 0.4)
 
@@ -91,7 +91,7 @@ struct TournamentCompleteView: View {
                         }
                         .padding(isIPad ? 20 : 14)
                         .background(card)
-                        .compositingGroup().shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
+                        .compositingGroup().shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 4)
                         .padding(.horizontal, isIPad ? 28 : 18)
                         .opacity(appeared ? 1 : 0)
 
@@ -184,7 +184,7 @@ struct TournamentCompleteView: View {
     private var card: some View {
         RetroPanelShape(cornerRadius: 20, style: .continuous)
             .fill(.white)
-            .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+            .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
     }
 
     // MARK: - Summary card
@@ -231,7 +231,7 @@ struct TournamentCompleteView: View {
         }
         .padding(isIPad ? 20 : 14)
         .background(card)
-        .compositingGroup().shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 4)
     }
 
     private func summaryRow(_ label: String, _ value: String) -> some View {

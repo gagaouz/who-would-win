@@ -47,7 +47,7 @@ struct HowToPlayView: View {
                             .font(Kids.fredoka(15, weight: .bold))
                             .foregroundColor(Kids.inkSoft)
                             .padding(.horizontal, 14).padding(.vertical, 7)
-                            .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.ink.opacity(0.4), lineWidth: 2)))
+                            .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
                     }
                     .buttonStyle(.plain)
                 }
@@ -84,9 +84,9 @@ struct HowToPlayView: View {
             ZStack {
                 RetroPanelShape().fill(s.color)
                     .overlay(RetroPanelShape().fill(Kids.sheen))
-                    .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 4))
+                    .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                     .frame(width: isIPad ? 180 : 140, height: isIPad ? 180 : 140)
-                    .compositingGroup().shadow(color: Kids.ink.opacity(0.12), radius: 0, x: 0, y: 6)
+                    .compositingGroup().shadow(color: Kids.shadow.opacity(0.12), radius: 4, x: 0, y: 6)
                 RetroSymbol(s.emoji, size: isIPad ? 92 : 72)
             }
             Text(s.title)

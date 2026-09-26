@@ -18,7 +18,7 @@ struct MeleeBattleView: View {
 
     var body: some View {
         ZStack {
-            Color(hex: "#F4EDD8").ignoresSafeArea()
+            SkyBG(variant: .meadow)
             if let result = viewModel.result, viewModel.animationComplete {
                 ResultContent(result: result, teamA: teamA, teamB: teamB, isIPad: isIPad,
                               onAgain: { dismiss() }, onClose: { dismiss() })
@@ -89,10 +89,10 @@ private struct BattleContent: View {
                 .background(
                     RetroPanelShape(cornerRadius: 18, style: .continuous)
                         .fill(Kids.sun)
-                        .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                        .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                 )
                 .compositingGroup()
-                .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
+                .shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 4)
                 .rotationEffect(.degrees(-1.5))
                 .scaleEffect(vsPulse * 0.95)
                 .padding(.top, 14)
@@ -132,10 +132,10 @@ private struct BattleContent: View {
             .background(
                 RetroPanelShape(cornerRadius: 20, style: .continuous)
                     .fill(.white)
-                    .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                    .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
             )
             .compositingGroup()
-            .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
+            .shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 4)
             .padding(.horizontal, 18)
             .padding(.top, 18)
 
@@ -179,7 +179,7 @@ private struct BattleContent: View {
                 .font(Kids.fredoka(isIPad ? 14 : 11, weight: .bold))
                 .foregroundColor(Kids.ink)
                 .padding(.horizontal, 10).padding(.vertical, 3)
-                .background(RetroPanelShape().fill(tint).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
+                .background(RetroPanelShape().fill(tint).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
             HStack(spacing: isIPad ? 10 : 6) {
                 ForEach(team) { animal in
                     VStack(spacing: 4) {
@@ -255,7 +255,7 @@ private struct ResultContent: View {
                             .font(Kids.fredoka(isIPad ? 16 : 13, weight: .bold))
                             .foregroundColor(Kids.ink)
                             .padding(.horizontal, 12).padding(.vertical, 4)
-                            .background(RetroPanelShape().fill(Kids.sun).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
+                            .background(RetroPanelShape().fill(Kids.sun).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
                     }
                 }
 
@@ -305,7 +305,7 @@ private struct ResultContent: View {
                     .padding(.horizontal, 14).padding(.vertical, 8)
                     .background(
                         RetroPanelShape().fill(Kids.sky)
-                            .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
+                            .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                     )
                 }
                 .buttonStyle(.plain)
@@ -373,7 +373,7 @@ private struct ResultContent: View {
                 .font(Kids.fredoka(11, weight: .bold))
                 .foregroundColor(Kids.ink)
                 .padding(.horizontal, 10).padding(.vertical, 4)
-                .background(RetroPanelShape().fill(titleColor).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
+                .background(RetroPanelShape().fill(titleColor).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
             Text(body)
                 .accessibilityIdentifier(title == "BATTLE STORY" ? "battle.narration" : "battle.info.\(title)")
                 .font(Kids.nunito(13, weight: .bold))
@@ -385,10 +385,10 @@ private struct ResultContent: View {
         .background(
             RetroPanelShape(cornerRadius: 20, style: .continuous)
                 .fill(.white)
-                .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
         .compositingGroup()
-        .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
+        .shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 4)
         .padding(.horizontal, 18)
     }
 }

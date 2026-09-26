@@ -41,9 +41,9 @@ struct TaleOfTheTapeView: View {
             .background(
                 RetroPanelShape(cornerRadius: 20, style: .continuous)
                     .fill(.white)
-                    .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                    .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
             )
-            .compositingGroup().shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
+            .compositingGroup().shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 4)
         }
     }
 
@@ -58,7 +58,7 @@ struct TaleOfTheTapeView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 5)
         .background(RetroPanelShape().fill(tint.opacity(0.6))
-            .overlay(RetroPanelShape().stroke(Kids.ink.opacity(0.5), lineWidth: 1.5)))
+            .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1)))
     }
 
     /// One stat: a centered label between two tinted value tiles.
@@ -86,7 +86,7 @@ struct TaleOfTheTapeView: View {
             .background(
                 RetroPanelShape(cornerRadius: 12, style: .continuous)
                     .fill(tint.opacity(0.22))
-                    .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.ink.opacity(0.35), lineWidth: 1.5))
+                    .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.outline, lineWidth: 1))
             )
     }
 }

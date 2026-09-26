@@ -33,7 +33,7 @@ struct ParentGateSheet: View {
                     } label: {
                         ZStack {
                             RetroPanelShape().fill(.white)
-                                .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
+                                .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                                 .frame(width: 44, height: 44)
                             Image(systemName: "xmark")
                                 .font(.system(size: 14, weight: .bold))
@@ -72,7 +72,7 @@ struct ParentGateSheet: View {
                                 .padding(.vertical, isIPad ? 22 : 18)
                                 .background(
                                     StickerShape(shape: RetroPanelShape(cornerRadius: 22, style: .continuous),
-                                                 fill: .white, strokeWidth: 3.5)
+                                                 fill: Kids.panel, strokeWidth: 1.25)
                                 )
                                 .inkShadow(y: 4, opacity: 0.10)
                                 .id("\(challenge.a)x\(challenge.b)")

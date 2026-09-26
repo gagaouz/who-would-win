@@ -99,7 +99,7 @@ struct TournamentShareCard: View {
                     AnimalBubble(animal: c, size: 178, tint: Kids.sun)
                 }
             }
-            .compositingGroup().shadow(color: Kids.ink.opacity(0.15), radius: 0, x: 0, y: 6)
+            .compositingGroup().shadow(color: Kids.shadow.opacity(0.15), radius: 4, x: 0, y: 6)
 
             StickerWord(text: (champion?.name ?? "???").uppercased(),
                         fill: Kids.sun, fontSize: 32, tilt: -3)
@@ -122,7 +122,7 @@ struct TournamentShareCard: View {
                 .padding(.horizontal, 10).padding(.vertical, 5)
                 .background(
                     RetroPanelShape().fill(Kids.sun)
-                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
+                        .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                 )
                 .padding(.top, 6)
             }
@@ -132,9 +132,9 @@ struct TournamentShareCard: View {
         .background(
             RetroPanelShape(cornerRadius: 24, style: .continuous)
                 .fill(Color.white.opacity(0.9))
-                .overlay(RetroPanelShape(cornerRadius: 24, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                .overlay(RetroPanelShape(cornerRadius: 24, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
-        .compositingGroup().shadow(color: Kids.ink.opacity(0.11), radius: 0, x: 0, y: 5)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.11), radius: 4, x: 0, y: 5)
     }
 
     // MARK: - Bracket summary (Kids-styled compact)
@@ -161,7 +161,7 @@ struct TournamentShareCard: View {
                             .foregroundColor(Kids.ink)
                             .tracking(1)
                             .padding(.horizontal, 5).padding(.vertical, 2)
-                            .background(RetroPanelShape().fill(Kids.sun).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1)))
+                            .background(RetroPanelShape().fill(Kids.sun).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1)))
                         ForEach(round) { matchup in
                             matchupMiniCard(matchup)
                         }
@@ -174,9 +174,9 @@ struct TournamentShareCard: View {
         .background(
             RetroPanelShape(cornerRadius: 18, style: .continuous)
                 .fill(.white)
-                .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
-        .compositingGroup().shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 4)
     }
 
     private func matchupMiniCard(_ m: Matchup) -> some View {
@@ -191,7 +191,7 @@ struct TournamentShareCard: View {
         .background(
             RetroPanelShape(cornerRadius: 8, style: .continuous)
                 .fill(Kids.panel)
-                .overlay(RetroPanelShape(cornerRadius: 8, style: .continuous).stroke(Kids.ink.opacity(0.25), lineWidth: 1))
+                .overlay(RetroPanelShape(cornerRadius: 8, style: .continuous).stroke(Kids.outline, lineWidth: 1))
         )
     }
 
@@ -241,7 +241,7 @@ struct TournamentShareCard: View {
                 .fill(.white)
                 .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(color, lineWidth: 2.5))
         )
-        .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 3)
     }
 
     // MARK: - Footer
@@ -255,7 +255,7 @@ struct TournamentShareCard: View {
                     .frame(width: 52, height: 52)
                     .padding(5)
                     .background(RetroPanelShape(cornerRadius: 10).fill(.white))
-                    .overlay(RetroPanelShape(cornerRadius: 10).stroke(Kids.ink, lineWidth: 2))
+                    .overlay(RetroPanelShape(cornerRadius: 10).stroke(Kids.outline, lineWidth: 1.25))
             }
             VStack(alignment: .leading, spacing: 4) {
                 Text("Animal vs Animal")
@@ -277,7 +277,7 @@ struct TournamentShareCard: View {
             RetroPanelShape(cornerRadius: 14, style: .continuous)
                 .fill(Kids.sun)
                 .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
-                .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
     }
 

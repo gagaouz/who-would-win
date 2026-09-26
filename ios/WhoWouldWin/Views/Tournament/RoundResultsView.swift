@@ -54,7 +54,7 @@ struct RoundResultsView: View {
                     }
                     .padding(14)
                     .background(card)
-                    .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 4)
+                    .compositingGroup().shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 4)
 
                     KidButton(title: isFinalRound ? "SEE CHAMPION!" : "NEXT ROUND",
                               icon: isFinalRound ? "🏆" : "▶️",
@@ -91,7 +91,7 @@ struct RoundResultsView: View {
     private var card: some View {
         RetroPanelShape(cornerRadius: 20, style: .continuous)
             .fill(Color.white)
-            .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+            .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
     }
 
     // MARK: - Header
@@ -123,7 +123,7 @@ struct RoundResultsView: View {
             ZStack {
                 RetroPanelShape()
                     .fill(hasWager ? (line.won ? Kids.grass : Kids.pink) : Kids.panel)
-                    .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
+                    .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                     .frame(width: 30, height: 30)
                 if hasWager {
                     Text(line.won ? "✓" : "✕")
@@ -174,7 +174,7 @@ struct RoundResultsView: View {
         .background(
             RetroPanelShape(cornerRadius: 12, style: .continuous)
                 .fill(Kids.panel)
-                .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.ink.opacity(0.2), lineWidth: 1.5))
+                .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.outline, lineWidth: 1))
         )
     }
 

@@ -53,7 +53,7 @@ struct KidsCoinShopSheet: View {
                         Button { isPresented = false } label: {
                             ZStack {
                                 RetroPanelShape().fill(.white)
-                                    .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
+                                    .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                                     .frame(width: 44, height: 44)
                                 Image(systemName: "xmark")
                                     .font(.system(size: 14, weight: .bold))
@@ -68,7 +68,7 @@ struct KidsCoinShopSheet: View {
                     VStack(spacing: 6) {
                         KidsGoldCoin(size: 72)
                             .scaleEffect(balancePulse)
-                            .compositingGroup().shadow(color: Kids.ink.opacity(0.12), radius: 0, x: 0, y: 5)
+                            .compositingGroup().shadow(color: Kids.shadow.opacity(0.12), radius: 4, x: 0, y: 5)
                         StickerWord(text: "COIN BANK", fill: Kids.sun, fontSize: 32, tilt: -2)
                             .rotationEffect(.degrees(appeared ? -2 : -15))
                             .scaleEffect(appeared ? 1 : 0.3)
@@ -94,9 +94,9 @@ struct KidsCoinShopSheet: View {
                     .background(
                         RetroPanelShape(cornerRadius: 22, style: .continuous)
                             .fill(.white)
-                            .overlay(RetroPanelShape(cornerRadius: 22, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                            .overlay(RetroPanelShape(cornerRadius: 22, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                     )
-                    .compositingGroup().shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
+                    .compositingGroup().shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 4)
                     .padding(.horizontal, 18)
 
                     // Earn list
@@ -124,9 +124,9 @@ struct KidsCoinShopSheet: View {
                     .background(
                         RetroPanelShape(cornerRadius: 22, style: .continuous)
                             .fill(.white)
-                            .overlay(RetroPanelShape(cornerRadius: 22, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                            .overlay(RetroPanelShape(cornerRadius: 22, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                     )
-                    .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+                    .compositingGroup().shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 3)
                     .padding(.horizontal, 18)
 
                     // Buy coins
@@ -156,9 +156,9 @@ struct KidsCoinShopSheet: View {
                     .background(
                         RetroPanelShape(cornerRadius: 22, style: .continuous)
                             .fill(.white)
-                            .overlay(RetroPanelShape(cornerRadius: 22, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                            .overlay(RetroPanelShape(cornerRadius: 22, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                     )
-                    .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+                    .compositingGroup().shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 3)
                     .padding(.horizontal, 18)
 
                     // Everything Bundle — the one-and-done parent option
@@ -176,7 +176,7 @@ struct KidsCoinShopSheet: View {
                                     .tracking(1)
                                     .foregroundColor(Kids.ink)
                                     .padding(.horizontal, 7).padding(.vertical, 3)
-                                    .background(RetroPanelShape().fill(Kids.pink).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5)))
+                                    .background(RetroPanelShape().fill(Kids.pink).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1)))
                             }
                             .padding(.horizontal, 4)
 
@@ -192,7 +192,7 @@ struct KidsCoinShopSheet: View {
                                 .foregroundColor(Kids.inkSoft)
                                 .multilineTextAlignment(.center)
                                 .padding(.top, 2)
-                            Text("👑 Premium families already have every pack, no ads, and 2× coins — see Settings.")
+                            Text("Premium families already have every pack, no ads, and 2× coins — see Settings.")
                                 .font(Kids.nunito(9, weight: .bold))
                                 .foregroundColor(Kids.inkSoft.opacity(0.8))
                                 .multilineTextAlignment(.center)
@@ -201,9 +201,9 @@ struct KidsCoinShopSheet: View {
                         .background(
                             RetroPanelShape(cornerRadius: 22, style: .continuous)
                                 .fill(.white)
-                                .overlay(RetroPanelShape(cornerRadius: 22, style: .continuous).stroke(Kids.sun, lineWidth: 3.5))
+                                .overlay(RetroPanelShape(cornerRadius: 22, style: .continuous).stroke(Kids.sun, lineWidth: 2))
                         )
-                        .compositingGroup().shadow(color: Kids.ink.opacity(0.09), radius: 0, x: 0, y: 4)
+                        .compositingGroup().shadow(color: Kids.shadow.opacity(0.09), radius: 4, x: 0, y: 4)
                         .padding(.horizontal, 18)
                     }
 
@@ -225,7 +225,7 @@ struct KidsCoinShopSheet: View {
             gatedAction?()
             gatedAction = nil
         }
-        .alert("📨 Asked your grown-up!", isPresented: $showAskToBuyNotice) {
+        .alert("Asked your grown-up!", isPresented: $showAskToBuyNotice) {
             Button("OK", role: .cancel) {}
         } message: {
             Text("Your purchase will arrive when they say yes.")
@@ -264,7 +264,7 @@ struct KidsCoinShopSheet: View {
             ZStack {
                 RetroPanelShape(cornerRadius: 12, style: .continuous)
                     .fill(Kids.cream)
-                    .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.ink, lineWidth: 2))
+                    .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                     .frame(width: 40, height: 40)
                 RetroSymbol(icon, size: 20)
             }
@@ -288,7 +288,7 @@ struct KidsCoinShopSheet: View {
                         .padding(.horizontal, 12).padding(.vertical, 6)
                         .background(
                             RetroPanelShape().fill(disabled ? Kids.creamDeep : Kids.grass)
-                                .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
+                                .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                         )
                 }
                 .buttonStyle(.plain)
@@ -299,7 +299,7 @@ struct KidsCoinShopSheet: View {
                     .font(Kids.fredoka(13, weight: .bold))
                     .foregroundColor(Kids.ink)
                     .padding(.horizontal, 10).padding(.vertical, 4)
-                    .background(RetroPanelShape().fill(Kids.sun).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
+                    .background(RetroPanelShape().fill(Kids.sun).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
             }
         }
     }

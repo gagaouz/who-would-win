@@ -63,86 +63,212 @@
       }
     },
     "tiger": {
-      "asset": "retro_anatomy",
+      "asset": "retro_motion_land",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          8,
-          144,
-          358,
-          238
+          69,
+          151,
+          197,
+          145
+        ],
+        "anticipation": [
+          369,
+          164,
+          199,
+          132
+        ],
+        "attack": [
+          660,
+          166,
+          258,
+          131
+        ],
+        "reaction": [
+          1014,
+          138,
+          159,
+          157
         ]
       }
     },
     "grizzly_bear": {
-      "asset": "retro_clean_a",
+      "asset": "retro_motion_land",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          96,
-          174,
-          491,
-          366
+          58,
+          431,
+          222,
+          166
+        ],
+        "anticipation": [
+          358,
+          440,
+          222,
+          156
+        ],
+        "attack": [
+          663,
+          437,
+          279,
+          162
+        ],
+        "reaction": [
+          1032,
+          418,
+          149,
+          178
         ]
       }
     },
     "wolf": {
-      "asset": "retro_clean_a",
+      "asset": "retro_motion_land",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          685,
-          190,
-          491,
-          345
+          67,
+          733,
+          206,
+          144
+        ],
+        "anticipation": [
+          364,
+          759,
+          216,
+          118
+        ],
+        "attack": [
+          667,
+          742,
+          247,
+          129
+        ],
+        "reaction": [
+          1013,
+          706,
+          172,
+          172
         ]
       }
     },
     "elephant": {
-      "asset": "retro_anatomy",
+      "asset": "retro_motion_land",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          1083,
-          99,
-          363,
-          283
+          61,
+          995,
+          224,
+          168
+        ],
+        "anticipation": [
+          358,
+          1004,
+          222,
+          159
+        ],
+        "attack": [
+          671,
+          998,
+          279,
+          166
+        ],
+        "reaction": [
+          1007,
+          961,
+          182,
+          204
         ]
       }
     },
     "great_white_shark": {
-      "asset": "retro_clean_a",
+      "asset": "retro_motion_airsea",
       "archetype": "swimmer",
       "frames": {
         "idle": [
-          47,
-          784,
-          595,
-          321
+          26,
+          201,
+          294,
+          185
+        ],
+        "anticipation": [
+          345,
+          155,
+          282,
+          240
+        ],
+        "attack": [
+          638,
+          203,
+          315,
+          183
+        ],
+        "reaction": [
+          984,
+          189,
+          243,
+          201
         ]
       }
     },
     "bald_eagle": {
-      "asset": "retro_clean_a",
+      "asset": "retro_motion_airsea",
       "archetype": "flyer",
       "frames": {
         "idle": [
-          698,
-          680,
-          495,
-          481
+          45,
+          703,
+          260,
+          251
+        ],
+        "anticipation": [
+          349,
+          784,
+          277,
+          164
+        ],
+        "attack": [
+          651,
+          718,
+          307,
+          238
+        ],
+        "reaction": [
+          992,
+          697,
+          246,
+          253
         ]
       }
     },
     "cobra": {
-      "asset": "retro_anatomy",
+      "asset": "retro_motion_airsea",
       "archetype": "serpentine",
       "frames": {
         "idle": [
-          760,
-          408,
-          276,
-          290
+          44,
+          971,
+          232,
+          235
+        ],
+        "anticipation": [
+          359,
+          980,
+          219,
+          226
+        ],
+        "attack": [
+          637,
+          994,
+          327,
+          212
+        ],
+        "reaction": [
+          997,
+          973,
+          223,
+          234
         ]
       }
     },
@@ -159,26 +285,62 @@
       }
     },
     "t_rex": {
-      "asset": "retro_clean_b",
+      "asset": "retro_motion_prehistoric",
       "archetype": "biped",
       "frames": {
         "idle": [
-          70,
-          221,
-          477,
-          366
+          64,
+          415,
+          230,
+          207
+        ],
+        "anticipation": [
+          353,
+          471,
+          265,
+          153
+        ],
+        "attack": [
+          664,
+          431,
+          258,
+          193
+        ],
+        "reaction": [
+          983,
+          389,
+          175,
+          233
         ]
       }
     },
     "dragon": {
-      "asset": "retro_clean_b",
+      "asset": "retro_motion_prehistoric",
       "archetype": "flyer",
       "frames": {
         "idle": [
-          682,
-          181,
-          522,
-          410
+          65,
+          128,
+          222,
+          185
+        ],
+        "anticipation": [
+          363,
+          166,
+          237,
+          148
+        ],
+        "attack": [
+          661,
+          141,
+          245,
+          175
+        ],
+        "reaction": [
+          967,
+          114,
+          197,
+          200
         ]
       }
     },
@@ -207,14 +369,32 @@
       }
     },
     "rhinoceros": {
-      "asset": "retro_land",
+      "asset": "retro_motion_wild",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          26,
-          114,
-          369,
-          222
+          12,
+          454,
+          318,
+          202
+        ],
+        "anticipation": [
+          336,
+          475,
+          297,
+          180
+        ],
+        "attack": [
+          638,
+          454,
+          347,
+          200
+        ],
+        "reaction": [
+          987,
+          418,
+          255,
+          238
         ]
       }
     },
@@ -243,14 +423,32 @@
       }
     },
     "crocodile": {
-      "asset": "retro_land",
+      "asset": "retro_motion_wild",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          1075,
-          151,
-          348,
-          183
+          10,
+          165,
+          308,
+          180
+        ],
+        "anticipation": [
+          329,
+          170,
+          287,
+          175
+        ],
+        "attack": [
+          633,
+          166,
+          317,
+          181
+        ],
+        "reaction": [
+          964,
+          137,
+          272,
+          209
         ]
       }
     },
@@ -339,38 +537,92 @@
       }
     },
     "tarantula": {
-      "asset": "retro_land",
+      "asset": "retro_motion_wild",
       "archetype": "arthropod",
       "frames": {
         "idle": [
-          1091,
-          829,
-          328,
-          188
+          18,
+          766,
+          300,
+          175
+        ],
+        "anticipation": [
+          334,
+          780,
+          289,
+          161
+        ],
+        "attack": [
+          647,
+          713,
+          318,
+          228
+        ],
+        "reaction": [
+          1007,
+          769,
+          220,
+          172
         ]
       }
     },
     "orca": {
-      "asset": "retro_sea",
+      "asset": "retro_motion_airsea",
       "archetype": "swimmer",
       "frames": {
         "idle": [
           26,
-          119,
-          334,
-          251
+          491,
+          308,
+          191
+        ],
+        "anticipation": [
+          365,
+          425,
+          245,
+          267
+        ],
+        "attack": [
+          636,
+          485,
+          352,
+          199
+        ],
+        "reaction": [
+          989,
+          467,
+          242,
+          219
         ]
       }
     },
     "giant_squid": {
-      "asset": "retro_sea",
+      "asset": "retro_motion_wild",
       "archetype": "swimmer",
       "frames": {
         "idle": [
-          400,
-          132,
-          316,
-          258
+          29,
+          990,
+          278,
+          209
+        ],
+        "anticipation": [
+          346,
+          1008,
+          235,
+          191
+        ],
+        "attack": [
+          602,
+          1013,
+          396,
+          186
+        ],
+        "reaction": [
+          1006,
+          989,
+          224,
+          209
         ]
       }
     },
@@ -1323,26 +1575,62 @@
       }
     },
     "triceratops": {
-      "asset": "retro_clean_b",
+      "asset": "retro_motion_prehistoric",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          652,
-          780,
-          558,
-          370
+          53,
+          712,
+          253,
+          188
+        ],
+        "anticipation": [
+          349,
+          734,
+          265,
+          166
+        ],
+        "attack": [
+          658,
+          747,
+          277,
+          154
+        ],
+        "reaction": [
+          975,
+          700,
+          209,
+          200
         ]
       }
     },
     "velociraptor": {
-      "asset": "retro_clean_c",
+      "asset": "retro_motion_prehistoric",
       "archetype": "biped",
       "frames": {
         "idle": [
-          33,
-          204,
-          532,
-          363
+          61,
+          1009,
+          238,
+          174
+        ],
+        "anticipation": [
+          352,
+          1034,
+          257,
+          147
+        ],
+        "attack": [
+          664,
+          996,
+          265,
+          175
+        ],
+        "reaction": [
+          968,
+          984,
+          206,
+          198
         ]
       }
     },

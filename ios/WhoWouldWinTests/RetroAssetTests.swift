@@ -4,6 +4,21 @@ import UIKit
 
 final class RetroAssetTests: XCTestCase {
     @MainActor
+    func testExpandedActionRosterHasFourDifferentBundledPoses() throws {
+        let store = RetroAssetStore.shared
+        let ids = ["lion", "gorilla", "tiger", "grizzly_bear", "wolf", "elephant",
+                   "great_white_shark", "orca", "bald_eagle", "cobra", "dragon", "t_rex",
+                   "triceratops", "velociraptor", "crocodile", "rhinoceros", "tarantula", "giant_squid"]
+        for id in ids {
+            let sprite = try XCTUnwrap(store.manifest?.sprites[id])
+            let animal = try XCTUnwrap(Animals.all.first { $0.id == id })
+            XCTAssertEqual(Set(sprite.frames.keys), Set(RetroPose.allCases.map(\.rawValue)), id)
+            let frames = try RetroPose.allCases.map { try XCTUnwrap(store.image(for: animal, pose: $0)?.pngData()) }
+            XCTAssertEqual(Set(frames).count, 4, "\(id) must have four genuinely different images, not idle aliases.")
+        }
+    }
+
+    @MainActor
     func testEveryRegisteredSpriteHasValidRenderableFrames() throws {
         let store = RetroAssetStore.shared
         let manifest = try XCTUnwrap(store.manifest, "Manifest must be packaged in the native app")
@@ -119,7 +134,35 @@ final class RetroAssetTests: XCTestCase {
         XCTAssertEqual(first.category, .fantasy)
         XCTAssertEqual(first.size, 3)
         for pose in RetroPose.allCases {
-            XCTAssertTrue(firstImage === store.image(for: first, pose: pose), "Custom poses use native motion around the same local art.")
+            XCTAssertTrue(store.image(for: first, pose: pose) === store.image(for: second, pose: pose),
+                          "Equivalent names share each pose without merging gameplay identities.")
+        }
+    }
+
+    @MainActor
+    func testCustomCatalogAvatarsRetainAuthoredActionPosesAfterCacheRebuild() throws {
+        let store = RetroAssetStore.shared
+        let animal = custom("Blue Lion")
+        let images = try RetroPose.allCases.map { try XCTUnwrap(store.image(for: animal, pose: $0)) }
+        let pixels = try images.map { try XCTUnwrap($0.pngData()) }
+        XCTAssertEqual(Set(pixels).count, RetroPose.allCases.count,
+                       "Custom artwork must not collapse the lion's four action poses into one idle image.")
+        XCTAssertTrue(images.allSatisfy { $0.size == CGSize(width: 128, height: 128) })
+        store.clearMemoryCache()
+        for (index, pose) in RetroPose.allCases.enumerated() {
+            XCTAssertEqual(pixels[index], store.image(for: animal, pose: pose)?.pngData())
+        }
+        XCTAssertEqual(animal.id, "custom_preview")
+    }
+
+    @MainActor
+    func testSinglePoseCustomBasesFallBackWithoutChangingAppearance() throws {
+        let store = RetroAssetStore.shared
+        let animal = custom("Wizard")
+        let idle = try XCTUnwrap(store.image(for: animal)?.pngData())
+        for pose in RetroPose.allCases {
+            XCTAssertEqual(idle, store.image(for: animal, pose: pose)?.pngData(),
+                           "The runtime anatomy rig supplies motion when a base has one authored pose.")
         }
     }
 

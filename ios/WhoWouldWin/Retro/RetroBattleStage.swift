@@ -60,8 +60,10 @@ struct RetroBattleStage: View {
                         Button(action: onClose) {
                             Image(systemName: "xmark").font(.system(size: 17, weight: .bold))
                                 .frame(width: 44, height: 44)
+                                .background(StickerShape(shape: RetroPanelShape(), fill: Kids.panel))
                         }
                         .foregroundColor(Kids.ink)
+                        .buttonStyle(KidButtonPressStyle())
                         .accessibilityLabel("Close battle")
                     }
                 }
@@ -72,8 +74,10 @@ struct RetroBattleStage: View {
                 }
                 SpriteView(scene: model.scene, options: [.ignoresSiblingOrder])
                     .aspectRatio(480.0 / 280.0, contentMode: .fit)
-                    .overlay(Rectangle().stroke(Color(hex: "#314C42"), lineWidth: 3))
-                    .shadow(color: Color(hex: "#314C42").opacity(0.2), radius: 0, x: 0, y: 5)
+                    .clipShape(RetroPanelShape(cornerRadius: 12))
+                    .padding(5)
+                    .background(StickerShape(shape: RetroPanelShape(cornerRadius: 12), fill: Kids.panel))
+                    .compositingGroup().shadow(color: Kids.shadow.opacity(0.15), radius: 8, x: 0, y: 4)
                     .accessibilityHidden(true)
                 VStack(spacing: 9) {
                     if outcome == nil {
@@ -90,6 +94,9 @@ struct RetroBattleStage: View {
                 }
                 .foregroundColor(Kids.ink)
                 .frame(minHeight: 58)
+                .frame(maxWidth: .infinity)
+                .padding(12)
+                .background(RetroPanelShape().fill(Kids.panel.opacity(0.88)))
                 HStack(spacing: 12) {
                     cheerButton(side: 1, fighters: teamA)
                     cheerButton(side: 2, fighters: teamB)
@@ -111,7 +118,7 @@ struct RetroBattleStage: View {
             .frame(maxWidth: 760)
             .frame(maxWidth: .infinity)
         }
-        .background(Color(hex: "#F4EDD8"))
+        .background(SkyBG(variant: .meadow))
         .accessibilityIdentifier("battle.arena")
         .onAppear {
             model.scene.onFinished = onComplete
@@ -135,12 +142,18 @@ struct RetroBattleStage: View {
     private func roster(_ fighters: [Animal], label: String, side: Int) -> some View {
         VStack(spacing: 5) {
             Text(label).font(Kids.nunito(10, weight: .bold)).foregroundColor(Kids.inkSoft)
-            HStack(spacing: 2) {
-                ForEach(fighters) { animal in
-                    RetroCreatureArtwork(animal: animal, size: fighters.count > 2 ? 36 : 48)
-                        .accessibilityHidden(true)
+            GeometryReader { geo in
+                let portraitSide = min(fighters.count > 2 ? 36.0 : 48.0,
+                                       max(16, (geo.size.width - CGFloat(max(0, fighters.count - 1)) * 2) / CGFloat(max(1, fighters.count))))
+                HStack(spacing: 2) {
+                    ForEach(fighters) { animal in
+                        RetroCreatureArtwork(animal: animal, size: portraitSide)
+                            .accessibilityHidden(true)
+                    }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+            .frame(height: fighters.count > 2 ? 36 : 48)
             Text(fighters.map(\.name).joined(separator: " + "))
                 .font(Kids.nunito(fighters.count > 2 ? 11 : 14, weight: .bold))
                 .foregroundColor(Kids.ink).multilineTextAlignment(.center)
@@ -150,6 +163,11 @@ struct RetroBattleStage: View {
             }
         }
         .frame(maxWidth: .infinity)
+        .padding(.vertical, 10)
+        .padding(.horizontal, 6)
+        .background(RetroPanelShape().fill(Kids.panel.opacity(0.80)))
+        .overlay(RetroPanelShape().strokeBorder(pickedSide == side ? Kids.grassDeep : Kids.outline,
+                                               lineWidth: pickedSide == side ? 1.5 : 1))
         .accessibilityElement(children: .combine)
     }
 
@@ -174,12 +192,12 @@ struct RetroBattleStage: View {
                 .accessibilityHidden(true)
             }
             .foregroundColor(Kids.ink)
-            .frame(maxWidth: .infinity, minHeight: 52)
-            .padding(.horizontal, 5)
-            .background(side == 1 ? Color(hex: "#EEC56B") : Color(hex: "#CCD3A2"))
-            .overlay(Rectangle().stroke(Color(hex: "#495C48"), lineWidth: 2))
+            .frame(maxWidth: .infinity, minHeight: 56)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 6)
+            .background(StickerShape(shape: RetroPanelShape(), fill: side == 1 ? Kids.sun : Kids.sky))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(KidButtonPressStyle())
         .accessibilityIdentifier("battle.cheer\(side)")
         .accessibilityLabel("Cheer for \(fighters.map(\.name).joined(separator: " and "))")
         .accessibilityValue("\(cheers[side - 1]) cheers")

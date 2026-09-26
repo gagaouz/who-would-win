@@ -61,7 +61,7 @@ struct MeleeSetupView: View {
                     .font(Kids.fredoka(isIPad ? 26 : 20, weight: .bold))
                     .foregroundColor(Kids.ink)
                     .frame(width: isIPad ? 50 : 44, height: isIPad ? 50 : 44)
-                    .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5)))
+                    .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
             }
             .buttonStyle(.plain)
             Spacer()
@@ -111,7 +111,7 @@ struct MeleeSetupView: View {
         .padding(.vertical, isIPad ? 6 : 4)
         .background(
             RetroPanelShape().fill(color.opacity(0.35))
-                .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
+                .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
         )
     }
 
@@ -123,7 +123,7 @@ struct MeleeSetupView: View {
                 .frame(width: isIPad ? 34 : 28, height: isIPad ? 34 : 28)
                 .background(
                     RetroPanelShape().fill(.white)
-                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
+                        .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                 )
         }
         .buttonStyle(.plain)
@@ -181,7 +181,7 @@ struct MeleeSetupView: View {
                     .font(Kids.fredoka(isIPad ? 16 : 13, weight: .bold))
                     .foregroundColor(Kids.ink)
                     .padding(.horizontal, 10).padding(.vertical, 3)
-                    .background(RetroPanelShape().fill(tint).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
+                    .background(RetroPanelShape().fill(tint).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
                 Spacer()
                 Text("\(roster.count) / \(size)")
                     .font(Kids.fredoka(isIPad ? 14 : 11, weight: .bold))
@@ -211,7 +211,7 @@ struct MeleeSetupView: View {
                                 .padding(.horizontal, isIPad ? 10 : 8)
                                 .background(
                                     RetroPanelShape().fill(tint)
-                                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5))
+                                        .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1))
                                 )
                             }
                             .buttonStyle(.plain)
@@ -225,9 +225,9 @@ struct MeleeSetupView: View {
         .background(
             RetroPanelShape(cornerRadius: 16, style: .continuous)
                 .fill(.white)
-                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
-        .compositingGroup().shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 2)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.06), radius: 4, x: 0, y: 2)
     }
 
     // MARK: - Active-team toggle
@@ -258,7 +258,7 @@ struct MeleeSetupView: View {
                 .background(
                     RetroPanelShape().fill(selected ? tint : .white)
                         .overlay(selected ? RetroPanelShape().fill(Kids.sheen) : nil)
-                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
+                        .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                 )
                 .offset(y: selected ? -1 : 0)
         }
@@ -287,7 +287,7 @@ struct MeleeSetupView: View {
                         .background(
                             RetroPanelShape().fill(selectedCategory == cat ? categoryColor(cat) : .white)
                                 .overlay(selectedCategory == cat ? RetroPanelShape().fill(Kids.sheen) : nil)
-                                .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
+                                .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                         )
                         .offset(y: selectedCategory == cat ? -1 : 0)
                     }
@@ -450,7 +450,7 @@ struct MeleeSetupView: View {
         case .farm: return Kids.grass
         case .prehistoric: return Kids.sun
         case .fantasy: return Kids.grape
-        case .mythic: return Kids.sunDeep
+        case .mythic: return Kids.sun
         case .olympus: return Kids.sun
         }
     }
@@ -474,7 +474,7 @@ private struct MeleePickCard: View {
                 RetroPanelShape(cornerRadius: 18, style: .continuous)
                     .fill(inActive ? activeTint : .white)
                     .overlay(inActive ? RetroPanelShape(cornerRadius: 18, style: .continuous).fill(Kids.sheen) : nil)
-                    .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                    .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                     .aspectRatio(1, contentMode: .fit)
 
                 VStack(spacing: isIPad ? 4 : 2) {
@@ -489,14 +489,14 @@ private struct MeleePickCard: View {
 
                 if inActive {
                     RetroPanelShape().fill(Kids.grass)
-                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
+                        .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                         .frame(width: isIPad ? 30 : 22, height: isIPad ? 30 : 22)
                         .overlay(Text("✓").font(Kids.fredoka(isIPad ? 16 : 12, weight: .bold)).foregroundColor(Kids.ink))
                         .offset(x: isIPad ? 6 : 4, y: isIPad ? -8 : -6)
                 } else if inOther {
                     // Indicate fighter is on the other team
                     RetroPanelShape().fill(Kids.pink)
-                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
+                        .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                         .frame(width: isIPad ? 30 : 22, height: isIPad ? 30 : 22)
                         .overlay(Text("✕").font(Kids.fredoka(isIPad ? 14 : 11, weight: .bold)).foregroundColor(Kids.ink))
                         .offset(x: isIPad ? 6 : 4, y: isIPad ? -8 : -6)
@@ -505,7 +505,7 @@ private struct MeleePickCard: View {
 
             .offset(y: inActive ? -2 : 0)
             .opacity(disabled || inOther ? 0.45 : 1.0)
-            .compositingGroup().shadow(color: Kids.ink.opacity(inActive ? 0.16 : 0.08), radius: 0, x: 0, y: inActive ? 3 : 2)
+            .compositingGroup().shadow(color: Kids.shadow.opacity(inActive ? 0.16 : 0.08), radius: 4, x: 0, y: inActive ? 3 : 2)
             .animation(reduceMotion ? nil : .easeOut(duration: 0.15), value: inActive)
         }
         .buttonStyle(.plain)

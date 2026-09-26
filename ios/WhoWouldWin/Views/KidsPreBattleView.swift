@@ -83,9 +83,9 @@ struct KidsPreBattleView: View {
                         .background(
                             RetroPanelShape(cornerRadius: 18, style: .continuous)
                                 .fill(Kids.panel)
-                                .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                                .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                         )
-                        .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+                        .compositingGroup().shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 3)
                         .padding(.horizontal, 16)
 
                         // Go button
@@ -137,10 +137,10 @@ private struct ArenaTile: View {
                 .fill(locked ? Kids.creamDeep : Color.white)
                 .overlay(
                     RetroPanelShape(cornerRadius: 18, style: .continuous)
-                        .stroke(selected ? Kids.sun : Kids.ink, lineWidth: selected ? 4 : 3)
+                        .stroke(selected ? Kids.grassDeep : Kids.outline, lineWidth: selected ? 2 : 1.25)
                 )
                 .aspectRatio(1, contentMode: .fit)
-                .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: selected ? 4 : 3)
+                .compositingGroup().shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: selected ? 4 : 3)
 
             VStack(spacing: 4) {
                 RetroArenaThumbnail(environment: env)
@@ -165,7 +165,7 @@ private struct ArenaTile: View {
                     .font(Kids.fredoka(9, weight: .bold))
                     .foregroundColor(Kids.ink)
                     .padding(.horizontal, 6).padding(.vertical, 2)
-                    .background(RetroPanelShape().fill(Kids.grass).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
+                    .background(RetroPanelShape().fill(Kids.grass).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
                     .offset(x: -6, y: -6)
             }
         }

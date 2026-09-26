@@ -168,10 +168,10 @@ private struct BuildContent: View {
                 .padding(.horizontal, 12).padding(.vertical, 5)
                 .background(
                     RetroPanelShape().fill(Kids.sun)
-                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
+                        .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                 )
                 .compositingGroup()
-                .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
+                .shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 3)
 
                 Spacer()
 
@@ -183,9 +183,9 @@ private struct BuildContent: View {
                             .foregroundColor(Kids.ink)
                     }
                     .padding(.horizontal, 10).padding(.vertical, 5)
-                    .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
+                    .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
                     .compositingGroup()
-                    .shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 2)
+                    .shadow(color: Kids.shadow.opacity(0.06), radius: 4, x: 0, y: 2)
                 }
             }
             .padding(.horizontal, 16).padding(.top, 10)
@@ -197,10 +197,10 @@ private struct BuildContent: View {
                 .background(
                     RetroPanelShape(cornerRadius: 18, style: .continuous)
                         .fill(Kids.sun)
-                        .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                        .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                 )
                 .compositingGroup()
-                .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
+                .shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 4)
                 .rotationEffect(.degrees(-1.5))
                 .scaleEffect(vsPulse * 0.95)
                 .padding(.top, 14)
@@ -241,10 +241,10 @@ private struct BuildContent: View {
             .background(
                 RetroPanelShape(cornerRadius: 20, style: .continuous)
                     .fill(.white)
-                    .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                    .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
             )
             .compositingGroup()
-            .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
+            .shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 4)
             .padding(.horizontal, 18)
             .padding(.top, 22)
 
@@ -289,7 +289,7 @@ private struct BuildContent: View {
                 .padding(.horizontal, 10).padding(.vertical, 3)
                 .background(
                     RetroPanelShape().fill(tint)
-                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
+                        .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                 )
             ProgressPill(progress: 0.75, fill: tint)
                 .frame(width: isIPad ? 110 : 90, height: isIPad ? 10 : 8)
@@ -347,7 +347,7 @@ private struct ResultPanel: View {
                         .font(Kids.fredoka(isIPad ? 13 : 10, weight: .bold))
                         .foregroundColor(Kids.ink)
                         .padding(.horizontal, 8).padding(.vertical, 3)
-                        .background(RetroPanelShape().fill(Kids.pink).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5)))
+                        .background(RetroPanelShape().fill(Kids.pink).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1)))
                     Text(result.narration.withoutEmoji)
                         .accessibilityIdentifier("battle.narration")
                         .font(Kids.nunito(isIPad ? 16 : 12, weight: .bold))
@@ -359,10 +359,10 @@ private struct ResultPanel: View {
                 .background(
                     RetroPanelShape(cornerRadius: 18, style: .continuous)
                         .fill(.white)
-                        .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                        .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                 )
                 .compositingGroup()
-                .shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+                .shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 3)
                 .padding(.horizontal, 18)
                 .opacity(appeared ? 1 : 0)
 

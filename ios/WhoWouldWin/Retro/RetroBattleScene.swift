@@ -13,9 +13,22 @@ final class RetroBattleScene: SKScene {
         let shadow: SKSpriteNode
         let home: CGPoint
         let extent: CGFloat
-        let motion: Motion
+        let profile: RetroMotionProfile
     }
-    private enum Motion: Equatable { case grounded, winged, swimming, serpentine, crawling }
+    private struct RigKey: Hashable {
+        let anatomy: RetroMotionAnatomy
+        let airborne: Bool
+        let kind: Int
+        let frame: Int
+    }
+    private struct RigPose {
+        let geometry: SKWarpGeometryGrid
+        let lift: CGFloat
+        let lean: CGFloat
+    }
+    // Quantized poses are shared by every creature with the same anatomy.
+    // At most 8 families × (24 idle + 13 action + 13 reaction) small grids.
+    private var rigPoses: [RigKey: RigPose] = [:]
 
     let sessionID: UUID
     private let teams: [[Animal]]
@@ -114,7 +127,7 @@ final class RetroBattleScene: SKScene {
                 sprite.xScale = side == 0 ? 1 : -1
                 sprite.zPosition = CGFloat(20 - row * 5 + slot)
                 actionLayer.addChild(sprite)
-                let performer = Performer(animal: animal, side: side, slot: slot, sprite: sprite, shadow: shadow, home: CGPoint(x: x, y: y + 1), extent: extent, motion: motion(for: animal))
+                let performer = Performer(animal: animal, side: side, slot: slot, sprite: sprite, shadow: shadow, home: CGPoint(x: x, y: y + 1), extent: extent, profile: RetroMotionProfile.resolve(for: animal, manifest: RetroAssetStore.shared.manifest))
                 performers.append(performer)
                 installTextures(for: animal)
                 pose(.idle, for: performer)
@@ -167,6 +180,19 @@ final class RetroBattleScene: SKScene {
         guard active, built, !completed else { return }
         let ambient = ambientClock.tick(currentTime, active: active)
         let t = outcome == nil ? 0 : clock.tick(currentTime, active: active)
+        render(elapsed: t, ambient: ambient)
+    }
+
+#if DEBUG
+    /// Deterministic snapshots exercise the production renderer without waiting
+    /// for wall-clock animation. This entry point is absent from Release builds.
+    func renderDiagnostic(elapsed: TimeInterval, ambient: TimeInterval = 0) {
+        guard built, !stopped else { return }
+        render(elapsed: max(0, elapsed), ambient: max(0, ambient))
+    }
+#endif
+
+    private func render(elapsed t: TimeInterval, ambient: TimeInterval) {
         if pendingArtworkRefresh && (outcome == nil || t < 0.25 || t.truncatingRemainder(dividingBy: 1.04) > 0.95) {
             pendingArtworkRefresh = false
             textures.removeAll()
@@ -183,11 +209,12 @@ final class RetroBattleScene: SKScene {
             performer.sprite.alpha = 1
             performer.sprite.zPosition = CGFloat(20 - (performer.slot / 2) * 5 + performer.slot)
             pose(.idle, for: performer)
+            applyRig(to: performer, kind: 0, progress: ambient + Double(performer.slot) * 0.23)
             if !reduceMotion {
-                switch performer.motion {
-                case .winged: performer.sprite.position.y += 7 + CGFloat(sin(ambient * 3 + Double(performer.slot))) * 3
-                case .swimming: performer.sprite.position.y += 3 + CGFloat(sin(ambient * 2)) * 2
-                case .grounded, .serpentine, .crawling: performer.sprite.position.y += CGFloat((sin(ambient * 2.4 + Double(performer.slot)) + 1) * 0.65).rounded()
+                if performer.profile.airborne {
+                    performer.sprite.position.y += 7 + CGFloat(sin(ambient * 3 + Double(performer.slot))) * 3
+                } else if [.swimmer, .tentacle].contains(performer.profile.anatomy) {
+                    performer.sprite.position.y += 3 + CGFloat(sin(ambient * 2)) * 2
                 }
             }
         }
@@ -220,7 +247,8 @@ final class RetroBattleScene: SKScene {
                         stars(around: performer.sprite.position, time: t, count: teams[side].count > 2 ? 3 : 6)
                     } else {
                         pose(.reaction, for: performer)
-                        performer.sprite.yScale = 0.96
+                        applyRig(to: performer, kind: 2, progress: 0.42)
+                        performer.sprite.yScale = 0.98
                     }
                 }
             }
@@ -245,29 +273,30 @@ final class RetroBattleScene: SKScene {
             let fraction = min(1, (p - 0.56) / 0.44)
             advance = distance * CGFloat(1 - fraction * fraction * (3 - 2 * fraction))
         }
+        applyRig(to: actor, kind: 1, progress: p)
         actor.sprite.position.x += direction * advance
         actor.sprite.position.y += (target.home.y - actor.home.y) * (distance > 0 ? advance / distance : 0)
         actor.shadow.position.x = actor.sprite.position.x
         actor.shadow.position.y += (target.home.y - actor.home.y) * (distance > 0 ? advance / distance : 0)
         if p > 0.28 && p < 0.56 {
             let stride = CGFloat(sin((p - 0.28) / 0.28 * .pi))
-            switch actor.motion {
-            case .grounded: actor.sprite.position.y += stride * 5
-            case .winged:
-                actor.sprite.position.y += stride * 16
-                actor.sprite.zRotation = -direction * stride * 0.09
-            case .swimming:
+            switch actor.profile.anatomy {
+            case .quadruped, .biped, .amorphous: actor.sprite.position.y += stride * 5
+            case .bird:
+                actor.sprite.position.y += stride * (actor.profile.airborne ? 16 : 7)
+                actor.sprite.zRotation -= direction * stride * 0.09
+            case .swimmer, .tentacle:
                 actor.sprite.position.y += stride * 3
-                actor.sprite.zRotation = direction * stride * 0.045
-            case .serpentine:
-                actor.sprite.xScale *= 1 + stride * 0.045
-                actor.sprite.zRotation = direction * CGFloat(sin(p * 26)) * 0.035
-            case .crawling:
+                actor.sprite.zRotation += direction * stride * 0.045
+            case .serpent:
+                actor.sprite.zRotation += direction * CGFloat(sin(p * 26)) * 0.025
+            case .arthropod:
                 actor.sprite.position.y += CGFloat(abs(sin(p * 72))).rounded() * 2
             }
         }
         if p > 0.49 && p < 0.83 {
             pose(.reaction, for: target)
+            applyRig(to: target, kind: 2, progress: (p - 0.49) / 0.34)
             target.sprite.position.x += direction * CGFloat(sin((p - 0.49) / 0.34 * .pi)) * 7
             let contact = CGPoint(x: target.sprite.position.x - direction * target.extent * 0.3, y: target.sprite.position.y + target.sprite.size.height * 0.55)
             impact(at: contact, progress: (p - 0.49) / 0.34)
@@ -327,21 +356,35 @@ final class RetroBattleScene: SKScene {
         }
     }
 
-    private func motion(for animal: Animal) -> Motion {
-        if let archetype = RetroAssetStore.shared.archetype(for: animal) {
-            switch archetype {
-            case "flyer": return .winged
-            case "swimmer": return .swimming
-            case "serpentine": return .serpentine
-            case "arthropod": return .crawling
-            default: break
-            }
+    private func applyRig(to performer: Performer, kind: Int, progress: Double) {
+        guard !reduceMotion, !performer.profile.authoredPoses else {
+            performer.sprite.warpGeometry = nil
+            return
         }
-        let id = (animal.isCustom ? animal.name : animal.id).lowercased()
-        if ["cobra", "python", "anaconda", "eel", "snake", "basilisk"].contains(where: id.contains) { return .serpentine }
-        if animal.category == .insect || ["scorpion", "tarantula", "crab", "lobster", "centipede"].contains(where: id.contains) { return .crawling }
-        if animal.category == .air || ["pter", "dragon", "phoenix", "griffin", "pegasus", "parakeet", "canary", "cockatiel"].contains(where: id.contains) { return .winged }
-        if animal.category == .sea || ["goldfish", "betta", "guppy", "mosasaurus", "plesiosaur"].contains(where: id.contains) { return .swimming }
-        return .grounded
+        let safe = progress.isFinite ? max(0, progress) : 0
+        let frame = kind == 0 ? Int(safe.truncatingRemainder(dividingBy: 2) * 12) : min(12, Int(safe * 12))
+        let key = RigKey(anatomy: performer.profile.anatomy, airborne: performer.profile.airborne, kind: kind, frame: frame)
+        let rig: RigPose
+        if let cached = rigPoses[key] {
+            rig = cached
+        } else {
+            let moment: RetroMotionRig.Moment
+            switch kind {
+            case 1: moment = .action(Float(frame) / 12)
+            case 2: moment = .reaction(Float(frame) / 12)
+            default: moment = .idle(Float(frame) / 24 * .pi * 2 / 3.4)
+            }
+            let sample = RetroMotionRig.frame(profile: performer.profile, moment: moment)
+            let geometry = SKWarpGeometryGrid(columns: RetroMotionRig.columns, rows: RetroMotionRig.rows,
+                                               sourcePositions: RetroMotionRig.identity, destinationPositions: sample.vertices)
+            rig = RigPose(geometry: geometry, lift: CGFloat(sample.lift), lean: CGFloat(sample.lean))
+            rigPoses[key] = rig
+        }
+        performer.sprite.warpGeometry = rig.geometry
+        // The mesh is already subdivided into 36 cells; extra adaptive subdivision
+        // would soften pixel edges and consume GPU work without adding articulation.
+        performer.sprite.subdivisionLevels = 0
+        performer.sprite.position.y += rig.lift * performer.extent
+        performer.sprite.zRotation = rig.lean * (performer.side == 0 ? 1 : -1)
     }
 }

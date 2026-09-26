@@ -25,7 +25,7 @@ struct TournamentBracketDiagram: View {
                         .padding(.horizontal, isIPad ? 12 : 8).padding(.vertical, isIPad ? 5 : 3)
                         .background(
                             RetroPanelShape().fill(Kids.sun)
-                                .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5))
+                                .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1))
                         )
 
                     if round.isEmpty {
@@ -95,9 +95,9 @@ struct TournamentBracketDiagram: View {
         .background(
             RetroPanelShape(cornerRadius: isIPad ? 16 : 12, style: .continuous)
                 .fill(.white)
-                .overlay(RetroPanelShape(cornerRadius: isIPad ? 16 : 12, style: .continuous).stroke(Kids.ink, lineWidth: 2))
+                .overlay(RetroPanelShape(cornerRadius: isIPad ? 16 : 12, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
-        .compositingGroup().shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 2)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.06), radius: 4, x: 0, y: 2)
     }
 
     @ViewBuilder

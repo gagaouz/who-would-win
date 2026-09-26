@@ -30,13 +30,19 @@ extension Color {
 
 struct PressableButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label.offset(y: configuration.isPressed ? 2 : 0)
+        configuration.label.offset(y: configuration.isPressed ? 1 : 0)
     }
 }
 
-/// A shared paper surface; retained API supports every legacy live caller.
+/// Airy adventure backgrounds; retained API supports every legacy live caller.
 struct ScreenBackground: View {
     enum Style { case home, battle, unlock, settings }
     var style: Style = .home
-    var body: some View { SkyBG() }
+    var body: some View {
+        switch style {
+        case .home, .settings: SkyBG()
+        case .battle: SkyBG(variant: .meadow)
+        case .unlock: SkyBG(variant: .sunset)
+        }
+    }
 }

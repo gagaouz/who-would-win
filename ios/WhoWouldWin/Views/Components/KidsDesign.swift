@@ -3,24 +3,32 @@ import SwiftUI
 // Native retro UI. Existing component names remain stable so every game flow
 // shares one presentation without changing its state, commerce or navigation.
 enum Kids {
-    static let sun = Color(hex: "#FFD266")
-    static let sunDeep = Color(hex: "#C39F57")
-    static let sky = Color(hex: "#B8D3CF")
-    static let skyDeep = Color(hex: "#497A79")
-    static let pink = Color(hex: "#D9B5A4")
-    static let pinkDeep = Color(hex: "#98584C")
-    static let grass = Color(hex: "#BEDB7D")
-    static let grassDeep = Color(hex: "#496845")
-    static let grape = Color(hex: "#BCB9CE")
-    static let grapeDeep = Color(hex: "#625D79")
-    static let peach = Color(hex: "#E6C48E")
-    static let peachDeep = Color(hex: "#A27749")
-    static let cream = Color(hex: "#F4F1E6")
-    static let creamDeep = Color(hex: "#E5E2D4")
-    static let panel = Color(hex: "#F8EDCE")
-    static let console = Color(hex: "#383649")
-    static let ink = Color(hex: "#282638")
-    static let inkSoft = Color(hex: "#606657")
+    // Bright adventure colors. Light accents take dark labels; their deeper
+    // partners remain readable as text on the warm, near-white surfaces.
+    static let sun = Color(hex: "#FFD363")
+    static let sunDeep = Color(hex: "#98630D")
+    static let sky = Color(hex: "#79CEF4")
+    static let skyDeep = Color(hex: "#176C9D")
+    static let pink = Color(hex: "#FFAA92")
+    static let pinkDeep = Color(hex: "#AE493D")
+    static let grass = Color(hex: "#58D3B0")
+    static let grassDeep = Color(hex: "#08756B")
+    static let grape = Color(hex: "#BEB6F3")
+    static let grapeDeep = Color(hex: "#66509A")
+    static let peach = Color(hex: "#FFD19A")
+    static let peachDeep = Color(hex: "#995F2C")
+    static let cream = Color(hex: "#FFFBF0")
+    static let creamDeep = Color(hex: "#F1EAD8")
+    static let panel = Color(hex: "#FFFDF7")
+    static let console = Color(hex: "#20566A")
+    static let ink = Color(hex: "#163E4D")
+    static let inkSoft = Color(hex: "#496774")
+    static let outline = Color(hex: "#A8C7C6")
+    static let outlineStrong = Color(hex: "#639C9D")
+    static let shadow = Color(hex: "#236373")
+    static let skyMist = Color(hex: "#D6F2FC")
+    static let mintMist = Color(hex: "#DCF5E8")
+    static let coralMist = Color(hex: "#FFE8D7")
 
     // The legacy helper name is preserved for callers; small headings remain
     // readable, dynamically scaled text. Pixel type is reserved for display.
@@ -34,43 +42,32 @@ enum Kids {
         .custom("PressStart2P-Regular", size: size, relativeTo: .headline)
     }
     struct InkShadow: ViewModifier {
-        var y: CGFloat = 4
-        var opacity: Double = 0.22
-        var soft: Bool = false
+        var y: CGFloat = 3
+        var opacity: Double = 0.12
+        var soft: Bool = true
         func body(content: Content) -> some View {
-            content.compositingGroup().shadow(color: Kids.ink.opacity(opacity), radius: 0, x: 0, y: y)
+            content.compositingGroup().shadow(color: Kids.shadow.opacity(opacity), radius: soft ? 6 : 2, x: 0, y: min(y, 4))
         }
     }
     // Kept as a flat token for source compatibility with existing surfaces.
     static let sheen = LinearGradient(colors: [.clear, .clear], startPoint: .top, endPoint: .bottom)
 }
 
-/// A stepped corner rather than a rounded card. Insettable for crisp borders.
+/// Compact, gently rounded panels keep the sprite artwork in focus. The public
+/// shape API is shared by existing cards, buttons, selection rings and exports.
 struct RetroPanelShape: InsettableShape {
-    var cornerRadius: CGFloat = 5
+    var cornerRadius: CGFloat = 10
     var style: RoundedCornerStyle = .continuous
     private var insetAmount: CGFloat = 0
 
-    init(cornerRadius: CGFloat = 5, style: RoundedCornerStyle = .continuous) {
+    init(cornerRadius: CGFloat = 10, style: RoundedCornerStyle = .continuous) {
         self.cornerRadius = cornerRadius
         self.style = style
     }
     func path(in rect: CGRect) -> Path {
         let r = rect.insetBy(dx: insetAmount, dy: insetAmount)
-        let c = min(6, min(max(2, cornerRadius / 3), max(0, min(r.width, r.height) / 4)))
-        var p = Path()
-        p.move(to: CGPoint(x: r.minX + c, y: r.minY))
-        let vertices = [
-            CGPoint(x: r.maxX - c, y: r.minY), CGPoint(x: r.maxX - c, y: r.minY + c),
-            CGPoint(x: r.maxX, y: r.minY + c), CGPoint(x: r.maxX, y: r.maxY - c),
-            CGPoint(x: r.maxX - c, y: r.maxY - c), CGPoint(x: r.maxX - c, y: r.maxY),
-            CGPoint(x: r.minX + c, y: r.maxY), CGPoint(x: r.minX + c, y: r.maxY - c),
-            CGPoint(x: r.minX, y: r.maxY - c), CGPoint(x: r.minX, y: r.minY + c),
-            CGPoint(x: r.minX + c, y: r.minY + c)
-        ]
-        for vertex in vertices { p.addLine(to: vertex) }
-        p.closeSubpath()
-        return p
+        let radius = max(0, min(12, cornerRadius) - insetAmount)
+        return RoundedRectangle(cornerRadius: radius, style: style).path(in: r)
     }
     func inset(by amount: CGFloat) -> some InsettableShape {
         var copy = self
@@ -83,7 +80,10 @@ struct RetroPanelShape: InsettableShape {
 struct RetroSymbol: View {
     let glyph: String
     var size: CGFloat = 18
-    init(_ glyph: String, size: CGFloat = 18) { self.glyph = glyph; self.size = size }
+    var color: Color = Kids.ink
+    init(_ glyph: String, size: CGFloat = 18, color: Color = Kids.ink) {
+        self.glyph = glyph; self.size = size; self.color = color
+    }
     private var systemName: String? {
         switch glyph {
         case "←": return "arrow.left"
@@ -150,6 +150,10 @@ struct RetroSymbol: View {
         case "🧝", "🧝‍♂️", "🧝‍♀️": return "person.2.fill"
         case "🔎": return "magnifyingglass"
         case "🧠": return "brain.head.profile"
+        case "➕": return "plus"
+        case "💎": return "diamond.fill"
+        case "❤️", "♥️", "♥": return "heart.fill"
+        case "✔", "✔️", "☑️": return "checkmark"
         default: return nil
         }
     }
@@ -159,55 +163,78 @@ struct RetroSymbol: View {
                 Image(systemName: systemName).font(.system(size: size, weight: .bold))
             } else if let animal = Animals.all.first(where: { $0.emoji == glyph }) {
                 RetroCreatureArtwork(animal: animal, size: size * 1.25)
+            } else if glyph.unicodeScalars.contains(where: { $0.properties.isEmojiPresentation }) || glyph.contains("\u{FE0F}") {
+                Image(systemName: "sparkle").font(.system(size: size, weight: .bold))
             } else {
                 Text(glyph).font(Kids.nunito(size, weight: .black))
             }
         }
-        .foregroundColor(Kids.ink)
+        .foregroundColor(color)
         .accessibilityHidden(true)
     }
 }
 
 extension View {
-    func inkShadow(y: CGFloat = 6, opacity: Double = 0.22, soft: Bool = true) -> some View {
+    func inkShadow(y: CGFloat = 3, opacity: Double = 0.12, soft: Bool = true) -> some View {
         modifier(Kids.InkShadow(y: y, opacity: opacity, soft: soft))
     }
 }
 
 // Color(hex:) is defined elsewhere (Theme.swift) — reuse it.
 
-// MARK: - Sticker fills (ink outline + sheen)
+// MARK: - Warm surfaces with a fine border and top-edge highlight
 
 struct StickerShape<S: Shape>: View {
     let shape: S
     var fill: Color
-    var strokeWidth: CGFloat = 4
+    var strokeWidth: CGFloat = 1.25
     var body: some View {
         shape
             .fill(fill)
-            .overlay(shape.fill(Kids.sheen))
-            .overlay(shape.stroke(Kids.ink, lineWidth: strokeWidth))
+            .overlay(alignment: .top) {
+                shape.stroke(Color.white.opacity(0.75), lineWidth: 1)
+                    .padding(1)
+                    .mask(Rectangle().frame(height: 8).frame(maxHeight: .infinity, alignment: .top))
+            }
+            .overlay(shape.stroke(Kids.outlineStrong, lineWidth: strokeWidth))
     }
 }
 
-// MARK: - SkyBG — paper and a quiet pixel texture
+// MARK: - SkyBG — a still, airy landscape behind warm paper cards
 
 struct SkyBG: View {
     enum Variant { case day, sunset, meadow }
     var variant: Variant = .day
+    private var colors: [Color] {
+        switch variant {
+        case .day: return [Kids.skyMist, Kids.cream, Kids.mintMist]
+        case .sunset: return [Kids.coralMist, Kids.cream, Kids.mintMist]
+        case .meadow: return [Kids.mintMist, Kids.cream, Kids.skyMist]
+        }
+    }
     var body: some View {
         GeometryReader { geo in
             ZStack(alignment: .bottom) {
-                Kids.cream
+                LinearGradient(stops: [
+                    .init(color: colors[0], location: 0),
+                    .init(color: colors[1], location: 0.52),
+                    .init(color: colors[2], location: 1)
+                ], startPoint: .topLeading, endPoint: .bottomTrailing)
                 Canvas { context, size in
-                    for y in stride(from: CGFloat(16), to: size.height, by: 32) {
-                        for x in stride(from: CGFloat(16), to: size.width, by: 32) {
-                            context.fill(Path(CGRect(x: x, y: y, width: 2, height: 2)), with: .color(Kids.grassDeep.opacity(0.055)))
-                        }
+                    // A few quiet pixel stars and clouds, kept behind controls.
+                    // Static artwork also respects Reduce Motion automatically.
+                    for point in [CGPoint(x: 0.08, y: 0.13), CGPoint(x: 0.91, y: 0.22),
+                                  CGPoint(x: 0.04, y: 0.57), CGPoint(x: 0.96, y: 0.73)] {
+                        let x = size.width * point.x, y = size.height * point.y
+                        var sparkle = Path(CGRect(x: x - 2, y: y - 6, width: 4, height: 12))
+                        sparkle.addRect(CGRect(x: x - 6, y: y - 2, width: 12, height: 4))
+                        context.fill(sparkle, with: .color(Kids.skyDeep.opacity(0.10)))
                     }
                 }
-                Rectangle().fill(Kids.grassDeep.opacity(0.06)).frame(height: geo.size.height * 0.12)
-                Rectangle().fill(Kids.grassDeep.opacity(0.035)).frame(height: geo.size.height * 0.18)
+                Cloud(w: min(220, geo.size.width * 0.45), h: 42)
+                    .opacity(0.38).position(x: geo.size.width * 0.14, y: geo.size.height * 0.09)
+                Cloud(w: min(260, geo.size.width * 0.54), h: 48)
+                    .opacity(0.30).position(x: geo.size.width * 0.94, y: geo.size.height * 0.30)
             }
         }
         .ignoresSafeArea()
@@ -291,13 +318,13 @@ struct Cloud: View {
     }
 }
 
-// MARK: - KidButton — chunky outlined CTA
+// MARK: - KidButton — bright, softly raised action
 
 struct KidButton: View {
     enum Size { case sm, md, lg, xl
         var height: CGFloat { switch self { case .sm: return 44; case .md: return 52; case .lg: return 60; case .xl: return 68 } }
         var fontSize: CGFloat { switch self { case .sm: return 15; case .md: return 18; case .lg: return 20; case .xl: return 22 } }
-        var radius: CGFloat { switch self { case .sm: return 16; case .md: return 20; case .lg: return 28; case .xl: return 34 } }
+        var radius: CGFloat { switch self { case .sm: return 8; case .md: return 10; case .lg, .xl: return 12 } }
     }
 
     let title: String
@@ -306,7 +333,6 @@ struct KidButton: View {
     var size: Size = .lg
     var action: () -> Void = {}
 
-    @State private var pressed = false
     @Environment(\.horizontalSizeClass) private var sizeClass
 
     // Just a gentle bump on iPad — the .xl is already chunky, so 1.1x keeps
@@ -323,7 +349,7 @@ struct KidButton: View {
                 if let icon { RetroSymbol(icon, size: fs * 0.78) }
                 Text(title)
                     .font(Kids.fredoka(fs, weight: .bold))
-                    .tracking(0.5)
+                    .tracking(0.2)
                     .foregroundColor(Kids.ink)
                     .lineLimit(2)
                     .multilineTextAlignment(.center)
@@ -336,7 +362,7 @@ struct KidButton: View {
                 StickerShape(shape: RetroPanelShape(cornerRadius: r, style: .continuous), fill: color)
             )
         }
-        .buttonStyle(KidButtonPressStyle(y: pressed ? 5 : 0))
+        .buttonStyle(KidButtonPressStyle())
     }
 }
 
@@ -344,8 +370,10 @@ struct KidButtonPressStyle: ButtonStyle {
     var y: CGFloat = 0
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .offset(y: configuration.isPressed ? 3 : 0)
-            .compositingGroup().shadow(color: Kids.ink.opacity(0.25), radius: 0, x: 0, y: configuration.isPressed ? 0 : 3)
+            .offset(y: configuration.isPressed ? 1 : 0)
+            .compositingGroup()
+            .shadow(color: Kids.shadow.opacity(configuration.isPressed ? 0.06 : 0.13),
+                    radius: configuration.isPressed ? 1 : 3, x: 0, y: configuration.isPressed ? 1 : 3)
     }
 }
 
@@ -374,9 +402,9 @@ struct AnimalBubble: View {
     }
     var body: some View {
         ZStack {
-            RetroPanelShape().fill(Kids.cream)
-            RetroPanelShape().fill(tint.opacity(0.35))
-            RetroPanelShape().strokeBorder(selected ? Kids.grassDeep : Kids.ink.opacity(0.65), lineWidth: selected ? 3 : 2)
+            RetroPanelShape().fill(Kids.panel)
+            RetroPanelShape().fill(tint.opacity(0.20))
+            RetroPanelShape().strokeBorder(selected ? Kids.grassDeep : Kids.outline, lineWidth: selected ? 2 : 1)
             if let resolvedAnimal {
                 RetroCreatureArtwork(animal: resolvedAnimal, size: size * 0.90)
             } else {
@@ -384,11 +412,12 @@ struct AnimalBubble: View {
             }
         }
         .frame(width: size, height: size)
-        .compositingGroup().shadow(color: Kids.ink.opacity(0.14), radius: 0, x: 0, y: 3)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.10), radius: 4, x: 0, y: 2)
         .overlay(alignment: .topTrailing) {
             if selected {
                 Image(systemName: "checkmark").font(.system(size: 12, weight: .black))
-                    .foregroundColor(Kids.cream).padding(5).background(Kids.grassDeep)
+                    .foregroundColor(Kids.panel).padding(5)
+                    .background(RetroPanelShape(cornerRadius: 6).fill(Kids.grassDeep))
             }
         }
     }
@@ -457,7 +486,7 @@ struct WinnerSunburst: View {
     }
 }
 
-// MARK: - StarSticker — square versus marker
+// MARK: - StarSticker — compact versus marker
 
 struct StarSticker: View {
     var text: String = "VS"
@@ -466,14 +495,14 @@ struct StarSticker: View {
     var body: some View {
         ZStack {
             RetroPanelShape().fill(fill)
-            RetroPanelShape().strokeBorder(Kids.ink, lineWidth: 2)
+            RetroPanelShape().strokeBorder(Kids.outlineStrong, lineWidth: 1)
             if text == "VS" {
                 Text(text).font(Kids.pixel(size * 0.23)).foregroundColor(Kids.ink)
             } else {
                 RetroSymbol(text, size: size * 0.4)
             }
         }.frame(width: size, height: size)
-            .compositingGroup().shadow(color: Kids.ink.opacity(0.2), radius: 0, x: 0, y: 3)
+            .compositingGroup().shadow(color: Kids.shadow.opacity(0.12), radius: 3, x: 0, y: 2)
     }
 }
 
@@ -504,12 +533,12 @@ struct SpeechBubble<Content: View>: View {
     var body: some View {
         ZStack(alignment: tailOnLeft ? .bottomLeading : .bottomTrailing) {
             RetroPanelShape(cornerRadius: 24, style: .continuous)
-                .fill(Kids.cream)
+                .fill(Kids.panel)
                 .overlay(
                     RetroPanelShape(cornerRadius: 24, style: .continuous)
-                        .stroke(Kids.ink, lineWidth: 3.5)
+                        .stroke(Kids.outline, lineWidth: 1.25)
                 )
-                .compositingGroup().shadow(color: Kids.ink.opacity(0.09), radius: 0, x: 0, y: 5)
+                .compositingGroup().shadow(color: Kids.shadow.opacity(0.09), radius: 6, x: 0, y: 3)
             content()
                 .padding(.horizontal, 16).padding(.vertical, 10)
         }
@@ -528,7 +557,7 @@ struct ProgressPill: View {
             ZStack(alignment: .leading) {
                 RetroPanelShape()
                     .fill(Kids.cream)
-                    .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 3))
+                    .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1))
                 RetroPanelShape()
                     .fill(fill)
                     .overlay(RetroPanelShape().fill(Kids.sheen))
@@ -545,7 +574,7 @@ struct ProgressPill: View {
     }
 }
 
-// MARK: - StickerWord — stepped display title
+// MARK: - StickerWord — pixel display title on a small accent tab
 
 struct StickerWord: View {
     let text: String
@@ -562,12 +591,12 @@ struct StickerWord: View {
             .padding(.horizontal, max(12, fontSize * 0.24))
             .padding(.vertical, max(10, fontSize * 0.18))
             .background(RetroPanelShape().fill(fill))
-            .overlay(RetroPanelShape().strokeBorder(Kids.ink, lineWidth: 2))
-            .compositingGroup().shadow(color: Kids.ink.opacity(0.20), radius: 0, x: 0, y: 3)
+            .overlay(RetroPanelShape().strokeBorder(Kids.outlineStrong.opacity(0.65), lineWidth: 1))
+            .compositingGroup().shadow(color: Kids.shadow.opacity(0.10), radius: 4, x: 0, y: 2)
     }
 }
 
-// MARK: - KidToggle — chunky outlined switch
+// MARK: - KidToggle — clear on/off states with a comfortable touch target
 
 struct KidToggle: View {
     @Binding var isOn: Bool
@@ -577,13 +606,13 @@ struct KidToggle: View {
                 RetroPanelShape()
                     .fill(isOn ? Kids.grass : Kids.creamDeep)
                     .overlay(RetroPanelShape().fill(Kids.sheen))
-                    .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 3))
+                    .overlay(RetroPanelShape().stroke(Kids.outlineStrong, lineWidth: 1))
                     .frame(width: 54, height: 30)
-                Rectangle()
-                    .fill(Kids.cream)
-                    .overlay(Rectangle().stroke(Kids.ink, lineWidth: 2))
+                RetroPanelShape(cornerRadius: 6)
+                    .fill(Kids.panel)
+                    .overlay(RetroPanelShape(cornerRadius: 6).stroke(Kids.outline, lineWidth: 0.75))
                     .frame(width: 22, height: 22)
-                    .compositingGroup().shadow(color: Kids.ink.opacity(0.18), radius: 0, x: 0, y: 2)
+                    .compositingGroup().shadow(color: Kids.shadow.opacity(0.16), radius: 2, x: 0, y: 1)
                     .padding(4)
             }
         }
@@ -625,7 +654,7 @@ struct KidIconBtn: View {
                 .frame(width: isIPad ? 64 : 48, height: isIPad ? 64 : 48)
                 .background(
                     StickerShape(shape: RetroPanelShape(cornerRadius: isIPad ? 18 : 14, style: .continuous),
-                                 fill: fill, strokeWidth: isIPad ? 4 : 3)
+                                 fill: fill, strokeWidth: 1.25)
                 )
         }
         .buttonStyle(KidButtonPressStyle())
@@ -636,7 +665,7 @@ struct KidIconBtn: View {
 // MARK: - CoinChip — home top-left
 
 // MARK: - KidsGoldCoin
-// Kid-friendly gold coin shape — chunky ink outline + bright gold gradient + sheen.
+// Small gold token with a pixel glint.
 // Used everywhere instead of the 🪙 emoji so coins read gold on every device.
 
 struct KidsGoldCoin: View {
@@ -692,9 +721,9 @@ struct CoinChip: View {
             }
             .padding(.horizontal, isIPad ? 16 : 12).padding(.vertical, isIPad ? 10 : 7)
             .background(
-                StickerShape(shape: RetroPanelShape(), fill: Kids.sun, strokeWidth: isIPad ? 4 : 3)
+                StickerShape(shape: RetroPanelShape(), fill: Kids.sun, strokeWidth: 1.25)
             )
-            .compositingGroup().shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
+            .compositingGroup().shadow(color: Kids.shadow.opacity(0.10), radius: 3, x: 0, y: 2)
             .scaleEffect(pop)
         }
         .buttonStyle(.plain)
@@ -737,9 +766,9 @@ struct StreakPill: View {
         }
         .padding(.horizontal, isIPad ? 20 : 14).padding(.vertical, isIPad ? 11 : 8)
         .background(
-            StickerShape(shape: RetroPanelShape(), fill: Kids.peach, strokeWidth: isIPad ? 4 : 3)
+            StickerShape(shape: RetroPanelShape(), fill: Kids.peach, strokeWidth: 1.25)
         )
-        .compositingGroup().shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.10), radius: 3, x: 0, y: 2)
     }
 }
 
@@ -808,13 +837,13 @@ struct ConfettiView: View {
     }
 }
 
-/// Uncommitted custom-name preview. Deliberately does not request paid artwork.
+/// A lightweight, intentional placeholder while a custom name is being typed.
 struct RetroCustomCreaturePreview: View {
     var size: CGFloat = 50
     var body: some View {
         ZStack {
             RetroPanelShape().fill(Kids.panel)
-            RetroPanelShape().strokeBorder(Kids.ink.opacity(0.65), lineWidth: 2)
+            RetroPanelShape().strokeBorder(Kids.outline, lineWidth: 1.25)
             Image(systemName: "pencil.and.outline")
                 .font(.system(size: size * 0.38, weight: .bold))
                 .foregroundColor(Kids.grassDeep)

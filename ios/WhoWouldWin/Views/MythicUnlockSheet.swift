@@ -13,7 +13,7 @@ struct MythicUnlockSheet: View {
             config: .init(
                 title: "MYTHIC BEASTS",
                 emoji: "⚡",
-                color: Kids.sunDeep,
+                color: Kids.sun,
                 darkAccent: Color(hex: "#7A6600"),
                 blurb: "12 legendary creatures from ancient myth — thunderbirds, manticores and more!",
                 preview: [("🦅","Thunderbird"),("🦁","Manticore"),("🐦","Roc"),("🐍","Basilisk"),("🦊","Kitsune")],

@@ -1,0 +1,53 @@
+{
+  "assets": [
+    {
+      "key": "motion_land",
+      "ids": [
+        "tiger",
+        "grizzly_bear",
+        "wolf",
+        "elephant"
+      ],
+      "path": "/Users/home/.codex/generated_images/01a0dd21-0691-7ed2-a383-f4bc8b73cad3/exec-84ffefa9-b3eb-478a-a341-06d45901331e.png",
+      "tool": "built-in image_gen",
+      "spacingEdit": true
+    },
+    {
+      "key": "motion_airsea",
+      "ids": [
+        "great_white_shark",
+        "orca",
+        "bald_eagle",
+        "cobra"
+      ],
+      "path": "/Users/home/.codex/generated_images/01a0dd21-0691-7ed2-a383-f4bc8b73cad3/exec-087aeae1-24ca-44d8-b09e-ec59a500aeb1.png",
+      "tool": "built-in image_gen",
+      "spacingEdit": false
+    },
+    {
+      "key": "motion_prehistoric",
+      "ids": [
+        "dragon",
+        "t_rex",
+        "triceratops",
+        "velociraptor"
+      ],
+      "path": "/Users/home/.codex/generated_images/01a0dd21-0691-7ed2-a383-f4bc8b73cad3/exec-c5a8ea56-4769-4060-b3d6-362aa47aa056.png",
+      "tool": "built-in image_gen",
+      "spacingEdit": true
+    },
+    {
+      "key": "motion_wild",
+      "ids": [
+        "crocodile",
+        "rhinoceros",
+        "tarantula",
+        "giant_squid"
+      ],
+      "path": "/Users/home/.codex/generated_images/01a0dd21-0691-7ed2-a383-f4bc8b73cad3/exec-4e7b14f0-ea92-4aea-a5e1-e935228ef73d.png",
+      "tool": "built-in image_gen",
+      "spacingEdit": false
+    }
+  ],
+  "spacingEditPrompt": "Use case: precise-object-edit. This is a production transparent sprite atlas. KEEP EXACTLY the same sixteen creatures, same four rows, same four animation poses per row, same colors, pixel-art quality, face directions, expressions and anatomy. Change ONLY the packing: shrink EACH sprite uniformly to roughly 78% of its existing size and center it in its own cell of an exact four-column/four-row equal-cell grid. Keep each row's foot baseline consistent. Each FULL sprite, including tails, wings, extended trunks/claws, must stay inside its own cell with very generous FULLY TRANSPARENT gutters on all four sides. NO PART OF ANY CREATURE MAY CROSS INTO AN ADJACENT CELL. At least 35px clear air left/right in a 1254px square. Preserve pixel detail; do not add any new creature, effect, text, cell lines, ground shadow, ground, background, frame, or checkerboard. Output genuine RGBA transparency, same square aspect. All16sprites remain separate and complete."
+}

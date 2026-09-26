@@ -3,16 +3,16 @@ import SwiftUI
 /// Compatibility tokens for older components, backed by the single retro theme.
 struct Theme {
     static var bgDeep: Color { Kids.cream }
-    static var bgMid: Color { Kids.cream }
-    static var bgNavy: Color { Kids.creamDeep }
+    static var bgMid: Color { Kids.skyMist }
+    static var bgNavy: Color { Kids.mintMist }
     static var bgCard: Color { Kids.panel }
-    static var bgSurface: Color { Kids.creamDeep }
+    static var bgSurface: Color { Kids.cream }
     static var textPrimary: Color { Kids.ink }
     static var textSecondary: Color { Kids.inkSoft }
     static var textTertiary: Color { Kids.inkSoft }
     static var cardFill: Color { Kids.panel }
-    static var cardBorder: Color { Kids.ink.opacity(0.6) }
-    static var divider: Color { Kids.ink.opacity(0.16) }
+    static var cardBorder: Color { Kids.outline }
+    static var divider: Color { Kids.outline.opacity(0.55) }
     static let orange = Kids.peachDeep
     static let yellow = Kids.sun
     static let gold = Kids.sun
@@ -55,16 +55,19 @@ struct Theme {
     static let mythicAccent = Kids.sunDeep
     static let olympusAccent = Kids.sun
     static var mainBg: LinearGradient { homeBg }
-    static func homeBg(_ scheme: ColorScheme) -> LinearGradient { flat(Kids.cream) }
-    static func battleBg(_ scheme: ColorScheme) -> LinearGradient { flat(Kids.cream) }
-    static func unlockBg(_ scheme: ColorScheme) -> LinearGradient { flat(Kids.cream) }
-    static var homeBg: LinearGradient { flat(Kids.cream) }
-    static var battleBg: LinearGradient { flat(Kids.cream) }
-    static var unlockBg: LinearGradient { flat(Kids.cream) }
+    static func homeBg(_ scheme: ColorScheme) -> LinearGradient { homeBg }
+    static func battleBg(_ scheme: ColorScheme) -> LinearGradient { battleBg }
+    static func unlockBg(_ scheme: ColorScheme) -> LinearGradient { unlockBg }
+    static var homeBg: LinearGradient { atmosphere(Kids.skyMist, Kids.mintMist) }
+    static var battleBg: LinearGradient { atmosphere(Kids.mintMist, Kids.skyMist) }
+    static var unlockBg: LinearGradient { atmosphere(Kids.coralMist, Kids.mintMist) }
     static var ctaGradient: LinearGradient { flat(Kids.sun) }
     static var purpleGradient: LinearGradient { flat(Kids.grape) }
     private static func flat(_ color: Color) -> LinearGradient {
         LinearGradient(colors: [color, color], startPoint: .top, endPoint: .bottom)
+    }
+    private static func atmosphere(_ top: Color, _ bottom: Color) -> LinearGradient {
+        LinearGradient(colors: [top, Kids.cream, bottom], startPoint: .topLeading, endPoint: .bottomTrailing)
     }
     static func categoryGradient(_ cat: AnimalCategory) -> LinearGradient { flat(categoryAccent(cat)) }
     static func categoryAccent(_ cat: AnimalCategory) -> Color {

@@ -1,0 +1,50 @@
+{
+  "checkedAt": "2026-09-26T16:56:52.047435+00:00",
+  "readOnly": true,
+  "authenticationMaterialIncluded": false,
+  "app": {
+    "name": "Animal vs Animal",
+    "bundleId": "com.whowouldin.WhoWouldWin",
+    "id": "6761319389"
+  },
+  "buildHistoryComplete": true,
+  "buildCount": 123,
+  "highestUploadedBuild": 110,
+  "candidateVersion": "2.0",
+  "candidateBuild": "111",
+  "candidateBuildPresent": false,
+  "latestBuild": {
+    "id": "45e26632-f537-4f2b-bf55-897742c476c1",
+    "marketingVersion": "2.0",
+    "version": "110",
+    "uploadedDate": "2026-09-26T09:33:09-07:00",
+    "processingState": "VALID",
+    "expired": false,
+    "expirationDate": "2026-12-25T08:33:09-08:00"
+  },
+  "appStoreVersion": {
+    "versionString": "1.1.7",
+    "appStoreState": "READY_FOR_SALE",
+    "platform": "IOS"
+  },
+  "internalGroup": {
+    "id": "bbe48189-3ad0-4d20-bd77-9adb1120eb75",
+    "name": "self",
+    "isInternalGroup": true,
+    "hasAccessToAllBuilds": true,
+    "publicLinkEnabled": null,
+    "testerCount": 1,
+    "testerLookupHTTPStatus": 200
+  },
+  "maintenance": {
+    "branch": "release/1.1.7",
+    "sourceVersion": "1.1.7",
+    "sourceBuild": "109",
+    "statusMatchesIsolationSnapshot": true
+  },
+  "unknowns": [
+    "Owner's exact membership and installation access were not individually inspected",
+    "No developer membership or agreements acceptance check",
+    "No new build upload, assignment, review request, or tester invitation"
+  ]
+}

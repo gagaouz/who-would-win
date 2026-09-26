@@ -64,10 +64,10 @@ struct KidsStickerBookView: View {
                                 category: .prehistoric, lockedIfMissing: true)
                         section(title: "Fantasy Friends", emoji: "🧚", color: Kids.grape,
                                 category: .fantasy,     lockedIfMissing: true)
-                        section(title: "Mythic Legends",  emoji: "⚡",  color: Kids.sunDeep,
+                        section(title: "Mythic Legends",  emoji: "⚡",  color: Kids.sun,
                                 category: .mythic,      lockedIfMissing: true)
                         if cheat.olympusUnlocked || settings.isOlympusVisible {
-                            section(title: "Olympus Gods", emoji: "🔱", color: Kids.sunDeep,
+                            section(title: "Olympus Gods", emoji: "🔱", color: Kids.sun,
                                     category: .olympus, lockedIfMissing: true)
                         }
 
@@ -144,9 +144,9 @@ struct KidsStickerBookView: View {
         .background(
             RetroPanelShape(cornerRadius: 20, style: .continuous)
                 .fill(.white)
-                .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
-        .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 3)
         .padding(.horizontal, isIPad ? 20 : 16)
     }
 
@@ -187,7 +187,7 @@ struct KidsStickerBookView: View {
                                 .padding(.horizontal, isIPad ? 14 : 10).padding(.vertical, isIPad ? 6 : 4)
                                 .background(
                                     RetroPanelShape().fill(Kids.sun)
-                                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
+                                        .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                                 )
                         }
                         .buttonStyle(.plain)
@@ -253,7 +253,7 @@ private struct BookProgressBar: View {
                     .frame(width: max(8, geo.size.width * CGFloat(max(0, min(1, progress)))))
             }
             .clipShape(RetroPanelShape())
-            .overlay(RetroPanelShape().stroke(Kids.ink.opacity(0.15), lineWidth: 1))
+            .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1))
         }
     }
 }
@@ -276,9 +276,9 @@ private struct StickerTile: View {
                     .overlay(
                         RetroPanelShape(cornerRadius: 16, style: .continuous)
                             .stroke(
-                                collected ? Kids.ink : Kids.ink.opacity(lockedPack ? 0.3 : 0.35),
+                                collected ? Kids.outlineStrong : Kids.outline,
                                 style: StrokeStyle(
-                                    lineWidth: collected ? 3 : 2,
+                                    lineWidth: collected ? 1.5 : 1,
                                     dash: collected ? [] : (lockedPack ? [] : [5, 3])
                                 )
                             )

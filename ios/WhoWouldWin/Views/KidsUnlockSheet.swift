@@ -65,7 +65,7 @@ struct KidsUnlockSheet: View {
                     Button { isPresented = false } label: {
                         ZStack {
                             RetroPanelShape().fill(.white)
-                                .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
+                                .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                                 .frame(width: 44, height: 44)
                             Image(systemName: "xmark")
                                 .font(.system(size: 14, weight: .bold))
@@ -132,7 +132,7 @@ struct KidsUnlockSheet: View {
                                 .font(Kids.fredoka(isIPad ? 16 : 13, weight: .bold))
                                 .foregroundColor(Kids.ink)
                                 .padding(.horizontal, 10).padding(.vertical, 3)
-                                .background(RetroPanelShape().fill(Kids.sun).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
+                                .background(RetroPanelShape().fill(Kids.sun).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
                                 .offset(x: 0, y: -38)
                                 .rotationEffect(.degrees(-2))
                                 .allowsHitTesting(false),
@@ -140,7 +140,7 @@ struct KidsUnlockSheet: View {
                         )
 
                         HStack(spacing: 6) {
-                            Text("👑")
+                            RetroSymbol("👑", size: 15)
                             Text("Also included with Premium")
                                 .font(Kids.nunito(isIPad ? 13 : 11, weight: .bold))
                                 .foregroundColor(Kids.inkSoft)
@@ -171,7 +171,7 @@ struct KidsUnlockSheet: View {
             }
         }
         .parentGate(isPresented: $showParentGate) { startPurchase() }
-        .alert("📨 Asked your grown-up!", isPresented: $showAskToBuyNotice) {
+        .alert("Asked your grown-up!", isPresented: $showAskToBuyNotice) {
             Button("OK", role: .cancel) {}
         } message: {
             Text("Your purchase will unlock when they say yes.")
@@ -212,9 +212,9 @@ struct KidsUnlockSheet: View {
                 VStack(spacing: 4) {
                     ZStack {
                         RetroPanelShape().fill(.white)
-                            .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
+                            .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                             .frame(width: isIPad ? 56 : 44, height: isIPad ? 56 : 44)
-                            .compositingGroup().shadow(color: Kids.ink.opacity(0.10), radius: 0, x: 0, y: 2)
+                            .compositingGroup().shadow(color: Kids.shadow.opacity(0.10), radius: 4, x: 0, y: 2)
                         Group {
                             if let animal = previewAnimal(named: name) {
                                 RetroCreatureArtwork(animal: animal, size: isIPad ? 50 : 40)
@@ -267,9 +267,9 @@ struct KidsUnlockSheet: View {
         .background(
             RetroPanelShape(cornerRadius: 18, style: .continuous)
                 .fill(.white)
-                .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
-        .compositingGroup().shadow(color: Kids.ink.opacity(0.10), radius: 0, x: 0, y: 4)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.10), radius: 4, x: 0, y: 4)
     }
 
     private var coinUnlockButton: some View {
@@ -294,16 +294,16 @@ struct KidsUnlockSheet: View {
                     .padding(.horizontal, 10).padding(.vertical, 6)
                     .background(
                         RetroPanelShape().fill(config.isCoinAffordable ? Kids.sun : Kids.creamDeep)
-                            .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
+                            .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                     )
             }
             .padding(isIPad ? 16 : 12)
             .background(
                 RetroPanelShape(cornerRadius: 18, style: .continuous)
                     .fill(.white)
-                    .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                    .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
             )
-            .compositingGroup().shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
+            .compositingGroup().shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 4)
         }
         .buttonStyle(.plain)
         .disabled(!config.isCoinAffordable)

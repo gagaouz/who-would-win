@@ -178,7 +178,7 @@ struct CoinsHubSheet: View {
                                         .stroke(gold.opacity(0.2), lineWidth: 1))
                             )
                         } else {
-                            Text("🎉 You've unlocked all packs!")
+                            Text("You've unlocked all packs!")
                                 .font(.system(size: 15, weight: .bold, design: .rounded))
                                 .foregroundColor(gold)
                         }
@@ -313,7 +313,7 @@ struct CoinsHubSheet: View {
                             RetroPanelShape(cornerRadius: 16)
                                 .fill(Kids.ink.opacity(0.12))
                                 .overlay(RetroPanelShape(cornerRadius: 16)
-                                    .stroke(Kids.ink.opacity(0.2), lineWidth: 1))
+                                    .stroke(Kids.outline, lineWidth: 1))
                         )
 
                         Spacer(minLength: 20)
@@ -333,7 +333,7 @@ struct CoinsHubSheet: View {
             }
         }
         .parentGate(isPresented: $showParentGate) { buyCoins() }
-        .alert("📨 Asked your grown-up!", isPresented: $showAskToBuyNotice) {
+        .alert("Asked your grown-up!", isPresented: $showAskToBuyNotice) {
             Button("OK", role: .cancel) {}
         } message: {
             Text("Your coins will arrive when they say yes.")
@@ -417,7 +417,7 @@ struct BuyCoinsButton: View {
                         .padding(.vertical, isIPad ? 5 : 3)
                         .background(
                             RetroPanelShape().fill(.white)
-                                .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5))
+                                .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1))
                         )
                 }
             }
@@ -428,15 +428,15 @@ struct BuyCoinsButton: View {
                 RetroPanelShape(cornerRadius: isIPad ? 18 : 14, style: .continuous)
                     .fill(Kids.sun)
                     .overlay(RetroPanelShape(cornerRadius: isIPad ? 18 : 14, style: .continuous).fill(Kids.sheen))
-                    .overlay(RetroPanelShape(cornerRadius: isIPad ? 18 : 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                    .overlay(RetroPanelShape(cornerRadius: isIPad ? 18 : 14, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
             )
-            .compositingGroup().shadow(color: Kids.ink.opacity(0.10), radius: 0, x: 0, y: 3)
+            .compositingGroup().shadow(color: Kids.shadow.opacity(0.10), radius: 4, x: 0, y: 3)
             .opacity(isBuying ? 0.7 : 1.0)
         }
         .buttonStyle(.plain)
         .disabled(isBuying)
         .parentGate(isPresented: $showParentGate) { buyCoins() }
-        .alert("📨 Asked your grown-up!", isPresented: $showAskToBuyNotice) {
+        .alert("Asked your grown-up!", isPresented: $showAskToBuyNotice) {
             Button("OK", role: .cancel) {}
         } message: {
             Text("Your coins will arrive when they say yes.")

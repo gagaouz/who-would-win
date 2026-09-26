@@ -48,7 +48,7 @@ struct KidsHomeView: View {
                         homeWordmark
                         heroConsole
                         VStack(spacing: 12) {
-                            KidButton(title: "LET'S BATTLE!", icon: "▶", color: Kids.sun, size: .lg) {
+                            KidButton(title: "LET'S BATTLE!", icon: "▶", color: Kids.grass, size: .lg) {
                                 HapticsService.shared.tap()
                                 goToPicker = true
                             }
@@ -65,8 +65,7 @@ struct KidsHomeView: View {
                                 .foregroundColor(Kids.ink)
                                 .padding(14)
                                 .frame(maxWidth: .infinity, minHeight: 48)
-                                .background(RetroPanelShape().fill(Kids.cream))
-                                .overlay(RetroPanelShape().strokeBorder(Kids.ink.opacity(0.5), lineWidth: 2))
+                                .background(StickerShape(shape: RetroPanelShape(), fill: Kids.panel))
                             }
                             .buttonStyle(KidButtonPressStyle())
                             .accessibilityLabel("Surprise Me — start a random battle")
@@ -151,16 +150,16 @@ struct KidsHomeView: View {
         .sheet(item: $mysteryReveal) { a in
             MysteryStickerSheet(animal: a)
         }
-        .alert("Wow — you've collected EVERY sticker! 🏆", isPresented: $showMysteryCoins) {
+        .alert("Wow — you've collected EVERY sticker!", isPresented: $showMysteryCoins) {
             Button("Yay!", role: .cancel) {}
         } message: {
-            Text("Here's 50 bonus coins instead 🪙")
+            Text("Here's 50 bonus coins instead.")
         }
         .fullScreenCover(isPresented: $showHowToPlay) { HowToPlayView() }
         .fullScreenCover(isPresented: $showPaywall) { PaywallView() }
-        .alert("👋 Welcome to Animal vs Animal!", isPresented: $showWelcome) {
-            Button("Watch a battle! ▶️") { startSurprise() }
-            Button("Show me how 👀") { showHowToPlay = true }
+        .alert("Welcome to Animal vs Animal!", isPresented: $showWelcome) {
+            Button("Watch a battle!") { startSurprise() }
+            Button("Show me how") { showHowToPlay = true }
             Button("I'll explore", role: .cancel) {}
         } message: {
             Text("New here? Watch a quick battle, see the how-to, or jump right in!")
@@ -216,12 +215,12 @@ struct KidsHomeView: View {
         let fighters = heroFighters
         return VStack(spacing: 0) {
             HStack(spacing: 8) {
-                Rectangle().fill(Kids.grass).frame(width: 6, height: 6)
+                Rectangle().fill(Kids.grassDeep).frame(width: 6, height: 6)
                 Text("ANIMAL ARENA").font(Kids.pixel(9))
                 Spacer()
                 Text("READY").font(Kids.nunito(10, weight: .heavy)).tracking(1.5)
             }
-            .foregroundColor(Kids.cream)
+            .foregroundColor(Kids.ink)
             .padding(.horizontal, 13).padding(.vertical, 14)
             VStack(spacing: 0) {
                 HStack(alignment: .center) {
@@ -232,7 +231,7 @@ struct KidsHomeView: View {
                 .font(Kids.nunito(11, weight: .heavy))
                 .foregroundColor(Kids.cream)
                 .padding(12)
-                .background(Kids.ink)
+                .background(Kids.console)
                 GeometryReader { geo in
                     ZStack(alignment: .bottom) {
                         RetroHomeLandscape()
@@ -261,24 +260,23 @@ struct KidsHomeView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(Kids.panel)
             }
-            .overlay(Rectangle().strokeBorder(Kids.ink, lineWidth: 3))
+            .clipShape(RetroPanelShape(cornerRadius: 8))
+            .overlay(RetroPanelShape(cornerRadius: 8).strokeBorder(Kids.outline, lineWidth: 1))
             .padding(.horizontal, 10)
             HStack {
                 Text("143 CREATURES")
                 Spacer()
                 HStack(spacing: 5) {
-                    ForEach(0..<5, id: \.self) { _ in Rectangle().fill(Kids.ink).frame(width: 14, height: 3) }
+                    ForEach(0..<5, id: \.self) { _ in Rectangle().fill(Kids.outline).frame(width: 14, height: 3) }
                 }.accessibilityHidden(true)
                 Spacer()
                 Text("LET'S PLAY")
             }
             .font(Kids.nunito(8, weight: .heavy)).tracking(1)
-            .foregroundColor(Kids.cream.opacity(0.65)).padding(12)
+            .foregroundColor(Kids.inkSoft).padding(12)
         }
-        .background(RetroPanelShape(cornerRadius: 18).fill(Kids.console))
-        .overlay(RetroPanelShape(cornerRadius: 18).strokeBorder(Kids.ink, lineWidth: 3))
-        .compositingGroup().shadow(color: Kids.ink, radius: 0, x: 0, y: 5)
-        .compositingGroup().shadow(color: Kids.creamDeep, radius: 0, x: 0, y: 10)
+        .background(StickerShape(shape: RetroPanelShape(cornerRadius: 12), fill: Kids.panel))
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.13), radius: 12, x: 0, y: 5)
     }
 
     private func claimMysterySticker() {
@@ -407,7 +405,7 @@ struct KidsHomeView: View {
                 RetroPanelShape(cornerRadius: 12, style: .continuous)
                     .fill(Kids.sky)
                     .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).fill(Kids.sheen))
-                    .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                    .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                 CreatureIcon(animal: a, size: 34)
             }
             .frame(width: 44, height: 44)
@@ -432,9 +430,9 @@ struct KidsHomeView: View {
         .background(
             RetroPanelShape(cornerRadius: 18, style: .continuous)
                 .fill(Kids.cream)
-                .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
-        .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 3)
     }
 
     // MARK: - Daily Challenge card
@@ -452,7 +450,7 @@ struct KidsHomeView: View {
                     RetroPanelShape(cornerRadius: 12, style: .continuous)
                         .fill(Kids.sun)
                         .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).fill(Kids.sheen))
-                        .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                        .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                     RetroSymbol(available ? "📅" : "✅", size: 22)
                 }
                 .frame(width: 44, height: 44)
@@ -485,9 +483,9 @@ struct KidsHomeView: View {
             .background(
                 RetroPanelShape(cornerRadius: 18, style: .continuous)
                     .fill(available ? Kids.panel : .white)
-                    .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                    .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
             )
-            .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+            .compositingGroup().shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 3)
         }
         .buttonStyle(.plain)
         .disabled(!available)
@@ -569,7 +567,7 @@ struct KidsHomeView: View {
             return ("Fantasy Pack", "🧚", UserSettings.fantasyBattleThreshold, Kids.grape)
         }
         if !settings.isMythicUnlocked {
-            return ("Mythic Beasts", "⚡", UserSettings.mythicBattleThreshold, Kids.sunDeep)
+            return ("Mythic Beasts", "⚡", UserSettings.mythicBattleThreshold, Kids.sun)
         }
         return nil
     }
@@ -597,7 +595,7 @@ struct UnlockCounterChip: View {
                 RetroPanelShape(cornerRadius: 12, style: .continuous)
                     .fill(color)
                     .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).fill(Kids.sheen))
-                    .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                    .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                 RetroSymbol(emoji, size: 22)
             }
             .frame(width: 44, height: 44)
@@ -627,9 +625,9 @@ struct UnlockCounterChip: View {
         .background(
             RetroPanelShape(cornerRadius: 18, style: .continuous)
                 .fill(Kids.cream)
-                .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
-        .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+        .compositingGroup().shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 3)
     }
 }
 
@@ -657,12 +655,12 @@ private struct CounterBar: View {
 private struct RetroHomeLandscape: View {
     var body: some View {
         Canvas { context, size in
-            context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(Color(hex: "#EFE1AE")))
+            context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(Color(hex: "#BCE9F7")))
             let unit: CGFloat = 5
             let horizon = (size.height * 0.55 / unit).rounded() * unit
             for row in 0..<4 {
                 let base = horizon + CGFloat(row) * 16
-                let color = ["#BEC296", "#94A477", "#6E895F", "#496845"][row]
+                let color = ["#BAE7CF", "#92D8B2", "#64BB93", "#379975"][row]
                 for x in stride(from: CGFloat.zero, to: size.width, by: unit) {
                     let lift = CGFloat(Int(sin(Double(x / 49 + CGFloat(row))) * 4)) * unit
                     context.fill(Path(CGRect(x: x, y: base + lift, width: unit, height: size.height - base - lift)), with: .color(Color(hex: color)))
@@ -670,10 +668,12 @@ private struct RetroHomeLandscape: View {
             }
             let sunX = (size.width * 0.57 / unit).rounded() * unit
             let sunY: CGFloat = 22
-            context.fill(Path(CGRect(x: sunX, y: sunY, width: 30, height: 30)), with: .color(Kids.sun.opacity(0.5)))
-            context.fill(Path(CGRect(x: sunX + 5, y: sunY - 5, width: 20, height: 40)), with: .color(Kids.sun.opacity(0.35)))
-            context.fill(Path(CGRect(x: 0, y: size.height - 29, width: size.width, height: 29)), with: .color(Color(hex: "#B99C64")))
-            context.fill(Path(CGRect(x: 0, y: size.height - 32, width: size.width, height: 5)), with: .color(Kids.grassDeep))
+            context.fill(Path(CGRect(x: sunX, y: sunY, width: 30, height: 30)), with: .color(Kids.sun))
+            context.fill(Path(CGRect(x: sunX + 5, y: sunY - 5, width: 20, height: 40)), with: .color(Kids.sun.opacity(0.7)))
+            context.fill(Path(CGRect(x: 18, y: 24, width: 55, height: 10)), with: .color(Kids.panel.opacity(0.8)))
+            context.fill(Path(CGRect(x: 28, y: 14, width: 30, height: 10)), with: .color(Kids.panel.opacity(0.8)))
+            context.fill(Path(CGRect(x: 0, y: size.height - 29, width: size.width, height: 29)), with: .color(Color(hex: "#EDD29B")))
+            context.fill(Path(CGRect(x: 0, y: size.height - 32, width: size.width, height: 5)), with: .color(Kids.grass))
             for x in stride(from: CGFloat(8), to: size.width, by: 29) {
                 context.fill(Path(CGRect(x: x, y: size.height - 16, width: 5, height: 3)), with: .color(Kids.peachDeep.opacity(0.45)))
             }
