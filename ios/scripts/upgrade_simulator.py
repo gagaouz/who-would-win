@@ -11,6 +11,7 @@ import json
 import os
 from pathlib import Path
 import plistlib
+import shutil
 import subprocess
 import tarfile
 import time
@@ -74,18 +75,21 @@ struct WhoWouldWinApp: App {
         }
         if ProcessInfo.processInfo.environment["AVA_SEED_UPGRADE_FIXTURE"] == "1" {
             let ud = UserDefaults.standard
-            ud.removePersistentDomain(forName: Bundle.main.bundleIdentifier!)
             let data = Data(base64Encoded: "__PREFERENCES__")!
-            let values = try! PropertyListSerialization.propertyList(from: data, format: nil) as! [String: Any]
-            for (key, value) in values { ud.set(value, forKey: key) }
+            var values = try! PropertyListSerialization.propertyList(from: data, format: nil) as! [String: Any]
             if ProcessInfo.processInfo.environment["AVA_UPGRADE_CASE"] == "pending" {
-                ud.set(Data(base64Encoded: "__PENDING__")!, forKey: "tournament.active")
+                values["tournament.active"] = Data(base64Encoded: "__PENDING__")!
             }
-            ud.set("synthetic-1.1.7", forKey: "qa.upgradeFixture")
+            values["qa.upgradeFixture"] = "synthetic-1.1.7"
+            ud.setPersistentDomain(values, forName: Bundle.main.bundleIdentifier!)
             ParentalPIN.setPIN("2479")
-            ud.synchronize()
         }
         UpgradeFixtureAudit.captureIfRequested()
+        // The observer initializes the original stores, which may themselves
+        // write preferences. Do not signal readiness until those writes flush.
+        precondition(UserDefaults.standard.synchronize())
+        let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        try! Data("baseline-flushed".utf8).write(to: documents.appendingPathComponent("upgrade-baseline-ready"), options: .atomic)
     }
     var body: some Scene {
         WindowGroup { Text("Synthetic 1.1.7 upgrade fixture — external services disabled") }
@@ -138,31 +142,48 @@ private final class LegacyUpgradeNetworkBlocker: URLProtocol {
             container = Path(run("xcrun", "simctl", "get_app_container", device, BUNDLE, "data"))
             clear_snapshots(container)
             environment = os.environ.copy()
+            for key in list(environment):
+                if key.startswith("SIMCTL_CHILD_AVA_"):
+                    environment.pop(key)
             environment.update({"SIMCTL_CHILD_AVA_CAPTURE_UPGRADE_STATE": "1", "SIMCTL_CHILD_AVA_SEED_UPGRADE_FIXTURE": "1",
                                 "SIMCTL_CHILD_AVA_UPGRADE_CASE": scenario})
             run("xcrun", "simctl", "launch", "--terminate-running-process", device, BUNDLE, env=environment)
             before = snapshot(container, case_dir, "before")
             assert before["version"] == "1.1.7" and before["balance"] == 1234
             assert before["syntheticPinVerifies"] and before["hasResumableTournament"]
+            before_preferences = plistlib.loads((case_dir / "before-preferences.plist").read_bytes())
+            verify_durable_preferences(container, before_preferences, case_dir / "baseline-durable-preferences.plist")
             run("xcrun", "simctl", "terminate", device, BUNDLE)
+            clear_snapshots(container)
+            environment.pop("SIMCTL_CHILD_AVA_SEED_UPGRADE_FIXTURE")
+            run("xcrun", "simctl", "launch", "--terminate-running-process", device, BUNDLE, env=environment)
+            cold = snapshot(container, case_dir, "baseline-cold")
+            assert cold == before, "Baseline could not reload its own complete fixture/PIN after a cold launch"
+            verify_durable_preferences(container, before_preferences, case_dir / "baseline-cold-durable-preferences.plist")
+            run("xcrun", "simctl", "terminate", device, BUNDLE)
+            sentinel = uuid.uuid4().hex
+            (container / "Documents/upgrade-data-sentinel").write_text(sentinel)
             clear_snapshots(container)
             run("xcrun", "simctl", "install", device, str(app))
             after_container = Path(run("xcrun", "simctl", "get_app_container", device, BUNDLE, "data"))
-            assert after_container == container, "Installing candidate unexpectedly replaced the data container"
-            environment.pop("SIMCTL_CHILD_AVA_SEED_UPGRADE_FIXTURE")
+            # iOS may relocate the data directory while preserving its contents.
+            # Verify retained state, not the allocator's UUID/path.
+            assert (after_container / "Documents/upgrade-data-sentinel").read_text() == sentinel, "Documents contents were not retained"
+            verify_durable_preferences(after_container, before_preferences, case_dir / "installed-durable-preferences.plist", require_ready=False)
             environment.update({"SIMCTL_CHILD_AVA_UI_TESTING": "1", "SIMCTL_CHILD_AVA_BLOCK_EXTERNAL_SERVICES": "1"})
             run("xcrun", "simctl", "launch", "--terminate-running-process", device, BUNDLE, "--uitesting", env=environment)
-            after = snapshot(container, case_dir, "after")
+            after = snapshot(after_container, case_dir, "after")
             run("xcrun", "simctl", "io", device, "screenshot", str(case_dir / "candidate-home.png"))
             assert after.pop("version") == "2.0"
             before.pop("version")
             assert before == after, f"Loaded service state changed during {scenario} upgrade"
-            before_preferences = plistlib.loads((case_dir / "before-preferences.plist").read_bytes())
             after_preferences = plistlib.loads((case_dir / "after-preferences.plist").read_bytes())
             for key, value in before_preferences.items():
                 assert after_preferences.get(key) == value, f"Preference changed during upgrade: {key}"
             report["cases"].append({"scenario": scenario, "loadedStatePreserved": True, "preferencesPreserved": True,
-                                    "keychainPINPreserved": True, "sameDataContainer": True, "status": "passed"})
+                                    "keychainPINPreserved": True, "baselineColdLaunchPassed": True,
+                                    "documentsPreserved": True, "dataContainerRelocated": after_container != container,
+                                    "status": "passed"})
             print(f"Passed {scenario}: preferences, loaded stores, custom entrant, wager/result guards, keychain PIN", flush=True)
             run("xcrun", "simctl", "terminate", device, BUNDLE)
         report["status"] = "passed"
@@ -192,8 +213,27 @@ def snapshot(container, output, prefix):
 
 
 def clear_snapshots(container):
-    for name in ("upgrade-state.json", "upgrade-preferences.plist"):
+    for name in ("upgrade-state.json", "upgrade-preferences.plist", "upgrade-baseline-ready"):
         (container / "Documents" / name).unlink(missing_ok=True)
+
+
+def verify_durable_preferences(container, expected, destination, require_ready=True):
+    """Observe actual old-app disk state; never write/repair candidate data."""
+    preferences = container / "Library/Preferences" / f"{BUNDLE}.plist"
+    deadline = time.monotonic() + 20
+    while True:
+        ready = not require_ready or (container / "Documents/upgrade-baseline-ready").exists()
+        try:
+            actual = plistlib.loads(preferences.read_bytes())
+            retained = all(actual.get(key) == value for key, value in expected.items())
+        except (FileNotFoundError, plistlib.InvalidFileException):
+            retained = False
+        if ready and retained:
+            shutil.copyfile(preferences, destination)
+            return
+        if time.monotonic() >= deadline:
+            raise AssertionError("Baseline fixture preferences were not durable; refusing to test an invalid starting state")
+        time.sleep(0.2)
 
 
 if __name__ == "__main__":
