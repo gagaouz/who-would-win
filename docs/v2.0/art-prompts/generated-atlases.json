@@ -1,0 +1,110 @@
+[
+  {
+    "name": "land",
+    "path": "/Users/home/.codex/generated_images/01a0dd21-0691-7ed2-a383-f4bc8b73cad3/exec-a4169064-8662-4e6e-9aad-c445746fb2b4.png",
+    "ids": [
+      "rhinoceros",
+      "hippopotamus",
+      "cheetah",
+      "crocodile",
+      "komodo_dragon",
+      "wolverine",
+      "honey_badger",
+      "giraffe",
+      "zebra",
+      "moose",
+      "boar",
+      "tarantula"
+    ]
+  },
+  {
+    "name": "sea",
+    "path": "/Users/home/.codex/generated_images/01a0dd21-0691-7ed2-a383-f4bc8b73cad3/exec-69198e80-5fdf-43c1-87e7-66be11d43310.png",
+    "ids": [
+      "orca",
+      "giant_squid",
+      "piranha",
+      "octopus",
+      "barracuda",
+      "electric_eel",
+      "hammerhead_shark",
+      "mantis_shrimp",
+      "blue_ringed_octopus",
+      "swordfish",
+      "coelacanth",
+      "crow"
+    ]
+  },
+  {
+    "name": "air_bugs",
+    "path": "/Users/home/.codex/generated_images/01a0dd21-0691-7ed2-a383-f4bc8b73cad3/exec-2ce887e9-ab67-486a-a326-bf875fe5ba43.png",
+    "ids": [
+      "peregrine_falcon",
+      "harpy_eagle",
+      "barn_owl",
+      "hornet",
+      "dragonfly",
+      "albatross",
+      "pelican",
+      "army_ant",
+      "bombardier_beetle",
+      "bullet_ant",
+      "praying_mantis",
+      "fire_ant"
+    ]
+  },
+  {
+    "name": "dogs",
+    "path": "/Users/home/.codex/generated_images/01a0dd21-0691-7ed2-a383-f4bc8b73cad3/exec-03bf3383-1b0b-4614-9359-398e45737bbd.png",
+    "ids": [
+      "great_dane",
+      "german_shepherd",
+      "golden_retriever",
+      "labrador",
+      "husky",
+      "bulldog",
+      "beagle",
+      "poodle",
+      "corgi",
+      "pug",
+      "dachshund",
+      "chihuahua"
+    ]
+  },
+  {
+    "name": "small_pets",
+    "path": "/Users/home/.codex/generated_images/01a0dd21-0691-7ed2-a383-f4bc8b73cad3/exec-0e0278fe-7322-469a-b089-efc1c9ca02de.png",
+    "ids": [
+      "tabby_cat",
+      "persian_cat",
+      "maine_coon",
+      "parakeet",
+      "cockatiel",
+      "canary",
+      "hamster",
+      "gerbil",
+      "guinea_pig",
+      "goldfish",
+      "betta_fish",
+      "leopard_gecko"
+    ]
+  },
+  {
+    "name": "farm_a",
+    "path": "/Users/home/.codex/generated_images/01a0dd21-0691-7ed2-a383-f4bc8b73cad3/exec-e4bff123-d6ea-415c-879b-1be178b7046b.png",
+    "ids": [
+      "cow",
+      "bull",
+      "ox",
+      "pig",
+      "piglet",
+      "sheep",
+      "lamb",
+      "ram",
+      "goat",
+      "donkey",
+      "mule",
+      "llama"
+    ]
+  }
+]

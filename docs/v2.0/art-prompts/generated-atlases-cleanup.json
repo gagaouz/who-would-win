@@ -1,0 +1,54 @@
+[
+  {
+    "prompt": "Use case: stylized-concept. NEW game sprite atlas with EXACTLY FOUR small isolated character sprites. Reference is STYLE ONLY. This is a SPARSE layout with very generous TRANSPARENT GUTTERS: 2columns x2rows, equal quadrants. Each sprite occupies only the middle60% of its quadrant leaving20% completely transparent margin ALL AROUND. No silhouette may touch its cell boundaries. At1024square, spritewidth andheight both atmost300pixels. Top-left Grizzly Bear — brown shaggy quadruped. Top-right Wolf — grey quadruped. Bottom-left Great White Shark — horizontally swimming. Bottom-right Bald Eagle — white head, wings lifted. All faceRIGHT, fullbody, neutral ready pose. Match warm classic16/32bit pixelart of reference, crisp stepped dark outlines, friendly expressive eyes, accurate readable animal anatomy, flatshading. Keep every horn/ear/tail/wing/foot visible. TRUE transparent alpha background, CLEAN empty margins without stray pixels, no shadows, no floor, no text, no labels, no grid. Characters must never overlap even their boundingrectangles. More transparent emptyspace than artwork. Exactlyfour creatures in exactquadrants.",
+    "ids": [
+      "grizzly_bear",
+      "wolf",
+      "great_white_shark",
+      "bald_eagle"
+    ],
+    "columns": 2,
+    "rows": 2,
+    "path": "/Users/home/.codex/generated_images/01a0dd21-0691-7ed2-a383-f4bc8b73cad3/exec-6a331ba4-c5a1-419e-aff1-30b0ec335917.png",
+    "key": "clean_a"
+  },
+  {
+    "prompt": "Use case: stylized-concept. NEW game sprite atlas with EXACTLY FOUR small isolated character sprites. Reference is STYLE ONLY. This is a SPARSE layout with very generous TRANSPARENT GUTTERS: 2columns x2rows, equal quadrants. Each sprite occupies only the middle60% of its quadrant leaving20% completely transparent margin ALL AROUND. No silhouette may touch its cell boundaries. At1024square, spritewidth andheight both atmost300pixels. Top-left T-Rex — green biped dinosaur short forearms. Top-right Dragon — red, four legs and two wings. Bottom-left Leviathan — blue long sea serpent with fins. Bottom-right Triceratops — olive four-legged dinosaur three horns bony frill. All faceRIGHT, fullbody, neutral ready pose. Match warm classic16/32bit pixelart of reference, crisp stepped dark outlines, friendly expressive eyes, accurate readable animal anatomy, flatshading. Keep every horn/ear/tail/wing/foot visible. TRUE transparent alpha background, CLEAN empty margins without stray pixels, no shadows, no floor, no text, no labels, no grid. Characters must never overlap even their boundingrectangles. More transparent emptyspace than artwork. Exactlyfour creatures in exactquadrants.",
+    "ids": [
+      "t_rex",
+      "dragon",
+      "leviathan",
+      "triceratops"
+    ],
+    "columns": 2,
+    "rows": 2,
+    "path": "/Users/home/.codex/generated_images/01a0dd21-0691-7ed2-a383-f4bc8b73cad3/exec-4ab86687-d4bd-45ef-9d10-78234c1b2e3e.png",
+    "key": "clean_b"
+  },
+  {
+    "prompt": "Use case: stylized-concept. NEW game sprite atlas with EXACTLY FOUR small isolated character sprites. Reference is STYLE ONLY. This is a SPARSE layout with very generous TRANSPARENT GUTTERS: 2columns x2rows, equal quadrants. Each sprite occupies only the middle60% of its quadrant leaving20% completely transparent margin ALL AROUND. No silhouette may touch its cell boundaries. At1024square, spritewidth andheight both atmost300pixels. Top-left Velociraptor — orange feathered small biped with sickle toe. Top-right Spinosaurus — teal biped dinosaur red back sail crocodile snout. Bottom-left Megalodon — very large thick slate-blue shark. Bottom-right Woolly Mammoth — shaggy brown elephant curved tusks. All faceRIGHT, fullbody, neutral ready pose. Match warm classic16/32bit pixelart of reference, crisp stepped dark outlines, friendly expressive eyes, accurate readable animal anatomy, flatshading. Keep every horn/ear/tail/wing/foot visible. TRUE transparent alpha background, CLEAN empty margins without stray pixels, no shadows, no floor, no text, no labels, no grid. Characters must never overlap even their boundingrectangles. More transparent emptyspace than artwork. Exactlyfour creatures in exactquadrants.",
+    "ids": [
+      "velociraptor",
+      "spinosaurus",
+      "megalodon",
+      "woolly_mammoth"
+    ],
+    "columns": 2,
+    "rows": 2,
+    "path": "/Users/home/.codex/generated_images/01a0dd21-0691-7ed2-a383-f4bc8b73cad3/exec-1baac097-5e92-4c40-9b3b-c5e00bfaf41d.png",
+    "key": "clean_c"
+  },
+  {
+    "prompt": "Use case: stylized-concept. NEW game sprite atlas with EXACTLY FOUR small isolated character sprites. Reference is STYLE ONLY. This is a SPARSE layout with very generous TRANSPARENT GUTTERS: 2columns x2rows, equal quadrants. Each sprite occupies only the middle60% of its quadrant leaving20% completely transparent margin ALL AROUND. No silhouette may touch its cell boundaries. At1024square, spritewidth andheight both atmost300pixels. Top-left Ammit — crocodile head, lion forelegs, hippo hindquarters. Top-right Peryton — green antlered deer body with feathered wings. Bottom-left Swordfish — sleek blue silver swordfish, long straight pointed bill, narrow crescent tail, small narrow dorsal fin, NOT a sailfish, NO giant sail fin. Bottom-right Gorilla — grey purple silverback primate. All faceRIGHT, fullbody, neutral ready pose. Match warm classic16/32bit pixelart of reference, crisp stepped dark outlines, friendly expressive eyes, accurate readable animal anatomy, flatshading. Keep every horn/ear/tail/wing/foot visible. TRUE transparent alpha background, CLEAN empty margins without stray pixels, no shadows, no floor, no text, no labels, no grid. Characters must never overlap even their boundingrectangles. More transparent emptyspace than artwork. Exactlyfour creatures in exactquadrants.",
+    "ids": [
+      "ammit",
+      "peryton",
+      "swordfish",
+      "gorilla"
+    ],
+    "columns": 2,
+    "rows": 2,
+    "path": "/Users/home/.codex/generated_images/01a0dd21-0691-7ed2-a383-f4bc8b73cad3/exec-227e86f0-cf3b-4e26-939d-2333852b82a9.png",
+    "key": "clean_d"
+  }
+]

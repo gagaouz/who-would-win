@@ -1,0 +1,53 @@
+[
+  {
+    "key": "custom_a",
+    "ids": [
+      "robot",
+      "knight",
+      "wizard",
+      "superhero"
+    ],
+    "archetypes": [
+      "biped",
+      "biped",
+      "biped",
+      "biped"
+    ],
+    "path": "/Users/home/.codex/generated_images/01a0dd21-0691-7ed2-a383-f4bc8b73cad3/exec-a77f4555-e7f6-4b1d-9763-d8dd14160456.png",
+    "columns": 2
+  },
+  {
+    "key": "custom_b",
+    "ids": [
+      "slime",
+      "mushroom",
+      "tree",
+      "alien"
+    ],
+    "archetypes": [
+      "biped",
+      "biped",
+      "biped",
+      "biped"
+    ],
+    "path": "/Users/home/.codex/generated_images/01a0dd21-0691-7ed2-a383-f4bc8b73cad3/exec-91e7f0c5-c340-4b73-a24f-8330bcabff85.png",
+    "columns": 2
+  },
+  {
+    "key": "custom_c",
+    "ids": [
+      "wingedcat",
+      "rockgolem",
+      "seaserpent",
+      "ghost"
+    ],
+    "archetypes": [
+      "flyer",
+      "biped",
+      "serpentine",
+      "flyer"
+    ],
+    "path": "/Users/home/.codex/generated_images/01a0dd21-0691-7ed2-a383-f4bc8b73cad3/exec-bd89e6c7-9c33-431a-9a7f-4a84e4962635.png",
+    "columns": 2
+  }
+]

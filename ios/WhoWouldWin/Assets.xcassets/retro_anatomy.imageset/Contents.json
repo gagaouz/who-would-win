@@ -1,0 +1,12 @@
+{
+  "images": [
+    {
+      "filename": "sprites.png",
+      "idiom": "universal"
+    }
+  ],
+  "info": {
+    "author": "xcode",
+    "version": 1
+  }
+}
