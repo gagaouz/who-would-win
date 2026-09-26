@@ -1,6 +1,6 @@
 # Retro 2.0 architecture
 
-Audit date: 2026-09-26. The source findings below describe the 1.1.7 baseline; the architecture contracts describe the 2.0 target and owner decisions. Implementation is in progress. Use [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) and the release evidence ledger for executed tests and actual delivery status. This document is not proof of TestFlight availability.
+Audit date: 2026-09-26. The source findings below describe the 1.1.7 baseline; the architecture contracts describe the 2.0 target and owner decisions. Build 112 implements four authored poses for every one of the 143 catalog creatures and 12 custom bases, a bounded raw atlas loader and the existing result-bound native cycle. The optional appearance editor remains [proposed only](CUSTOM_FIGHTERS_PROPOSAL.md). Use [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) and [the build 112 release record](RELEASE_2.0_112.md) for executed tests and actual delivery status. This baseline/architecture document is not itself proof of TestFlight availability.
 
 ## Product requirement
 

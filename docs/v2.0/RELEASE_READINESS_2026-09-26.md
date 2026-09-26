@@ -1,10 +1,10 @@
 # Release readiness evidence — September 26, 2026
 
-**Final outcome: 2.0 (110) is available in internal TestFlight.** Apple reports `VALID`, `INTERNAL_ONLY`, and `IN_BETA_TESTING`; the exact build is present in the existing `self` group and its What to Test notes were published and verified. See the [final release record](RELEASE_2.0_110.md) and [sanitized Apple evidence](evidence/testflight-2.0-110.json).
+**Latest build 112: Animal vs Animal 2.0 (112) is available in internal TestFlight. At 2026-09-26 20:19:50 UTC, Apple reported VALID, INTERNAL_ONLY and IN_BETA_TESTING; the exact candidate is present in the existing self group and its What to Test notes were read back.** See the [current release record](RELEASE_2.0_112.md) and [sanitized Apple evidence](evidence/testflight-2.0-112.json). The [build 110](RELEASE_2.0_110.md) and [build 111](RELEASE_2.0_111.md) records retain their verified historical release status.
 
-Final validation passed 41 unit, 9 iPhone UI, 5 targeted iPad UI, 46 backend tests, and both strict in-place synthetic upgrade cases. Archived source is `583b5e5`; native source equivalence to tested `ebcc38e` is recorded. The original maintenance checkout is unchanged. Physical installation/account/capability acceptance remains pending through the [owner checklist](OWNER_TESTFLIGHT_CHECKS.md).
+At frozen `9eec02b`, build 112 passed **56 native unit + 9 iPhone UI + 5 targeted iPad UI executions**, zero failures/skips, plus **two fresh strict in-place synthetic 1.1.7 → 112 upgrade cases**. All **143 catalog and 12 custom-base four-pose families** validate; 35 raw PNGs match the bundled bytes across 40 referenced atlases. Native motion, phone/tablet/custom/share visuals were accepted. Earlier 46 backend passes are carried by exact tree identity, not rerun. Final QA: `ios/build/QA-2.0-112-9eec02b.json`. Physical installation/account/capability acceptance remains pending through the [owner checklist](OWNER_TESTFLIGHT_CHECKS.md).
 
-The sections below retain the day's earlier checkpoints as **historical evidence**, superseded by the final record above. Their provisional allocation, earlier test counts, and not-yet-uploaded statements describe those earlier times, not current release status.
+The sections below retain the day's earlier build 110 checkpoints as **historical evidence**. The current build 112 release record above supersedes their latest-status pointers. Their allocation, test counts, upload status and hardware observations describe those recorded checkpoints, not newly executed build 112 checks.
 
 ## Native baseline and build harness
 

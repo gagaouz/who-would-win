@@ -1,0 +1,1497 @@
+{
+  "schemaVersion": 1,
+  "draft": false,
+  "assembledAt": "2026-09-26T20:21:11.111879+00:00",
+  "checkedAt": "2026-09-26T20:19:50.074697+00:00",
+  "bundleID": "com.whowouldin.WhoWouldWin",
+  "version": "2.0",
+  "build": "112",
+  "sourceCommit": "9eec02be943501312c233738b5d53dd284b4d726",
+  "changeSummary": "All143 catalog creatures and12 custom-avatar bases now have authored idle, anticipation, attack and reaction poses. Bounded raw-atlas loading avoids retaining all decoded sheets. Typed-name on-device custom creation remains; a visual custom editor is a proposal, not shipped.",
+  "qa": {
+    "path": "ios/build/QA-2.0-112-9eec02b.json",
+    "sha256": "e28be546168b504c5e89b8bdf7aa446e7481ab04d794f9c5570c4a9cbb2f3ede"
+  },
+  "tests": {
+    "nativeExecutions": 70,
+    "distinctTestCountClaimed": false,
+    "runs": [
+      {
+        "role": "phone",
+        "scope": "Full phone suite:56 unit and9 UI cases",
+        "sourceCommit": "9eec02be943501312c233738b5d53dd284b4d726",
+        "runDirectory": "ios/build/runs/20260926T193859Z-test-2.0-112-9eec02be-62e1a8",
+        "xcresult": "ios/build/runs/20260926T193859Z-test-2.0-112-9eec02be-62e1a8/Tests.xcresult",
+        "bundleProof": "ios/build/runs/20260926T193859Z-test-2.0-112-9eec02be-62e1a8/bundle-proof.json",
+        "bundleProofSHA256": "6ef2639d0e01aa35fa89727ce699a60246cdbf4b889993bb8881eeb1441c3911",
+        "sourceFingerprintCount": 454,
+        "passed": 65,
+        "failed": 0,
+        "skipped": 0,
+        "devices": [
+          "iPhone 17 Pro"
+        ]
+      },
+      {
+        "role": "tablet",
+        "scope": "Five targeted tablet battle/navigation/export cases",
+        "sourceCommit": "9eec02be943501312c233738b5d53dd284b4d726",
+        "runDirectory": "ios/build/runs/20260926T194425Z-test-2.0-112-9eec02be-2a40de",
+        "xcresult": "ios/build/runs/20260926T194425Z-test-2.0-112-9eec02be-2a40de/Tests.xcresult",
+        "bundleProof": "ios/build/runs/20260926T194425Z-test-2.0-112-9eec02be-2a40de/bundle-proof.json",
+        "bundleProofSHA256": "6ef2639d0e01aa35fa89727ce699a60246cdbf4b889993bb8881eeb1441c3911",
+        "sourceFingerprintCount": 454,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0,
+        "devices": [
+          "iPad Air 11-inch (M4)"
+        ]
+      }
+    ],
+    "freshBuild112UpgradeExecuted": true,
+    "freshSyntheticUpgrade": {
+      "status": "passed",
+      "executedForBuild112": true,
+      "candidateCommit": "9eec02be943501312c233738b5d53dd284b4d726",
+      "report": "ios/build/runs/20260926T194048Z-upgrade-d14569/upgrade-report.json",
+      "reportSHA256": "206d4a021f7bcdd8728b8bbfc2933ed6fd98a9a6cd66345ed25e3925dcb38445",
+      "candidateApp": "ios/build/runs/20260926T193859Z-test-2.0-112-9eec02be-62e1a8/DerivedData/Build/Products/Testing-iphonesimulator/WhoWouldWin.app",
+      "candidateExecutableSHA256": "f97e127eff7fae27108dd966df9a254a25edde6ea8429777047e1bc89c218a6d",
+      "baselineCommit": "107bf7327f1c82e85282101e2294fb6f9ded3639",
+      "cases": [
+        {
+          "scenario": "settled",
+          "loadedStatePreserved": true,
+          "preferencesPreserved": true,
+          "keychainPINPreserved": true,
+          "baselineColdLaunchPassed": true,
+          "documentsPreserved": true,
+          "dataContainerRelocated": true,
+          "status": "passed"
+        },
+        {
+          "scenario": "pending",
+          "loadedStatePreserved": true,
+          "preferencesPreserved": true,
+          "keychainPINPreserved": true,
+          "baselineColdLaunchPassed": true,
+          "documentsPreserved": true,
+          "dataContainerRelocated": true,
+          "status": "passed"
+        }
+      ],
+      "snapshotChecks": [
+        {
+          "scenario": "settled",
+          "beforeStateSHA256": "e0e8f1f2747fead0869ce7b698b6ba50a848187fe93541de9f3f8c63988f193a",
+          "afterStateSHA256": "9a4a83e921b2d973eb0e339faa80c3dd0cd961fb5a023a0ab96a95386f778e2d",
+          "allPreservationFlagsPassed": true
+        },
+        {
+          "scenario": "pending",
+          "beforeStateSHA256": "d2f9f2539a5e40f10175a67ef1e85cfb6baa9be2cca43cb727252642c626d93b",
+          "afterStateSHA256": "2b6a3b59e67771f0ae42ea70b584f91129c66f2e68b16a5d9f2c5d6c9aee2392",
+          "allPreservationFlagsPassed": true
+        }
+      ],
+      "postUpgradeHomeReview": "ios/build/runs/20260926T194048Z-upgrade-d14569/post-upgrade-home-review.json",
+      "postUpgradeHomeReviewSHA256": "7cdb0b50de21c0b186ce8fc5ec258b5ee6eb3cf6148c143c0b5d196f16942219",
+      "limitations": [
+        "Simulator, not physical App Store/TestFlight upgrade",
+        "No receipt, purchase, iCloud, or live service verification",
+        "Isolated Testing bundle; not a canonical owner-device/account upgrade."
+      ]
+    },
+    "backendTestsRerunFor112": false,
+    "inheritedBackend": {
+      "status": "prior-passed-run-carried-by-exact-complete-tree-identity",
+      "executedForBuild112": false,
+      "priorTests": {
+        "tests": 46,
+        "passed": 46,
+        "failed": 0,
+        "skipped": 0
+      },
+      "sourceCommit": "9eec02be943501312c233738b5d53dd284b4d726",
+      "priorCandidateCommit": "583b5e54a3f6fb6279705dacb50465197318ce67",
+      "backendTree": "a7d55743ba7a55e37b1f935a541201706171a3cd",
+      "priorEvidence": "ios/build/backend-compatibility-final.json",
+      "priorTestLog": "ios/build/backend-tests-583b5e5.log",
+      "priorTestLogSHA256": "eb7eeb53cbae4e142ee6165283a24353550464ceb330d0bc132796167301e52f",
+      "newDeploymentRequired": false
+    }
+  },
+  "artwork": {
+    "catalogSprites": 143,
+    "customBases": 12,
+    "authoredCatalogPoseSets": 143,
+    "authoredCustomPoseSets": 12,
+    "posesPerSource": 4,
+    "totalPoseCrops": 620,
+    "rawAtlasCount": 35,
+    "retainedLegacyAuthoredCatalogCount": 18,
+    "manifestSHA256": "12595c84c16da84bf713464e02dbd7f3937685dea84c033079ccc8824d412b0a",
+    "rawAtlasHashes": {
+      "retro_motion_all_22_prehistoric_a": "eb614005d3d8c3bbe68ad8eb49e387755d01dc6d884cfac5d2d703b3cb38757f",
+      "retro_motion_all_16_farm_a_c": "518f788c00b3fe8c159fe5edac36bf97f05f34d1baec254247659a592580a150",
+      "retro_motion_all_12_small_pets_b": "e4c1cd39ab072aabe3eeb0443966045b17e1ed40cc8e58e5c0c0b37bce1d0754",
+      "retro_motion_all_05_air_bugs_a": "cdff7c2822f1d2452d82ac404e118f6cfd5b24ce3928f2cac0b0ea398721f8a0",
+      "retro_motion_all_04_sea_b": "0801281d19692b509a1f932eea84760ef3b860e573060588750c263120256d3e",
+      "retro_motion_all_20_fantasy_a": "08bb7bc66ac8850f459c889abecedbc30db17228f99168dfbab5c02401370505",
+      "retro_motion_all_23_prehistoric_b": "2c52fa402aeb97e06347e01e6ab761a1fe82e30e45aa7918f44afd8d882990f1",
+      "retro_motion_all_08_dogs_a": "af62574047d11dd5f5e6da70dcc084e59b249feef44c84a93a1a812cfdd2844a",
+      "retro_motion_all_06_air_bugs_b": "7de7b5afaecc1b7dd2cec62688959a15735f71db2a03ac2b9df9a0eafd2e41cb",
+      "retro_motion_all_28_core_mix": "edcc71a031a4eb5b26636912969be37969565fcb93550752b7e97beb92549b63",
+      "retro_motion_all_33_custom_a": "ea2bd7198d23a1c73312320902ae3dcdd9189f0a10d9eab4f706504303139026",
+      "retro_motion_all_25_olympus_a": "d21b03174bd056cfd3e3e5d2618eec39fed4704efe3869a9e19a12ab450f8c41",
+      "retro_motion_all_34_custom_b": "112f421add5ff88325586a4632082b3323055d51b54cdcc8e13400d56cfac41d",
+      "retro_motion_all_13_small_pets_c": "a5236d54debdbe9830f38418604657a038faad3739d7d75598e39a26ef4637a5",
+      "retro_motion_all_30_clean_d": "a935fd0a67144348c9d7f9c61d2f53a7dd5391aa0aa740198d5813aae3a6a06f",
+      "retro_motion_all_03_sea_a": "537112e8fb45a87b31c2fdaeb9ad4b13322163e2a13f3859319f0e2dd88b62b1",
+      "retro_motion_all_02_land_b": "e4d72e8fc91b8377e11a62285d2d9d931e3884a787858f1d63abab63d1293cea",
+      "retro_motion_all_17_farm_b_a": "478f58ebbeea4fa9395ed8b1b3e9a55be8a7495b3af0dc7c9cf69284ad316954",
+      "retro_motion_all_29_mythic_crow": "749420fde787aa0d95a75d62afaf1ebd068d3252656cb681271c62791abb68e0",
+      "retro_motion_all_26_olympus_b": "3f19b17f956fa5726f92d6e6d4c360f902d3ffa376dbbaf47d8d76df23fc9fc8",
+      "retro_motion_all_35_custom_c": "9836c1cb6e560dd726d54fbb0d5129739d9933a61caeae16661906574f00dd70",
+      "retro_motion_all_07_air_bugs_c": "31dc2b6aa20032c3f7bc0022ed25bd56a226d27b50f2a82da38a8006af1de156",
+      "retro_motion_all_32_prehistoric_mix": "691fa40f9b05c78ca70bce5ef1b9c9bc42a2e9c47389332b02ca61c074fced4e",
+      "retro_motion_all_09_dogs_b": "89845516e2ba02257e91f058e082eeecaa125d42f284c5d0e9cb209677f4c593",
+      "retro_motion_all_27_olympus_c": "967936917a3638ee2eb66688a27dbd6921b8925e6a37dc3e1cf4c038b988f7dd",
+      "retro_motion_all_31_sea_mammoth": "674859f083da7d48b5439d5accbf0f4eafa65a0a60ec652661010275d5a9f520",
+      "retro_motion_all_01_land_a": "e9b7c62d7e8d3c499077052adf8033a848bca22eb36dd07b8f0d0191e6aea31e",
+      "retro_motion_all_10_dogs_c": "aeff767e5e123bca3b95a1c8097587b00a90ffb765200459fa4a139c6ff17d69",
+      "retro_motion_all_19_farm_b_c": "4aa908d5a2e31630fae6773052ccab0fb91685cdbb5ae8ce75c6bfc78c8bef78",
+      "retro_motion_all_24_mythic_a": "3ebfc8129f5cdcfbdb2b26c46d49bb995ee032010879772867811d036b7a7edd",
+      "retro_motion_all_11_small_pets_a": "d67388fc65cdadadc87e496b71560b463b8b5495bb135aa002a8fb4ceaf59161",
+      "retro_motion_all_15_farm_a_b": "5c05acd084435522309f67e2875e550e127952691a3763372d93d8bdecae99c2",
+      "retro_motion_all_21_fantasy_b": "d6ed35d9f5142cac352dddd28981acfba68f285b3a4f2e132c7c3f4167bca6fe",
+      "retro_motion_all_18_farm_b_b": "37e118ff68d1c3876502becddd3f6c3edde8a21b420f700a180deeefeb1a2f7d",
+      "retro_motion_all_14_farm_a_a": "f7faf93bfbeda5ea6fc4c580e97b04b0e1195c9222660043d809135b3d84739e"
+    },
+    "sourceAcceptance": {
+      "path": "ios/build/release-tools/motion-all/visual-acceptance-index.json",
+      "sha256": "4f865a671a669a44ce7528883d7f4d2e74dd32e322fbe5a216c75d13165cabff"
+    },
+    "noRuntimeImageService": true,
+    "customEditorShipped": false
+  },
+  "nativeVisualReview": {
+    "evidence": {
+      "path": "ios/build/release-tools/native-visual-review-112-9eec02b.json",
+      "sha256": "a2c1de614c23ec9c99f9e089a5494092694fd1dc9d8ffdeac5352d7868438351"
+    },
+    "uniqueArtifactCount": 39,
+    "scope": "Combined independent acceptance of the listed native phone/tablet motion contact sheets, solo/4v4/custom stages and results, tournament screens and duel/team/tournament/custom share previews. Source artwork acceptance and automated behavior assertions are separate evidence. No claim of every screen, full-resolution exported PNG review or physical playback/performance acceptance.",
+    "limits": [
+      "Fixed-time stills establish pose appearance and scene composition, not continuous playback frame pacing or every transition on physical hardware.",
+      "All 155 art sources have four authored poses matching the existing lion action-cycle contract; this is not a claim of dedicated walk, flap or idle animation clips.",
+      "Physical-device thermal, peak RSS and sustained frame pacing remain owner checks through TestFlight. Simulator RSS sampling is diagnostic only.",
+      "Full roster asset visual review and broad UI/export acceptance are separate review records; this record accepts only the listed native stage/result captures.",
+      "Visual review covered only the31 named PNG artifacts below, not every screen, every character in native gameplay, arbitrary custom names or Dynamic Type sizes.",
+      "Contact sheets and screenshots cannot establish frame pacing, motion continuity, audio synchronization, touch behavior, background lifecycle or performance. Automated tests and other runtime review are separate evidence.",
+      "Share evidence consists of native scroll-view screenshots; standalone full-resolution exported PNG files were not separately inspected in this run.",
+      "Visible controls are a layout observation, not a claim that each callback was manually exercised.",
+      "No source edits, build, simulator interaction or additional tests were performed for this review."
+    ]
+  },
+  "archive": "ios/build/runs/20260926T200418Z-archive-2.0-112-9eec02be-261807/WhoWouldWin.xcarchive",
+  "archiveInspection": {
+    "path": "ios/build/runs/20260926T200418Z-archive-2.0-112-9eec02be-261807/archive-inspection.json",
+    "sha256": "1828fc71291b2beb5074bf57f0453f9c50b24eac90225c75d9e3ddb8c6d1ac45"
+  },
+  "signedArchiveInspectionPassed": true,
+  "internalIPAInspectionPassed": true,
+  "inspectedLocalIPA": "ios/build/export-2.0-112-9eec02b/Export/WhoWouldWin.ipa",
+  "inspectedLocalIPASHA256": "0bc18c01737362a9b72ec69b02985ce94dbf05225c80846c4ebb920c35e229ed",
+  "exportEvidence": {
+    "path": "ios/build/export-2.0-112-9eec02b/export-evidence.json",
+    "sha256": "fdb21a51836428ba8bfcfae1cb5fc2ca14a9f520a7baef8327442361455205a6"
+  },
+  "uploadEvidence": {
+    "path": "ios/build/upload-2.0-112-9eec02b/upload-evidence.json",
+    "sha256": "92d4ab74c7ab082a5e9275a2cb3aa68c9d0063881a2d9ed45bc5ecef504743a8"
+  },
+  "uploadCommandSucceeded": true,
+  "uploadCompletedAt": "2026-09-26T20:15:48.861Z",
+  "symbolUploadRequested": true,
+  "appDSYMPresent": true,
+  "compilerWarnings": [
+    "${WORKTREE}/ios/WhoWouldWin/Assets.xcassets:./AppIcon.appiconset/(null)[2d][app icon ava kid.png]: warning: The app icon set \"AppIcon\" has an unassigned child.",
+    "${WORKTREE}/ios/WhoWouldWin/Assets.xcassets:./AppIcon.appiconset/(null)[2d][app icon ava kid.png]: warning: The app icon set \"AppIcon\" has an unassigned child.",
+    "${WORKTREE}/ios/WhoWouldWin/Assets.xcassets:./AppIcon.appiconset/(null)[2d][app icon ava kid.png]: warning: The app icon set \"AppIcon\" has an unassigned child.",
+    "${WORKTREE}/ios/WhoWouldWin/Assets.xcassets:./AppIcon.appiconset/(null)[2d][app icon ava kid.png]: warning: The app icon set \"AppIcon\" has an unassigned child.",
+    "${WORKTREE}/ios/WhoWouldWin/Assets.xcassets:./AppIcon.appiconset/(null)[2d][app icon ava kid.png]: warning: The app icon set \"AppIcon\" has an unassigned child.",
+    "${WORKTREE}/ios/WhoWouldWin/Services/SpeechService.swift:51:45: warning: 'weak' ownership of capture 'self' differs from implicitly-captured strong reference in outer scope [#ImplicitStrongCapture]",
+    "|                                             |- warning: 'weak' ownership of capture 'self' differs from implicitly-captured strong reference in outer scope [#ImplicitStrongCapture]",
+    "2026-09-26 16:04:56.693 appintentsmetadataprocessor[6680:3255731] warning: Metadata extraction skipped, no AppIntents.framework dependency found"
+  ],
+  "missingThirdPartyDSYMWarnings": [
+    "GoogleMobileAds.framework",
+    "UserMessagingPlatform.framework"
+  ],
+  "apple": {
+    "id": "525fad06-a69d-45a2-a9d1-daab53807677",
+    "uploadedDate": "2026-09-26T13:16:55-07:00",
+    "expirationDate": "2026-12-25T12:16:55-08:00",
+    "expired": false,
+    "processingState": "VALID",
+    "buildAudienceType": "INTERNAL_ONLY",
+    "usesNonExemptEncryption": false
+  },
+  "betaStates": {
+    "internalBuildState": "IN_BETA_TESTING",
+    "externalBuildState": "NOT_APPLICABLE"
+  },
+  "internalGroups": [
+    {
+      "name": "self",
+      "hasAccessToAllBuilds": true,
+      "candidatePresentInBuildList": true,
+      "buildListHTTPStatus": 200,
+      "moreBuilds": false
+    }
+  ],
+  "availableToExistingInternalGroup": true,
+  "whatToTestReadBack": [
+    {
+      "locale": "en-US",
+      "whatsNew": "Build 112: authored action poses for every creature.\n\nAll 143 catalog creatures and all 12 custom-avatar bases have four independently drawn poses: idle, windup, action and reaction. Atlas loading now uses bounded memory so the expanded sprite collection need not stay decoded at once.\n\nCompare several species and custom fighters: birds, sea animals, insects, pets, farm animals, fantasy creatures and gods. Look for recognizable designs, distinct poses, complete limbs/tails/wings and stable size. Try 4v4, rematch, background/resume, Reduce Motion and shared cards. Watch for blank or mismatched art after many battles or switching screens.\n\nCustom creation still uses typed names and stable on-device avatars. A visual custom-character editor is a proposal, not a shipped feature. Existing gameplay costs, results and narration behavior remain unchanged.\n\nReport build, device/iOS version and reproduction steps. Verify retained progress/PIN and real account capabilities on your device; simulator evidence does not replace owner acceptance."
+    }
+  ],
+  "notesEvidence": {
+    "path": "ios/build/release-tools/what-to-test-112.txt",
+    "sha256": "e1b2c382413db73b6ab8a41439ba68c6e7b2320c168b7e35d70eb1dfd8f11149"
+  },
+  "invitationsSent": false,
+  "externalGroupChanged": false,
+  "ownerDeviceInstallVerified": false,
+  "physicalDeviceStatus": "pending-owner-testflight",
+  "ownerDeviceChecks": [
+    "Verify retained progress, coins, unlocks, active tournament and parental PIN on the actual owner device.",
+    "Verify real receipt/restore/subscription, App Attest/live narration, iCloud/Game Center, device permissions, sound/haptics and eligible ads.",
+    "Check all-authored creature/custom motion,4v4/background/rematch,Reduce Motion,VoiceOver/larger text,older supportedOS and sustained physical-device performance."
+  ],
+  "maintenanceIsolation": {
+    "checkedAt": "2026-09-26T20:20:21.931106+00:00",
+    "candidateCommit": "9eec02be943501312c233738b5d53dd284b4d726",
+    "maintenanceStatusMatchesBaseline": true,
+    "maintenanceStatusSHA256": "a1fc5ca45e11abac1dc6133a62e4c61fe1ab9bfa859463ba7d82e8b1494ca42d",
+    "maintenanceRemoteCommit": "107bf7327f1c82e85282101e2294fb6f9ded3639",
+    "candidateClean": true,
+    "evidence": {
+      "path": "ios/build/release-tools/maintenance-final-112-verified.json",
+      "sha256": "106ed62b2878e8f9abe38117b9e384fe752e0ac494a8eb02bfc31a51267159c4"
+    }
+  },
+  "limitations": [
+    "Native test counts are executions, including repeated methods on tablet.",
+    "Fresh upgrade cases used isolated synthetic1.1.7 and112 Testing apps, not the owner canonical app/account.",
+    "Prior46 backend tests are carried by complete-tree identity, not rerun.",
+    "Four poses match the lion action-cycle contract; dedicated walk, flap and idle clips are not claimed.",
+    "The inspected local IPA hash identifies that retained export, not a separate byte-for-byte Apple upload.",
+    "Physical installation, real account capabilities, olderOS/accessibility and sustained device performance remain owner acceptance.",
+    "No external/public beta or App Store submission is included."
+  ],
+  "appleVerification": {
+    "path": "ios/build/beta-2.0-112-verified.json",
+    "sha256": "aea495335371bc985580d2bc9f54af75ab93bfb836e284936190a62abd0d7158"
+  },
+  "archiveArtworkInspection": {
+    "status": "passed",
+    "manifestMatchesFrozenSource": true,
+    "manifestSHA256": "12595c84c16da84bf713464e02dbd7f3937685dea84c033079ccc8824d412b0a",
+    "rawResourceFolder": "RetroAtlases",
+    "rawAtlasCount": 35,
+    "rawAtlasBytes": 37540368,
+    "rawAtlasHashesMatchSource": true,
+    "rawAtlases": [
+      {
+        "asset": "retro_motion_all_01_land_a",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_01_land_a.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_01_land_a.png",
+        "sha256": "e9b7c62d7e8d3c499077052adf8033a848bca22eb36dd07b8f0d0191e6aea31e",
+        "bytes": 608804,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_02_land_b",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_02_land_b.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_02_land_b.png",
+        "sha256": "e4d72e8fc91b8377e11a62285d2d9d931e3884a787858f1d63abab63d1293cea",
+        "bytes": 1073052,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_03_sea_a",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_03_sea_a.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_03_sea_a.png",
+        "sha256": "537112e8fb45a87b31c2fdaeb9ad4b13322163e2a13f3859319f0e2dd88b62b1",
+        "bytes": 886589,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_04_sea_b",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_04_sea_b.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_04_sea_b.png",
+        "sha256": "0801281d19692b509a1f932eea84760ef3b860e573060588750c263120256d3e",
+        "bytes": 972591,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_05_air_bugs_a",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_05_air_bugs_a.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_05_air_bugs_a.png",
+        "sha256": "cdff7c2822f1d2452d82ac404e118f6cfd5b24ce3928f2cac0b0ea398721f8a0",
+        "bytes": 1072867,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_06_air_bugs_b",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_06_air_bugs_b.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_06_air_bugs_b.png",
+        "sha256": "7de7b5afaecc1b7dd2cec62688959a15735f71db2a03ac2b9df9a0eafd2e41cb",
+        "bytes": 843104,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_07_air_bugs_c",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_07_air_bugs_c.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_07_air_bugs_c.png",
+        "sha256": "31dc2b6aa20032c3f7bc0022ed25bd56a226d27b50f2a82da38a8006af1de156",
+        "bytes": 775233,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_08_dogs_a",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_08_dogs_a.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_08_dogs_a.png",
+        "sha256": "af62574047d11dd5f5e6da70dcc084e59b249feef44c84a93a1a812cfdd2844a",
+        "bytes": 1096514,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_09_dogs_b",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_09_dogs_b.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_09_dogs_b.png",
+        "sha256": "89845516e2ba02257e91f058e082eeecaa125d42f284c5d0e9cb209677f4c593",
+        "bytes": 1116810,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_10_dogs_c",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_10_dogs_c.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_10_dogs_c.png",
+        "sha256": "aeff767e5e123bca3b95a1c8097587b00a90ffb765200459fa4a139c6ff17d69",
+        "bytes": 852178,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_11_small_pets_a",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_11_small_pets_a.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_11_small_pets_a.png",
+        "sha256": "d67388fc65cdadadc87e496b71560b463b8b5495bb135aa002a8fb4ceaf59161",
+        "bytes": 1183399,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_12_small_pets_b",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_12_small_pets_b.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_12_small_pets_b.png",
+        "sha256": "e4c1cd39ab072aabe3eeb0443966045b17e1ed40cc8e58e5c0c0b37bce1d0754",
+        "bytes": 890738,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_13_small_pets_c",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_13_small_pets_c.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_13_small_pets_c.png",
+        "sha256": "a5236d54debdbe9830f38418604657a038faad3739d7d75598e39a26ef4637a5",
+        "bytes": 813633,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_14_farm_a_a",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_14_farm_a_a.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_14_farm_a_a.png",
+        "sha256": "f7faf93bfbeda5ea6fc4c580e97b04b0e1195c9222660043d809135b3d84739e",
+        "bytes": 1038025,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_15_farm_a_b",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_15_farm_a_b.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_15_farm_a_b.png",
+        "sha256": "5c05acd084435522309f67e2875e550e127952691a3763372d93d8bdecae99c2",
+        "bytes": 843639,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_16_farm_a_c",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_16_farm_a_c.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_16_farm_a_c.png",
+        "sha256": "518f788c00b3fe8c159fe5edac36bf97f05f34d1baec254247659a592580a150",
+        "bytes": 1038967,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_17_farm_b_a",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_17_farm_b_a.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_17_farm_b_a.png",
+        "sha256": "478f58ebbeea4fa9395ed8b1b3e9a55be8a7495b3af0dc7c9cf69284ad316954",
+        "bytes": 1040341,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_18_farm_b_b",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_18_farm_b_b.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_18_farm_b_b.png",
+        "sha256": "37e118ff68d1c3876502becddd3f6c3edde8a21b420f700a180deeefeb1a2f7d",
+        "bytes": 1079299,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_19_farm_b_c",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_19_farm_b_c.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_19_farm_b_c.png",
+        "sha256": "4aa908d5a2e31630fae6773052ccab0fb91685cdbb5ae8ce75c6bfc78c8bef78",
+        "bytes": 1125514,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_20_fantasy_a",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_20_fantasy_a.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_20_fantasy_a.png",
+        "sha256": "08bb7bc66ac8850f459c889abecedbc30db17228f99168dfbab5c02401370505",
+        "bytes": 1285551,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_21_fantasy_b",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_21_fantasy_b.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_21_fantasy_b.png",
+        "sha256": "d6ed35d9f5142cac352dddd28981acfba68f285b3a4f2e132c7c3f4167bca6fe",
+        "bytes": 1205857,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_22_prehistoric_a",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_22_prehistoric_a.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_22_prehistoric_a.png",
+        "sha256": "eb614005d3d8c3bbe68ad8eb49e387755d01dc6d884cfac5d2d703b3cb38757f",
+        "bytes": 926928,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_23_prehistoric_b",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_23_prehistoric_b.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_23_prehistoric_b.png",
+        "sha256": "2c52fa402aeb97e06347e01e6ab761a1fe82e30e45aa7918f44afd8d882990f1",
+        "bytes": 1117819,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_24_mythic_a",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_24_mythic_a.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_24_mythic_a.png",
+        "sha256": "3ebfc8129f5cdcfbdb2b26c46d49bb995ee032010879772867811d036b7a7edd",
+        "bytes": 1443786,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_25_olympus_a",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_25_olympus_a.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_25_olympus_a.png",
+        "sha256": "d21b03174bd056cfd3e3e5d2618eec39fed4704efe3869a9e19a12ab450f8c41",
+        "bytes": 1238605,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_26_olympus_b",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_26_olympus_b.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_26_olympus_b.png",
+        "sha256": "3f19b17f956fa5726f92d6e6d4c360f902d3ffa376dbbaf47d8d76df23fc9fc8",
+        "bytes": 1280536,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_27_olympus_c",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_27_olympus_c.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_27_olympus_c.png",
+        "sha256": "967936917a3638ee2eb66688a27dbd6921b8925e6a37dc3e1cf4c038b988f7dd",
+        "bytes": 1390159,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_28_core_mix",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_28_core_mix.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_28_core_mix.png",
+        "sha256": "edcc71a031a4eb5b26636912969be37969565fcb93550752b7e97beb92549b63",
+        "bytes": 999053,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_29_mythic_crow",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_29_mythic_crow.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_29_mythic_crow.png",
+        "sha256": "749420fde787aa0d95a75d62afaf1ebd068d3252656cb681271c62791abb68e0",
+        "bytes": 1175048,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_30_clean_d",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_30_clean_d.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_30_clean_d.png",
+        "sha256": "a935fd0a67144348c9d7f9c61d2f53a7dd5391aa0aa740198d5813aae3a6a06f",
+        "bytes": 1086363,
+        "dimensions": [
+          1448,
+          1086
+        ]
+      },
+      {
+        "asset": "retro_motion_all_31_sea_mammoth",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_31_sea_mammoth.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_31_sea_mammoth.png",
+        "sha256": "674859f083da7d48b5439d5accbf0f4eafa65a0a60ec652661010275d5a9f520",
+        "bytes": 1276583,
+        "dimensions": [
+          1448,
+          1086
+        ]
+      },
+      {
+        "asset": "retro_motion_all_32_prehistoric_mix",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_32_prehistoric_mix.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_32_prehistoric_mix.png",
+        "sha256": "691fa40f9b05c78ca70bce5ef1b9c9bc42a2e9c47389332b02ca61c074fced4e",
+        "bytes": 1126726,
+        "dimensions": [
+          1448,
+          1086
+        ]
+      },
+      {
+        "asset": "retro_motion_all_33_custom_a",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_33_custom_a.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_33_custom_a.png",
+        "sha256": "ea2bd7198d23a1c73312320902ae3dcdd9189f0a10d9eab4f706504303139026",
+        "bytes": 1224133,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_34_custom_b",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_34_custom_b.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_34_custom_b.png",
+        "sha256": "112f421add5ff88325586a4632082b3323055d51b54cdcc8e13400d56cfac41d",
+        "bytes": 1118423,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_35_custom_c",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_35_custom_c.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_35_custom_c.png",
+        "sha256": "9836c1cb6e560dd726d54fbb0d5129739d9933a61caeae16661906574f00dd70",
+        "bytes": 1293501,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      }
+    ],
+    "authoredCatalogPoseSets": 143,
+    "authoredCustomPoseSets": 12,
+    "totalPoseCrops": 620,
+    "fourDistinctRectanglesAndPixelCropsPerSource": true,
+    "catalogIDs": [
+      "albatross",
+      "alpaca",
+      "ammit",
+      "ankylosaurus",
+      "apollo",
+      "ares",
+      "army_ant",
+      "artemis",
+      "athena",
+      "baku",
+      "bald_eagle",
+      "barn_owl",
+      "barracuda",
+      "basilisk",
+      "beagle",
+      "betta_fish",
+      "blue_ringed_octopus",
+      "boar",
+      "bombardier_beetle",
+      "border_collie",
+      "bull",
+      "bulldog",
+      "bullet_ant",
+      "canary",
+      "centipede",
+      "cerberus",
+      "cheetah",
+      "chicken",
+      "chihuahua",
+      "chimera",
+      "cobra",
+      "cockatiel",
+      "coelacanth",
+      "corgi",
+      "cow",
+      "crocodile",
+      "crow",
+      "dachshund",
+      "dire_wolf",
+      "dodo",
+      "donkey",
+      "dragon",
+      "dragonfly",
+      "duck",
+      "electric_eel",
+      "elephant",
+      "fire_ant",
+      "gerbil",
+      "german_shepherd",
+      "giant_squid",
+      "giraffe",
+      "goat",
+      "golden_retriever",
+      "goldfish",
+      "goose",
+      "gorilla",
+      "great_dane",
+      "great_white_shark",
+      "griffin",
+      "grizzly_bear",
+      "guinea_pig",
+      "hades",
+      "hammerhead_shark",
+      "hamster",
+      "harpy_eagle",
+      "hephaestus",
+      "hercules",
+      "hermes",
+      "hippopotamus",
+      "honey_badger",
+      "hornet",
+      "horse",
+      "husky",
+      "hydra",
+      "jackalope",
+      "kirin",
+      "kitsune",
+      "komodo_dragon",
+      "kraken",
+      "kronos",
+      "labrador",
+      "lamb",
+      "leopard_gecko",
+      "leviathan",
+      "lion",
+      "llama",
+      "maine_coon",
+      "manticore",
+      "mantis_shrimp",
+      "medusa",
+      "megalodon",
+      "minotaur",
+      "moose",
+      "mule",
+      "nue",
+      "octopus",
+      "orca",
+      "ox",
+      "parakeet",
+      "pelican",
+      "peregrine_falcon",
+      "persian_cat",
+      "peryton",
+      "pet_rabbit",
+      "phoenix",
+      "pig",
+      "piglet",
+      "piranha",
+      "poodle",
+      "poseidon",
+      "praying_mantis",
+      "pteranodon",
+      "pterodactyl",
+      "pug",
+      "ram",
+      "rhinoceros",
+      "roc",
+      "rooster",
+      "saber_tooth_tiger",
+      "scorpion",
+      "sheep",
+      "sphinx",
+      "spinosaurus",
+      "stag_beetle",
+      "swordfish",
+      "t_rex",
+      "tabby_cat",
+      "tarantula",
+      "therizinosaurus",
+      "thunderbird",
+      "tiger",
+      "triceratops",
+      "turkey",
+      "unicorn",
+      "velociraptor",
+      "wasp",
+      "werewolf",
+      "wolf",
+      "wolverine",
+      "woolly_mammoth",
+      "wyvern",
+      "zebra",
+      "zeus"
+    ],
+    "customBaseIDs": [
+      "alien",
+      "ghost",
+      "knight",
+      "mushroom",
+      "robot",
+      "rockgolem",
+      "seaserpent",
+      "slime",
+      "superhero",
+      "tree",
+      "wingedcat",
+      "wizard"
+    ],
+    "rawSourceCounts": {
+      "sprites": 125,
+      "customBases": 12
+    },
+    "legacyAuthoredCatalogCount": 18,
+    "legacySourceAtlases": [
+      {
+        "asset": "retro_core",
+        "sourcePath": "ios/WhoWouldWin/Assets.xcassets/retro_core.imageset/sprites.png",
+        "sha256": "1640a2e06bf3e5d170a393a06d51c804418d904444f99391faaa0a28362fe6f2",
+        "validationScope": "source-pixels-and-source-matched-manifest; compiled Assets.car not extracted"
+      },
+      {
+        "asset": "retro_motion_airsea",
+        "sourcePath": "ios/WhoWouldWin/Assets.xcassets/retro_motion_airsea.imageset/sprites.png",
+        "sha256": "edc02feae56be879a333df8a46979380289be96bbb03a8bd4ac8377a52bde711",
+        "validationScope": "source-pixels-and-source-matched-manifest; compiled Assets.car not extracted"
+      },
+      {
+        "asset": "retro_motion_land",
+        "sourcePath": "ios/WhoWouldWin/Assets.xcassets/retro_motion_land.imageset/sprites.png",
+        "sha256": "e245589105e3fbf03bc319bfa020571044494fa377327767635b42bbaba0bbb7",
+        "validationScope": "source-pixels-and-source-matched-manifest; compiled Assets.car not extracted"
+      },
+      {
+        "asset": "retro_motion_prehistoric",
+        "sourcePath": "ios/WhoWouldWin/Assets.xcassets/retro_motion_prehistoric.imageset/sprites.png",
+        "sha256": "116a56064d460801445f0d1b17abff8a4b8d0e286c998db3b4929d6080411733",
+        "validationScope": "source-pixels-and-source-matched-manifest; compiled Assets.car not extracted"
+      },
+      {
+        "asset": "retro_motion_wild",
+        "sourcePath": "ios/WhoWouldWin/Assets.xcassets/retro_motion_wild.imageset/sprites.png",
+        "sha256": "fa119be2b6bceabca82597a5e458fd2530ca08b39d9c12a0c12aaf2f160f7bfb",
+        "validationScope": "source-pixels-and-source-matched-manifest; compiled Assets.car not extracted"
+      }
+    ],
+    "legacyCompiledAtlasPixelExtractionPerformed": false,
+    "scope": "Raw bundle PNG paths/bytes and all manifest pose entries verified; original asset-catalog poses validated from exact frozen source, not extracted from compiled Assets.car."
+  },
+  "ipaArtworkInspection": {
+    "status": "passed",
+    "manifestMatchesFrozenSource": true,
+    "manifestSHA256": "12595c84c16da84bf713464e02dbd7f3937685dea84c033079ccc8824d412b0a",
+    "rawResourceFolder": "RetroAtlases",
+    "rawAtlasCount": 35,
+    "rawAtlasBytes": 37540368,
+    "rawAtlasHashesMatchSource": true,
+    "rawAtlases": [
+      {
+        "asset": "retro_motion_all_01_land_a",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_01_land_a.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_01_land_a.png",
+        "sha256": "e9b7c62d7e8d3c499077052adf8033a848bca22eb36dd07b8f0d0191e6aea31e",
+        "bytes": 608804,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_02_land_b",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_02_land_b.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_02_land_b.png",
+        "sha256": "e4d72e8fc91b8377e11a62285d2d9d931e3884a787858f1d63abab63d1293cea",
+        "bytes": 1073052,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_03_sea_a",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_03_sea_a.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_03_sea_a.png",
+        "sha256": "537112e8fb45a87b31c2fdaeb9ad4b13322163e2a13f3859319f0e2dd88b62b1",
+        "bytes": 886589,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_04_sea_b",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_04_sea_b.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_04_sea_b.png",
+        "sha256": "0801281d19692b509a1f932eea84760ef3b860e573060588750c263120256d3e",
+        "bytes": 972591,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_05_air_bugs_a",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_05_air_bugs_a.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_05_air_bugs_a.png",
+        "sha256": "cdff7c2822f1d2452d82ac404e118f6cfd5b24ce3928f2cac0b0ea398721f8a0",
+        "bytes": 1072867,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_06_air_bugs_b",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_06_air_bugs_b.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_06_air_bugs_b.png",
+        "sha256": "7de7b5afaecc1b7dd2cec62688959a15735f71db2a03ac2b9df9a0eafd2e41cb",
+        "bytes": 843104,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_07_air_bugs_c",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_07_air_bugs_c.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_07_air_bugs_c.png",
+        "sha256": "31dc2b6aa20032c3f7bc0022ed25bd56a226d27b50f2a82da38a8006af1de156",
+        "bytes": 775233,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_08_dogs_a",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_08_dogs_a.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_08_dogs_a.png",
+        "sha256": "af62574047d11dd5f5e6da70dcc084e59b249feef44c84a93a1a812cfdd2844a",
+        "bytes": 1096514,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_09_dogs_b",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_09_dogs_b.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_09_dogs_b.png",
+        "sha256": "89845516e2ba02257e91f058e082eeecaa125d42f284c5d0e9cb209677f4c593",
+        "bytes": 1116810,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_10_dogs_c",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_10_dogs_c.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_10_dogs_c.png",
+        "sha256": "aeff767e5e123bca3b95a1c8097587b00a90ffb765200459fa4a139c6ff17d69",
+        "bytes": 852178,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_11_small_pets_a",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_11_small_pets_a.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_11_small_pets_a.png",
+        "sha256": "d67388fc65cdadadc87e496b71560b463b8b5495bb135aa002a8fb4ceaf59161",
+        "bytes": 1183399,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_12_small_pets_b",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_12_small_pets_b.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_12_small_pets_b.png",
+        "sha256": "e4c1cd39ab072aabe3eeb0443966045b17e1ed40cc8e58e5c0c0b37bce1d0754",
+        "bytes": 890738,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_13_small_pets_c",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_13_small_pets_c.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_13_small_pets_c.png",
+        "sha256": "a5236d54debdbe9830f38418604657a038faad3739d7d75598e39a26ef4637a5",
+        "bytes": 813633,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_14_farm_a_a",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_14_farm_a_a.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_14_farm_a_a.png",
+        "sha256": "f7faf93bfbeda5ea6fc4c580e97b04b0e1195c9222660043d809135b3d84739e",
+        "bytes": 1038025,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_15_farm_a_b",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_15_farm_a_b.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_15_farm_a_b.png",
+        "sha256": "5c05acd084435522309f67e2875e550e127952691a3763372d93d8bdecae99c2",
+        "bytes": 843639,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_16_farm_a_c",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_16_farm_a_c.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_16_farm_a_c.png",
+        "sha256": "518f788c00b3fe8c159fe5edac36bf97f05f34d1baec254247659a592580a150",
+        "bytes": 1038967,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_17_farm_b_a",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_17_farm_b_a.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_17_farm_b_a.png",
+        "sha256": "478f58ebbeea4fa9395ed8b1b3e9a55be8a7495b3af0dc7c9cf69284ad316954",
+        "bytes": 1040341,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_18_farm_b_b",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_18_farm_b_b.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_18_farm_b_b.png",
+        "sha256": "37e118ff68d1c3876502becddd3f6c3edde8a21b420f700a180deeefeb1a2f7d",
+        "bytes": 1079299,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_19_farm_b_c",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_19_farm_b_c.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_19_farm_b_c.png",
+        "sha256": "4aa908d5a2e31630fae6773052ccab0fb91685cdbb5ae8ce75c6bfc78c8bef78",
+        "bytes": 1125514,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_20_fantasy_a",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_20_fantasy_a.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_20_fantasy_a.png",
+        "sha256": "08bb7bc66ac8850f459c889abecedbc30db17228f99168dfbab5c02401370505",
+        "bytes": 1285551,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_21_fantasy_b",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_21_fantasy_b.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_21_fantasy_b.png",
+        "sha256": "d6ed35d9f5142cac352dddd28981acfba68f285b3a4f2e132c7c3f4167bca6fe",
+        "bytes": 1205857,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_22_prehistoric_a",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_22_prehistoric_a.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_22_prehistoric_a.png",
+        "sha256": "eb614005d3d8c3bbe68ad8eb49e387755d01dc6d884cfac5d2d703b3cb38757f",
+        "bytes": 926928,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_23_prehistoric_b",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_23_prehistoric_b.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_23_prehistoric_b.png",
+        "sha256": "2c52fa402aeb97e06347e01e6ab761a1fe82e30e45aa7918f44afd8d882990f1",
+        "bytes": 1117819,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_24_mythic_a",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_24_mythic_a.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_24_mythic_a.png",
+        "sha256": "3ebfc8129f5cdcfbdb2b26c46d49bb995ee032010879772867811d036b7a7edd",
+        "bytes": 1443786,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_25_olympus_a",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_25_olympus_a.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_25_olympus_a.png",
+        "sha256": "d21b03174bd056cfd3e3e5d2618eec39fed4704efe3869a9e19a12ab450f8c41",
+        "bytes": 1238605,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_26_olympus_b",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_26_olympus_b.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_26_olympus_b.png",
+        "sha256": "3f19b17f956fa5726f92d6e6d4c360f902d3ffa376dbbaf47d8d76df23fc9fc8",
+        "bytes": 1280536,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_27_olympus_c",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_27_olympus_c.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_27_olympus_c.png",
+        "sha256": "967936917a3638ee2eb66688a27dbd6921b8925e6a37dc3e1cf4c038b988f7dd",
+        "bytes": 1390159,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_28_core_mix",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_28_core_mix.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_28_core_mix.png",
+        "sha256": "edcc71a031a4eb5b26636912969be37969565fcb93550752b7e97beb92549b63",
+        "bytes": 999053,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_29_mythic_crow",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_29_mythic_crow.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_29_mythic_crow.png",
+        "sha256": "749420fde787aa0d95a75d62afaf1ebd068d3252656cb681271c62791abb68e0",
+        "bytes": 1175048,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_30_clean_d",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_30_clean_d.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_30_clean_d.png",
+        "sha256": "a935fd0a67144348c9d7f9c61d2f53a7dd5391aa0aa740198d5813aae3a6a06f",
+        "bytes": 1086363,
+        "dimensions": [
+          1448,
+          1086
+        ]
+      },
+      {
+        "asset": "retro_motion_all_31_sea_mammoth",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_31_sea_mammoth.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_31_sea_mammoth.png",
+        "sha256": "674859f083da7d48b5439d5accbf0f4eafa65a0a60ec652661010275d5a9f520",
+        "bytes": 1276583,
+        "dimensions": [
+          1448,
+          1086
+        ]
+      },
+      {
+        "asset": "retro_motion_all_32_prehistoric_mix",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_32_prehistoric_mix.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_32_prehistoric_mix.png",
+        "sha256": "691fa40f9b05c78ca70bce5ef1b9c9bc42a2e9c47389332b02ca61c074fced4e",
+        "bytes": 1126726,
+        "dimensions": [
+          1448,
+          1086
+        ]
+      },
+      {
+        "asset": "retro_motion_all_33_custom_a",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_33_custom_a.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_33_custom_a.png",
+        "sha256": "ea2bd7198d23a1c73312320902ae3dcdd9189f0a10d9eab4f706504303139026",
+        "bytes": 1224133,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_34_custom_b",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_34_custom_b.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_34_custom_b.png",
+        "sha256": "112f421add5ff88325586a4632082b3323055d51b54cdcc8e13400d56cfac41d",
+        "bytes": 1118423,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      },
+      {
+        "asset": "retro_motion_all_35_custom_c",
+        "sourcePath": "ios/WhoWouldWin/Resources/RetroAtlases/retro_motion_all_35_custom_c.png",
+        "bundlePath": "RetroAtlases/retro_motion_all_35_custom_c.png",
+        "sha256": "9836c1cb6e560dd726d54fbb0d5129739d9933a61caeae16661906574f00dd70",
+        "bytes": 1293501,
+        "dimensions": [
+          1254,
+          1254
+        ]
+      }
+    ],
+    "authoredCatalogPoseSets": 143,
+    "authoredCustomPoseSets": 12,
+    "totalPoseCrops": 620,
+    "fourDistinctRectanglesAndPixelCropsPerSource": true,
+    "catalogIDs": [
+      "albatross",
+      "alpaca",
+      "ammit",
+      "ankylosaurus",
+      "apollo",
+      "ares",
+      "army_ant",
+      "artemis",
+      "athena",
+      "baku",
+      "bald_eagle",
+      "barn_owl",
+      "barracuda",
+      "basilisk",
+      "beagle",
+      "betta_fish",
+      "blue_ringed_octopus",
+      "boar",
+      "bombardier_beetle",
+      "border_collie",
+      "bull",
+      "bulldog",
+      "bullet_ant",
+      "canary",
+      "centipede",
+      "cerberus",
+      "cheetah",
+      "chicken",
+      "chihuahua",
+      "chimera",
+      "cobra",
+      "cockatiel",
+      "coelacanth",
+      "corgi",
+      "cow",
+      "crocodile",
+      "crow",
+      "dachshund",
+      "dire_wolf",
+      "dodo",
+      "donkey",
+      "dragon",
+      "dragonfly",
+      "duck",
+      "electric_eel",
+      "elephant",
+      "fire_ant",
+      "gerbil",
+      "german_shepherd",
+      "giant_squid",
+      "giraffe",
+      "goat",
+      "golden_retriever",
+      "goldfish",
+      "goose",
+      "gorilla",
+      "great_dane",
+      "great_white_shark",
+      "griffin",
+      "grizzly_bear",
+      "guinea_pig",
+      "hades",
+      "hammerhead_shark",
+      "hamster",
+      "harpy_eagle",
+      "hephaestus",
+      "hercules",
+      "hermes",
+      "hippopotamus",
+      "honey_badger",
+      "hornet",
+      "horse",
+      "husky",
+      "hydra",
+      "jackalope",
+      "kirin",
+      "kitsune",
+      "komodo_dragon",
+      "kraken",
+      "kronos",
+      "labrador",
+      "lamb",
+      "leopard_gecko",
+      "leviathan",
+      "lion",
+      "llama",
+      "maine_coon",
+      "manticore",
+      "mantis_shrimp",
+      "medusa",
+      "megalodon",
+      "minotaur",
+      "moose",
+      "mule",
+      "nue",
+      "octopus",
+      "orca",
+      "ox",
+      "parakeet",
+      "pelican",
+      "peregrine_falcon",
+      "persian_cat",
+      "peryton",
+      "pet_rabbit",
+      "phoenix",
+      "pig",
+      "piglet",
+      "piranha",
+      "poodle",
+      "poseidon",
+      "praying_mantis",
+      "pteranodon",
+      "pterodactyl",
+      "pug",
+      "ram",
+      "rhinoceros",
+      "roc",
+      "rooster",
+      "saber_tooth_tiger",
+      "scorpion",
+      "sheep",
+      "sphinx",
+      "spinosaurus",
+      "stag_beetle",
+      "swordfish",
+      "t_rex",
+      "tabby_cat",
+      "tarantula",
+      "therizinosaurus",
+      "thunderbird",
+      "tiger",
+      "triceratops",
+      "turkey",
+      "unicorn",
+      "velociraptor",
+      "wasp",
+      "werewolf",
+      "wolf",
+      "wolverine",
+      "woolly_mammoth",
+      "wyvern",
+      "zebra",
+      "zeus"
+    ],
+    "customBaseIDs": [
+      "alien",
+      "ghost",
+      "knight",
+      "mushroom",
+      "robot",
+      "rockgolem",
+      "seaserpent",
+      "slime",
+      "superhero",
+      "tree",
+      "wingedcat",
+      "wizard"
+    ],
+    "rawSourceCounts": {
+      "sprites": 125,
+      "customBases": 12
+    },
+    "legacyAuthoredCatalogCount": 18,
+    "legacySourceAtlases": [
+      {
+        "asset": "retro_core",
+        "sourcePath": "ios/WhoWouldWin/Assets.xcassets/retro_core.imageset/sprites.png",
+        "sha256": "1640a2e06bf3e5d170a393a06d51c804418d904444f99391faaa0a28362fe6f2",
+        "validationScope": "source-pixels-and-source-matched-manifest; compiled Assets.car not extracted"
+      },
+      {
+        "asset": "retro_motion_airsea",
+        "sourcePath": "ios/WhoWouldWin/Assets.xcassets/retro_motion_airsea.imageset/sprites.png",
+        "sha256": "edc02feae56be879a333df8a46979380289be96bbb03a8bd4ac8377a52bde711",
+        "validationScope": "source-pixels-and-source-matched-manifest; compiled Assets.car not extracted"
+      },
+      {
+        "asset": "retro_motion_land",
+        "sourcePath": "ios/WhoWouldWin/Assets.xcassets/retro_motion_land.imageset/sprites.png",
+        "sha256": "e245589105e3fbf03bc319bfa020571044494fa377327767635b42bbaba0bbb7",
+        "validationScope": "source-pixels-and-source-matched-manifest; compiled Assets.car not extracted"
+      },
+      {
+        "asset": "retro_motion_prehistoric",
+        "sourcePath": "ios/WhoWouldWin/Assets.xcassets/retro_motion_prehistoric.imageset/sprites.png",
+        "sha256": "116a56064d460801445f0d1b17abff8a4b8d0e286c998db3b4929d6080411733",
+        "validationScope": "source-pixels-and-source-matched-manifest; compiled Assets.car not extracted"
+      },
+      {
+        "asset": "retro_motion_wild",
+        "sourcePath": "ios/WhoWouldWin/Assets.xcassets/retro_motion_wild.imageset/sprites.png",
+        "sha256": "fa119be2b6bceabca82597a5e458fd2530ca08b39d9c12a0c12aaf2f160f7bfb",
+        "validationScope": "source-pixels-and-source-matched-manifest; compiled Assets.car not extracted"
+      }
+    ],
+    "legacyCompiledAtlasPixelExtractionPerformed": false,
+    "scope": "Raw bundle PNG paths/bytes and all manifest pose entries verified; original asset-catalog poses validated from exact frozen source, not extracted from compiled Assets.car."
+  },
+  "pendingEvidence": []
+}

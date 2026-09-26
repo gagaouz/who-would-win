@@ -67,8 +67,11 @@ Do not use a mass merge simply to eliminate divergence, and do not silently drop
 | Common base / iOS release commit `4ef855e` | 1.1.7 / 109 | ASC read-only audit September 26 | Valid build; App Store version ready for sale |
 | Released internal candidate `583b5e5` | 2.0 / 110 | [Final release record](RELEASE_2.0_110.md) | Apple VALID; available to internal `self` group on September 26 |
 | Motion/UI candidate `5ea7ba1` | 2.0 / 111 | [Build 111 release record](RELEASE_2.0_111.md) | Apple VALID; available to internal `self` group on September 26 |
+| Complete authored-art candidate `9eec02b` | 2.0 / 112 | [Build 112 release record](RELEASE_2.0_112.md) | Animal vs Animal 2.0 (112) is available in internal TestFlight. At 2026-09-26 20:19:50 UTC, Apple reported VALID, INTERNAL_ONLY and IN_BETA_TESTING; the exact candidate is present in the existing self group and its What to Test notes were read back. |
 
-The old XcodeGen version drift has been removed. Both generated project and Info.plist now read `Version.xcconfig`. The maintenance branch keeps its existing source/configuration; do not copy v2 version settings into a hotfix. Build 110 is uploaded; 111 was confirmed unused and reserved at the September 26, 16:56 UTC allocation check. Build 111 is now uploaded and available internally. Recheck ASC history and outstanding uploads before allocating the next unused number on either source line.
+The old XcodeGen version drift has been removed. Both generated project and Info.plist read `Version.xcconfig`. The maintenance branch keeps its own source/configuration; do not copy v2 version settings into a hotfix. Builds 110 and 111 were uploaded as recorded in their historical release evidence. Build 112 was allocated after the September 26, 19:21 UTC complete-history absence check. Build 112 has now been uploaded and is used; the exact candidate passed Apple processing and is available internally, as recorded in [the build 112 evidence](evidence/testflight-2.0-112.json). Recheck live ASC history and outstanding uploads before allocating the next unused number on either source line.
+
+Latest maintenance isolation: The 2026-09-26 20:20:21 UTC recheck confirmed the original checkout's NUL-delimited status still matches its saved baseline and remote `release/1.1.7` remains at `107bf7327f1c82e85282101e2294fb6f9ded3639`. Evidence: `ios/build/release-tools/maintenance-final-112-verified.json`.
 
 ## Recovery
 
