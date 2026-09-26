@@ -29,6 +29,8 @@ struct RetroMotionProfile: Equatable {
             case "serpentine": anatomy = .serpent
             case "arthropod": anatomy = .arthropod
             case "biped", "primate": anatomy = .biped
+            case "amorphous": anatomy = .amorphous
+            case "tentacle": anatomy = .tentacle
             default: anatomy = .quadruped
             }
         }
@@ -36,17 +38,12 @@ struct RetroMotionProfile: Equatable {
 
     @MainActor
     static func resolve(for animal: Animal, manifest: RetroSpriteManifest?) -> Self {
-        let id: String
-        let sprite: RetroSpriteManifest.Sprite?
-        if animal.isCustom {
-            switch RetroCustomRecipe.make(name: animal.name).source {
-            case .catalog(let source): id = source; sprite = manifest?.sprites[source]
-            case .base(let source): id = source; sprite = manifest?.customBases?[source]
-            }
-        } else {
-            id = animal.id; sprite = manifest?.sprites[id]
-        }
-        return Self(sourceID: id, archetype: sprite?.archetype ?? "quadruped", authoredPoses: hasCompleteAuthoredPoses(sprite))
+        resolve(artwork: RetroAssetStore.resolveArtwork(for: animal, manifest: manifest, library: .shared))
+    }
+
+    static func resolve(artwork: RetroArtworkDescriptor) -> Self {
+        Self(sourceID: artwork.sourceID, archetype: artwork.sprite?.archetype ?? "quadruped",
+             authoredPoses: hasCompleteAuthoredPoses(artwork.sprite))
     }
 
     /// All four semantic poses need their own valid rectangle. Three action keys

@@ -1,6 +1,6 @@
 # Custom fighter appearance — proposal
 
-Status: proposed, not implemented in build 112. Existing typed custom creation is preserved.
+Status: historical local-editor proposal, not implemented in build 112. Existing typed custom creation is preserved. The owner's later direction is subscription-funded original four-pose artwork and durable storage; see [Subscriber-generated custom fighters](SUBSCRIBER_CUSTOM_FIGHTERS.md). The local editor below remains a possible fallback, not the current recommended main custom-art feature.
 
 Keep typing a name, then offer an optional **Change look** sheet with one animated preview and **Body · Colour · Extras**. The name suggests a starting appearance; players can correct it. For example, “Blue Lion” starts with a blue lion, while an invented name starts with a stable fantasy creature. Copy: “Name your fighter. Choose its retro look.”
 

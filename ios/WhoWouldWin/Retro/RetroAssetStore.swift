@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 import CryptoKit
 import ImageIO
 
@@ -15,6 +16,16 @@ struct RetroSpriteManifest: Decodable {
     let styleVersion: String
     let sprites: [String: Sprite]
     let customBases: [String: Sprite]?
+}
+
+/// One resolved family drives portraits, arena textures, motion and exports.
+/// Generated references are immutable; an active scene keeps this descriptor.
+struct RetroArtworkDescriptor {
+    let sourceID: String
+    let cacheKey: String
+    let sprite: RetroSpriteManifest.Sprite?
+    let recipe: RetroCustomRecipe?
+    let generatedPack: InstalledCustomFighterPack?
 }
 
 /// A local visual recipe, separate from the Animal's identity, stats and result.
@@ -147,13 +158,15 @@ final class RetroAtlasCache {
         self.loader = loader
     }
 
-    func image(named name: String) -> CGImage? {
+    func image(named name: String, load override: (() -> CGImage?)? = nil) -> CGImage? {
         clock &+= 1
         if var entry = entries[name] {
             entry.access = clock; entries[name] = entry
             return entry.image
         }
-        guard let image = loader(name) else { return nil }
+        let loaded: CGImage?
+        if let override { loaded = override() } else { loaded = loader(name) }
+        guard let image = loaded else { return nil }
         let cost = image.bytesPerRow * image.height
         // An oversized optional sheet can still produce a detached crop, but it
         // is never retained beyond the call or allowed to exceed the cache budget.
@@ -205,8 +218,8 @@ final class RetroAtlasCache {
     }
 }
 
-/// Every catalog and custom image is local. No description leaves the device,
-/// and no asynchronous task can hold up a battle or survive a cache clear.
+/// Rendering only reads bundled or already-verified installed art. Generation
+/// and downloads live outside the renderer and cannot hold up a battle.
 @MainActor
 final class RetroAssetStore: ObservableObject {
     static let shared = RetroAssetStore()
@@ -215,6 +228,8 @@ final class RetroAssetStore: ObservableObject {
     let manifest: RetroSpriteManifest?
     private let images = NSCache<NSString, UIImage>()
     private let atlases: RetroAtlasCache
+    private let library: CustomFighterLibraryStore
+    private var libraryObservation: AnyCancellable?
     private var memoryWarningObserver: NSObjectProtocol?
 
     private convenience init() {
@@ -227,8 +242,9 @@ final class RetroAssetStore: ObservableObject {
     /// The injected loader is used by cache/lifecycle tests; production resolves
     /// raw folder resources first and the original asset catalog second.
     init(manifest: RetroSpriteManifest?, atlasCostLimit: Int = 32 * 1024 * 1024,
-         atlasLoader: ((String) -> CGImage?)? = nil) {
+         atlasLoader: ((String) -> CGImage?)? = nil, library: CustomFighterLibraryStore? = nil) {
         self.manifest = manifest
+        self.library = library ?? .shared
         atlases = RetroAtlasCache(costLimit: atlasCostLimit, loader: atlasLoader ?? { name in
             RetroAtlasCache.load(named: name, rawURL: {
                 Bundle.main.url(forResource: $0, withExtension: "png", subdirectory: "RetroAtlases")
@@ -236,6 +252,9 @@ final class RetroAssetStore: ObservableObject {
         })
         images.totalCostLimit = 32 * 1024 * 1024
         images.countLimit = 220
+        libraryObservation = self.library.$revision.dropFirst().sink { [weak self] _ in
+            self?.clearMemoryCache()
+        }
         memoryWarningObserver = NotificationCenter.default.addObserver(
             forName: UIApplication.didReceiveMemoryWarningNotification, object: nil, queue: .main
         ) { [weak self] _ in
@@ -261,16 +280,49 @@ final class RetroAssetStore: ObservableObject {
     }
 
     func image(for animal: Animal, pose: RetroPose = .idle) -> UIImage? {
-        let key = animal.isCustom ? "\(Self.customCacheKey(for: animal.name)).\(pose.rawValue)" : "\(animal.id).\(pose.rawValue)"
+        image(for: animal, pose: pose, artwork: artworkDescriptor(for: animal))
+    }
+
+    func artworkDescriptor(for animal: Animal) -> RetroArtworkDescriptor {
+        Self.resolveArtwork(for: animal, manifest: manifest, library: library)
+    }
+
+    static func resolveArtwork(for animal: Animal, manifest: RetroSpriteManifest?,
+                               library: CustomFighterLibraryStore?, allowGenerated: Bool = true) -> RetroArtworkDescriptor {
+        if animal.isCustom, allowGenerated, let ref = animal.appearanceRef, let pack = library?.pack(for: ref) {
+            let sprite = RetroSpriteManifest.Sprite(asset: "generated." + pack.cacheKey,
+                archetype: pack.manifest.archetype, frames: pack.contentBounds)
+            return RetroArtworkDescriptor(sourceID: ref.assetID, cacheKey: "generated." + pack.cacheKey,
+                sprite: sprite, recipe: nil, generatedPack: pack)
+        }
+        guard animal.isCustom else {
+            return RetroArtworkDescriptor(sourceID: animal.id, cacheKey: animal.id,
+                sprite: manifest?.sprites[animal.id], recipe: nil, generatedPack: nil)
+        }
+        let recipe = RetroCustomRecipe.make(name: animal.name)
+        let sourceID: String
+        let sprite: RetroSpriteManifest.Sprite?
+        switch recipe.source {
+        case .catalog(let id): sourceID = id; sprite = manifest?.sprites[id]
+        case .base(let id): sourceID = id; sprite = manifest?.customBases?[id]
+        }
+        return RetroArtworkDescriptor(sourceID: sourceID, cacheKey: "local." + Self.customCacheKey(for: animal.name),
+            sprite: sprite, recipe: recipe, generatedPack: nil)
+    }
+
+    func image(for animal: Animal, pose: RetroPose, artwork: RetroArtworkDescriptor) -> UIImage? {
+        let key = "\(artwork.cacheKey).\(pose.rawValue)"
         if let image = images.object(forKey: key as NSString) { return image }
         let image: UIImage?
-        if animal.isCustom {
-            let recipe = RetroCustomRecipe.make(name: animal.name)
-            let sprite: RetroSpriteManifest.Sprite?
-            switch recipe.source {
-            case .catalog(let id): sprite = manifest?.sprites[id]
-            case .base(let id): sprite = manifest?.customBases?[id]
+        if let pack = artwork.generatedPack {
+            guard let sheet = atlases.image(named: artwork.cacheKey, load: { self.library.atlasImage(for: pack) }),
+                  let source = cropped(artwork.sprite, pose: pose, sheet: sheet) else {
+                let fallback = Self.resolveArtwork(for: animal, manifest: manifest, library: nil, allowGenerated: false)
+                return self.image(for: animal, pose: pose, artwork: fallback)
             }
+            image = RetroLocalAvatarRenderer.layout(source: source, familyExtent: CGFloat(pack.familyExtent))
+        } else if let recipe = artwork.recipe {
+            let sprite = artwork.sprite
             let source = cropped(sprite, pose: pose)
             // Every pose uses one scale and one foot baseline. Fitting each pose
             // independently makes an extended attack visibly shrink its body.
@@ -279,17 +331,17 @@ final class RetroAssetStore: ObservableObject {
                 return max(frame[2], frame[3])
             }.max().map { CGFloat($0) }
             image = RetroLocalAvatarRenderer.render(recipe: recipe, source: source, familyExtent: familyExtent)
-        } else { image = cropped(manifest?.sprites[animal.id], pose: pose) }
+        } else { image = cropped(artwork.sprite, pose: pose) }
         guard let image else { return nil }
         let cost = (image.cgImage?.bytesPerRow ?? 0) * (image.cgImage?.height ?? 0)
         images.setObject(image, forKey: key as NSString, cost: cost)
         return image
     }
 
-    private func cropped(_ sprite: RetroSpriteManifest.Sprite?, pose: RetroPose) -> UIImage? {
+    private func cropped(_ sprite: RetroSpriteManifest.Sprite?, pose: RetroPose, sheet suppliedSheet: CGImage? = nil) -> UIImage? {
         guard let sprite, let values = sprite.frames[pose.rawValue] ?? sprite.frames[RetroPose.idle.rawValue],
               values.count == 4, values.allSatisfy({ $0 >= 0 }), values[2] > 0, values[3] > 0,
-              let sheet = atlasImage(named: sprite.asset) else { return nil }
+              let sheet = suppliedSheet ?? atlasImage(named: sprite.asset) else { return nil }
         let rect = CGRect(x: values[0], y: values[1], width: values[2], height: values[3])
         guard CGRect(x: 0, y: 0, width: sheet.width, height: sheet.height).contains(rect),
               let cropped = RetroAtlasCache.detachedCopy(of: sheet, crop: rect) else { return nil }
@@ -297,15 +349,12 @@ final class RetroAssetStore: ObservableObject {
     }
 
     func archetype(for animal: Animal) -> String? {
-        guard animal.isCustom else { return manifest?.sprites[animal.id]?.archetype }
-        switch RetroCustomRecipe.make(name: animal.name).source {
-        case .catalog(let id): return manifest?.sprites[id]?.archetype
-        case .base(let id): return manifest?.customBases?[id]?.archetype
-        }
+        artworkDescriptor(for: animal).sprite?.archetype
     }
 
     func artworkDescription(for animal: Animal) -> String {
         guard animal.isCustom else { return "" }
+        if artworkDescriptor(for: animal).generatedPack != nil { return "Saved custom fighter artwork" }
         let recipe = RetroCustomRecipe.make(name: animal.name)
         if recipe.isFantasyAvatar { return "Fantasy avatar made on this device" }
         switch recipe.source {
@@ -332,6 +381,19 @@ final class RetroAssetStore: ObservableObject {
 /// pixel geometry; they never alter creature identity, attributes or outcomes.
 @MainActor
 private enum RetroLocalAvatarRenderer {
+    /// Generated cells share a measured family scale and bottom baseline. Each
+    /// tight crop is placed without changing the character's palette or pixels.
+    static func layout(source: UIImage, familyExtent: CGFloat) -> UIImage {
+        let format = UIGraphicsImageRendererFormat(); format.scale = 1
+        return UIGraphicsImageRenderer(size: CGSize(width: 128, height: 128), format: format).image { renderer in
+            let c = renderer.cgContext
+            c.interpolationQuality = .none; c.setAllowsAntialiasing(false)
+            let scale = 116 / max(familyExtent, 1)
+            let size = CGSize(width: (source.size.width * scale).rounded(), height: (source.size.height * scale).rounded())
+            source.draw(in: CGRect(x: ((128 - size.width) / 2).rounded(), y: 122 - size.height,
+                                   width: size.width, height: size.height))
+        }
+    }
     static func render(recipe: RetroCustomRecipe, source: UIImage?, familyExtent: CGFloat?) -> UIImage {
         let format = UIGraphicsImageRendererFormat(); format.scale = 1
         let canvas = CGSize(width: 128, height: 128)

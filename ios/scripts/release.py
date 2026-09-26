@@ -165,6 +165,22 @@ def validate_qa(path):
     require(record.get("evidence"), "QA record must link verification evidence")
 
 
+def inspect_custom_fighter_configuration(app):
+    info = plistlib.loads((app / "Info.plist").read_bytes())
+    require(info.get("AVACustomFighterAPIBaseURL") == "https://backend-v2-production-7a34.up.railway.app",
+            "Custom artwork must use its isolated beta service")
+    binary = (app / info["CFBundleExecutable"]).read_bytes()
+    for marker in (b"CustomFighterUITestBackend", b"prepareUITestFixture", b"TEST artwork requests:", b"isolated-ui-fixture-session"):
+        require(marker not in binary, "Custom fighter test fixture present in Release")
+    signed = plistlib.loads(subprocess.run(["codesign", "--display", "--entitlements", ":-", str(app)],
+                                          capture_output=True, check=True).stdout)
+    require(signed.get("com.apple.developer.applesignin") == ["Default"], "Signed Apple sign-in entitlement missing")
+    profile = plistlib.loads(subprocess.run(["security", "cms", "-D", "-i", str(app / "embedded.mobileprovision")],
+                                           capture_output=True, check=True).stdout)
+    require("Default" in profile.get("Entitlements", {}).get("com.apple.developer.applesignin", []),
+            "Provisioning profile does not permit Sign in with Apple")
+
+
 def inspect_archive(path, expected=None):
     apps = list((path / "Products/Applications").glob("*.app"))
     require(len(apps) == 1, "Archive must contain exactly one application")
@@ -179,6 +195,7 @@ def inspect_archive(path, expected=None):
     require(info.get("AVAIsolatedTestBuild") == "NO", "Testing build cannot be distributed")
     require(info.get("AVABuildAllocation") == "confirmed", "Archive build allocation is unconfirmed")
     require((apps[0] / "PrivacyInfo.xcprivacy").is_file(), "Privacy manifest absent from application")
+    inspect_custom_fighter_configuration(apps[0])
     subprocess.run(["codesign", "--verify", "--deep", "--strict", str(apps[0])], check=True)
     entitlements = subprocess.run(["codesign", "--display", "--entitlements", ":-", str(apps[0])], capture_output=True, check=True)
     signed = plistlib.loads(entitlements.stdout)

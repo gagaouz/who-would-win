@@ -4,6 +4,9 @@ import SwiftUI
 // Full feature parity with the legacy AnimalPickerView, restyled.
 
 struct KidsAnimalPickerView: View {
+    var initialFighter: Animal? = nil
+    @State private var appliedInitialFighter = false
+    @State private var showMyFighters = false
     @StateObject private var viewModel = AnimalPickerViewModel()
     @ObservedObject private var coins = CoinStore.shared
     @ObservedObject private var settings = UserSettings.shared
@@ -56,6 +59,11 @@ struct KidsAnimalPickerView: View {
                     topBar
                     fighterCard
                     searchBar
+                    Button { searchFocused = false; showMyFighters = true } label: {
+                        Label("My Fighters", systemImage: "person.3.fill")
+                            .font(Kids.nunito(14, weight: .bold)).foregroundColor(Kids.grassDeep)
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                    }.accessibilityIdentifier("picker.myFighters")
                     if let err = speech.dictationError {
                         HStack(spacing: 5) {
                             RetroSymbol("🎤", size: isIPad ? 14 : 11)
@@ -110,7 +118,19 @@ struct KidsAnimalPickerView: View {
                 )
             }
         }
-        .onAppear { BattleService.shared.warmUp() }   // wake the backend before battle
+        .sheet(isPresented: $showMyFighters) {
+            MyFightersView(unavailableIDs: Set([viewModel.fighter1?.id, viewModel.fighter2?.id].compactMap { $0 })) { animal in
+                viewModel.selectAnimal(animal)
+                showMyFighters = false
+            }
+        }
+        .onAppear {
+            BattleService.shared.warmUp()
+            if !appliedInitialFighter {
+                appliedInitialFighter = true
+                if let initialFighter { viewModel.selectAnimal(initialFighter) }
+            }
+        }   // wake the backend before battle
         .sheet(isPresented: $showCoinShop) { KidsCoinShopSheet(isPresented: $showCoinShop) }
         .onReceive(NotificationCenter.default.publisher(for: KidsCoinShop.openNotification)) { _ in
             showCoinShop = true

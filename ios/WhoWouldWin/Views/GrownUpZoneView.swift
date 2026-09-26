@@ -107,7 +107,7 @@ struct GrownUpZoneView: View {
                     Button(role: .destructive) {
                         showEraseConfirm = true
                     } label: {
-                        Text("Erase all data")
+                        Text("Erase game data")
                             .font(Kids.fredoka(14, weight: .bold))
                             .foregroundColor(Kids.pinkDeep)
                             .frame(maxWidth: .infinity)
@@ -118,7 +118,7 @@ struct GrownUpZoneView: View {
                             )
                     }
                     .buttonStyle(.plain)
-                    Text("Wipes all progress, stickers, trophies & coins from this device and iCloud. Purchases can be restored anytime.")
+                    Text("Removes game progress from this device and iCloud, downloaded artwork and local fighter sign-in. Purchases can be restored. Your private online fighter library can be deleted in My Fighters → Account.")
                         .font(Kids.nunito(10, weight: .bold))
                         .foregroundColor(Kids.inkSoft)
                         .multilineTextAlignment(.center)
@@ -133,14 +133,17 @@ struct GrownUpZoneView: View {
                 .frame(maxWidth: .infinity)
             }
         }
-        .alert("Erase all data?", isPresented: $showEraseConfirm) {
-            Button("Erase everything", role: .destructive) {
-                UserSettings.shared.eraseAllData()
-                restoreMessage = "All data erased."
+        .alert("Erase game data?", isPresented: $showEraseConfirm) {
+            Button("Erase game data", role: .destructive) {
+                if UserSettings.shared.eraseAllData() {
+                    restoreMessage = "Game progress and downloaded artwork erased. Your private online fighter library has not been deleted."
+                } else {
+                    restoreMessage = "Local fighter data could not be fully removed. Please try again; game progress has not been reset."
+                }
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("This permanently deletes all progress, stickers, trophies and coins on this device and in iCloud. Purchases can be restored with “Restore Purchases.” This can't be undone.")
+            Text("This removes game progress, stickers, trophies, coins and downloaded artwork from this device, and game progress from iCloud. It signs out of your fighter account on this device. Your private online fighter library can be deleted in My Fighters → Account before erasing local data. Purchases can be restored. This cannot be undone.")
         }
         .sheet(item: $pinSheetMode) { mode in
             ParentalPINSheet(

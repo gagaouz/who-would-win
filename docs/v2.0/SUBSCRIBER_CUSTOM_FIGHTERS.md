@@ -1,0 +1,86 @@
+# Subscriber artwork and My Fighters — implemented beta design
+
+**Implementation is in progress after released build 112; internal build 2.0 (113) is the next target and has not been uploaded.** The native library, account flow, downloaded-art renderer, subscription verification, queue, storage, and provider adapter now exist in source. Integration tests are running. This is not a claim of successful live Sign in with Apple, a real subscription-to-library association, or an accepted paid artwork generation.
+
+**There is no configured live image-provider credential or completed paid quality trial.** The isolated v2 service was deployed and checked at 2026-09-26 21:14 UTC: health and privacy returned 200, artwork status reported `enabled: true`, `configured: false`, monthly allowance 3 and subscription required, an unauthenticated library request returned 401, and the legacy battle route returned 404. These read-only checks made no paid provider calls. Creation remains unavailable until its provider configuration and live quality checks pass. The local evidence is `ios/build/release-tools/backend-v2-live-113.json`. The beta is purchaser-only, permits Sandbox subscriptions only, and keeps Production creation off. Build 112's prior 70 native checks do not cover these new account, network, payment, storage, or UI paths.
+
+## Product behavior implemented
+
+- **My Fighters** is reachable from home, settings, solo selection, team selection, and tournament selection. Installed fighters can be selected without paying a second artwork or custom-creation charge. Existing typed-name local custom creation and its existing coin/Premium rules remain available.
+- Typing a name does not create artwork. An explicit **Create artwork** action passes a fresh grown-up gate, then explains that the creature name will be sent through the server to **OpenAI**. The grown-up confirms the one-credit request; the server requires consent version `custom-art-v1`. Names should describe creatures, not contain a child's name or personal information.
+- Existing monthly and annual **Premium** products receive **three successful new artwork creations per UTC calendar month** during this beta. Annual purchases still get a monthly allowance. Accelerated Sandbox renewals and product switching do not continually replenish it. Permanent packs, Everything Bundle, earned unlocks, and other legacy benefits are not converted into subscriptions.
+- The shop now distinguishes **unlimited local custom fighters** from the bounded artwork benefit. No new subscription product or live price is claimed. Prices continue to come from StoreKit.
+- A creation requests four authored poses: idle, anticipation, attack, and reaction. These use the existing battle cycle; separate walking, flying, and multi-frame attack clips are not added. The preview displays all four poses.
+- Accepted artwork is saved to the private server library automatically. The device verifies and installs a complete pack before adding it to the playable local roster. Closing the screen does not cancel the server job or discard the request key. Reopening the library resumes progress and can download completed work. A persisted job outside the recent 30-job list is queried directly by its known ID; a missing list entry never triggers a replacement generation.
+- Ordinary subscription expiration stops new creation. It does not lock downloaded fighters or require another generation to restore existing artwork. Cached owner identity remains available offline even when its network session needs reauthentication; an explicit sign-out hides that owner's local library.
+- A visual custom-character editor, per-part authoring controls, redesign/version-edit UI, and public catalog promotion are **not shipped**. The input remains a typed name. No system promises a recognizable depiction of every arbitrary name or public figure; moderation or quality review can reject a request.
+
+## Identity and entitlement boundary
+
+The base game still works without a new fighter account. Private cloud creation and restoration use Sign in with Apple with no name/email scopes. Native account credentials are stored in Keychain; local test identities are in memory only and require the isolated DEBUG UI-test configuration.
+
+The server verifies Apple identity/nonces and signed subscription transactions. Creation does not trust client `isSubscribed`, a device/install UUID, or a transaction identifier alone. Purchases are associated with the private owner through the verified account linkage; mismatched owners and Family Sharing artwork access are rejected for this beta. Existing non-artwork Premium benefits remain separate.
+
+Network sessions can expire without deleting installed artwork. Explicit sign-out clears the local session/selected owner. Account deletion is a separate grown-up action that removes the private online library and active jobs. Production entitlement processing exists in source but must stay disabled until its separate credentials, notification handling, receipt freshness, ownership, refund/revocation, and restore checks pass.
+
+## Generation, moderation, and durable accounting
+
+1. Validate and normalize a short name (at most 24 Unicode codepoints); treat it as data within a fixed art brief. Apply the game's family-friendly checks before provider dispatch.
+2. Save the request's owner-scoped UUID **atomically on the device before POST**. The server deduplicates the same owner/key before new subscription/quota checks. A retry of an accepted request is not another generation; an ambiguous response reuses the saved key.
+3. Reserve one successful-creation allowance slot and a separate application budget transactionally. PostgreSQL holds the durable job, quota, lease, accounting, and publication state. One active job per owner and a single beta provider workflow across replicas bound concurrency.
+4. Request one transparent 1024×1024 sheet with four 512×512 cells, using the bundled style reference. The current source pins `gpt-image-2.5-flare-2026-09-08` for image generation and `gpt-4.1-mini-2025-04-14` for semantic review. **Live access, acceptable quality, latency, and cost for these settings are unverified.**
+5. Decode with pixel/byte bounds. Validate PNG, dimensions, alpha margins, complete nonempty crops, and four distinct poses. Moderate the name, accepted sheet, and delivered poses; semantic review checks subject consistency, anatomy, style, facing, and pose intent. Pixel differences alone are not treated as semantic quality.
+6. Publish only a complete accepted pack. A rejected/failed job does not consume the customer's successful-creation allowance. A provider timeout may still cost money: uncertain jobs enter `reconciling`, and spending is retained conservatively. There are **no automatic repair calls or blind retries of paid provider work** in this beta.
+7. Store original and normalized runtime PNGs privately, then publish the immutable manifest/fighter and consume the customer creation together. The iOS download is authenticated, bounded to 8 MiB, hash-checked, and atomically installed. Redirects are rejected; a server-supplied arbitrary image URL is not followed.
+
+States are `queued`, `generating`, `validating`, `ready`, `rejected`, `failed`, `reconciling`, and `cancelled`. Worker leases and durable dispatch markers distinguish safe pre-dispatch recovery from uncertain paid work. Failures cannot silently publish an incomplete fighter or trigger an unbounded repair loop.
+
+## Beta cost policy
+
+The default application ledger is a **$5 lifetime beta budget**, with **$1 reserved per generation attempt** before paid dispatch. It does not reset when a worker restarts or when a calendar/Sandbox subscription period changes. Provider usage estimates are recorded separately and dispatched reservations remain conservative; an operator must deliberately review any budget increase or uncertain charge.
+
+The $1 reservation covers the bounded creation workflow; it is **not a quoted provider price or an external billing hard cap**. Image input/output, semantic review, unsuccessful attempts, database storage, downloads, and existing narration have costs. A successful sheet is not necessarily the only billable request. No accepted-fighter cost has been measured yet, and the three-credit allowance is a controlled beta policy rather than proof of production subscription economics.
+
+Generation requires the explicit feature switch, provider credential, database, and allowed Apple environment. Beta configuration must set Sandbox access only and leave Production off. Application kill switches and budget reservations supplement, rather than replace, provider account controls and invoice review.
+
+## Private storage and deletion
+
+This beta uses **private PostgreSQL binary storage** for both original and runtime PNGs, alongside ownership, immutable version/hash metadata, job provenance, moderation/review decisions, and usage records. It does not currently use a separate object-storage service or public CDN. Runtime sheets require the owner session and are served with private/no-store caching. There is no public artwork catalog and no pooling of identical player-entered names across owners.
+
+On-device packs and roster metadata live in Application Support, separated by a hash of the account owner. They remain independent of temporary decoded-image caches and iCloud key-value progress sync. Old `Animal` and tournament data retain their stable IDs and can decode without a new appearance field. A saved battle/tournament pins its appearance version; unavailable or removed art falls back to bundled artwork without changing the gameplay identity or result.
+
+Successful list responses carry explicit `removedAssetIDs` and a positive `libraryEpoch`. The client removes explicit tombstones; a changed previously-seen epoch clears only the current owner's old roster after an account reset. **Absence from a partial/recent list alone is not treated as deletion.** A successful unsafe-art report quarantines remote art and removes its local playable copy; other report reasons preserve the fighter for review.
+
+The grown-up **Erase game data** action removes device/iCloud game progress, downloaded artwork, local fighter credentials, and pending request data. It does **not** claim to delete the private online account. Its confirmation directs the owner to **My Fighters → Account** to delete that library before a complete device handoff. Storage failures are reported instead of displaying an unconditional erase-success message.
+
+The implemented cleanup removes rejected/failed temporary media and scrubs older operational names; job/account deletion uses durable cancellation/epoch state to avoid later worker publication resurrecting assets. Minimal accounting/security records have a separate purpose. **A verified finite managed-database backup expiry and restoration/deletion runbook are still required before public release.** Live provider-side retention behavior and the full Apple authorization-grant revocation flow also require completion/verification; deleting the app's account record alone must not be described as revoking the Apple grant.
+
+## Backend and native integration
+
+New endpoints are under `/api/custom-fighters`: availability/status, authenticated subscription status, explicit create, private library, individual job/metadata/sheet, deletion, reporting, and account authentication. The iOS artwork service has a separate `AVACustomFighterAPIBaseURL` configuration so an isolated v2 beta service can be used without redirecting legacy battle/narration traffic.
+
+The ordinary battle, narration, coin, reward, and legacy purchase contracts remain separate. The original 1.1.7 line must not be deployed with an unfinished account/artwork requirement. The new model's optional `appearanceRef`, shared art resolution, owner-separated durable store, and cache keys connect downloaded art to the same solo, team, tournament, portrait, and share renderers.
+
+Local fixtures cover the UI with explicitly simulated account/API answers; they neither create a real account nor prove a paid entitlement. Production code has no fake Premium fallback. Current implementation testing and future measured release evidence must record actual source/build, not inherit build 112's passes for this new feature.
+
+## Owner testing when the internal candidate is available
+
+1. Open **My Fighters**. Confirm that an unavailable service says so and does not offer a working paid Create action. Existing local custom creatures and saved artwork must remain usable.
+2. With a grown-up, complete real Sign in with Apple and the intended Sandbox Premium flow. Verify the correct private library, three-credit UTC-month allowance, purchaser-only behavior, and the explanation for expired or mismatched subscription access.
+3. Type a safe creature name. Nothing should be generated until the grown-up gate and explicit OpenAI confirmation are completed. Cancel each stage once, then create one fighter under the separately enabled trial budget.
+4. Close/reopen the screen and background/relaunch the app while it works. Resume the same request after a connection failure. One successful creation should use one allowance credit and appear once in My Fighters.
+5. Inspect all four poses, then use that saved fighter in solo, 4v4, tournament, and shared-card paths. Reuse should not spend another creation/selection credit. Test offline use, subscription expiry, and restore on another signed-in device.
+6. Report unsafe art, delete an individual fighter, and delete a dedicated test account. Check explicit tombstones/epoch behavior on the other device. Separately test local **Erase game data** and confirm its distinction from online-library deletion.
+
+Use a test account and record device/OS, build, exact steps, job state, and whether an allowance was reserved or spent. Do not include credentials, receipts, a child's personal details, or private provider responses in bug reports.
+
+## Remaining public-release gates
+
+- Configure and verify live Apple sign-in identity/nonce/account recovery and the native/ASC capability setup; complete Apple authorization-grant revocation on account deletion and verify real cancellation/revocation behavior.
+- Supply the approved provider credential for the isolated service and run a small paid quality/cost pilot with reviewed outputs. Include ordinary animals, invented creatures, unusual limbs, robots, long names, acceptable humor/caricatures, and rejections. Do not enable Production creation from mock-provider success.
+- Verify actual receipt ownership, restore, expiration/refund/revocation, product switching, Sandbox isolation, server notifications, and Production freshness rules. Decide any future Family Sharing policy explicitly; this beta is purchaser-only.
+- Verify the exact deployed worker/queue/database migration, replica concurrency, uncertain-cost reconciliation, kill switch, and backup expiry/deletion operations. A $5 application ledger is not a promise about the provider's final invoice.
+- Finish privacy/provider/retention disclosures, subscription wording, age/content review, support/reporting, and deletion review using the implemented behavior. No public catalog or third-party rights/reuse permission is implied by a generated image.
+- Pass the final frozen-candidate native/backend/upgrade checks, actual hardware performance/accessibility checks, and private-art/account tests. Archive and inspect a new internal candidate, then verify Apple processing and tester availability. **Build 113 is not uploaded at this document's implementation checkpoint.**
+
+Reference policy/documentation for the release review: [Apple App Review Guidelines](https://developer.apple.com/app-store/review/guidelines/), [Sign in with Apple token revocation](https://developer.apple.com/documentation/signinwithapplerestapi/revoke_tokens), [OpenAI image generation](https://developers.openai.com/api/docs/guides/image-generation), and [OpenAI moderation](https://developers.openai.com/api/docs/guides/moderation). These links do not substitute for testing the configured service or completing its release gates.

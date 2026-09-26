@@ -1,16 +1,16 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import battleRouter from './routes/battle';
-import animalRouter from './routes/animal';
-import { initDb } from './services/battleLogger';
-import { diagnosticRateLimit, initRateLimitStore } from './middleware/rateLimit';
-import { initCostControl } from './services/costControl';
-import { initResponseStore } from './services/responseStore';
-import appAttestRouter, { initAppAttest } from './services/appAttest';
+import { createCustomFighterAuthRouter, initCustomFighterAuth } from './services/customFighterAuth';
+import { createCustomFighterRouter } from './customFighters/routes';
+import { deleteCustomFighterOwnerData } from './customFighters/store';
+import { startCustomFighterWorker } from './customFighters/worker';
+import { enabled as spritesEnabled, configured as spritesConfigured } from './customFighters/config';
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
+const spriteOnly = process.env.SPRITE_ONLY_SERVICE === 'true';
+const legacyInitializers: Array<() => Promise<void>> = [];
 app.disable('x-powered-by');
 
 // ── Trust proxy ────────────────────────────────────────────────────────────────
@@ -58,7 +58,8 @@ app.use(cors({
 // global 10 KB limit, because a symbolicated crash payload exceeds 10 KB.
 // Just logs to the process output (visible in Railway logs); stores nothing,
 // no PII. ──────────────────────────────────────────────────────────────────────
-if (process.env.DIAGNOSTICS_ENABLED === 'true') {
+if (!spriteOnly && process.env.DIAGNOSTICS_ENABLED === 'true') {
+  const { diagnosticRateLimit } = require('./middleware/rateLimit');
   app.post('/api/diag', diagnosticRateLimit, express.json({ limit: '64kb' }), (req, res) => {
     const encoded = JSON.stringify(req.body ?? {});
     console.log(JSON.stringify({
@@ -80,10 +81,20 @@ app.use(express.json({
 }));
 
 // ── Routes ─────────────────────────────────────────────────────────────────────
-app.get('/health', (_req, res) => res.json({ status: 'ok' }));
-app.use('/api', appAttestRouter);
-app.use('/api', battleRouter);
-app.use('/api', animalRouter);
+app.get('/health', (_req, res) => res.json(spriteOnly
+  ? { status: 'ok', service: 'custom-fighters', customFighters: { enabled: spritesEnabled(), configured: spritesConfigured() } }
+  : { status: 'ok' }));
+if (!spriteOnly) {
+  // Lazy imports also keep legacy module-level cleanup timers out of the isolated artwork service.
+  app.use('/api', require('./services/appAttest').default);
+  app.use('/api', require('./routes/battle').default);
+  app.use('/api', require('./routes/animal').default);
+  legacyInitializers.push(require('./services/battleLogger').initDb, require('./services/costControl').initCostControl,
+    require('./services/responseStore').initResponseStore, require('./middleware/rateLimit').initRateLimitStore,
+    require('./services/appAttest').initAppAttest);
+}
+app.use('/api/custom-fighters/auth', createCustomFighterAuthRouter({ deleteOwnerData: deleteCustomFighterOwnerData }));
+app.use('/api/custom-fighters', createCustomFighterRouter());
 
 // ── 404 catch-all ──────────────────────────────────────────────────────────────
 app.use((_req, res) => res.status(404).json({ error: 'Not found' }));
@@ -109,8 +120,9 @@ app.listen(PORT, () => {
   console.log(`Who Would Win backend running on port ${PORT}`);
   // Bootstrap Postgres-backed privacy, cache, and spend-control tables.
   void Promise.allSettled([
-    initDb(), initCostControl(), initResponseStore(), initRateLimitStore(), initAppAttest(),
+    ...legacyInitializers.map(initialize => initialize()), initCustomFighterAuth(),
   ]);
+  startCustomFighterWorker();
   // Diagnostic: list every registered route so we can confirm new endpoints
   // are actually mounted in the deployed image. Logged once per boot.
   const seen: string[] = [];

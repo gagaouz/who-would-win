@@ -81,6 +81,7 @@ targets:
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         AVAAPIBaseURL: "$(AVA_API_BASE_URL)"
+        AVACustomFighterAPIBaseURL: "$(AVA_CUSTOM_FIGHTER_API_BASE_URL)"
         AVAEnvironment: "$(AVA_ENVIRONMENT)"
         AVAIsolatedTestBuild: "$(AVA_ISOLATED_TEST_BUILD)"
         AVABuildAllocation: "$(AVA_BUILD_ALLOCATION)"

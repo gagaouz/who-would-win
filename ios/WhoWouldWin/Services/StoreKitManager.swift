@@ -149,7 +149,12 @@ final class StoreKitManager: ObservableObject {
         defer { isPurchasing = false }
 
         do {
-            let result = try await product.purchase()
+            var options: Set<Product.PurchaseOption> = []
+            if [Self.premiumMonthlyID, Self.premiumAnnualID].contains(product.id),
+               let owner = CustomFighterAccount.shared.accountID.flatMap(UUID.init(uuidString:)) {
+                options.insert(.appAccountToken(owner))
+            }
+            let result = try await product.purchase(options: options)
             switch result {
             case .success(let verification):
                 let transaction = try checkVerified(verification)

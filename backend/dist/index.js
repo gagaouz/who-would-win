@@ -1,37 +1,4 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -39,15 +6,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("dotenv/config");
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
-const battle_1 = __importDefault(require("./routes/battle"));
-const animal_1 = __importDefault(require("./routes/animal"));
-const battleLogger_1 = require("./services/battleLogger");
-const rateLimit_1 = require("./middleware/rateLimit");
-const costControl_1 = require("./services/costControl");
-const responseStore_1 = require("./services/responseStore");
-const appAttest_1 = __importStar(require("./services/appAttest"));
+const customFighterAuth_1 = require("./services/customFighterAuth");
+const routes_1 = require("./customFighters/routes");
+const store_1 = require("./customFighters/store");
+const worker_1 = require("./customFighters/worker");
+const config_1 = require("./customFighters/config");
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
+const spriteOnly = process.env.SPRITE_ONLY_SERVICE === 'true';
+const legacyInitializers = [];
 app.disable('x-powered-by');
 // ── Trust proxy ────────────────────────────────────────────────────────────────
 // Set TRUST_PROXY=1 in production when behind Railway / Render / Heroku so that
@@ -91,8 +58,9 @@ app.use((0, cors_1.default)({
 // global 10 KB limit, because a symbolicated crash payload exceeds 10 KB.
 // Just logs to the process output (visible in Railway logs); stores nothing,
 // no PII. ──────────────────────────────────────────────────────────────────────
-if (process.env.DIAGNOSTICS_ENABLED === 'true') {
-    app.post('/api/diag', rateLimit_1.diagnosticRateLimit, express_1.default.json({ limit: '64kb' }), (req, res) => {
+if (!spriteOnly && process.env.DIAGNOSTICS_ENABLED === 'true') {
+    const { diagnosticRateLimit } = require('./middleware/rateLimit');
+    app.post('/api/diag', diagnosticRateLimit, express_1.default.json({ limit: '64kb' }), (req, res) => {
         const encoded = JSON.stringify(req.body ?? {});
         console.log(JSON.stringify({
             event: 'client_diagnostic_received',
@@ -111,10 +79,18 @@ app.use(express_1.default.json({
     },
 }));
 // ── Routes ─────────────────────────────────────────────────────────────────────
-app.get('/health', (_req, res) => res.json({ status: 'ok' }));
-app.use('/api', appAttest_1.default);
-app.use('/api', battle_1.default);
-app.use('/api', animal_1.default);
+app.get('/health', (_req, res) => res.json(spriteOnly
+    ? { status: 'ok', service: 'custom-fighters', customFighters: { enabled: (0, config_1.enabled)(), configured: (0, config_1.configured)() } }
+    : { status: 'ok' }));
+if (!spriteOnly) {
+    // Lazy imports also keep legacy module-level cleanup timers out of the isolated artwork service.
+    app.use('/api', require('./services/appAttest').default);
+    app.use('/api', require('./routes/battle').default);
+    app.use('/api', require('./routes/animal').default);
+    legacyInitializers.push(require('./services/battleLogger').initDb, require('./services/costControl').initCostControl, require('./services/responseStore').initResponseStore, require('./middleware/rateLimit').initRateLimitStore, require('./services/appAttest').initAppAttest);
+}
+app.use('/api/custom-fighters/auth', (0, customFighterAuth_1.createCustomFighterAuthRouter)({ deleteOwnerData: store_1.deleteCustomFighterOwnerData }));
+app.use('/api/custom-fighters', (0, routes_1.createCustomFighterRouter)());
 // ── 404 catch-all ──────────────────────────────────────────────────────────────
 app.use((_req, res) => res.status(404).json({ error: 'Not found' }));
 // ── Global error handler ───────────────────────────────────────────────────────
@@ -136,8 +112,9 @@ app.listen(PORT, () => {
     console.log(`Who Would Win backend running on port ${PORT}`);
     // Bootstrap Postgres-backed privacy, cache, and spend-control tables.
     void Promise.allSettled([
-        (0, battleLogger_1.initDb)(), (0, costControl_1.initCostControl)(), (0, responseStore_1.initResponseStore)(), (0, rateLimit_1.initRateLimitStore)(), (0, appAttest_1.initAppAttest)(),
+        ...legacyInitializers.map(initialize => initialize()), (0, customFighterAuth_1.initCustomFighterAuth)(),
     ]);
+    (0, worker_1.startCustomFighterWorker)();
     // Diagnostic: list every registered route so we can confirm new endpoints
     // are actually mounted in the deployed image. Logged once per boot.
     const seen = [];

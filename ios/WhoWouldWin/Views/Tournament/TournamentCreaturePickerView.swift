@@ -14,6 +14,7 @@ struct TournamentCreaturePickerView: View {
     @State private var selectedCategory: AnimalCategory = .all
     @State private var selected: [Animal] = []
     @State private var showNotAffordableAlert = false
+    @State private var showMyFighters = false
 
     @Environment(\.horizontalSizeClass) private var sizeClass
     private var isIPad: Bool { sizeClass == .regular }
@@ -33,6 +34,13 @@ struct TournamentCreaturePickerView: View {
                 VStack(spacing: isIPad ? 14 : 10) {
                     header
                     searchBar
+                    Button { showMyFighters = true } label: {
+                        Label("My Fighters", systemImage: "person.3.fill")
+                            .font(Kids.nunito(14, weight: .bold)).foregroundColor(Kids.grassDeep)
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                    }
+                    .disabled(selected.count >= targetCount)
+                    .accessibilityIdentifier("tournament.myFighters")
                     categoryPills
                     selectionStrip
                     gridView
@@ -41,6 +49,12 @@ struct TournamentCreaturePickerView: View {
                 .padding(.horizontal, isIPad ? 24 : 14)
                 .frame(maxWidth: isIPad ? 880 : .infinity)
                 Spacer(minLength: 0)
+            }
+        }
+        .sheet(isPresented: $showMyFighters) {
+            MyFightersView(unavailableIDs: Set(selected.map(\.id))) { animal in
+                toggle(animal)
+                showMyFighters = false
             }
         }
         .navigationBarBackButtonHidden(true)

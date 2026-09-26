@@ -6,6 +6,9 @@ import SwiftUI
 struct KidsHomeView: View {
     @ObservedObject private var settings = UserSettings.shared
     @ObservedObject private var coins = CoinStore.shared
+    @ObservedObject private var customFighters = CustomFighterService.shared
+    @State private var showMyFighters = false
+    @State private var selectedSavedFighter: Animal?
     @State private var showSettings = false
     @State private var showTournament = false
     @State private var showBook = false
@@ -50,6 +53,7 @@ struct KidsHomeView: View {
                         VStack(spacing: 12) {
                             KidButton(title: "LET'S BATTLE!", icon: "▶", color: Kids.grass, size: .lg) {
                                 HapticsService.shared.tap()
+                                selectedSavedFighter = nil
                                 goToPicker = true
                             }
                             .accessibilityIdentifier("home.pickFighters")
@@ -71,6 +75,12 @@ struct KidsHomeView: View {
                             .accessibilityLabel("Surprise Me — start a random battle")
                             .accessibilityIdentifier("home.surpriseBattle")
                         }
+                        Button { selectedSavedFighter = nil; showMyFighters = true } label: {
+                            Label("My Fighters", systemImage: "person.3.fill")
+                                .font(Kids.fredoka(17)).foregroundColor(Kids.grassDeep)
+                                .frame(maxWidth: .infinity, minHeight: 48)
+                                .background(.white, in: RoundedRectangle(cornerRadius: 14))
+                        }.accessibilityIdentifier("home.myFighters")
                         if settings.currentStreak >= 1 {
                             StreakPill(days: settings.currentStreak)
                         }
@@ -106,7 +116,7 @@ struct KidsHomeView: View {
             }
             .navigationBarHidden(true)
             .navigationDestination(isPresented: $goToPicker) {
-                KidsAnimalPickerView()
+                KidsAnimalPickerView(initialFighter: selectedSavedFighter)
             }
             .navigationDestination(isPresented: $goToMelee) {
                 MeleeSetupView()
@@ -129,6 +139,14 @@ struct KidsHomeView: View {
             maybeShowPaywall()
         }
         .onDisappear { pairTimer?.invalidate() }
+        .sheet(isPresented: $showMyFighters, onDismiss: {
+            if selectedSavedFighter != nil { goToPicker = true }
+        }) {
+            MyFightersView { animal in
+                selectedSavedFighter = animal
+                showMyFighters = false
+            }
+        }
         .fullScreenCover(isPresented: $showSettings) { KidsSettingsView() }
         .fullScreenCover(isPresented: $showBook) { KidsStickerBookView() }
         .fullScreenCover(isPresented: $showHallOfFame) { KidsHallOfFameView() }

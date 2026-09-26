@@ -186,12 +186,17 @@ final class UserSettings: ObservableObject {
         return milestoneBonus
     }
 
-    /// Completely erases ALL on-device progress, stats, collections, purchases-
-    /// state and iCloud-synced copies. Backs the parent-gated "Erase all data"
-    /// control (COPPA / App Store data-deletion expectation) AND the TestFlight
-    /// reset. Note: real purchases can always be restored via "Restore".
+    /// Removes game progress on this device/iCloud and downloaded fighter art.
+    /// The private online fighter account is deleted separately in My Fighters.
+    /// Returns false if the new local artwork store could not be fully removed.
     @MainActor
-    func eraseAllData() {
+    @discardableResult
+    func eraseAllData() -> Bool {
+        let requestsErased = CustomFighterService.shared.clearLocalState()
+        do { try CustomFighterLibraryStore.shared.eraseAllLocalData() }
+        catch { return false }
+        CustomFighterAccount.shared.eraseLocalSession()
+        guard requestsErased else { return false }
         // Core stats + unlocks
         totalBattleCount        = 0
         currentStreak           = 0
@@ -232,6 +237,7 @@ final class UserSettings: ObservableObject {
         // values (and the cancelled debounce inside wipeCloud) leave nothing to
         // restore. wipeCloud() also cancels any pending upload.
         CloudSyncService.shared.wipeCloud()
+        return true
     }
 
     /// Back-compat alias for the existing TestFlight reset call sites.

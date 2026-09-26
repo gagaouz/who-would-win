@@ -1,0 +1,50 @@
+{
+  "checkedAt": "2026-09-26T21:08:37.116648+00:00",
+  "readOnly": true,
+  "authenticationMaterialIncluded": false,
+  "app": {
+    "name": "Animal vs Animal",
+    "bundleId": "com.whowouldin.WhoWouldWin",
+    "id": "6761319389"
+  },
+  "buildHistoryComplete": true,
+  "buildCount": 125,
+  "highestUploadedBuild": 112,
+  "candidateVersion": "2.0",
+  "candidateBuild": "113",
+  "candidateBuildPresent": false,
+  "candidateBuildCountAcrossVersions": 0,
+  "latestBuild": {
+    "id": "525fad06-a69d-45a2-a9d1-daab53807677",
+    "marketingVersion": "2.0",
+    "version": "112",
+    "uploadedDate": "2026-09-26T13:16:55-07:00",
+    "processingState": "VALID",
+    "expired": false,
+    "expirationDate": "2026-12-25T12:16:55-08:00"
+  },
+  "appStoreVersion": {
+    "versionString": "1.1.7",
+    "appStoreState": "READY_FOR_SALE",
+    "platform": "IOS"
+  },
+  "internalGroup": {
+    "id": "bbe48189-3ad0-4d20-bd77-9adb1120eb75",
+    "name": "self",
+    "isInternalGroup": true,
+    "hasAccessToAllBuilds": true,
+    "publicLinkEnabled": null,
+    "testerCount": 1,
+    "testerLookupHTTPStatus": 200
+  },
+  "maintenance": {
+    "checkedAt": "2026-09-26T21:09:43.415396+00:00",
+    "branch": "release/1.1.7",
+    "head": "107bf7327f1c82e85282101e2294fb6f9ded3639",
+    "sourceVersion": "1.1.7",
+    "sourceBuild": "109",
+    "statusSHA256": "a1fc5ca45e11abac1dc6133a62e4c61fe1ab9bfa859463ba7d82e8b1494ca42d",
+    "statusMatchesPriorRelease": true,
+    "originalCheckoutModified": false
+  }
+}

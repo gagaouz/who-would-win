@@ -3,3 +3,4 @@
 AVA_API_BASE_URL = http:/$()/localhost:3000
 AVA_ENVIRONMENT = development
 AVA_ISOLATED_TEST_BUILD = NO
+AVA_CUSTOM_FIGHTER_API_BASE_URL = http:/$()/localhost:3000

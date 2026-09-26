@@ -13,6 +13,7 @@ struct WhoWouldWinApp: App {
         if AppConfig.isUITesting && AppConfig.isIsolatedTestBuild {
             if let screen = AppConfig.fixtureScreen {
                 RetroUIFixtureHost.prepare(screen: screen)
+                CustomFighterService.prepareUITestFixture(screen: screen)
             }
             UpgradeFixtureAudit.captureIfRequested()
         }
@@ -89,7 +90,9 @@ struct WhoWouldWinApp: App {
     @ViewBuilder
     private var rootContent: some View {
         #if DEBUG
-        if AppConfig.fixtureScreen == "melee" {
+        if let screen = AppConfig.fixtureScreen, ["custom-fighters-ready", "custom-fighters-unavailable", "custom-fighters-resume"].contains(screen) {
+            MyFightersView()
+        } else if AppConfig.fixtureScreen == "melee" {
             MeleeBattleView(teamA: [Animals.lion, Animals.gorilla, Animals.wolf, Animals.tiger],
                             teamB: [Animals.elephant, Animals.great_white_shark, Animals.bald_eagle, Animals.t_rex])
         } else if AppConfig.fixtureScreen == "custom" {

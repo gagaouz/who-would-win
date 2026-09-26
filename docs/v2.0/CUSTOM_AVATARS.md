@@ -1,6 +1,6 @@
 # Local custom avatars
 
-The owner chose custom artwork without recurring image-generation charges. Version 2.0 therefore creates a retro avatar on the device from bundled artwork. It does not call an image provider, send a name to an additional service, or require an image API credential. Existing battle narration and custom classification behavior are unchanged.
+Build 112 reflects the owner's earlier choice of custom artwork without recurring image-generation charges. It creates a retro avatar on the device from bundled artwork. It does not call an image provider, send a name to an additional service, or require an image API credential. Existing battle narration and custom classification behavior are unchanged. The owner has since proposed subscriber-funded generated artwork with four original poses and durable storage; that next feature is specified in [Subscriber-generated custom fighters](SUBSCRIBER_CUSTOM_FIGHTERS.md) and is not implemented in build 112.
 
 ## Appearance contract
 

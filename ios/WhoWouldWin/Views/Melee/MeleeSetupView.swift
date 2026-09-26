@@ -14,6 +14,7 @@ struct MeleeSetupView: View {
     @State private var search: String = ""
     @State private var selectedCategory: AnimalCategory = .all
     @State private var goToBattle = false
+    @State private var showMyFighters = false
 
     @Environment(\.horizontalSizeClass) private var sizeClass
     private var isIPad: Bool { sizeClass == .regular }
@@ -37,6 +38,13 @@ struct MeleeSetupView: View {
                     presetRow
                     teamPanels
                     activeTeamPills
+                    Button { showMyFighters = true } label: {
+                        Label("My Fighters", systemImage: "person.3.fill")
+                            .font(Kids.nunito(14, weight: .bold)).foregroundColor(Kids.grassDeep)
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                    }
+                    .disabled(activeRoster.count >= activeTeamSize)
+                    .accessibilityIdentifier("melee.myFighters")
                     categoryPills
                     gridView
                     fightBar
@@ -44,6 +52,12 @@ struct MeleeSetupView: View {
                 .padding(.horizontal, isIPad ? 24 : 14)
                 .frame(maxWidth: isIPad ? 880 : .infinity)
                 Spacer(minLength: 0)
+            }
+        }
+        .sheet(isPresented: $showMyFighters) {
+            MyFightersView(unavailableIDs: Set((teamA + teamB).map(\.id))) { animal in
+                toggle(animal)
+                showMyFighters = false
             }
         }
         .navigationBarBackButtonHidden(true)

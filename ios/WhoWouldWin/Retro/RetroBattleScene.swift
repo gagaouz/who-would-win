@@ -14,6 +14,7 @@ final class RetroBattleScene: SKScene {
         let home: CGPoint
         let extent: CGFloat
         let profile: RetroMotionProfile
+        let artwork: RetroArtworkDescriptor
     }
     private struct RigKey: Hashable {
         let anatomy: RetroMotionAnatomy
@@ -127,19 +128,23 @@ final class RetroBattleScene: SKScene {
                 sprite.xScale = side == 0 ? 1 : -1
                 sprite.zPosition = CGFloat(20 - row * 5 + slot)
                 actionLayer.addChild(sprite)
-                let performer = Performer(animal: animal, side: side, slot: slot, sprite: sprite, shadow: shadow, home: CGPoint(x: x, y: y + 1), extent: extent, profile: RetroMotionProfile.resolve(for: animal, manifest: RetroAssetStore.shared.manifest))
+                let artwork = RetroAssetStore.shared.artworkDescriptor(for: animal)
+                let performer = Performer(animal: animal, side: side, slot: slot, sprite: sprite, shadow: shadow, home: CGPoint(x: x, y: y + 1), extent: extent,
+                                          profile: RetroMotionProfile.resolve(artwork: artwork), artwork: artwork)
                 performers.append(performer)
-                installTextures(for: animal)
+                installTextures(for: performer)
                 pose(.idle, for: performer)
             }
         }
     }
 
-    private func installTextures(for animal: Animal) {
-        guard textures[animal.id] == nil else { return }
+    private func installTextures(for performer: Performer) {
+        let animal = performer.animal
+        let key = performer.artwork.cacheKey
+        guard textures[key] == nil else { return }
         var frames: [RetroPose: SKTexture] = [:]
         for pose in RetroPose.allCases {
-            if let image = RetroAssetStore.shared.image(for: animal, pose: pose) {
+            if let image = RetroAssetStore.shared.image(for: animal, pose: pose, artwork: performer.artwork) {
                 let texture = SKTexture(image: image)
                 texture.filteringMode = .nearest
                 frames[pose] = texture
@@ -150,7 +155,7 @@ final class RetroBattleScene: SKScene {
             texture.filteringMode = .nearest
             frames[.idle] = texture
         }
-        textures[animal.id] = frames
+        textures[key] = frames
     }
 
     private func placeholder(for animal: Animal) -> UIImage {
@@ -166,11 +171,11 @@ final class RetroBattleScene: SKScene {
     }
 
     private func pose(_ pose: RetroPose, for performer: Performer) {
-        guard let texture = textures[performer.animal.id]?[pose] ?? textures[performer.animal.id]?[.idle] else { return }
+        guard let texture = textures[performer.artwork.cacheKey]?[pose] ?? textures[performer.artwork.cacheKey]?[.idle] else { return }
         if performer.sprite.texture !== texture {
             performer.sprite.texture = texture
             let source = texture.size()
-            let idle = textures[performer.animal.id]?[.idle]?.size() ?? source
+            let idle = textures[performer.artwork.cacheKey]?[.idle]?.size() ?? source
             let scale = performer.extent / max(idle.width, idle.height, 1)
             performer.sprite.size = CGSize(width: (source.width * scale).rounded(), height: (source.height * scale).rounded())
         }
@@ -196,7 +201,7 @@ final class RetroBattleScene: SKScene {
         if pendingArtworkRefresh && (outcome == nil || t < 0.25 || t.truncatingRemainder(dividingBy: 1.04) > 0.95) {
             pendingArtworkRefresh = false
             textures.removeAll()
-            for performer in performers { installTextures(for: performer.animal) }
+            for performer in performers { installTextures(for: performer) }
         }
         effectLayer.removeAllChildren()
         actionLayer.position = .zero

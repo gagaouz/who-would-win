@@ -31,6 +31,7 @@ struct KidsSettingsView: View {
     @State private var showTrophyCase = false
     @State private var showGrownUpZone = false
     @State private var showShop = false
+    @State private var showMyFighters = false
 
     // Parental gate (Kids Category): the Grown-Up Zone door and any tap that
     // leaves the app go through it. Never caches a "passed" state.
@@ -50,6 +51,11 @@ struct KidsSettingsView: View {
                         quickTogglesCard
                         trophyCaseCard
                         shopCard
+                        Button { showMyFighters = true } label: {
+                            KidsNavRow(emoji: "✨", title: "My Fighters",
+                                       subtitle: "Saved creatures, artwork & account",
+                                       tint: Kids.sky, isIPad: isIPad)
+                        }.buttonStyle(.plain).accessibilityIdentifier("settings.myFighters")
                         grownUpZoneCard
                         gameCenterCard
                         versionFooter
@@ -84,6 +90,7 @@ struct KidsSettingsView: View {
             gatedAction?()
             gatedAction = nil
         }
+        .sheet(isPresented: $showMyFighters) { MyFightersView() }
         .fullScreenCover(isPresented: $showTrophyCase) {
             NavigationStack { TrophyCaseView() }
         }
@@ -722,7 +729,8 @@ struct KidsShopView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     premiumFeature("No ads — ever")
                     premiumFeature("Every creature pack unlocked")
-                    premiumFeature("Unlimited custom fighters")
+                    premiumFeature("Unlimited local custom fighters")
+                    premiumFeature("New artwork: 3 creations/month in beta")
                     premiumFeature("2× coins per battle")
                 }
                 .padding(.leading, 4)

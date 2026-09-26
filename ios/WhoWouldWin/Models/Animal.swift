@@ -9,8 +9,9 @@ struct Animal: Identifiable, Hashable, Sendable, Codable {
     let size: Int           // 1–5, used for sprite scaling
     let isCustom: Bool      // true for user-typed free-text animals
     let imageURL: URL?      // real photo URL for custom animals (Wikipedia / Pollinations)
+    let appearanceRef: CustomFighterAppearanceRef? // optional immutable generated sprite pack
 
-    init(id: String, name: String, emoji: String, category: AnimalCategory, pixelColor: String, size: Int, isCustom: Bool = false, imageURL: URL? = nil) {
+    init(id: String, name: String, emoji: String, category: AnimalCategory, pixelColor: String, size: Int, isCustom: Bool = false, imageURL: URL? = nil, appearanceRef: CustomFighterAppearanceRef? = nil) {
         self.id = id
         self.name = name
         self.emoji = emoji
@@ -19,6 +20,27 @@ struct Animal: Identifiable, Hashable, Sendable, Codable {
         self.size = size
         self.isCustom = isCustom
         self.imageURL = imageURL
+        self.appearanceRef = appearanceRef?.isValid == true ? appearanceRef : nil
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, name, emoji, category, pixelColor, size, isCustom, imageURL, appearanceRef
+    }
+
+    init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        id = try values.decode(String.self, forKey: .id)
+        name = try values.decode(String.self, forKey: .name)
+        emoji = try values.decode(String.self, forKey: .emoji)
+        category = try values.decode(AnimalCategory.self, forKey: .category)
+        pixelColor = try values.decode(String.self, forKey: .pixelColor)
+        size = try values.decode(Int.self, forKey: .size)
+        isCustom = try values.decodeIfPresent(Bool.self, forKey: .isCustom) ?? false
+        imageURL = try values.decodeIfPresent(URL.self, forKey: .imageURL)
+        // An unsupported/corrupt cosmetic must never invalidate the surrounding
+        // saved tournament, its custom identity, or its wager settlement state.
+        let candidate = try? values.decode(CustomFighterAppearanceRef.self, forKey: .appearanceRef)
+        appearanceRef = candidate?.isValid == true ? candidate : nil
     }
 
     /// Returns the asset catalog name if a custom illustration exists for this animal.

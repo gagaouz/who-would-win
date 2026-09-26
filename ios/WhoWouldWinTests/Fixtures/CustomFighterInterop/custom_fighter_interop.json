@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "assetID": "f407d42c-30a7-4e09-a4ce-246d2b3b5590",
+  "version": 1,
+  "sha256": "b62477d6de276fdb8bdffac84d7f87ec006257557d9386a185eb390daefae565",
+  "styleVersion": "retro-v1",
+  "width": 1024,
+  "height": 1024,
+  "archetype": "biped",
+  "frames": {
+    "idle": [
+      0,
+      0,
+      512,
+      512
+    ],
+    "anticipation": [
+      512,
+      0,
+      512,
+      512
+    ],
+    "attack": [
+      0,
+      512,
+      512,
+      512
+    ],
+    "reaction": [
+      512,
+      512,
+      512,
+      512
+    ]
+  }
+}

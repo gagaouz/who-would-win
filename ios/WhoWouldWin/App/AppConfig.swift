@@ -63,6 +63,15 @@ enum AppConfig {
         return value.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
     }
 
+    /// Custom artwork can use an isolated beta service while existing battle APIs stay unchanged.
+    static var customFighterBaseURL: String {
+        guard externalServicesEnabled else { return "http://localhost:1" }
+        guard let value = Bundle.main.object(forInfoDictionaryKey: "AVACustomFighterAPIBaseURL") as? String,
+              let url = URL(string: value), let host = url.host, !host.isEmpty,
+              url.scheme == "https" || (url.scheme == "http" && host == "localhost") else { return backendBaseURL }
+        return value.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+    }
+
     /// MetricKit payloads stay on-device unless deliberately enabled/disclosed.
     static let diagnosticsEnabled = false
     static let appStoreURL = URL(string: "https://apps.apple.com/app/id6761319389")!
