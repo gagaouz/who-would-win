@@ -90,7 +90,7 @@ struct WhoWouldWinApp: App {
     @ViewBuilder
     private var rootContent: some View {
         #if DEBUG
-        if let screen = AppConfig.fixtureScreen, ["custom-fighters-ready", "custom-fighters-unavailable", "custom-fighters-resume"].contains(screen) {
+        if let screen = AppConfig.fixtureScreen, ["custom-fighters-ready", "custom-fighters-unavailable", "custom-fighters-resume", "custom-fighters-uncertain"].contains(screen) {
             MyFightersView()
         } else if AppConfig.fixtureScreen == "melee" {
             MeleeBattleView(teamA: [Animals.lion, Animals.gorilla, Animals.wolf, Animals.tiger],

@@ -35,6 +35,8 @@ Network sessions can expire without deleting installed artwork. Explicit sign-ou
 
 States are `queued`, `generating`, `validating`, `ready`, `rejected`, `failed`, `reconciling`, and `cancelled`. Worker leases and durable dispatch markers distinguish safe pre-dispatch recovery from uncertain paid work. Failures cannot silently publish an incomplete fighter or trigger an unbounded repair loop.
 
+For the customer workflow, `reconciling` is terminal: the creation credit is returned, the request never retries automatically, a new creation requires fresh grown-up consent, and the application budget reservation remains retained.
+
 ## Beta cost policy
 
 The default application ledger is a **$5 lifetime beta budget**, with **$1 reserved per generation attempt** before paid dispatch. It does not reset when a worker restarts or when a calendar/Sandbox subscription period changes. Provider usage estimates are recorded separately and dispatched reservations remain conservative; an operator must deliberately review any budget increase or uncertain charge.

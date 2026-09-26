@@ -28,13 +28,13 @@ struct CustomFighterJob: Codable, Identifiable, Equatable {
     let createdAt: Date
     let updatedAt: Date
 
-    var isActive: Bool { ["queued", "generating", "validating", "reconciling"].contains(state) }
+    var isActive: Bool { ["queued", "generating", "validating"].contains(state) }
     var label: String {
         switch state {
         case "queued": return "Waiting to start"
         case "generating": return "Drawing your fighter"
         case "validating": return "Checking the artwork"
-        case "reconciling": return "Checking your request — no need to create again"
+        case "reconciling": return "Artwork could not be confirmed"
         case "ready": return "Artwork ready"
         case "rejected": return "Artwork could not be approved"
         case "cancelled": return "Request cancelled"
@@ -63,10 +63,10 @@ struct CustomFighterRequestFailure: Error, LocalizedError {
         case "feature_disabled", "provider_unavailable", "budget_exhausted": return "New artwork is temporarily unavailable. Your saved fighters still work. Try again later."
         case "quota_exhausted": return "This month's artwork allowance is used. Saved fighters are still ready to play."
         case "job_active": return "Another artwork request is in progress. Open its progress below."
-        case "name_not_allowed", "content_rejected": return "Try a different, family-friendly creature name. Avoid real people or personal information."
+        case "name_not_allowed", "content_rejected": return "Try a different, family-friendly creature name. Do not include personal information."
         case "quality_rejected": return "The artwork did not pass its checks. This request did not use an artwork credit."
         case "name_length": return "Use a creature name with 1 to 24 characters."
-        case "provider_uncertain": return "The server is checking this request. Resume it instead of starting another."
+        case "provider_uncertain": return "The artwork could not be confirmed. Your artwork credit was returned. This request will not retry. A new creation needs a new grown-up confirmation."
         case "idempotency_conflict": return "This saved request does not match the server. Refresh your library before creating again."
         case "local_storage": return "The artwork could not be updated on this device. Please free some space or try again."
         case "invalid_artwork": return "The downloaded artwork could not be verified. Your existing fighters are unchanged."
@@ -384,10 +384,13 @@ final class CustomFighterService: ObservableObject {
                     if response.job.state == "ready", let fighter = response.fighter { await self.download(fighter) }
                     if !response.job.isActive {
                         if self.pending?.jobID == response.job.id { self.clearPending() }
-                        if let code = response.job.errorCode { self.message = CustomFighterRequestFailure(code: code).localizedDescription }
                         await self.refresh()
+                        if !Task.isCancelled, self.ownerID == owner, let code = response.job.errorCode {
+                            self.message = CustomFighterRequestFailure(code: code).localizedDescription
+                        }
+                        continue
                     }
-                    try await Task.sleep(nanoseconds: response.job.state == "reconciling" ? 10_000_000_000 : 3_000_000_000)
+                    try await Task.sleep(nanoseconds: 3_000_000_000)
                 } catch {
                     if !Task.isCancelled, self.ownerID == owner { self.message = self.userMessage(error) }
                     return

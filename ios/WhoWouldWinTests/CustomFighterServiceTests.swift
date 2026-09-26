@@ -32,11 +32,20 @@ final class CustomFighterServiceTests: XCTestCase {
         XCTAssertThrowsError(try CustomFighterService.validatedName("  "))
     }
 
-    func testReconcilingJobRemainsActiveWhileRejectedDoesNot() throws {
+    func testReconcilingJobIsTerminalWhileActualWorkerStatesRemainActive() throws {
         let base = #"{"id":"e8a8c86c-9dc9-444b-9a90-fa57814ab3a7","name":"Moon Dragon","state":"reconciling","createdAt":"2026-09-26T20:00:00.123Z","updatedAt":"2026-09-26T20:00:02Z"}"#
         let job = try CustomFighterService.decoder().decode(CustomFighterJob.self, from: Data(base.utf8))
-        XCTAssertTrue(job.isActive)
+        XCTAssertFalse(job.isActive)
+        XCTAssertEqual(job.label, "Artwork could not be confirmed")
         XCTAssertEqual(job.name, "Moon Dragon")
+        for state in ["queued", "generating", "validating"] {
+            let active = base.replacingOccurrences(of: "reconciling", with: state)
+            XCTAssertTrue(try CustomFighterService.decoder().decode(CustomFighterJob.self, from: Data(active.utf8)).isActive)
+        }
+        let uncertainMessage = CustomFighterRequestFailure(code: "provider_uncertain").localizedDescription
+        XCTAssertTrue(uncertainMessage.contains("credit was returned"))
+        XCTAssertTrue(uncertainMessage.contains("will not retry"))
+        XCTAssertTrue(uncertainMessage.contains("new grown-up confirmation"))
         let rejected = base.replacingOccurrences(of: "reconciling", with: "rejected")
         XCTAssertFalse(try CustomFighterService.decoder().decode(CustomFighterJob.self, from: Data(rejected.utf8)).isActive)
         XCTAssertThrowsError(try CustomFighterService.decoder().decode(CustomFighterJob.self, from: Data(base.replacingOccurrences(of: "2026-09-26T20:00:02Z", with: "invalid-date").utf8)))

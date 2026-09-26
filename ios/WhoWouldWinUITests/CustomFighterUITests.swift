@@ -84,6 +84,25 @@ final class CustomFighterUITests: XCTestCase {
         capture("my_fighters_resumed_existing_job")
     }
 
+    func testUncertainTerminalJobReturnsCreditAndOnlyExplicitConsentCreatesAgain() {
+        launch("custom-fighters-uncertain")
+        let explanation = app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "Your artwork credit was returned.")).firstMatch
+        XCTAssertTrue(explanation.waitForExistence(timeout: 10))
+        XCTAssertTrue(explanation.label.contains("This request will not retry."))
+        XCTAssertTrue(app.staticTexts["Artwork could not be confirmed"].exists)
+        XCTAssertTrue(app.staticTexts["3 of 3 artwork credits available this month"].exists)
+        typeName(); assertRequestCount(0)
+        let create = app.buttons["myFighters.create"]
+        reveal(create); XCTAssertTrue(create.isEnabled, "A terminal uncertain job must not block a fresh explicit request")
+        create.tap(); passParentGate()
+        let confirm = app.buttons["Create artwork — use 1 credit"]
+        XCTAssertTrue(confirm.waitForExistence(timeout: 10)); confirm.tap()
+        let preview = app.buttons["myFighters.preview.\(savedID)"]
+        XCTAssertTrue(preview.waitForExistence(timeout: 15))
+        assertRequestCount(1)
+        reveal(preview); capture("my_fighters_new_request_after_uncertain_result")
+    }
+
     func testUnavailableServiceCannotGenerate() {
         launch("custom-fighters-unavailable")
         typeName(); assertRequestCount(0)

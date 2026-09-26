@@ -6,7 +6,7 @@ import CryptoKit
 /// minted, and its session never enters Keychain or a Release binary.
 @MainActor
 final class CustomFighterUITestBackend {
-    static let screens = ["custom-fighters-ready", "custom-fighters-unavailable", "custom-fighters-saved", "custom-fighters-resume"]
+    static let screens = ["custom-fighters-ready", "custom-fighters-unavailable", "custom-fighters-saved", "custom-fighters-resume", "custom-fighters-uncertain"]
     let ownerID = "3f3d830a-431a-4a4b-9ba7-57f7cce18b92"
     let remote: RemoteCustomFighter
     let png: Data
@@ -15,11 +15,13 @@ final class CustomFighterUITestBackend {
     private var recordedKey: String?
     private var createdName = "Test Moon Lion"
     private let jobID = "2baf2178-89ca-4ec8-a112-3439bd657b6d"
+    private let uncertainJobID = "29bece1a-4965-427b-8f2b-d021e73b9db5"
 
     var savedPendingRequest: CustomFighterPendingRequest? {
-        guard screen == "custom-fighters-resume" else { return nil }
+        guard ["custom-fighters-resume", "custom-fighters-uncertain"].contains(screen) else { return nil }
         return CustomFighterPendingRequest(ownerID: ownerID, name: createdName,
-            idempotencyKey: "6cf3ae22-4889-43da-9d8a-09682bf4a9f8", jobID: jobID)
+            idempotencyKey: "6cf3ae22-4889-43da-9d8a-09682bf4a9f8",
+            jobID: screen == "custom-fighters-uncertain" ? uncertainJobID : jobID)
     }
 
     init(screen: String) throws {
@@ -51,7 +53,7 @@ final class CustomFighterUITestBackend {
     func respond(suffix: String, method: String, body: [String: String]?) throws -> Data {
         precondition(AppConfig.isUITesting && AppConfig.isIsolatedTestBuild)
         let enabled = screen != "custom-fighters-unavailable"
-        let eligible = screen == "custom-fighters-ready"
+        let eligible = ["custom-fighters-ready", "custom-fighters-uncertain"].contains(screen)
         let allowance: [String: Any] = ["limit": 3, "used": createCount, "reserved": 0,
                                        "remaining": eligible ? max(0, 3-createCount) : 0, "periodKey": "TEST-ONLY"]
         if suffix == "/status" {
@@ -62,14 +64,22 @@ final class CustomFighterUITestBackend {
             guard enabled else { throw CustomFighterRequestFailure(code: "feature_disabled") }
             guard eligible else { throw CustomFighterRequestFailure(code: "subscription_required") }
             guard body?["consentVersion"] == "custom-art-v1", let key = body?["idempotencyKey"], UUID(uuidString: key) != nil else { throw CustomFighterRequestFailure(code: "name_not_allowed") }
+            if screen == "custom-fighters-uncertain", key == savedPendingRequest?.idempotencyKey {
+                // Backend deduplication cannot retry a terminal uncertain job.
+                return try encoded(["job": uncertainJob(), "allowance": allowance])
+            }
             if recordedKey == nil { recordedKey = key; createdName = body?["name"] ?? "Test Moon Lion"; createCount += 1 }
             else if recordedKey != key { throw CustomFighterRequestFailure(code: "quota_exhausted") }
             return try encoded(["job": job(), "fighter": fighter(), "allowance": ["limit": 3, "used": 1, "reserved": 0, "remaining": 2, "periodKey": "TEST-ONLY"]])
         }
         if suffix == "", method == "GET" {
+            var jobs = createCount > 0 ? [job()] : []
+            if screen == "custom-fighters-uncertain" { jobs.append(uncertainJob()) }
             return try encoded(["fighters": screen == "custom-fighters-saved" || createCount > 0 ? [fighter()] : [],
-                                "jobs": createCount > 0 ? [job()] : [], "removedAssetIDs": [], "libraryEpoch": 1])
+                                "jobs": jobs, "removedAssetIDs": [], "libraryEpoch": 1])
         }
+        if suffix == "/\(uncertainJobID)" { throw CustomFighterRequestFailure(code: "not_found") }
+        if suffix == "/jobs/\(uncertainJobID)" { return try encoded(["job": uncertainJob()]) }
         if suffix == "/\(remote.id)/sheet" { return png }
         if suffix == "/jobs/\(jobID)" { return try encoded(["job": job(), "fighter": fighter()]) }
         if method == "DELETE" || suffix.hasSuffix("/report") { return Data() }
@@ -85,6 +95,10 @@ final class CustomFighterUITestBackend {
     private func job() -> [String: Any] {
         ["id": jobID, "name": createdName, "state": "ready", "assetId": remote.id,
          "createdAt": "2023-11-14T22:13:20.000Z", "updatedAt": "2023-11-14T22:13:20.000Z"]
+    }
+    private func uncertainJob() -> [String: Any] {
+        ["id": uncertainJobID, "name": "Earlier Moon Lion", "state": "reconciling", "errorCode": "provider_uncertain",
+         "createdAt": "2023-11-14T22:12:20.000Z", "updatedAt": "2023-11-14T22:12:50.000Z"]
     }
     private func encoded(_ value: [String: Any]) throws -> Data { try JSONSerialization.data(withJSONObject: value) }
 }
