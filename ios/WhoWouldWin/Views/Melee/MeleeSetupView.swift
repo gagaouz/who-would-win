@@ -60,8 +60,8 @@ struct MeleeSetupView: View {
                 Text("←")
                     .font(Kids.fredoka(isIPad ? 26 : 20, weight: .bold))
                     .foregroundColor(Kids.ink)
-                    .frame(width: isIPad ? 50 : 38, height: isIPad ? 50 : 38)
-                    .background(Circle().fill(.white).overlay(Circle().stroke(Kids.ink, lineWidth: 2.5)))
+                    .frame(width: isIPad ? 50 : 44, height: isIPad ? 50 : 44)
+                    .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5)))
             }
             .buttonStyle(.plain)
             Spacer()
@@ -110,8 +110,8 @@ struct MeleeSetupView: View {
         .padding(.horizontal, isIPad ? 10 : 8)
         .padding(.vertical, isIPad ? 6 : 4)
         .background(
-            Capsule().fill(color.opacity(0.35))
-                .overlay(Capsule().stroke(Kids.ink, lineWidth: 2))
+            RetroPanelShape().fill(color.opacity(0.35))
+                .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
         )
     }
 
@@ -122,8 +122,8 @@ struct MeleeSetupView: View {
                 .foregroundColor(Kids.ink)
                 .frame(width: isIPad ? 34 : 28, height: isIPad ? 34 : 28)
                 .background(
-                    Circle().fill(.white)
-                        .overlay(Circle().stroke(Kids.ink, lineWidth: 2))
+                    RetroPanelShape().fill(.white)
+                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
                 )
         }
         .buttonStyle(.plain)
@@ -181,7 +181,7 @@ struct MeleeSetupView: View {
                     .font(Kids.fredoka(isIPad ? 16 : 13, weight: .bold))
                     .foregroundColor(Kids.ink)
                     .padding(.horizontal, 10).padding(.vertical, 3)
-                    .background(Capsule().fill(tint).overlay(Capsule().stroke(Kids.ink, lineWidth: 2)))
+                    .background(RetroPanelShape().fill(tint).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
                 Spacer()
                 Text("\(roster.count) / \(size)")
                     .font(Kids.fredoka(isIPad ? 14 : 11, weight: .bold))
@@ -199,7 +199,7 @@ struct MeleeSetupView: View {
                         ForEach(roster) { animal in
                             Button { remove(animal, from: team) } label: {
                                 HStack(spacing: isIPad ? 6 : 4) {
-                                    Text(animal.emoji).font(.system(size: isIPad ? 18 : 14))
+                                    RetroCreatureArtwork(animal: animal, size: isIPad ? 28 : 24)
                                     Text(animal.name)
                                         .font(Kids.fredoka(isIPad ? 13 : 10, weight: .bold))
                                         .foregroundColor(Kids.ink)
@@ -210,8 +210,8 @@ struct MeleeSetupView: View {
                                 .padding(.vertical, isIPad ? 6 : 4)
                                 .padding(.horizontal, isIPad ? 10 : 8)
                                 .background(
-                                    Capsule().fill(tint)
-                                        .overlay(Capsule().stroke(Kids.ink, lineWidth: 1.5))
+                                    RetroPanelShape().fill(tint)
+                                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5))
                                 )
                             }
                             .buttonStyle(.plain)
@@ -223,11 +223,11 @@ struct MeleeSetupView: View {
         .padding(isIPad ? 12 : 10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+            RetroPanelShape(cornerRadius: 16, style: .continuous)
                 .fill(.white)
-                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
         )
-        .shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 2)
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 2)
     }
 
     // MARK: - Active-team toggle
@@ -256,9 +256,9 @@ struct MeleeSetupView: View {
                 .foregroundColor(Kids.ink)
                 .padding(.horizontal, isIPad ? 14 : 10).padding(.vertical, isIPad ? 8 : 5)
                 .background(
-                    Capsule().fill(selected ? tint : .white)
-                        .overlay(selected ? Capsule().fill(Kids.sheen) : nil)
-                        .overlay(Capsule().stroke(Kids.ink, lineWidth: 2))
+                    RetroPanelShape().fill(selected ? tint : .white)
+                        .overlay(selected ? RetroPanelShape().fill(Kids.sheen) : nil)
+                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
                 )
                 .offset(y: selected ? -1 : 0)
         }
@@ -278,16 +278,16 @@ struct MeleeSetupView: View {
                         }
                     } label: {
                         HStack(spacing: isIPad ? 6 : 4) {
-                            Text(categoryEmoji(cat)).font(.system(size: isIPad ? 18 : 14))
+                            RetroSymbol(categoryEmoji(cat), size: isIPad ? 19 : 16).font(.system(size: isIPad ? 18 : 14))
                             Text(categoryLabel(cat))
                                 .font(Kids.fredoka(isIPad ? 15 : 12, weight: .bold))
                                 .foregroundColor(Kids.ink)
                         }
                         .padding(.horizontal, isIPad ? 14 : 10).padding(.vertical, isIPad ? 9 : 6)
                         .background(
-                            Capsule().fill(selectedCategory == cat ? categoryColor(cat) : .white)
-                                .overlay(selectedCategory == cat ? Capsule().fill(Kids.sheen) : nil)
-                                .overlay(Capsule().stroke(Kids.ink, lineWidth: 2))
+                            RetroPanelShape().fill(selectedCategory == cat ? categoryColor(cat) : .white)
+                                .overlay(selectedCategory == cat ? RetroPanelShape().fill(Kids.sheen) : nil)
+                                .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
                         )
                         .offset(y: selectedCategory == cat ? -1 : 0)
                     }
@@ -446,8 +446,8 @@ struct MeleeSetupView: View {
         case .sea: return Kids.sky
         case .air: return Kids.grape
         case .insect: return Kids.peach
-        case .pets: return Color(hex: "#F4B6C2")
-        case .farm: return Color(hex: "#E8B96E")
+        case .pets: return Kids.peach
+        case .farm: return Kids.grass
         case .prehistoric: return Kids.sun
         case .fantasy: return Kids.grape
         case .mythic: return Kids.sunDeep
@@ -459,6 +459,7 @@ struct MeleeSetupView: View {
 // MARK: - Pick card (team-aware)
 
 private struct MeleePickCard: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let animal: Animal
     let inActive: Bool
     let inOther: Bool
@@ -467,27 +468,17 @@ private struct MeleePickCard: View {
     let isIPad: Bool
     let onTap: () -> Void
 
-    private var bundledImage: UIImage? {
-        guard let name = animal.creatureAssetName else { return nil }
-        return UIImage(named: name)
-    }
-
     var body: some View {
         Button(action: onTap) {
             ZStack(alignment: .topTrailing) {
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                RetroPanelShape(cornerRadius: 18, style: .continuous)
                     .fill(inActive ? activeTint : .white)
-                    .overlay(inActive ? RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Kids.sheen) : nil)
-                    .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                    .overlay(inActive ? RetroPanelShape(cornerRadius: 18, style: .continuous).fill(Kids.sheen) : nil)
+                    .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
                     .aspectRatio(1, contentMode: .fit)
 
                 VStack(spacing: isIPad ? 4 : 2) {
-                    if let ui = bundledImage {
-                        Image(uiImage: ui).resizable().scaledToFit()
-                            .frame(width: isIPad ? 72 : 50, height: isIPad ? 72 : 50)
-                    } else {
-                        Text(animal.emoji).font(.system(size: isIPad ? 50 : 34))
-                    }
+                    RetroCreatureArtwork(animal: animal, size: isIPad ? 72 : 50)
                     Text(animal.name)
                         .font(Kids.fredoka(isIPad ? 14 : 10, weight: .bold))
                         .foregroundColor(Kids.ink)
@@ -497,25 +488,25 @@ private struct MeleePickCard: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                 if inActive {
-                    Circle().fill(Kids.grass)
-                        .overlay(Circle().stroke(Kids.ink, lineWidth: 2))
+                    RetroPanelShape().fill(Kids.grass)
+                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
                         .frame(width: isIPad ? 30 : 22, height: isIPad ? 30 : 22)
                         .overlay(Text("✓").font(Kids.fredoka(isIPad ? 16 : 12, weight: .bold)).foregroundColor(Kids.ink))
                         .offset(x: isIPad ? 6 : 4, y: isIPad ? -8 : -6)
                 } else if inOther {
                     // Indicate fighter is on the other team
-                    Circle().fill(Kids.pink)
-                        .overlay(Circle().stroke(Kids.ink, lineWidth: 2))
+                    RetroPanelShape().fill(Kids.pink)
+                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
                         .frame(width: isIPad ? 30 : 22, height: isIPad ? 30 : 22)
                         .overlay(Text("✕").font(Kids.fredoka(isIPad ? 14 : 11, weight: .bold)).foregroundColor(Kids.ink))
                         .offset(x: isIPad ? 6 : 4, y: isIPad ? -8 : -6)
                 }
             }
-            .rotationEffect(.degrees(inActive ? -1.5 : 0))
+
             .offset(y: inActive ? -2 : 0)
             .opacity(disabled || inOther ? 0.45 : 1.0)
-            .shadow(color: Kids.ink.opacity(inActive ? 0.16 : 0.08), radius: 0, x: 0, y: inActive ? 3 : 2)
-            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: inActive)
+            .compositingGroup().shadow(color: Kids.ink.opacity(inActive ? 0.16 : 0.08), radius: 0, x: 0, y: inActive ? 3 : 2)
+            .animation(reduceMotion ? nil : .easeOut(duration: 0.15), value: inActive)
         }
         .buttonStyle(.plain)
         .disabled(disabled || inOther)

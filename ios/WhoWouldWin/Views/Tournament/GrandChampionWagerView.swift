@@ -24,9 +24,7 @@ struct GrandChampionWagerView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Color(hex: "#FFE9BA"), Kids.sun.opacity(0.5), Kids.peach.opacity(0.6)],
-                           startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea()
+            SkyBG()
 
             ScrollView {
                 HStack(spacing: 0) {
@@ -71,7 +69,7 @@ struct GrandChampionWagerView: View {
     private var explainer: some View {
         VStack(spacing: isIPad ? 6 : 4) {
             HStack(spacing: isIPad ? 9 : 6) {
-                Text("🏆").font(.system(size: isIPad ? 22 : 16))
+                RetroSymbol("🏆", size: isIPad ? 22 : 16)
                 Text("High-risk, high-reward")
                     .font(Kids.fredoka(isIPad ? 17 : 13, weight: .bold))
                     .foregroundColor(Kids.ink)
@@ -84,11 +82,11 @@ struct GrandChampionWagerView: View {
         .padding(.vertical, isIPad ? 14 : 10).padding(.horizontal, isIPad ? 20 : 14)
         .frame(maxWidth: .infinity)
         .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
+            RetroPanelShape(cornerRadius: 14, style: .continuous)
                 .fill(Color.white)
-                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.sun, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.sun, lineWidth: 2.5))
         )
-        .shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 3)
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 3)
     }
 
     private var pickerGrid: some View {
@@ -134,7 +132,7 @@ struct GrandChampionWagerView: View {
             }
             .padding(isIPad ? 20 : 14)
             .background(card)
-            .shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+            .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
         } else if maxWager == minWager && minWager > 0 {
             VStack(spacing: isIPad ? 9 : 6) {
                 HStack {
@@ -156,7 +154,7 @@ struct GrandChampionWagerView: View {
             }
             .padding(isIPad ? 20 : 14)
             .background(card)
-            .shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+            .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
             .onAppear { amount = Double(minWager) }
         } else {
             VStack(spacing: isIPad ? 14 : 10) {
@@ -194,9 +192,9 @@ struct GrandChampionWagerView: View {
     }
 
     private var card: some View {
-        RoundedRectangle(cornerRadius: 16, style: .continuous)
+        RetroPanelShape(cornerRadius: 16, style: .continuous)
             .fill(Color.white)
-            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+            .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
     }
 }
 
@@ -208,29 +206,20 @@ private struct GrandPickCard: View {
     let isIPad: Bool
     let onTap: () -> Void
 
-    private var bundledImage: UIImage? {
-        guard let name = animal.creatureAssetName else { return nil }
-        return UIImage(named: name)
-    }
-
     var body: some View {
         Button(action: onTap) {
             ZStack(alignment: .topTrailing) {
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                RetroPanelShape(cornerRadius: 16, style: .continuous)
                     .fill(selected ? Kids.sun : Color.white)
-                    .overlay(selected ? RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Kids.sheen) : nil)
+                    .overlay(selected ? RetroPanelShape(cornerRadius: 16, style: .continuous).fill(Kids.sheen) : nil)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        RetroPanelShape(cornerRadius: 16, style: .continuous)
                             .stroke(Kids.ink, lineWidth: selected ? 3 : 2.5)
                     )
                     .aspectRatio(1, contentMode: .fit)
 
                 VStack(spacing: isIPad ? 4 : 2) {
-                    if let ui = bundledImage {
-                        Image(uiImage: ui).resizable().scaledToFit().frame(width: isIPad ? 68 : 50, height: isIPad ? 68 : 50)
-                    } else {
-                        CreatureGlyph(animal: animal, size: isIPad ? 46 : 34)
-                    }
+                    RetroCreatureArtwork(animal: animal, size: isIPad ? 68 : 50)
                     Text(animal.name)
                         .font(Kids.fredoka(isIPad ? 13 : 10, weight: .bold))
                         .foregroundColor(Kids.ink)
@@ -240,15 +229,15 @@ private struct GrandPickCard: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                 if selected {
-                    Circle().fill(Kids.grass)
-                        .overlay(Circle().stroke(Kids.ink, lineWidth: 2))
+                    RetroPanelShape().fill(Kids.grass)
+                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
                         .frame(width: isIPad ? 32 : 24, height: isIPad ? 32 : 24)
                         .overlay(Text("✓").font(Kids.fredoka(isIPad ? 17 : 13, weight: .bold)).foregroundColor(Kids.ink))
                         .offset(x: 4, y: -6)
                 }
             }
-            .rotationEffect(.degrees(selected ? -2 : 0))
-            .shadow(color: Kids.ink.opacity(selected ? 0.18 : 0.08), radius: 0, x: 0, y: selected ? 3 : 2)
+
+            .compositingGroup().shadow(color: Kids.ink.opacity(selected ? 0.18 : 0.08), radius: 0, x: 0, y: selected ? 3 : 2)
             .animation(.spring(response: 0.3, dampingFraction: 0.6), value: selected)
         }
         .buttonStyle(.plain)

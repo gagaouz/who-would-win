@@ -15,8 +15,7 @@ struct KidsShareCard: View {
     let result: BattleResult
     var environment: BattleEnvironment = .grassland
     var arenaEffectsEnabled: Bool = false
-    // Pre-resolved UIImages for custom creatures. ImageRenderer is synchronous
-    // so AsyncImage doesn't have time to load — we hand the bytes in directly.
+    // Kept for source compatibility; rendering reads the prepared retro art cache.
     var fighter1Image: UIImage? = nil
     var fighter2Image: UIImage? = nil
 
@@ -36,10 +35,7 @@ struct KidsShareCard: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            // Pastel gradient background (matches result screen)
-            LinearGradient(colors: [Color(hex: "#FFE6B8"), Kids.pink, Kids.grape],
-                           startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea()
+            Kids.cream.ignoresSafeArea()
 
             // Confetti sprinkles for delight
             confetti
@@ -47,15 +43,15 @@ struct KidsShareCard: View {
             VStack(spacing: 0) {
                 // Branding
                 HStack(spacing: 5) {
-                    Text("🦁").font(.system(size: 12))
+                    Image(systemName: "sparkle").foregroundColor(Kids.sun)
                     Text("ANIMAL VS ANIMAL")
                         .font(Kids.fredoka(11, weight: .bold))
                         .tracking(2.5)
                         .foregroundColor(.white)
-                    Text("🐯").font(.system(size: 12))
+                    Image(systemName: "sparkle").foregroundColor(Kids.sun)
                 }
                 .padding(.horizontal, 14).padding(.vertical, 6)
-                .background(Capsule().fill(Kids.ink).overlay(Capsule().stroke(.white, lineWidth: 2)))
+                .background(RetroPanelShape().fill(Kids.ink).overlay(RetroPanelShape().stroke(.white, lineWidth: 2)))
                 .padding(.top, 24)
 
                 Text("who would win?")
@@ -100,7 +96,7 @@ struct KidsShareCard: View {
                 // Arena badge
                 if arenaEffectsEnabled {
                     HStack(spacing: 5) {
-                        Text(environment.emoji).font(.system(size: 13))
+                        RetroSymbol(environment.emoji, size: 13)
                         Text("\(environment.name.uppercased()) ARENA")
                             .font(Kids.fredoka(10, weight: .bold))
                             .foregroundColor(Kids.ink)
@@ -108,8 +104,8 @@ struct KidsShareCard: View {
                     }
                     .padding(.horizontal, 12).padding(.vertical, 5)
                     .background(
-                        Capsule().fill(.white)
-                            .overlay(Capsule().stroke(Kids.ink, lineWidth: 2))
+                        RetroPanelShape().fill(.white)
+                            .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
                     )
                     .padding(.bottom, 10)
                 }
@@ -134,49 +130,26 @@ struct KidsShareCard: View {
         return VStack(spacing: 6) {
             // Result badge above
             if isWinner {
-                Text("👑 WINNER")
+                Text("WINNER")
                     .font(Kids.fredoka(9, weight: .bold))
                     .foregroundColor(Kids.ink)
                     .tracking(1)
                     .padding(.horizontal, 8).padding(.vertical, 3)
-                    .background(Capsule().fill(Kids.sun).overlay(Capsule().stroke(Kids.ink, lineWidth: 1.5)))
+                    .background(RetroPanelShape().fill(Kids.sun).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5)))
             } else if isLoser {
                 Text("DEFEATED")
                     .font(Kids.fredoka(9, weight: .bold))
                     .foregroundColor(Kids.ink.opacity(0.7))
                     .tracking(1)
                     .padding(.horizontal, 8).padding(.vertical, 3)
-                    .background(Capsule().fill(Color.white.opacity(0.7)).overlay(Capsule().stroke(Kids.ink.opacity(0.4), lineWidth: 1.5)))
+                    .background(RetroPanelShape().fill(Color.white.opacity(0.7)).overlay(RetroPanelShape().stroke(Kids.ink.opacity(0.4), lineWidth: 1.5)))
             } else {
                 Color.clear.frame(height: 20)
             }
 
-            // Avatar with chunky outline
-            ZStack {
-                Circle()
-                    .fill(accent)
-                    .frame(width: 112, height: 112)
-                Circle()
-                    .fill(.white)
-                    .frame(width: 100, height: 100)
-                Circle()
-                    .stroke(Kids.ink, lineWidth: 4)
-                    .frame(width: 112, height: 112)
-                Group {
-                    if let assetName = animal.creatureAssetName, let img = UIImage(named: assetName) {
-                        Image(uiImage: img).resizable().scaledToFill()
-                    } else if animal.isCustom, let img = customImage {
-                        // Pre-resolved custom-creature photo passed in by the caller
-                        Image(uiImage: img).resizable().scaledToFill()
-                    } else {
-                        Text(animal.emoji).font(.system(size: 64))
-                    }
-                }
-                .frame(width: 90, height: 90)
-                .clipShape(Circle())
-            }
+            AnimalBubble(animal: animal, size: 112, tint: accent)
             .opacity(isLoser ? 0.6 : 1.0)
-            .shadow(color: Kids.ink.opacity(0.11), radius: 0, x: 0, y: 5)
+            .compositingGroup().shadow(color: Kids.ink.opacity(0.11), radius: 0, x: 0, y: 5)
 
             Text(animal.name.uppercased())
                 .font(Kids.fredoka(13, weight: .bold))
@@ -186,8 +159,8 @@ struct KidsShareCard: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 8).padding(.vertical, 3)
                 .background(
-                    Capsule().fill(accent)
-                        .overlay(Capsule().stroke(Kids.ink, lineWidth: 2))
+                    RetroPanelShape().fill(accent)
+                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
                 )
                 .opacity(isLoser ? 0.7 : 1.0)
         }
@@ -195,26 +168,26 @@ struct KidsShareCard: View {
         .padding(.vertical, 12)
         .padding(.horizontal, 4)
         .background(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
+            RetroPanelShape(cornerRadius: 22, style: .continuous)
                 .fill(Color.white.opacity(isWinner ? 0.85 : 0.55))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    RetroPanelShape(cornerRadius: 22, style: .continuous)
                         .stroke(Kids.ink, lineWidth: isWinner ? 3 : 2)
                 )
         )
-        .shadow(color: Kids.ink.opacity(isWinner ? 0.18 : 0.1), radius: 0, x: 0, y: 4)
+        .compositingGroup().shadow(color: Kids.ink.opacity(isWinner ? 0.18 : 0.1), radius: 0, x: 0, y: 4)
     }
 
     // MARK: - Banners
 
     private var winnerBanner: some View {
         VStack(spacing: 4) {
-            Text("🏆  CHAMPION")
+            Text("CHAMPION")
                 .font(Kids.fredoka(11, weight: .bold))
                 .foregroundColor(.white)
                 .tracking(3)
                 .padding(.horizontal, 12).padding(.vertical, 4)
-                .background(Capsule().fill(Kids.ink))
+                .background(RetroPanelShape().fill(Kids.ink))
 
             // Custom-creature names can be long; the card is fixed-width and
             // renders synchronously, so clamp rather than let the sticker
@@ -230,7 +203,7 @@ struct KidsShareCard: View {
 
     private var drawBanner: some View {
         VStack(spacing: 6) {
-            Text("🤝").font(.system(size: 44))
+            RetroSymbol("🤝", size: 44)
             StickerWord(text: "IT'S A TIE!", fill: Kids.sky, fontSize: 28, tilt: -2)
                 .rotationEffect(.degrees(-2))
         }
@@ -254,11 +227,10 @@ struct KidsShareCard: View {
                 .lineLimit(1).minimumScaleFactor(0.6)
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    Capsule().fill(Color.white.opacity(0.5))
-                        .overlay(Capsule().stroke(Kids.ink.opacity(0.25), lineWidth: 1))
-                    Capsule()
-                        .fill(LinearGradient(colors: [accent.opacity(0.85), accent],
-                                             startPoint: .leading, endPoint: .trailing))
+                    RetroPanelShape().fill(Color.white.opacity(0.5))
+                        .overlay(RetroPanelShape().stroke(Kids.ink.opacity(0.25), lineWidth: 1))
+                    RetroPanelShape()
+                        .fill(accent)
                         .frame(width: max(2, geo.size.width * CGFloat(pct) / 100))
                 }
             }
@@ -278,7 +250,7 @@ struct KidsShareCard: View {
                 .font(Kids.fredoka(9, weight: .bold))
                 .foregroundColor(Kids.ink)
                 .padding(.horizontal, 8).padding(.vertical, 3)
-                .background(Capsule().fill(Kids.pink).overlay(Capsule().stroke(Kids.ink, lineWidth: 1.5)))
+                .background(RetroPanelShape().fill(Kids.pink).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5)))
             Text("\u{201C}\(excerpt)\u{201D}")
                 .font(Kids.nunito(11, weight: .bold))
                 .foregroundColor(Kids.ink)
@@ -289,9 +261,9 @@ struct KidsShareCard: View {
         .padding(.horizontal, 12).padding(.vertical, 10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
+            RetroPanelShape(cornerRadius: 14, style: .continuous)
                 .fill(Color.white)
-                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
         )
     }
 
@@ -301,7 +273,7 @@ struct KidsShareCard: View {
                 .font(Kids.fredoka(9, weight: .bold))
                 .foregroundColor(Kids.ink)
                 .padding(.horizontal, 8).padding(.vertical, 3)
-                .background(Capsule().fill(Kids.sun).overlay(Capsule().stroke(Kids.ink, lineWidth: 1.5)))
+                .background(RetroPanelShape().fill(Kids.sun).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5)))
             Text(result.funFact.withoutEmoji)
                 .font(Kids.nunito(11, weight: .bold))
                 .foregroundColor(Kids.ink)
@@ -312,9 +284,9 @@ struct KidsShareCard: View {
         .padding(.horizontal, 12).padding(.vertical, 10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
+            RetroPanelShape(cornerRadius: 14, style: .continuous)
                 .fill(Color.white)
-                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
         )
     }
 
@@ -328,11 +300,11 @@ struct KidsShareCard: View {
                     .resizable()
                     .frame(width: 52, height: 52)
                     .padding(5)
-                    .background(RoundedRectangle(cornerRadius: 10).fill(.white))
-                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Kids.ink, lineWidth: 2))
+                    .background(RetroPanelShape(cornerRadius: 10).fill(.white))
+                    .overlay(RetroPanelShape(cornerRadius: 10).stroke(Kids.ink, lineWidth: 2))
             }
             VStack(alignment: .leading, spacing: 4) {
-                Text("🦁 Animal vs Animal")
+                Text("Animal vs Animal")
                     .font(Kids.fredoka(13, weight: .bold))
                     .foregroundColor(Kids.ink)
                 HStack(spacing: 4) {
@@ -348,10 +320,10 @@ struct KidsShareCard: View {
         }
         .padding(.horizontal, 12).padding(.vertical, 10)
         .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
+            RetroPanelShape(cornerRadius: 14, style: .continuous)
                 .fill(Kids.sun)
-                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
-                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
+                .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
         )
     }
 
@@ -367,8 +339,7 @@ struct KidsShareCard: View {
         return ZStack {
             ForEach(0..<pieces.count, id: \.self) { i in
                 let p = pieces[i]
-                Text(p.0)
-                    .font(.system(size: p.4))
+                RetroSymbol(p.0, size: p.4)
                     .rotationEffect(.degrees(p.3))
                     .position(x: p.1, y: p.2)
                     .opacity(0.85)
@@ -411,21 +382,17 @@ struct KidsShareCard: View {
         return renderer.uiImage
     }
 
-    /// Convenience: pre-fetches custom-creature UIImages from the cache and
-    /// then renders the share card synchronously. Use this from any UI flow.
+    /// Prepare pixel artwork before the synchronous ImageRenderer pass.
     @MainActor
     static func renderWithCachedImages(fighter1: Animal, fighter2: Animal, result: BattleResult,
                                        environment: BattleEnvironment = .grassland,
                                        arenaEffectsEnabled: Bool = false) async -> UIImage? {
-        // `AnimalImageService.image(for:)` returns nil for built-ins and the
-        // cached UIImage for custom creatures (downloading only on miss).
-        async let img1 = AnimalImageService.shared.image(for: fighter1)
-        async let img2 = AnimalImageService.shared.image(for: fighter2)
-        let (i1, i2) = await (img1, img2)
+        await RetroAssetStore.shared.prepare([fighter1, fighter2])
         return render(
             fighter1: fighter1, fighter2: fighter2, result: result,
             environment: environment, arenaEffectsEnabled: arenaEffectsEnabled,
-            fighter1Image: i1, fighter2Image: i2
+            fighter1Image: RetroAssetStore.shared.image(for: fighter1),
+            fighter2Image: RetroAssetStore.shared.image(for: fighter2)
         )
     }
 }

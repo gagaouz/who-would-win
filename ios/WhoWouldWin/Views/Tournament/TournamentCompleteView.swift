@@ -16,7 +16,7 @@ struct TournamentCompleteView: View {
     @State private var showShareSheet = false
     @State private var shareImage: UIImage? = nil
     @State private var appeared = false
-    @State private var raySpin: Double = 0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @Environment(\.horizontalSizeClass) private var sizeClass
     private var isIPad: Bool { sizeClass == .regular }
@@ -27,17 +27,9 @@ struct TournamentCompleteView: View {
 
     var body: some View {
         ZStack {
-            RadialGradient(colors: [Kids.sun, Color(hex: "#FF8AC5"), Color(hex: "#4A2E7A")],
-                           center: .init(x: 0.5, y: 0.3),
-                           startRadius: 40, endRadius: 600)
-                .ignoresSafeArea()
+            SkyBG(variant: .sunset)
 
-            // Spinning rays behind the champion
-            ChampionRays(count: 16, color: .white.opacity(0.15))
-                .rotationEffect(.degrees(raySpin))
-                .ignoresSafeArea()
-
-            if confettiShowing {
+            if confettiShowing && !reduceMotion {
                 ConfettiView().ignoresSafeArea().allowsHitTesting(false)
             }
 
@@ -48,26 +40,26 @@ struct TournamentCompleteView: View {
                         Spacer().frame(height: isIPad ? 50 : 30)
 
                         // Tournament Champion banner
-                        Text("🏆 TOURNAMENT CHAMPION 🏆")
+                        Text("TOURNAMENT CHAMPION")
                             .font(Kids.fredoka(isIPad ? 16 : 12, weight: .bold))
                             .tracking(2)
                             .foregroundColor(Kids.sun)
                             .padding(.horizontal, isIPad ? 26 : 18).padding(.vertical, isIPad ? 10 : 7)
                             .background(
-                                Capsule().fill(Kids.ink)
-                                    .overlay(Capsule().stroke(Kids.sun, lineWidth: 3))
+                                RetroPanelShape().fill(Kids.ink)
+                                    .overlay(RetroPanelShape().stroke(Kids.sun, lineWidth: 3))
                             )
-                            .shadow(color: Kids.ink.opacity(0.21), radius: 0, x: 0, y: 5)
-                            .rotationEffect(.degrees(-2))
+                            .compositingGroup().shadow(color: Kids.ink.opacity(0.21), radius: 0, x: 0, y: 5)
+
                             .scaleEffect(appeared ? 1 : 0.4)
 
                         if let c = champion {
                             VStack(spacing: -2) {
                                 StickerWord(text: c.name.uppercased(), fill: Kids.sun, fontSize: isIPad ? 52 : 36, tilt: -3)
-                                    .rotationEffect(.degrees(appeared ? -3 : -20))
+
                                     .scaleEffect(appeared ? 1 : 0.3)
                                 StickerWord(text: "WINS IT ALL!", fill: Kids.pink, fontSize: isIPad ? 36 : 26, tilt: 2)
-                                    .rotationEffect(.degrees(appeared ? 2 : 18))
+
                                     .scaleEffect(appeared ? 1 : 0.3)
                             }
 
@@ -76,7 +68,7 @@ struct TournamentCompleteView: View {
                         } else {
                             Text("Final not decided")
                                 .font(Kids.fredoka(isIPad ? 18 : 14, weight: .bold))
-                                .foregroundColor(.white.opacity(0.85))
+                                .foregroundColor(Kids.inkSoft)
                         }
 
                         // Tournament summary card
@@ -87,7 +79,7 @@ struct TournamentCompleteView: View {
                         // Bracket diagram card
                         VStack(alignment: .leading, spacing: isIPad ? 14 : 10) {
                             HStack(spacing: isIPad ? 8 : 6) {
-                                Text("🌳").font(.system(size: isIPad ? 22 : 16))
+                                RetroSymbol("🌳", size: isIPad ? 22 : 16)
                                 Text("BRACKET")
                                     .font(Kids.fredoka(isIPad ? 17 : 13, weight: .bold))
                                     .tracking(1)
@@ -99,7 +91,7 @@ struct TournamentCompleteView: View {
                         }
                         .padding(isIPad ? 20 : 14)
                         .background(card)
-                        .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
+                        .compositingGroup().shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
                         .padding(.horizontal, isIPad ? 28 : 18)
                         .opacity(appeared ? 1 : 0)
 
@@ -159,8 +151,7 @@ struct TournamentCompleteView: View {
                 totalWon: grandChampionPayout + manager.netCoinDelta
             )
 
-            withAnimation(.spring(response: 0.6, dampingFraction: 0.55)) { appeared = true }
-            withAnimation(.linear(duration: 24).repeatForever(autoreverses: false)) { raySpin = 360 }
+            withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) { appeared = true }
             HapticsService.shared.success()
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
@@ -168,30 +159,32 @@ struct TournamentCompleteView: View {
             }
         }
         .sheet(isPresented: $showShareSheet) {
-            if let img = shareImage ?? renderShareImage() {
+            if let img = shareImage {
                 BattleShareSheet(
                     image: img,
                     caption: "🏆 \(champion?.name ?? "???") just won the tournament in Animal vs Animal!"
                 )
             } else {
-                Text("Preparing share…").padding()
+                ProgressView("Preparing share…")
+                    .padding()
+                    .task { await renderShareImage() }
             }
         }
     }
 
     @MainActor
-    private func renderShareImage() -> UIImage? {
-        let img = TournamentShareCard.render(tournament: tournament,
-                                             grandChampionPayout: grandChampionPayout,
-                                             netCoinDelta: manager.netCoinDelta)
-        shareImage = img
-        return img
+    private func renderShareImage() async {
+        shareImage = await TournamentShareCard.renderWithCachedImages(
+            tournament: tournament,
+            grandChampionPayout: grandChampionPayout,
+            netCoinDelta: manager.netCoinDelta
+        )
     }
 
     private var card: some View {
-        RoundedRectangle(cornerRadius: 20, style: .continuous)
+        RetroPanelShape(cornerRadius: 20, style: .continuous)
             .fill(.white)
-            .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+            .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
     }
 
     // MARK: - Summary card
@@ -199,7 +192,7 @@ struct TournamentCompleteView: View {
     private var summaryCard: some View {
         VStack(spacing: isIPad ? 14 : 10) {
             HStack(spacing: isIPad ? 8 : 6) {
-                Text("📊").font(.system(size: isIPad ? 22 : 16))
+                RetroSymbol("📊", size: isIPad ? 22 : 16)
                 Text("TOURNAMENT SUMMARY")
                     .font(Kids.fredoka(isIPad ? 17 : 13, weight: .bold))
                     .tracking(1)
@@ -230,7 +223,7 @@ struct TournamentCompleteView: View {
                     HStack(spacing: isIPad ? 7 : 5) {
                         Text(net >= 0 ? "+\(net)" : "\(net)")
                             .font(Kids.fredoka(isIPad ? 24 : 18, weight: .bold))
-                            .foregroundColor(net >= 0 ? Kids.grass : Kids.pink)
+                            .foregroundColor(net >= 0 ? Kids.grassDeep : Kids.pinkDeep)
                         KidsGoldCoin(size: isIPad ? 24 : 18)
                     }
                 }
@@ -238,7 +231,7 @@ struct TournamentCompleteView: View {
         }
         .padding(isIPad ? 20 : 14)
         .background(card)
-        .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
     }
 
     private func summaryRow(_ label: String, _ value: String) -> some View {
@@ -279,14 +272,14 @@ struct TournamentCompleteView: View {
                     HStack(spacing: isIPad ? 6 : 4) {
                         Text("+\(grandChampionPayout)")
                             .font(Kids.fredoka(isIPad ? 19 : 15, weight: .bold))
-                            .foregroundColor(Kids.grass)
+                            .foregroundColor(Kids.grassDeep)
                         KidsGoldCoin(size: isIPad ? 18 : 14)
                     }
                 } else {
                     HStack(spacing: isIPad ? 6 : 4) {
                         Text("-\(gc.amount)")
                             .font(Kids.fredoka(isIPad ? 18 : 14, weight: .bold))
-                            .foregroundColor(Kids.pink)
+                            .foregroundColor(Kids.pinkDeep)
                         KidsGoldCoin(size: isIPad ? 18 : 14)
                     }
                 }
@@ -300,49 +293,7 @@ struct TournamentCompleteView: View {
 private struct FighterPickerMini: View {
     let animal: Animal
     let isIPad: Bool
-    private var bundledImage: UIImage? {
-        guard let name = animal.creatureAssetName else { return nil }
-        return UIImage(named: name)
-    }
     var body: some View {
-        let outer: CGFloat = isIPad ? 38 : 28
-        let inner: CGFloat = isIPad ? 30 : 22
-        ZStack {
-            Circle().fill(.white)
-                .overlay(Circle().stroke(Kids.ink, lineWidth: 2))
-                .frame(width: outer, height: outer)
-            Group {
-                if let ui = bundledImage {
-                    Image(uiImage: ui).resizable().scaledToFill()
-                } else {
-                    CreatureGlyph(animal: animal, size: isIPad ? 22 : 16)
-                }
-            }
-            .frame(width: inner, height: inner)
-            .clipShape(Circle())
-        }
-    }
-}
-
-// MARK: - Sunburst rays
-
-private struct ChampionRays: View {
-    let count: Int
-    let color: Color
-    var body: some View {
-        GeometryReader { geo in
-            let c = CGPoint(x: geo.size.width/2, y: geo.size.height * 0.35)
-            let r = max(geo.size.width, geo.size.height) * 1.3
-            ZStack {
-                ForEach(0..<count, id: \.self) { i in
-                    Path { p in
-                        let a = Double(i) * (.pi * 2) / Double(count)
-                        p.move(to: c)
-                        p.addLine(to: CGPoint(x: c.x + cos(a) * r, y: c.y + sin(a) * r))
-                    }
-                    .stroke(color, lineWidth: 26)
-                }
-            }
-        }
+        AnimalBubble(animal: animal, size: isIPad ? 38 : 28, tint: Kids.sun)
     }
 }

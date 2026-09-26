@@ -39,9 +39,7 @@ struct KidsSettingsView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Color(hex: "#FFE9BA"), Color(hex: "#FFC8C2")],
-                           startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea()
+            SkyBG()
 
             ScrollView {
                 HStack(spacing: 0) {
@@ -110,7 +108,7 @@ struct KidsSettingsView: View {
     private var narrationLabRow: some View {
         Button { showNarrationLab = true } label: {
             HStack(spacing: 10) {
-                Text("🧪").font(.system(size: 22))
+                RetroSymbol("🧪", size: 22)
                 Text("Narration Lab (dev)")
                     .font(Kids.fredoka(isIPad ? 16 : 14, weight: .bold))
                     .foregroundColor(Kids.ink)
@@ -145,12 +143,12 @@ struct KidsSettingsView: View {
     private var profileCard: some View {
         HStack(spacing: isIPad ? 16 : 12) {
             ZStack {
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                RetroPanelShape(cornerRadius: 22, style: .continuous)
                     .fill(Kids.grape)
-                    .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Kids.sheen))
-                    .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                    .overlay(RetroPanelShape(cornerRadius: 22, style: .continuous).fill(Kids.sheen))
+                    .overlay(RetroPanelShape(cornerRadius: 22, style: .continuous).stroke(Kids.ink, lineWidth: 3))
                     .frame(width: isIPad ? 88 : 70, height: isIPad ? 88 : 70)
-                Text("🦊").font(.system(size: isIPad ? 50 : 40))
+                RetroSymbol("🦊", size: isIPad ? 50 : 40)
             }
             VStack(alignment: .leading, spacing: 4) {
                 Text("Battler")
@@ -167,7 +165,7 @@ struct KidsSettingsView: View {
         }
         .padding(isIPad ? 18 : 14)
         .background(KidsSettingsCard())
-        .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
     }
 
     // MARK: - Toggles (Light Mode removed — it was wired to nothing)
@@ -232,7 +230,7 @@ struct KidsSettingsView: View {
     private var gameCenterCard: some View {
         VStack(spacing: isIPad ? 12 : 10) {
             HStack(spacing: isIPad ? 12 : 10) {
-                Text("🏆").font(.system(size: isIPad ? 26 : 22))
+                RetroSymbol("🏆", size: isIPad ? 26 : 22)
                 Text("Game Center")
                     .font(Kids.fredoka(isIPad ? 19 : 16, weight: .bold))
                     .foregroundColor(Kids.ink)
@@ -242,7 +240,7 @@ struct KidsSettingsView: View {
                         .font(Kids.fredoka(isIPad ? 13 : 11, weight: .bold))
                         .foregroundColor(Kids.ink)
                         .padding(.horizontal, isIPad ? 10 : 8).padding(.vertical, isIPad ? 5 : 4)
-                        .background(Capsule().fill(Kids.sun).overlay(Capsule().stroke(Kids.ink, lineWidth: 2)))
+                        .background(RetroPanelShape().fill(Kids.sun).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
                 }
             }
             gcRow(emoji: "🏆", label: "Achievements", caption: "76 to unlock") {
@@ -260,13 +258,13 @@ struct KidsSettingsView: View {
         }
         .padding(isIPad ? 18 : 14)
         .background(KidsSettingsCard())
-        .shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
     }
 
     private func gcRow(emoji: String, label: String, caption: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: isIPad ? 14 : 12) {
-                Text(emoji).font(.system(size: isIPad ? 24 : 20))
+                RetroSymbol(emoji, size: isIPad ? 24 : 20)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(label).font(Kids.fredoka(isIPad ? 16 : 14, weight: .bold)).foregroundColor(Kids.ink)
                     Text(caption).font(Kids.nunito(isIPad ? 13 : 11, weight: .bold)).foregroundColor(Kids.inkSoft)
@@ -276,9 +274,9 @@ struct KidsSettingsView: View {
             }
             .padding(isIPad ? 14 : 10)
             .background(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(Color(hex: "#F7F2FF"))
-                    .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.ink.opacity(0.2), lineWidth: 1.5))
+                RetroPanelShape(cornerRadius: 14, style: .continuous)
+                    .fill(Kids.panel)
+                    .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink.opacity(0.2), lineWidth: 1.5))
             )
         }
         .buttonStyle(.plain)
@@ -324,9 +322,7 @@ struct KidsShopView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Color(hex: "#FFE9BA"), Color(hex: "#FFC8C2")],
-                           startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea()
+            SkyBG()
 
             ScrollView {
                 HStack(spacing: 0) {
@@ -516,7 +512,7 @@ struct KidsShopView: View {
         }
         .padding(isIPad ? 18 : 14)
         .background(KidsSettingsCard())
-        .shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
     }
 
     private func earnRow(amount: String, label: String, emphasize: Bool = false) -> some View {
@@ -547,12 +543,12 @@ struct KidsShopView: View {
             VStack(alignment: .leading, spacing: isIPad ? 12 : 10) {
                 HStack(spacing: isIPad ? 12 : 10) {
                     ZStack {
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        RetroPanelShape(cornerRadius: 14, style: .continuous)
                             .fill(Kids.sun)
-                            .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
-                            .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                            .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
+                            .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
                             .frame(width: isIPad ? 56 : 46, height: isIPad ? 56 : 46)
-                        Text("🎁").font(.system(size: isIPad ? 28 : 24))
+                        RetroSymbol("🎁", size: isIPad ? 28 : 24)
                     }
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Everything Bundle")
@@ -567,9 +563,9 @@ struct KidsShopView: View {
                     Text("BEST VALUE")
                         .font(Kids.fredoka(isIPad ? 11 : 9, weight: .bold))
                         .tracking(1)
-                        .foregroundColor(.white)
+                        .foregroundColor(Kids.ink)
                         .padding(.horizontal, isIPad ? 9 : 7).padding(.vertical, isIPad ? 5 : 4)
-                        .background(Capsule().fill(Kids.pink).overlay(Capsule().stroke(Kids.ink, lineWidth: 2)))
+                        .background(RetroPanelShape().fill(Kids.pink).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
                 }
 
                 KidsPurchaseButton(
@@ -587,11 +583,11 @@ struct KidsShopView: View {
             }
             .padding(isIPad ? 18 : 14)
             .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                RetroPanelShape(cornerRadius: 20, style: .continuous)
                     .fill(.white)
-                    .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(Kids.sun, lineWidth: 3.5))
+                    .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.sun, lineWidth: 3.5))
             )
-            .shadow(color: Kids.ink.opacity(0.10), radius: 0, x: 0, y: 4)
+            .compositingGroup().shadow(color: Kids.ink.opacity(0.10), radius: 0, x: 0, y: 4)
         }
     }
 
@@ -604,12 +600,12 @@ struct KidsShopView: View {
         VStack(alignment: .leading, spacing: isIPad ? 12 : 10) {
             HStack(spacing: isIPad ? 12 : 10) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    RetroPanelShape(cornerRadius: 14, style: .continuous)
                         .fill(color)
-                        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
-                        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                        .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
+                        .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
                         .frame(width: isIPad ? 56 : 46, height: isIPad ? 56 : 46)
-                    Text(emoji).font(.system(size: isIPad ? 28 : 24))
+                    RetroSymbol(emoji, size: isIPad ? 28 : 24)
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
@@ -624,9 +620,9 @@ struct KidsShopView: View {
                 if unlocked {
                     Text("✓ OWNED")
                         .font(Kids.fredoka(isIPad ? 12 : 10, weight: .bold))
-                        .foregroundColor(.white)
+                        .foregroundColor(Kids.ink)
                         .padding(.horizontal, isIPad ? 10 : 8).padding(.vertical, isIPad ? 5 : 4)
-                        .background(Capsule().fill(Kids.grass).overlay(Capsule().stroke(Kids.ink, lineWidth: 2)))
+                        .background(RetroPanelShape().fill(Kids.grass).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
                 }
             }
 
@@ -642,7 +638,7 @@ struct KidsShopView: View {
         }
         .padding(isIPad ? 18 : 14)
         .background(KidsSettingsCard())
-        .shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
     }
 
     // MARK: - Remove ads
@@ -651,11 +647,11 @@ struct KidsShopView: View {
         VStack(alignment: .leading, spacing: isIPad ? 12 : 10) {
             HStack(spacing: isIPad ? 12 : 10) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    RetroPanelShape(cornerRadius: 14, style: .continuous)
                         .fill(Kids.peach)
-                        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                        .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
                         .frame(width: isIPad ? 56 : 46, height: isIPad ? 56 : 46)
-                    Text("🚫").font(.system(size: isIPad ? 26 : 22))
+                    RetroSymbol("🚫", size: isIPad ? 26 : 22)
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     Text(settings.adsRemoved ? "Ads Removed" : "Remove Ads")
@@ -667,7 +663,7 @@ struct KidsShopView: View {
                 }
                 Spacer()
                 if settings.adsRemoved {
-                    Text("✓").font(Kids.fredoka(isIPad ? 24 : 20, weight: .bold)).foregroundColor(Kids.grass)
+                    Text("✓").font(Kids.fredoka(isIPad ? 24 : 20, weight: .bold)).foregroundColor(Kids.grassDeep)
                 }
             }
             if !settings.adsRemoved {
@@ -693,7 +689,7 @@ struct KidsShopView: View {
         }
         .padding(isIPad ? 18 : 14)
         .background(KidsSettingsCard())
-        .shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
     }
 
     // MARK: - Premium
@@ -702,12 +698,12 @@ struct KidsShopView: View {
         VStack(alignment: .leading, spacing: isIPad ? 12 : 10) {
             HStack(spacing: isIPad ? 12 : 10) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    RetroPanelShape(cornerRadius: 14, style: .continuous)
                         .fill(Kids.sun)
-                        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
-                        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                        .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
+                        .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
                         .frame(width: isIPad ? 56 : 46, height: isIPad ? 56 : 46)
-                    Text("👑").font(.system(size: isIPad ? 26 : 22))
+                    RetroSymbol("👑", size: isIPad ? 26 : 22)
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     Text(settings.isSubscribed ? "Premium Active!" : "Get Premium")
@@ -719,7 +715,7 @@ struct KidsShopView: View {
                 }
                 Spacer()
                 if settings.isSubscribed {
-                    Text("✓").font(Kids.fredoka(isIPad ? 24 : 20, weight: .bold)).foregroundColor(Kids.grass)
+                    Text("✓").font(Kids.fredoka(isIPad ? 24 : 20, weight: .bold)).foregroundColor(Kids.grassDeep)
                 }
             }
             if !settings.isSubscribed {
@@ -773,9 +769,9 @@ struct KidsShopView: View {
                     }
                     Text("BEST VALUE")
                         .font(Kids.fredoka(isIPad ? 10 : 8, weight: .bold))
-                        .foregroundColor(.white)
+                        .foregroundColor(Kids.ink)
                         .padding(.horizontal, isIPad ? 8 : 6).padding(.vertical, isIPad ? 3 : 2)
-                        .background(Capsule().fill(Kids.pink).overlay(Capsule().stroke(Kids.ink, lineWidth: 1.5)))
+                        .background(RetroPanelShape().fill(Kids.pink).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5)))
                         .offset(x: -10, y: -7)
                         .rotationEffect(.degrees(8))
                 }
@@ -783,12 +779,12 @@ struct KidsShopView: View {
         }
         .padding(isIPad ? 18 : 14)
         .background(KidsSettingsCard())
-        .shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
     }
 
     private func premiumFeature(_ text: String) -> some View {
         HStack(spacing: 6) {
-            Text("✓").font(Kids.fredoka(isIPad ? 14 : 12, weight: .bold)).foregroundColor(Kids.grass)
+            Text("✓").font(Kids.fredoka(isIPad ? 14 : 12, weight: .bold)).foregroundColor(Kids.grassDeep)
             Text(text).font(Kids.nunito(isIPad ? 14 : 12, weight: .bold)).foregroundColor(Kids.ink)
         }
     }
@@ -809,9 +805,9 @@ struct KidsShopView: View {
         } label: {
             HStack(spacing: isIPad ? 12 : 10) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    RetroPanelShape(cornerRadius: 12, style: .continuous)
                         .fill(.white)
-                        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                        .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
                         .frame(width: isIPad ? 50 : 40, height: isIPad ? 50 : 40)
                     Image(systemName: "arrow.clockwise").foregroundColor(Kids.ink).font(.system(size: isIPad ? 20 : 16, weight: .bold))
                 }
@@ -827,7 +823,7 @@ struct KidsShopView: View {
             }
             .padding(.horizontal, isIPad ? 18 : 14).padding(.vertical, isIPad ? 14 : 10)
             .background(KidsSettingsCard())
-            .shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 3)
+            .compositingGroup().shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 3)
         }
         .buttonStyle(.plain)
         .disabled(store.isPurchasing)
@@ -848,7 +844,7 @@ struct KidsShopView: View {
             }
             .buttonStyle(.plain)
             .font(Kids.fredoka(isIPad ? 14 : 12, weight: .bold))
-            .foregroundColor(Kids.grape)
+            .foregroundColor(Kids.grapeDeep)
 
             Text("All purchases are processed by Apple.\nSubscriptions renew automatically unless cancelled.")
                 .font(Kids.nunito(isIPad ? 12 : 10, weight: .bold))
@@ -864,9 +860,9 @@ struct KidsShopView: View {
 /// The standard white sticker card background used across Settings + Shop.
 struct KidsSettingsCard: View {
     var body: some View {
-        RoundedRectangle(cornerRadius: 20, style: .continuous)
+        RetroPanelShape(cornerRadius: 20, style: .continuous)
             .fill(Color.white)
-            .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+            .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
     }
 }
 
@@ -882,12 +878,12 @@ struct KidsNavRow: View {
     var body: some View {
         HStack(spacing: isIPad ? 14 : 12) {
             ZStack {
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                RetroPanelShape(cornerRadius: 14, style: .continuous)
                     .fill(tint)
-                    .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
-                    .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                    .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
+                    .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
                     .frame(width: isIPad ? 56 : 46, height: isIPad ? 56 : 46)
-                Text(emoji).font(.system(size: isIPad ? 28 : 24))
+                RetroSymbol(emoji, size: isIPad ? 28 : 24)
             }
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
@@ -899,13 +895,13 @@ struct KidsNavRow: View {
                     .lineLimit(1).minimumScaleFactor(0.8)
             }
             Spacer()
-            Text(lock ? "🔒" : "›")
-                .font(Kids.fredoka(isIPad ? 20 : 17, weight: .bold))
+            Image(systemName: lock ? "lock.fill" : "chevron.right")
+                .font(.system(size: isIPad ? 20 : 17, weight: .bold))
                 .foregroundColor(Kids.inkSoft)
         }
         .padding(isIPad ? 16 : 13)
         .background(KidsSettingsCard())
-        .shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 3)
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 3)
     }
 }
 
@@ -928,12 +924,12 @@ struct KidsPurchaseButton: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: isIPad ? 54 : 44)
                 .background(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    RetroPanelShape(cornerRadius: 14, style: .continuous)
                         .fill(color)
-                        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
-                        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                        .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
+                        .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
                 )
-                .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
+                .compositingGroup().shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
         }
         .buttonStyle(.plain)
     }
@@ -945,15 +941,15 @@ private struct StatChip: View {
     let color: Color
     var body: some View {
         HStack(spacing: 3) {
-            Text(icon).font(.system(size: 10))
+            RetroSymbol(icon, size: 10)
             Text(label)
                 .font(Kids.fredoka(10, weight: .bold))
                 .foregroundColor(Kids.ink)
         }
         .padding(.horizontal, 7).padding(.vertical, 2)
         .background(
-            Capsule().fill(color)
-                .overlay(Capsule().stroke(Kids.ink, lineWidth: 2))
+            RetroPanelShape().fill(color)
+                .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
         )
     }
 }
@@ -968,12 +964,12 @@ private struct SettingRow: View {
     var body: some View {
         HStack(spacing: 12) {
             ZStack {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                RetroPanelShape(cornerRadius: 12, style: .continuous)
                     .fill(bg)
-                    .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Kids.sheen))
-                    .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                    .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).fill(Kids.sheen))
+                    .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
                     .frame(width: 40, height: 40)
-                Text(icon).font(.system(size: 20))
+                RetroSymbol(icon, size: 20)
             }
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)
@@ -988,10 +984,10 @@ private struct SettingRow: View {
         }
         .padding(.horizontal, 12).padding(.vertical, 10)
         .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+            RetroPanelShape(cornerRadius: 16, style: .continuous)
                 .fill(.white)
-                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
         )
-        .shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 2)
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 2)
     }
 }

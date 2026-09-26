@@ -4,34 +4,7 @@ import SwiftUI
 
 struct GoldCoin: View {
     var size: CGFloat = 20
-
-    private let goldLight = Color(hex: "#FFE566")
-    private let goldMid   = Color(hex: "#FFD700")
-    private let goldDark  = Color(hex: "#B8860B")
-
-    var body: some View {
-        ZStack {
-            // Outer rim
-            Circle()
-                .fill(LinearGradient(
-                    colors: [goldLight, goldDark],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing))
-                .frame(width: size, height: size)
-            // Inner face
-            Circle()
-                .fill(LinearGradient(
-                    colors: [goldMid, goldDark.opacity(0.8)],
-                    startPoint: .top,
-                    endPoint: .bottom))
-                .frame(width: size * 0.76, height: size * 0.76)
-            // Symbol
-            Text("C")
-                .font(Theme.bungee(size * 0.36))
-                .foregroundColor(goldLight.opacity(0.9))
-        }
-        .shadow(color: goldMid.opacity(0.30), radius: size * 0.12, x: 0, y: size * 0.06)
-    }
+    var body: some View { KidsGoldCoin(size: size) }
 }
 
 // MARK: - Coin Badge Size
@@ -55,44 +28,44 @@ struct CoinBadge: View {
                         GoldCoin(size: emojiSize)
                         Text(coinStore.formattedBalance)
                             .font(Theme.bungee(textSize))
-                            .foregroundColor(Color(hex: "#FFD700"))
+                            .foregroundColor(Kids.peachDeep)
                             .contentTransition(.numericText())
                             .animation(.spring(response: 0.4, dampingFraction: 0.7), value: coinStore.balance)
                     }
                     .padding(.horizontal, hPad)
                     .padding(.vertical, vPad)
                     .background(
-                        Capsule()
-                            .fill(Color(hex: "#FFD700").opacity(0.15))
-                            .overlay(Capsule().stroke(Color(hex: "#FFD700").opacity(0.4), lineWidth: 1))
+                        RetroPanelShape()
+                            .fill(Kids.peachDeep.opacity(0.15))
+                            .overlay(RetroPanelShape().stroke(Kids.peachDeep.opacity(0.4), lineWidth: 1))
                     )
 
                     if showProgress, let pack = coinStore.nextPack {
                         VStack(spacing: 2) {
                             GeometryReader { geo in
                                 ZStack(alignment: .leading) {
-                                    Capsule().fill(Color.white.opacity(0.08))
-                                    Capsule()
-                                        .fill(Color(hex: "#FFD700").opacity(0.7))
+                                    RetroPanelShape().fill(Kids.ink.opacity(0.08))
+                                    RetroPanelShape()
+                                        .fill(Kids.peachDeep.opacity(0.7))
                                         .frame(width: geo.size.width * CGFloat(coinStore.nextPackProgress))
                                 }
                             }
                             .frame(height: 4)
                             .frame(width: size == .compact ? 60 : size == .regular ? 80 : 110)
 
-                            Text("\(pack.emoji) \(pack.name)")
+                            Text(pack.name)
                                 .font(.system(size: size == .large ? 10 : 9, weight: .semibold, design: .rounded))
-                                .foregroundColor(.white.opacity(0.4))
+                                .foregroundColor(Kids.ink.opacity(0.4))
                         }
                     }
                 }
 
                 // Green dot — ad reward available
                 if adManager.coinAdReady && coinStore.canWatchAdForCoins {
-                    Circle()
-                        .fill(Color.green)
+                    Rectangle()
+                        .fill(Kids.grassDeep)
                         .frame(width: dotSize, height: dotSize)
-                        .overlay(Circle().stroke(Color.black.opacity(0.3), lineWidth: 1))
+                        .overlay(Rectangle().stroke(Color.black.opacity(0.3), lineWidth: 1))
                         .offset(x: 3, y: -3)
                 }
             }
@@ -130,7 +103,7 @@ struct CoinsHubSheet: View {
     @State private var showAskToBuyNotice = false
     @Environment(\.dismiss) private var dismiss
 
-    private let gold = Color(hex: "#FFD700")
+    private let gold = Kids.peachDeep
 
     var body: some View {
         NavigationStack {
@@ -156,7 +129,7 @@ struct CoinsHubSheet: View {
                                 .animation(.spring(response: 0.4), value: coinStore.balance)
                             Text("Battle Coins")
                                 .font(.system(size: 14, weight: .medium, design: .rounded))
-                                .foregroundColor(.white.opacity(0.4))
+                                .foregroundColor(Kids.ink.opacity(0.4))
                         }
                         .padding(.top, 8)
 
@@ -164,9 +137,9 @@ struct CoinsHubSheet: View {
                         if let pack = coinStore.nextPack {
                             VStack(spacing: 10) {
                                 HStack {
-                                    Text("\(pack.emoji) Next: \(pack.name) Pack")
+                                    Text("Next: \(pack.name) Pack")
                                         .font(.system(size: 14, weight: .bold, design: .rounded))
-                                        .foregroundColor(.white.opacity(0.8))
+                                        .foregroundColor(Kids.ink.opacity(0.8))
                                     Spacer()
                                     Text("\(coinStore.balance) / \(pack.cost)")
                                         .font(.system(size: 13, weight: .semibold, design: .rounded))
@@ -175,8 +148,8 @@ struct CoinsHubSheet: View {
 
                                 GeometryReader { geo in
                                     ZStack(alignment: .leading) {
-                                        RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.08))
-                                        RoundedRectangle(cornerRadius: 6)
+                                        RetroPanelShape(cornerRadius: 6).fill(Kids.ink.opacity(0.08))
+                                        RetroPanelShape(cornerRadius: 6)
                                             .fill(LinearGradient(
                                                 colors: [gold.opacity(0.6), gold],
                                                 startPoint: .leading, endPoint: .trailing))
@@ -194,14 +167,14 @@ struct CoinsHubSheet: View {
                                     let battlesLeft = max(0, pack.cost - coinStore.balance)
                                     Text("~\(Int(ceil(Double(battlesLeft) / Double(coinStore.coinsPerBattle)))) battles to go")
                                         .font(.system(size: 12, weight: .medium, design: .rounded))
-                                        .foregroundColor(.white.opacity(0.35))
+                                        .foregroundColor(Kids.ink.opacity(0.35))
                                 }
                             }
                             .padding(16)
                             .background(
-                                RoundedRectangle(cornerRadius: 16)
+                                RetroPanelShape(cornerRadius: 16)
                                     .fill(gold.opacity(0.06))
-                                    .overlay(RoundedRectangle(cornerRadius: 16)
+                                    .overlay(RetroPanelShape(cornerRadius: 16)
                                         .stroke(gold.opacity(0.2), lineWidth: 1))
                             )
                         } else {
@@ -256,14 +229,14 @@ struct CoinsHubSheet: View {
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 14)
                                 .background(
-                                    RoundedRectangle(cornerRadius: 16)
+                                    RetroPanelShape(cornerRadius: 16)
                                         .fill(isNotReady
-                                              ? AnyShapeStyle(Color.white.opacity(0.12))
+                                              ? AnyShapeStyle(Kids.ink.opacity(0.12))
                                               : AnyShapeStyle(LinearGradient(
                                                 colors: [Color(hex: "#1A3A2A"), Color(hex: "#0F2A1A")],
                                                 startPoint: .leading, endPoint: .trailing)))
-                                        .overlay(RoundedRectangle(cornerRadius: 16)
-                                            .stroke(isNotReady ? Color.white.opacity(0.2) : Color.green.opacity(0.4), lineWidth: 1))
+                                        .overlay(RetroPanelShape(cornerRadius: 16)
+                                            .stroke(isNotReady ? Kids.ink.opacity(0.2) : Kids.grassDeep.opacity(0.4), lineWidth: 1))
                                 )
                             }
                             .buttonStyle(PressableButtonStyle())
@@ -299,15 +272,15 @@ struct CoinsHubSheet: View {
                                         .foregroundColor(gold)
                                 }
                             }
-                            .foregroundColor(.white)
+                            .foregroundColor(Kids.ink)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 14)
                             .background(
-                                RoundedRectangle(cornerRadius: 16)
+                                RetroPanelShape(cornerRadius: 16)
                                     .fill(LinearGradient(
                                         colors: [Color(hex: "#DAA520"), Color(hex: "#8B6914")],
                                         startPoint: .leading, endPoint: .trailing))
-                                    .overlay(RoundedRectangle(cornerRadius: 16)
+                                    .overlay(RetroPanelShape(cornerRadius: 16)
                                         .stroke(gold.opacity(0.4), lineWidth: 1))
                             )
                         }
@@ -318,29 +291,29 @@ struct CoinsHubSheet: View {
                         VStack(alignment: .leading, spacing: 12) {
                             Text("HOW TO EARN")
                                 .font(Theme.bungee(11))
-                                .foregroundColor(.white.opacity(0.3))
+                                .foregroundColor(Kids.ink.opacity(0.3))
                                 .tracking(1.5)
 
                             earnRow(icon: "⚔️", label: "Every battle",
                                     value: "+\(coinStore.coinsPerBattle)")
-                            Divider().background(Color.white.opacity(0.07))
+                            Divider().background(Kids.ink.opacity(0.07))
                             earnRow(icon: "☀️", label: "First battle of the day",
                                     value: "+\(coinStore.dailyFirstBattleBonus) bonus")
-                            Divider().background(Color.white.opacity(0.07))
+                            Divider().background(Kids.ink.opacity(0.07))
                             earnRow(icon: "📺", label: "Watch an ad (up to \(coinStore.maxDailyAds)/day)",
                                     value: "+\(coinStore.coinsPerAd)")
                             if !UserSettings.shared.isSubscribed {
-                                Divider().background(Color.white.opacity(0.07))
+                                Divider().background(Kids.ink.opacity(0.07))
                                 earnRow(icon: "👑", label: "Premium subscription",
                                         value: "2× per battle")
                             }
                         }
                         .padding(16)
                         .background(
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(Color.white.opacity(0.12))
-                                .overlay(RoundedRectangle(cornerRadius: 16)
-                                    .stroke(Color.white.opacity(0.2), lineWidth: 1))
+                            RetroPanelShape(cornerRadius: 16)
+                                .fill(Kids.ink.opacity(0.12))
+                                .overlay(RetroPanelShape(cornerRadius: 16)
+                                    .stroke(Kids.ink.opacity(0.2), lineWidth: 1))
                         )
 
                         Spacer(minLength: 20)
@@ -387,10 +360,10 @@ struct CoinsHubSheet: View {
 
     private func earnRow(icon: String, label: String, value: String) -> some View {
         HStack {
-            Text(icon).font(.system(size: 14))
+            RetroSymbol(icon, size: 14)
             Text(label)
                 .font(.system(size: 13, weight: .medium, design: .rounded))
-                .foregroundColor(.white.opacity(0.6))
+                .foregroundColor(Kids.ink.opacity(0.6))
             Spacer()
             HStack(spacing: 4) {
                 Text(value)
@@ -443,8 +416,8 @@ struct BuyCoinsButton: View {
                         .padding(.horizontal, isIPad ? 10 : 7)
                         .padding(.vertical, isIPad ? 5 : 3)
                         .background(
-                            Capsule().fill(.white)
-                                .overlay(Capsule().stroke(Kids.ink, lineWidth: 1.5))
+                            RetroPanelShape().fill(.white)
+                                .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5))
                         )
                 }
             }
@@ -452,12 +425,12 @@ struct BuyCoinsButton: View {
             .padding(.horizontal, isIPad ? 18 : 14)
             .padding(.vertical, isIPad ? 14 : 11)
             .background(
-                RoundedRectangle(cornerRadius: isIPad ? 18 : 14, style: .continuous)
+                RetroPanelShape(cornerRadius: isIPad ? 18 : 14, style: .continuous)
                     .fill(Kids.sun)
-                    .overlay(RoundedRectangle(cornerRadius: isIPad ? 18 : 14, style: .continuous).fill(Kids.sheen))
-                    .overlay(RoundedRectangle(cornerRadius: isIPad ? 18 : 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                    .overlay(RetroPanelShape(cornerRadius: isIPad ? 18 : 14, style: .continuous).fill(Kids.sheen))
+                    .overlay(RetroPanelShape(cornerRadius: isIPad ? 18 : 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
             )
-            .shadow(color: Kids.ink.opacity(0.10), radius: 0, x: 0, y: 3)
+            .compositingGroup().shadow(color: Kids.ink.opacity(0.10), radius: 0, x: 0, y: 3)
             .opacity(isBuying ? 0.7 : 1.0)
         }
         .buttonStyle(.plain)

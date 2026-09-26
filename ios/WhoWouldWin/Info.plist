@@ -17,9 +17,17 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.1.7</string>
+	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
-	<string>109</string>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>AVAAPIBaseURL</key>
+	<string>$(AVA_API_BASE_URL)</string>
+	<key>AVAEnvironment</key>
+	<string>$(AVA_ENVIRONMENT)</string>
+	<key>AVAIsolatedTestBuild</key>
+	<string>$(AVA_ISOLATED_TEST_BUILD)</string>
+	<key>AVABuildAllocation</key>
+	<string>$(AVA_BUILD_ALLOCATION)</string>
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-4887593367953664~8348884640</string>
 	<key>ITSAppUsesNonExemptEncryption</key>

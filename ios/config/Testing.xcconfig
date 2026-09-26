@@ -1,0 +1,3 @@
+#include "Debug.xcconfig"
+AVA_ENVIRONMENT = testing
+AVA_ISOLATED_TEST_BUILD = YES

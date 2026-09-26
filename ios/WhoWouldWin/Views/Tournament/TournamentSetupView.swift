@@ -18,9 +18,7 @@ struct TournamentSetupView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Color(hex: "#FFE9BA"), Color(hex: "#FFC8C2"), Kids.grape.opacity(0.4)],
-                           startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea()
+            SkyBG()
 
             // Decorative twinkles — proportional positions so they don't bunch
             // in the top-left on iPad. GeometryReader gives us the actual size.
@@ -32,8 +30,7 @@ struct TournamentSetupView: View {
                 ]
                 ForEach(0..<positions.count, id: \.self) { i in
                     let (px, py) = positions[i]
-                    Text("✨")
-                        .font(.system(size: CGFloat(isIPad ? 18 : 12) + CGFloat(i % 3) * 3))
+                    RetroSymbol("✨", size: CGFloat(isIPad ? 18 : 12) + CGFloat(i % 3) * 3)
                         .opacity(0.7)
                         .position(x: geo.size.width * px, y: geo.size.height * py)
                 }
@@ -44,6 +41,11 @@ struct TournamentSetupView: View {
                 HStack(spacing: 0) {
                     Spacer(minLength: 0)
                     VStack(spacing: isIPad ? 26 : 18) {
+                        HStack {
+                            KidIconBtn(icon: "✕", fill: Kids.cream) { dismiss() }
+                                .accessibilityIdentifier("tournament.setup.close")
+                            Spacer()
+                        }
                         header
                         sizeSection
                         modeSection
@@ -70,27 +72,15 @@ struct TournamentSetupView: View {
         .onAppear {
             withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) { appeared = true }
         }
-        .navigationBarBackButtonHidden(true)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button { dismiss() } label: {
-                    Text("✕")
-                        .font(Kids.fredoka(isIPad ? 22 : 16, weight: .bold))
-                        .foregroundColor(Kids.ink)
-                        .frame(width: isIPad ? 50 : 38, height: isIPad ? 50 : 38)
-                        .background(Circle().fill(.white).overlay(Circle().stroke(Kids.ink, lineWidth: 2.5)))
-                }
-            }
-        }
+        .navigationBarHidden(true)
     }
 
     // MARK: - Sections
 
     private var header: some View {
         VStack(spacing: isIPad ? 10 : 6) {
-            Text("🏆")
-                .font(.system(size: isIPad ? 84 : 56))
-                .shadow(color: Kids.ink.opacity(0.09), radius: 0, x: 0, y: 4)
+            RetroSymbol("🏆", size: isIPad ? 84 : 56)
+                .compositingGroup().shadow(color: Kids.ink.opacity(0.09), radius: 0, x: 0, y: 4)
 
             StickerWord(text: "TOURNAMENT", fill: Kids.sun, fontSize: isIPad ? 42 : 28, tilt: -2)
                 .rotationEffect(.degrees(-2))
@@ -119,7 +109,7 @@ struct TournamentSetupView: View {
         }
         .padding(isIPad ? 20 : 14)
         .background(card)
-        .shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 4)
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 4)
     }
 
     private var modeSection: some View {
@@ -151,12 +141,12 @@ struct TournamentSetupView: View {
         }
         .padding(isIPad ? 20 : 14)
         .background(card)
-        .shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 4)
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 4)
     }
 
     private func sectionLabel(icon: String, text: String) -> some View {
         HStack(spacing: isIPad ? 8 : 6) {
-            Text(icon).font(.system(size: isIPad ? 22 : 16))
+            RetroSymbol(icon, size: isIPad ? 22 : 16)
             Text(text)
                 .font(Kids.fredoka(isIPad ? 17 : 13, weight: .bold))
                 .tracking(1)
@@ -165,9 +155,9 @@ struct TournamentSetupView: View {
     }
 
     private var card: some View {
-        RoundedRectangle(cornerRadius: 20, style: .continuous)
+        RetroPanelShape(cornerRadius: 20, style: .continuous)
             .fill(Color.white)
-            .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+            .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
     }
 }
 
@@ -193,12 +183,12 @@ private struct SizeChoiceChip: View {
             .frame(maxWidth: .infinity)
             .padding(.vertical, isIPad ? 18 : 12)
             .background(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                RetroPanelShape(cornerRadius: 14, style: .continuous)
                     .fill(isSelected ? Kids.sun : Color.white)
-                    .overlay(isSelected ? RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Kids.sheen) : nil)
-                    .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: isSelected ? 3 : 2))
+                    .overlay(isSelected ? RetroPanelShape(cornerRadius: 14, style: .continuous).fill(Kids.sheen) : nil)
+                    .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: isSelected ? 3 : 2))
             )
-            .shadow(color: Kids.ink.opacity(isSelected ? 0.18 : 0.08), radius: 0, x: 0, y: isSelected ? 4 : 2)
+            .compositingGroup().shadow(color: Kids.ink.opacity(isSelected ? 0.18 : 0.08), radius: 0, x: 0, y: isSelected ? 4 : 2)
             .scaleEffect(isSelected ? 1.04 : 1)
             .animation(.spring(response: 0.25, dampingFraction: 0.65), value: isSelected)
         }
@@ -221,12 +211,12 @@ private struct ModeRow: View {
         Button(action: onTap) {
             HStack(spacing: isIPad ? 16 : 12) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: isIPad ? 16 : 12, style: .continuous)
+                    RetroPanelShape(cornerRadius: isIPad ? 16 : 12, style: .continuous)
                         .fill(color)
-                        .overlay(RoundedRectangle(cornerRadius: isIPad ? 16 : 12, style: .continuous).fill(Kids.sheen))
-                        .overlay(RoundedRectangle(cornerRadius: isIPad ? 16 : 12, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                        .overlay(RetroPanelShape(cornerRadius: isIPad ? 16 : 12, style: .continuous).fill(Kids.sheen))
+                        .overlay(RetroPanelShape(cornerRadius: isIPad ? 16 : 12, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
                         .frame(width: isIPad ? 60 : 44, height: isIPad ? 60 : 44)
-                    Text(emoji).font(.system(size: isIPad ? 30 : 22))
+                    RetroSymbol(emoji, size: isIPad ? 30 : 22)
                 }
                 VStack(alignment: .leading, spacing: isIPad ? 4 : 2) {
                     Text(title)
@@ -238,9 +228,9 @@ private struct ModeRow: View {
                 }
                 Spacer()
                 ZStack {
-                    Circle()
+                    RetroPanelShape()
                         .fill(isSelected ? Kids.grass : Color.white)
-                        .overlay(Circle().stroke(Kids.ink, lineWidth: 2))
+                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
                         .frame(width: isIPad ? 34 : 26, height: isIPad ? 34 : 26)
                     if isSelected {
                         Text("✓").font(Kids.fredoka(isIPad ? 18 : 14, weight: .bold)).foregroundColor(Kids.ink)
@@ -249,9 +239,9 @@ private struct ModeRow: View {
             }
             .padding(isIPad ? 14 : 10)
             .background(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(isSelected ? color.opacity(0.18) : Color(hex: "#F7F2FF"))
-                    .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.ink.opacity(isSelected ? 0.45 : 0.2), lineWidth: isSelected ? 2 : 1.5))
+                RetroPanelShape(cornerRadius: 14, style: .continuous)
+                    .fill(isSelected ? color.opacity(0.18) : Kids.panel)
+                    .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink.opacity(isSelected ? 0.45 : 0.2), lineWidth: isSelected ? 2 : 1.5))
             )
         }
         .buttonStyle(.plain)

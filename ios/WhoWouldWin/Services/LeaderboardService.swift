@@ -65,6 +65,7 @@ final class LeaderboardService: ObservableObject {
     /// so swiping back from the Hall of Fame mid-fetch doesn't cancel the
     /// network request and leave the next visit stuck on a stale error.
     func refresh(force: Bool = false) async {
+        guard AppConfig.externalServicesEnabled else { return }
         // Clear stale errors on every entry — even if the guard short-circuits,
         // we don't want a previous failure's "Tap to retry" lingering when the
         // cache is now perfectly valid.

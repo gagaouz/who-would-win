@@ -1,0 +1,4 @@
+#include "Version.xcconfig"
+AVA_API_BASE_URL = https:/$()/api.animal-vs-animal.com
+AVA_ENVIRONMENT = production
+AVA_ISOLATED_TEST_BUILD = NO

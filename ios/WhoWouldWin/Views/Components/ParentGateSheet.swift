@@ -21,9 +21,7 @@ struct ParentGateSheet: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Color(hex: "#EFE7FF"), Color(hex: "#D6ECFF")],
-                           startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea()
+            SkyBG()
 
             VStack(spacing: 0) {
                 // Close affordance — a kid is never trapped here.
@@ -34,9 +32,9 @@ struct ParentGateSheet: View {
                         isPresented = false
                     } label: {
                         ZStack {
-                            Circle().fill(.white)
-                                .overlay(Circle().stroke(Kids.ink, lineWidth: 2.5))
-                                .frame(width: 36, height: 36)
+                            RetroPanelShape().fill(.white)
+                                .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
+                                .frame(width: 44, height: 44)
                             Image(systemName: "xmark")
                                 .font(.system(size: 14, weight: .bold))
                                 .foregroundColor(Kids.ink)
@@ -51,8 +49,7 @@ struct ParentGateSheet: View {
                     HStack(spacing: 0) {
                         Spacer(minLength: 0)
                         VStack(spacing: isIPad ? 18 : 14) {
-                            Text("🔒")
-                                .font(.system(size: isIPad ? 72 : 56))
+                            RetroSymbol("🔒", size: isIPad ? 72 : 56)
                                 .scaleEffect(appeared ? 1 : 0.3)
 
                             StickerWord(text: "GROWN-UPS ONLY",
@@ -74,7 +71,7 @@ struct ParentGateSheet: View {
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, isIPad ? 22 : 18)
                                 .background(
-                                    StickerShape(shape: RoundedRectangle(cornerRadius: 22, style: .continuous),
+                                    StickerShape(shape: RetroPanelShape(cornerRadius: 22, style: .continuous),
                                                  fill: .white, strokeWidth: 3.5)
                                 )
                                 .inkShadow(y: 4, opacity: 0.10)

@@ -1,0 +1,5 @@
+#include "Version.xcconfig"
+// "$()" prevents xcconfig from interpreting the URL's slashes as a comment.
+AVA_API_BASE_URL = http:/$()/localhost:3000
+AVA_ENVIRONMENT = development
+AVA_ISOLATED_TEST_BUILD = NO

@@ -3,16 +3,26 @@ options:
   bundleIdPrefix: com.whowouldin
   deploymentTarget:
     iOS: "16.0"
-  xcodeVersion: "15"
+  xcodeVersion: "27.0"
   createIntermediateGroups: true
+
+configs:
+  Debug: debug
+  Testing: debug
+  Release: release
+
+configFiles:
+  Debug: config/Debug.xcconfig
+  Testing: config/Testing.xcconfig
+  Release: config/Release.xcconfig
 
 packages:
   GoogleMobileAds:
     url: https://github.com/googleads/swift-package-manager-google-mobile-ads.git
-    from: "13.9.0"
+    exactVersion: "13.9.0"
   GoogleUserMessagingPlatform:
     url: https://github.com/googleads/swift-package-manager-google-user-messaging-platform.git
-    from: "3.1.0"
+    exactVersion: "3.1.0"
 
 settings:
   base:
@@ -55,15 +65,24 @@ targets:
       configs:
         Debug:
           APP_ATTEST_ENVIRONMENT: development
+        Testing:
+          APP_ATTEST_ENVIRONMENT: development
+          # Fixture data cannot overwrite the canonical app's preferences.
+          PRODUCT_BUNDLE_IDENTIFIER: com.whowouldin.WhoWouldWin.uitesting
         Release:
           APP_ATTEST_ENVIRONMENT: production
     info:
       path: WhoWouldWin/Info.plist
       properties:
-        CFBundleShortVersionString: "1.1.6"
-        CFBundleVersion: "108"
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        AVAAPIBaseURL: "$(AVA_API_BASE_URL)"
+        AVAEnvironment: "$(AVA_ENVIRONMENT)"
+        AVAIsolatedTestBuild: "$(AVA_ISOLATED_TEST_BUILD)"
+        AVABuildAllocation: "$(AVA_BUILD_ALLOCATION)"
         CFBundleDisplayName: "Animal vs Animal"
-        UILaunchScreen: {}
+        UILaunchScreen:
+          UIColorName: LaunchBackground
         NSMicrophoneUsageDescription: "Speak the name of any animal to search or add a custom fighter."
         NSSpeechRecognitionUsageDescription: "Speak the name of any animal to search or add a custom fighter."
         UISupportedInterfaceOrientations:
@@ -119,3 +138,27 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
     dependencies:
       - target: WhoWouldWin
+
+schemes:
+  WhoWouldWin:
+    build:
+      targets:
+        WhoWouldWin: all
+        WhoWouldWinTests: [test]
+        WhoWouldWinUITests: [test]
+    run:
+      config: Debug
+    test:
+      config: Testing
+      gatherCoverageData: true
+      targets:
+        - name: WhoWouldWinTests
+          parallelizable: false
+        - name: WhoWouldWinUITests
+          parallelizable: false
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release

@@ -20,11 +20,13 @@ final class NotificationService {
 
     /// Remove all scheduled reminders (backs the "erase all data" path).
     func cancelAll() {
+        guard AppConfig.externalServicesEnabled else { return }
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
     }
 
     /// Ask for permission. Returns whether it was granted. Safe to call repeatedly.
     func requestAuthorization() async -> Bool {
+        guard AppConfig.externalServicesEnabled else { return false }
         let center = UNUserNotificationCenter.current()
         let settings = await center.notificationSettings()
         switch settings.authorizationStatus {
@@ -41,6 +43,7 @@ final class NotificationService {
     /// effective state (false if permission was refused).
     @discardableResult
     func setDailyReminder(_ enabled: Bool, hour: Int = 17) async -> Bool {
+        guard AppConfig.externalServicesEnabled else { return false }
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: [reminderID])
         guard enabled else { return false }

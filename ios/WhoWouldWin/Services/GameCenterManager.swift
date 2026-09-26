@@ -39,6 +39,7 @@ final class GameCenterManager: NSObject, ObservableObject, GKGameCenterControlle
 
     /// Call on app launch. Presents Game Center login if iOS hands us a VC for it.
     func authenticate() {
+        guard AppConfig.externalServicesEnabled else { return }
         GKLocalPlayer.local.authenticateHandler = { [weak self] viewController, error in
             DispatchQueue.main.async {
                 if let vc = viewController {
@@ -91,6 +92,7 @@ final class GameCenterManager: NSObject, ObservableObject, GKGameCenterControlle
 
     /// Reports an achievement as 100% complete. Idempotent — skips if already reported this session.
     func reportAchievement(_ identifier: String) {
+        guard AppConfig.externalServicesEnabled else { return }
         guard isAuthenticated else { return }
         guard !reportedThisSession.contains(identifier) else { return }
 
@@ -109,6 +111,7 @@ final class GameCenterManager: NSObject, ObservableObject, GKGameCenterControlle
 
     /// Reports an achievement with a specific progress percentage (0-100). For progressive achievements.
     func reportProgress(_ identifier: String, percentComplete: Double) {
+        guard AppConfig.externalServicesEnabled else { return }
         guard isAuthenticated else { return }
 
         let achievement = GKAchievement(identifier: identifier)
@@ -127,6 +130,7 @@ final class GameCenterManager: NSObject, ObservableObject, GKGameCenterControlle
     /// Submits a score to a leaderboard. No-op if not authenticated.
     /// For cumulative/best-score leaderboards (all 4 of ours) Game Center keeps the max.
     func reportScore(_ leaderboard: LeaderboardID, value: Int) {
+        guard AppConfig.externalServicesEnabled else { return }
         guard isAuthenticated else { return }
         guard value > 0 else { return }
 
@@ -182,6 +186,7 @@ final class GameCenterManager: NSObject, ObservableObject, GKGameCenterControlle
     func presentDashboard()    { presentGameCenter(state: .dashboard) }
 
     private func presentGameCenter(state: GKGameCenterViewControllerState) {
+        guard AppConfig.externalServicesEnabled else { return }
         let vc = GKGameCenterViewController(state: state)
         vc.gameCenterDelegate = self
         presentOnTopmost(vc)
@@ -210,6 +215,7 @@ final class GameCenterManager: NSObject, ObservableObject, GKGameCenterControlle
     // MARK: - Load Earned Achievements
 
     private func loadEarnedAchievements() {
+        guard AppConfig.externalServicesEnabled else { return }
         GKAchievement.loadAchievements { achievements, error in
             guard let achievements = achievements else { return }
             let earned = achievements.filter { $0.percentComplete >= 100 }.map { $0.identifier }.filter { !$0.isEmpty }

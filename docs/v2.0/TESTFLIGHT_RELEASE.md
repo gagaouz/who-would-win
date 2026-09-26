@@ -2,6 +2,8 @@
 
 Audit date: September 26, 2026. This is a release plan and a record of read-only source/toolchain checks, not a completed release. No app build, archive, test suite, signing operation, upload, deployment, or App Store Connect account inspection was performed in this audit. Credential contents were not read.
 
+Implementation has since started. The subsequent baseline compile, new harness, live read-only ASC inspection, deployment-trigger checks, and synthetic upgrade fixtures are recorded separately in [RELEASE_READINESS_2026-09-26.md](RELEASE_READINESS_2026-09-26.md). The observations below remain the original planning baseline; they must not be mistaken for current execution status.
+
 The owner wants the **entire app to become retro in 2.0**, with existing functionality preserved. There is no classic presentation option. Loading, reduced-motion, missing-art, and offline fallbacks must also remain intentionally retro: a static sprite, restrained effect, or temporary pixel silhouette. A fallback cannot remove custom creatures or prevent a battle from completing.
 
 Related documents: [implementation plan](PLAN.md), [branching and hotfix workflow](BRANCHING.md), [feature parity inventory](FEATURE_PARITY.md), and [retro architecture](RETRO_ARCHITECTURE.md).
@@ -66,7 +68,9 @@ The canonical 2.0 beta retains the existing app bundle, StoreKit product IDs, Ga
 
 **Installing the canonical TestFlight app replaces the App Store 1.1.7 app on that device.** Apple also documents that selecting a previous beta build replaces the currently installed build. Separate worktrees provide no device-data isolation. Use a separate baseline device or an explicitly isolated development bundle for parallel development; the latter cannot prove canonical upgrade, purchase, or cloud behavior. [Apple TestFlight installation and previous-build guidance](https://testflight.apple.com/)
 
-Required evidence:
+Automated synthetic upgrade/model/state checks block the internal beta. Canonical physical upgrade, real receipts, iCloud and device-only capabilities are explicit owner acceptance checks after internal TestFlight installation when no hardware is available here. They are required before broader release; they must remain marked **Not tested** until performed. This avoids making owner installation depend on tests that require that installation.
+
+Required evidence, with those two phases recorded separately:
 
 - [ ] Capture representative 1.1.7 fixtures before conversion: fresh user; free user with progress/coins and recorded custom-creature usage; earned/coin-unlocked content; each purchased entitlement; current and expired subscriber; collections/achievements; interrupted and settled tournaments including custom entrants; parental settings; cloud-backed state. No existing favorites or standalone saved-custom library was found; do not invent an upgrade fixture for an absent feature.
 - [ ] Upgrade fixtures in place to the canonical 2.0 bundle and compare actual stored/displayed values. Test fresh installation separately. Never erase the owner's state to simplify a test.
@@ -79,43 +83,40 @@ Required evidence:
 
 TestFlight apps use Apple's purchase sandbox; subscriptions renew on an accelerated schedule. Use separate controlled test accounts/data when exercising commerce and cloud restoration. Current true-wins unlock flags mean a sandbox-earned unlock must not be mistaken for a verified production entitlement or silently contaminate the owner's production-state assessment. [Apple TestFlight In-App Purchase guidance](https://developer.apple.com/help/app-store-connect/test-a-beta-version/testing-subscriptions-and-in-app-purchases-in-testflight/)
 
-## 5. Backend and generated-art compatibility gates
+## 5. Local custom artwork and existing backend compatibility
 
-The current iOS app sends `X-App-Version`. Keep existing `/api/battle`, `/api/battle/quick`, `/api/battle/melee`, `/api/animal`, attestation, reporting, and fallback contracts compatible while maintenance clients remain installed. New sprite functionality should be additive and capability/version-aware. Exercise both client generations against any proposed shared backend release.
+**Updated scope from the owner:** custom sprites are made entirely on-device from an approved bundled sprite kit using a stable name-aware recipe. No paid per-custom image API, provider credential, new hosted sprite endpoint, or sprite-service deployment is part of 2.0. The experimental unreleased backend sprite code must be removed before the candidate is frozen. Existing narration still uses the existing backend, with its established offline fallback.
 
-The release must include:
+Required evidence:
 
-- [ ] Explicit staging and production configuration; deterministic tests use fixture/provider stubs and isolated data. Routine UI tests must not invoke production or consume paid AI.
-- [ ] A checked staging environment for new sprite jobs/storage and a production plan for only the required additive changes. Inspect actual deployment triggers before publishing.
-- [ ] Server-side generation credentials, request authentication, moderation, bounded work queues, deduplication, cache keys incorporating normalized creature identity and style/model version, and output dimension/type/size validation.
-- [ ] Documented generation provider, budget, retention, cost/storage ceilings, and bounded retries before paid bulk/runtime generation. The prototype's built-in image tool is not an app backend API.
-- [ ] Independent service controls to pause generation or sprite delivery without breaking existing battles. Presentation fallback stays retro and preserves the result, custom-creature selection, and rewards.
-- [ ] Cached sprites available offline; new/missing art uses an intentional temporary retro placeholder and retry path. A failed image download never strands the app.
-- [ ] Compatibility tests for 401, 429, 503, timeouts, invalid art, provider rejection, budget exhaustion, concurrent duplicates, restart, and cache invalidation.
-- [ ] Database backup/recovery and non-destructive schema changes verified before deployment. Actual production health, budgets, database configuration, and backups remain unverified in this audit.
+- [ ] Every native catalog ID has valid bundled artwork; no known creature is accidentally left on a placeholder. Validate the shipped manifest against the actual iOS roster and inspect atlas crops visually.
+- [ ] Custom names deterministically produce appropriate local sprite recipes without changing the original custom Animal identity. Case/whitespace/Unicode normalization is stable; distinct meaningful inputs and style/recipe versions have correct cache behavior.
+- [ ] Local custom rendering works offline on first creation, with bounded memory/work, valid dimensions and transparency, and no provider credentials or paid image request. Existing content moderation and custom-creation coin rules remain intact.
+- [ ] Battle stage, picker/portraits, tournament/melee, and exported share images use the same custom visual identity. Erase-data clears custom rendering cache/state as specified; rematch/cancellation cannot display stale art.
+- [ ] A renderer or asset failure retains an intentional retro fallback and cannot strand a battle, change its accepted winner, or duplicate rewards. Reduced Motion retains a meaningful static retro presentation.
+- [ ] Review backend source against the maintenance baseline, preserving `/api/battle`, `/api/battle/quick`, `/api/battle/melee`, `/api/animal`, attestation/reporting and existing fallback contracts. Run existing compatibility tests without production traffic or paid AI calls.
+- [ ] Release configuration keeps the existing production narration API; fixture tests block external services. No service deployment or environment mutation is required for local sprites.
 
-Source defaults currently reserve/settle text AI costs against **$2/day and $25/month** budgets in `backend/src/services/costControl.ts`. Production paid operations fail closed without the shared spending guard unless explicitly configured otherwise. `rateLimit.ts` defaults to 30 full battles, 90 quick battles, 20 melee requests, and 20 animal lookups per client per hour, with concurrent paid requests capped at four. These are **code defaults, not observed production settings**. Preserve safeguards; do not raise limits to make tests pass. New image generation needs suitable independent accounting and cannot be assumed to fit the existing text budget.
+Archive QA requires explicit `localCustomArtworkPassed` and `backendCompatibilityPassed` evidence. The former means actual local rendering and related integration checks passed; a placeholder-only implementation cannot satisfy it. The latter establishes that maintenance clients and existing backend behavior remain compatible, not that an unnecessary new service has been deployed.
 
-`backend/railway.toml` currently builds with `npm install && npm run build`; the release path should use locked reproducible dependency installation. Package changes and new provider integrations require compatibility review rather than incidental upgrades during release.
+## 6. Validation matrix and internal-beta boundary
 
-## 6. Required validation before release candidate
-
-Every item below requires a linked result, artifact, screenshot, trace, or exact test case in the implementation evidence ledger. An unexecuted check remains **Not tested**. Source inspection alone does not satisfy runtime behavior.
+Every item below requires a linked result, artifact, screenshot, trace, or exact test case in the implementation evidence ledger. An unexecuted check remains **Not tested**. Source inspection alone does not satisfy runtime behavior. Automated correctness, available simulator parity/upgrade tests, complete local artwork, unchanged backend compatibility, and archive metadata/signing block owner internal TestFlight. Hardware-only validation is an explicit owner acceptance stage after the beta is available; it blocks broader external/public distribution, not the requested internal beta.
 
 | Area | Required coverage and acceptance |
 | --- | --- |
 | Entire retro app | All routes and relevant interaction states in `FEATURE_PARITY.md` reachable and usable; no unfinished screens or classic theme switch. Long-form text remains readable. |
 | Art coverage | All current catalog IDs and all nine arenas represented; current expected catalog count is 143 and must be reconciled against source. Review silhouettes, alpha edges, frame bounds, facing, scale, wings/tails, and pixel crispness. |
-| Custom creatures | Multiple substantially different anatomy/prompts, long/punctuated names, duplicate identity, rejected content, slow generation, offline cache, failures/retry, restart, and playable temporary retro art. Custom creatures are not restricted to demo assets. |
+| Custom creatures | Multiple substantially different names/anatomies, long/punctuated names, stable identity, rejected content, deterministic local recipes, offline first creation, cache/erase behavior, restart, valid rendered/exported sprites, and playable retro fallback. Custom creatures are not restricted to demo assets. |
 | Battle integrity | Solo/quick, rematch, next challenger, tournament, and melee from 1v1 through 4v4; visuals end at the authoritative winner/team and terminal health. No scripted prototype outcomes in production. |
 | Lifecycle/accounting | Cancel/skip/replay, navigation mid-animation, background/foreground, rapid rematches, interrupted tournament resume and settlement, no duplicate coins/records/achievements. |
 | Existing services | Facts, sharing, sticker book, achievements/trophies, shops/unlocks, leaderboards/Game Center, settings, permissions, narration/audio/haptics, parent gates and reminders. |
 | Network | Distinct explicit online and offline assertions; cached, timeout, authentication, quota, unavailable service, malformed response, and missing/corrupt artwork cases. Passing via fallback does not prove online success. |
-| Upgrade/commerce/cloud | Section 4 fixtures pass on canonical identity, with sandbox and production entitlement evidence distinguished. |
+| Upgrade/commerce/cloud | Synthetic 1.1.7 state and model compatibility pass before internal beta; physical canonical upgrade/real receipts/iCloud remain explicit owner checks, with sandbox and production evidence distinguished. |
 | Layout/accessibility | Supported phones/tablets, iPad orientations, large text, VoiceOver labels/order/result announcements, touch targets, contrast, non-color cues, independent audio/haptics controls. Reduced motion disables shake/flashing and uses static or restrained retro states. |
 | Performance | Compare measured baseline on representative and oldest supported hardware; assess cold start, frame rate, 4v4 overlap, memory/cache bounds, package size, battery/thermal load, and at least 20 sequential battles for leaks. Browser demo smoothness is not native evidence. |
 | Physical capabilities | Release-signed device behavior for App Attest, StoreKit, ads, iCloud, Game Center, speech/microphone, notifications, audio and haptics. Simulator limitations remain explicit. |
-| Release artifact | Deterministic iOS/backend checks passed for the frozen source; reviewed package pins; correct privacy manifest/disclosures for any new image service; archive metadata/signing/capabilities verified. |
+| Release artifact | Deterministic iOS/backend checks passed for the frozen source; reviewed package pins; correct privacy manifest/disclosures for the actual local artwork implementation; archive metadata/signing/capabilities verified. |
 
 No unresolved critical/high-severity regression is acceptable. Low-severity limitations require explicit ownership, impact, and a recorded decision; cosmetic polish cannot excuse lost functionality or untested data preservation.
 
@@ -126,7 +127,7 @@ No unresolved critical/high-severity regression is acceptable. Low-severity limi
 3. Upload the inspected archive. Monitor ASC until processing completes; resolve export-compliance or validation issues instead of treating the upload response as completion.
 4. Add clear beta description, feedback contact, and build-specific **What to Test**. Document known low-severity limitations, current feature coverage, upgrade expectations, and specific failure-reporting instructions.
 5. Prefer the owner's eligible internal group for this owner-testing milestone. Assign the processed build and verify the owner's account/group can install it. Apple documents build assignment and a 90-day testing window. [Internal tester workflow](https://developer.apple.com/help/app-store-connect/test-a-beta-version/add-internal-testers/)
-6. If the owner must be external, prepare TestFlight review information and submit the first 2.0 build for review. Apple states the first submitted build requires full review; later builds for the same version might not. Do not promise review timing or call a pending build installable. [External tester workflow](https://developer.apple.com/help/app-store-connect/test-a-beta-version/invite-external-testers/)
+6. Keep this candidate restricted to the owner internal group. External beta review, public links/additional groups, and App Store submission are outside this milestone and remain unavailable until separately approved and their remaining validation is completed. Apple documents the separate external-review flow. [External tester workflow](https://developer.apple.com/help/app-store-connect/test-a-beta-version/invite-external-testers/)
 7. Record the actual processing status, assigned group, owner access, and availability timestamp. A general public invite or unrequested expansion to additional testers is not required for this milestone.
 8. Run a final physical-device smoke on the distributed candidate where device access permits. Owner installation/acceptance is separately recorded; if the owner has not installed yet, say **available to install**, not **owner tested**.
 
@@ -136,10 +137,10 @@ Providing beta information and assigning groups have ASC role requirements; insp
 
 The TestFlight milestone is complete only when **all** of the following are evidenced:
 
-- The entire retro app, catalog/custom paths, and every existing feature in the parity matrix are implemented; required regression and upgrade checks pass for the frozen source.
-- No critical/high-severity defects, destructive untested migrations, placeholder screens, or missing feature routes remain. Temporary retro art is a deliberate tested failure state, not a substitute for a working online sprite path.
+- The entire retro app, catalog/custom paths, and every existing feature in the parity matrix are implemented; required automated/internal-beta regression and synthetic upgrade checks pass for the frozen source, with unperformed hardware checks explicitly assigned to owner acceptance.
+- No critical/high-severity defects, destructive untested migrations, placeholder screens, or missing feature routes remain. Temporary retro art is a deliberate tested failure state, not a substitute for the working local custom sprite renderer.
 - The canonical **2.0 / allocated build** archive is tied to its source commit and retained with logs, symbols, dependency locks, and verification results.
-- Apple processing/compliance checks have succeeded and the exact build is assigned to the appropriate owner-accessible group, with any required external beta review completed.
+- Apple processing/compliance checks have succeeded and the exact build is assigned to the appropriate owner-accessible group, with internal distribution only; no external/public release is included.
 - **The owner can install the processed build in TestFlight.** This does not require pretending the owner has already installed or accepted it. Report owner-install confirmation as a separate status.
 - The owner receives the actual app/version/build, TestFlight access route, commit, completed test matrix, known low-severity limitations, and feedback instructions. No public App Store release has been performed as part of this milestone.
 

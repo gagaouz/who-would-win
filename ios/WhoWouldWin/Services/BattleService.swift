@@ -33,6 +33,7 @@ actor AppAttestManager {
     }
 
     func prepare(_ original: [String: Any]) async -> PreparedBody {
+        guard AppConfig.externalServicesEnabled else { return unsigned(original) }
         guard DCAppAttestService.shared.isSupported, Date() >= retryAfter else {
             return unsigned(original)
         }
@@ -132,6 +133,7 @@ actor BattleService {
     /// never want for a custom creature. Calling this on app launch / when the
     /// picker appears means the backend is already warm by battle time.
     nonisolated func warmUp() {
+        guard AppConfig.externalServicesEnabled else { return }
         guard let url = URL(string: "\(AppConfig.backendBaseURL)/health") else { return }
         var req = URLRequest(url: url)
         req.timeoutInterval = 20
@@ -141,6 +143,10 @@ actor BattleService {
     // MARK: - Network Battle
 
     func fetchBattleResult(fighter1: Animal, fighter2: Animal, environment: BattleEnvironment = .grassland, arenaEffectsEnabled: Bool = true, tournamentContext: String? = nil) async throws -> BattleResult {
+        #if DEBUG
+        if AppConfig.isUITesting { return try RetroTestFixtures.battle(fighter1, fighter2) }
+        #endif
+        guard AppConfig.externalServicesEnabled else { throw BattleError.networkUnavailable }
         guard let url = URL(string: "\(AppConfig.backendBaseURL)/api/battle") else {
             throw BattleError.serverError
         }
@@ -214,6 +220,10 @@ actor BattleService {
     ///   and always hit the backend (used by the Narration Lab to fetch a true
     ///   cloud result for side-by-side comparison).
     func fetchQuickBattleResult(fighter1: Animal, fighter2: Animal, environment: BattleEnvironment = .grassland, arenaEffectsEnabled: Bool = false, forceNetwork: Bool = false) async throws -> BattleResult {
+        #if DEBUG
+        if AppConfig.isUITesting { return try RetroTestFixtures.battle(fighter1, fighter2) }
+        #endif
+        guard AppConfig.externalServicesEnabled else { throw BattleError.networkUnavailable }
         // ⚙️ Experiment: on-device narration. When the flag is on AND iOS 26+ AND
         // Apple Intelligence is available, resolve + narrate entirely on device —
         // no network, no cost. Built-in animals only (custom creatures still need
@@ -299,6 +309,10 @@ actor BattleService {
     func fetchMeleeResult(teamA: [Animal], teamB: [Animal],
                           environment: BattleEnvironment = .grassland,
                           arenaEffectsEnabled: Bool = false) async throws -> MeleeResult {
+        #if DEBUG
+        if AppConfig.isUITesting { return try RetroTestFixtures.melee(teamA, teamB) }
+        #endif
+        guard AppConfig.externalServicesEnabled else { throw BattleError.networkUnavailable }
         guard let url = URL(string: "\(AppConfig.backendBaseURL)/api/battle/melee") else {
             throw BattleError.serverError
         }

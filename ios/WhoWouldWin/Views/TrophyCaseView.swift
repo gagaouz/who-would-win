@@ -16,9 +16,7 @@ struct TrophyCaseView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Color(hex: "#FFE9BA"), Kids.grape.opacity(0.45)],
-                           startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea()
+            SkyBG()
 
             VStack(spacing: 0) {
                 header
@@ -56,14 +54,14 @@ struct TrophyCaseView: View {
                 Text("✕")
                     .font(Kids.fredoka(isIPad ? 22 : 16, weight: .bold))
                     .foregroundColor(Kids.ink)
-                    .frame(width: isIPad ? 50 : 38, height: isIPad ? 50 : 38)
-                    .background(Circle().fill(.white).overlay(Circle().stroke(Kids.ink, lineWidth: 2.5)))
+                    .frame(width: isIPad ? 50 : 44, height: isIPad ? 50 : 44)
+                    .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5)))
             }
             .buttonStyle(.plain)
             Spacer()
-            StickerWord(text: "TROPHY CASE 🏅", fill: Kids.sun, fontSize: isIPad ? 26 : 19, tilt: -2)
+            StickerWord(text: "TROPHY CASE", fill: Kids.sun, fontSize: isIPad ? 26 : 19, tilt: -2)
             Spacer()
-            Color.clear.frame(width: isIPad ? 50 : 38, height: isIPad ? 50 : 38)
+            Color.clear.frame(width: isIPad ? 50 : 44, height: isIPad ? 50 : 44)
         }
     }
 
@@ -71,15 +69,15 @@ struct TrophyCaseView: View {
         let count = tracker.earnedCount
         let total = tracker.totalCount
         return HStack(spacing: 12) {
-            Text("🏆").font(.system(size: isIPad ? 38 : 30))
+            RetroSymbol("🏆", size: isIPad ? 38 : 30)
             VStack(alignment: .leading, spacing: 4) {
                 Text("\(count) of \(total) trophies")
                     .font(Kids.fredoka(isIPad ? 18 : 15, weight: .bold))
                     .foregroundColor(Kids.ink)
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
-                        Capsule().fill(Color(hex: "#F0EBF7"))
-                        Capsule().fill(Kids.sun)
+                        RetroPanelShape().fill(Kids.creamDeep)
+                        RetroPanelShape().fill(Kids.sun)
                             .frame(width: max(8, geo.size.width * CGFloat(total > 0 ? Double(count)/Double(total) : 0)))
                     }
                 }
@@ -89,9 +87,9 @@ struct TrophyCaseView: View {
         .padding(14)
         .frame(maxWidth: .infinity)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RetroPanelShape(cornerRadius: 18, style: .continuous)
                 .fill(.white)
-                .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
         )
     }
 
@@ -99,17 +97,16 @@ struct TrophyCaseView: View {
     private func trophyTile(id: String, unlocked: Bool) -> some View {
         VStack(spacing: 6) {
             ZStack {
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                RetroPanelShape(cornerRadius: 16, style: .continuous)
                     .fill(unlocked ? Kids.sun : Color.white.opacity(0.55))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        RetroPanelShape(cornerRadius: 16, style: .continuous)
                             .stroke(unlocked ? Kids.ink : Kids.ink.opacity(0.35),
                                     style: StrokeStyle(lineWidth: unlocked ? 3 : 2,
                                                        dash: unlocked ? [] : [5, 3]))
                     )
                     .aspectRatio(1, contentMode: .fit)
-                Text(unlocked ? "🏅" : "🔒")
-                    .font(.system(size: isIPad ? 40 : 32))
+                RetroSymbol(unlocked ? "🏅" : "🔒", size: isIPad ? 40 : 32)
                     .opacity(unlocked ? 1 : 0.5)
             }
             Text(unlocked ? AchievementFeed.displayName(fromRawId: id) : "???")

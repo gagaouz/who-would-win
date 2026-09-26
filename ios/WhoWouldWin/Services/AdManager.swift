@@ -90,6 +90,7 @@ final class AdManager: NSObject, ObservableObject {
     /// Call once at app launch (in WhoWouldWinApp.init or .onAppear).
     /// Sets COPPA / child-directed flags before the SDK starts.
     static func configure() {
+        guard AppConfig.externalServicesEnabled else { return }
         guard !isConfigured else { return }
         isConfigured = true
         let config = MobileAds.shared.requestConfiguration
@@ -229,6 +230,7 @@ final class AdManager: NSObject, ObservableObject {
     // MARK: - Preloading
 
     func preloadAll() {
+        guard AppConfig.externalServicesEnabled else { return }
         preloadInterstitialIfNeeded()
         preloadRewardedIfNeeded()
         // Paid users: don't contact the ad network at launch on their behalf —
@@ -242,6 +244,7 @@ final class AdManager: NSObject, ObservableObject {
 
     /// Preloads the coin-earning rewarded ad. No paid-user gate.
     func preloadRewardedForCoinsIfNeeded() {
+        guard AppConfig.externalServicesEnabled else { return }
         // Paid users deliberately skip AdMob initialization at launch. If they
         // opt into this one rewarded feature later, apply the child-directed,
         // non-personalized configuration before the SDK can make a request.
@@ -269,6 +272,7 @@ final class AdManager: NSObject, ObservableObject {
     }
 
     func preloadInterstitialIfNeeded() {
+        guard AppConfig.externalServicesEnabled else { return }
         guard !userHasPaidForAdRemoval(), interstitial == nil else { return }
         Task {
             do {
@@ -291,6 +295,7 @@ final class AdManager: NSObject, ObservableObject {
     }
 
     func preloadRewardedIfNeeded() {
+        guard AppConfig.externalServicesEnabled else { return }
         guard !userHasPaidForAdRemoval(), rewardedAd == nil else { return }
         Task {
             do {

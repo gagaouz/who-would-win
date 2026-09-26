@@ -14,12 +14,11 @@ struct RoundResultsView: View {
     @State private var lines: [RoundPayoutLine] = []
     @State private var didResolve: Bool = false
     @State private var appeared = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Color(hex: "#FFE9BA"), Kids.peach.opacity(0.6), Kids.pink.opacity(0.5)],
-                           startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea()
+            SkyBG(variant: .meadow)
 
             ScrollView {
                 VStack(spacing: 14) {
@@ -27,7 +26,7 @@ struct RoundResultsView: View {
 
                     VStack(alignment: .leading, spacing: 10) {
                         HStack(spacing: 6) {
-                            Text(settings.wageringEnabled ? "🪙" : "🏅").font(.system(size: 16))
+                            RetroSymbol(settings.wageringEnabled ? "🪙" : "🏅", size: 16)
                             Text(settings.wageringEnabled ? "PAYOUTS" : "ROUND WINNERS")
                                 .font(Kids.fredoka(13, weight: .bold))
                                 .tracking(1)
@@ -55,7 +54,7 @@ struct RoundResultsView: View {
                     }
                     .padding(14)
                     .background(card)
-                    .shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 4)
+                    .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 4)
 
                     KidButton(title: isFinalRound ? "SEE CHAMPION!" : "NEXT ROUND",
                               icon: isFinalRound ? "🏆" : "▶️",
@@ -77,7 +76,7 @@ struct RoundResultsView: View {
             guard !didResolve else { return }
             didResolve = true
             lines = manager.resolveRoundPayouts()
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.65)) { appeared = true }
+            withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) { appeared = true }
         }
     }
 
@@ -90,9 +89,9 @@ struct RoundResultsView: View {
     }
 
     private var card: some View {
-        RoundedRectangle(cornerRadius: 20, style: .continuous)
+        RetroPanelShape(cornerRadius: 20, style: .continuous)
             .fill(Color.white)
-            .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+            .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
     }
 
     // MARK: - Header
@@ -107,7 +106,7 @@ struct RoundResultsView: View {
             }
             StickerWord(text: "\(tournament.size.roundName(for: roundIndex).uppercased()) RESULTS",
                         fill: Kids.sun, fontSize: 18, tilt: -2)
-                .rotationEffect(.degrees(-2))
+
             Text("Round \(roundIndex + 1) of \(tournament.size.totalRounds)")
                 .font(Kids.nunito(11, weight: .bold))
                 .foregroundColor(Kids.ink)
@@ -122,17 +121,16 @@ struct RoundResultsView: View {
         let hasWager = line.wagered > 0 && settings.wageringEnabled
         return HStack(spacing: 10) {
             ZStack {
-                Circle()
-                    .fill(hasWager ? (line.won ? Kids.grass : Kids.pink) : Color(hex: "#E1D5F0"))
-                    .overlay(Circle().stroke(Kids.ink, lineWidth: 2))
+                RetroPanelShape()
+                    .fill(hasWager ? (line.won ? Kids.grass : Kids.pink) : Kids.panel)
+                    .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
                     .frame(width: 30, height: 30)
                 if hasWager {
                     Text(line.won ? "✓" : "✕")
                         .font(Kids.fredoka(14, weight: .bold))
-                        .foregroundColor(.white)
+                        .foregroundColor(Kids.ink)
                 } else {
-                    Text("👑")
-                        .font(.system(size: 14))
+                    RetroSymbol("👑", size: 14)
                 }
             }
 
@@ -166,7 +164,7 @@ struct RoundResultsView: View {
                 HStack(spacing: 4) {
                     Text(line.delta >= 0 ? "+\(line.delta)" : "\(line.delta)")
                         .font(Kids.fredoka(14, weight: .bold))
-                        .foregroundColor(line.won ? Kids.grass : Kids.pink)
+                        .foregroundColor(line.won ? Kids.grassDeep : Kids.pinkDeep)
                     KidsGoldCoin(size: 14)
                 }
             }
@@ -174,9 +172,9 @@ struct RoundResultsView: View {
         .padding(.vertical, 8)
         .padding(.horizontal, 10)
         .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color(hex: "#F7F2FF"))
-                .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Kids.ink.opacity(0.2), lineWidth: 1.5))
+            RetroPanelShape(cornerRadius: 12, style: .continuous)
+                .fill(Kids.panel)
+                .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.ink.opacity(0.2), lineWidth: 1.5))
         )
     }
 
@@ -190,7 +188,7 @@ struct RoundResultsView: View {
             HStack(spacing: 4) {
                 Text(roundNetDelta >= 0 ? "+\(roundNetDelta)" : "\(roundNetDelta)")
                     .font(Kids.fredoka(16, weight: .bold))
-                    .foregroundColor(roundNetDelta >= 0 ? Kids.grass : Kids.pink)
+                    .foregroundColor(roundNetDelta >= 0 ? Kids.grassDeep : Kids.pinkDeep)
                 KidsGoldCoin(size: 14)
             }
         }

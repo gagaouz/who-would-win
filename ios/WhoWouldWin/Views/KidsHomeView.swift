@@ -1,7 +1,7 @@
 import SwiftUI
 
-// MARK: - Home Screen — Animal Arena Jr.
-// Matches screenshots/01_home.png — light, bouncy, sticker aesthetic.
+// MARK: - Home — the retro arena
+// Keeps the original navigation and progression actions in one native home.
 
 struct KidsHomeView: View {
     @ObservedObject private var settings = UserSettings.shared
@@ -21,7 +21,6 @@ struct KidsHomeView: View {
     // Daily mystery sticker reveal.
     @State private var mysteryReveal: Animal? = nil
     @State private var showMysteryCoins = false
-    @State private var giftWiggle = false
     // Onboarding: How to Play walkthrough + first-launch welcome offer.
     @State private var showHowToPlay = false
     @State private var showWelcome = false
@@ -31,280 +30,79 @@ struct KidsHomeView: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
     private var isIPad: Bool { sizeClass == .regular }
 
-    // Rotating hero pair
-    private let heroPairs: [(String, String, Color, Color)] = [
-        ("🦁", "🐯", Kids.sun, Kids.peach),
-        ("🐻", "🐺", Kids.peach, Kids.grape),
-        ("🦈", "🐙", Kids.sky, Kids.pink),
-        ("🐉", "🦄", Kids.grape, Kids.pink),
+    // Stable gameplay IDs, shared with the roster and the retro asset provider.
+    private let heroPairs: [(String, String)] = [
+        ("lion", "gorilla"), ("grizzly_bear", "wolf"),
+        ("great_white_shark", "octopus"), ("dragon", "unicorn")
     ]
     @State private var pairIndex = 0
     @State private var pairTimer: Timer?
 
-    // Mount bounce-in
-    @State private var appeared = false
-    // Ambient floats
-    @State private var animalBob: CGFloat = 0
-    @State private var vsPulse: CGFloat = 1
-    @State private var btnBreath: CGFloat = 1
-    // Each ANIMAL word rocks independently — different durations + opposite
-    // start points so they're naturally out of sync.
-    @State private var titleTiltTop:    Double = -3   // rocks -3° → +3°
-    @State private var titleTiltBottom: Double =  2   // rocks +2° → -2°
-    @State private var titlePulse: CGFloat = 1.0      // unified pulse 1.0 ↔ 1.04
-
     var body: some View {
         NavigationStack {
             ZStack {
-                SkyBG(variant: .day)
-
-                // Top chrome
-                //
-                // .zIndex(1) is critical: the GeometryReader/ScrollView sibling
-                // below is rendered AFTER this chrome in the ZStack, and a
-                // SwiftUI ScrollView captures touches across its entire frame
-                // (not just where content is drawn). Without the zIndex bump,
-                // the ScrollView eats taps on the trophy/sticker/settings
-                // buttons. The Spacer at the bottom of this VStack only pushes
-                // the row to the top — it doesn't make the chrome itself
-                // hit-test-only-on-the-top-row.
-                VStack {
-                    HStack(alignment: .top) {
-                        CoinChip(count: coins.balance)
-                            .scaleEffect(appeared ? 1 : 0.4)
-                            .opacity(appeared ? 1 : 0)
-                        // Daily mystery sticker — only when one's waiting.
-                        if settings.mysteryStickerAvailable {
-                            Button {
-                                claimMysterySticker()
-                            } label: {
-                                Text("🎁")
-                                    .font(.system(size: isIPad ? 26 : 22))
-                                    .frame(width: isIPad ? 50 : 44, height: isIPad ? 50 : 44)
-                                    .background(
-                                        Circle().fill(Kids.pink)
-                                            .overlay(Circle().stroke(Kids.ink, lineWidth: 2.5))
-                                    )
-                                    .rotationEffect(.degrees(giftWiggle ? -8 : 8))
+                SkyBG()
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(spacing: isIPad ? 22 : 18) {
+                        homeToolbar
+                        homeWordmark
+                        heroConsole
+                        VStack(spacing: 12) {
+                            KidButton(title: "LET'S BATTLE!", icon: "▶", color: Kids.sun, size: .lg) {
+                                HapticsService.shared.tap()
+                                goToPicker = true
                             }
-                            .buttonStyle(.plain)
-                            .padding(.leading, 6)
-                            .scaleEffect(appeared ? 1 : 0.4)
-                            .opacity(appeared ? 1 : 0)
-                            .accessibilityLabel("Open today's mystery sticker")
-                        }
-                        Spacer()
-                        HStack(spacing: isIPad ? 16 : 10) {
-                            KidIconBtn(icon: "🏆", fill: Kids.sun) { showHallOfFame = true }
-                            KidIconBtn(icon: "📔", fill: Kids.pink) { showBook = true }
-                            KidIconBtn(icon: "⚙️", fill: Kids.sky) { showSettings = true }
-                        }
-                        .scaleEffect(appeared ? 1 : 0.4)
-                        .opacity(appeared ? 1 : 0)
-                    }
-                    .padding(.horizontal, isIPad ? 28 : 18)
-                    .padding(.top, isIPad ? 14 : 8)
-                    Spacer()
-                        .allowsHitTesting(false)  // let taps fall through to the ScrollView below
-                }
-                .zIndex(1)
-
-                // Main stack — capped to a phone-ish max width on iPad so the
-                // layout stays cohesive instead of spreading to the screen edges.
-                // Wrapped in a ScrollView so iPad-landscape (shorter height) doesn't
-                // clip the bottom rows; in portrait there's normally no scroll needed.
-                GeometryReader { geo in
-                    let isLandscape = geo.size.width > geo.size.height
-                    ScrollView(.vertical, showsIndicators: false) {
-                        HStack {
-                            Spacer(minLength: 0)
-                            VStack(spacing: 0) {
-
-                                Spacer().frame(height: isLandscape ? (isIPad ? 70 : 36) : (isIPad ? 110 : 64))
-
-                        // Sticker-word title: ANIMAL / vs / ANIMAL
-                        // Each ANIMAL has its own ambient rock — outer scale-only for pulse.
-                        // Internal `tilt` is the resting angle; the external rotationEffect
-                        // adds the dynamic wobble on top of it.
-                        VStack(spacing: isIPad ? -10 : -6) {
-                            StickerWord(text: "ANIMAL", fill: Kids.sun,
-                                        fontSize: isLandscape ? (isIPad ? 60 : 40) : (isIPad ? 80 : 50), tilt: -3)
-                                .scaleEffect(appeared ? 1 : 0.2)
-                                .rotationEffect(.degrees(appeared ? titleTiltTop : -20))
-                                .opacity(appeared ? 1 : 0)
-                            // White "vs" pill (per design)
-                            Text("vs")
-                                .font(Kids.fredoka(isIPad ? 32 : 20, weight: .bold))
+                            .accessibilityIdentifier("home.pickFighters")
+                            Button {
+                                startSurprise()
+                            } label: {
+                                HStack(spacing: 9) {
+                                    RetroSymbol("🎲", size: 18)
+                                    Text("SURPRISE ME!").font(Kids.fredoka(16))
+                                    Spacer()
+                                    Image(systemName: "arrow.right").font(.system(size: 15, weight: .bold))
+                                }
                                 .foregroundColor(Kids.ink)
-                                .padding(.horizontal, isIPad ? 22 : 14)
-                                .padding(.vertical, isIPad ? 4 : 2)
-                                .background(
-                                    Capsule().fill(.white)
-                                        .overlay(Capsule().stroke(Kids.ink, lineWidth: isIPad ? 4 : 3))
-                                )
-                                .shadow(color: Kids.ink.opacity(0.10), radius: 0, x: 0, y: 3)
-                                .zIndex(2)
-                                .padding(.vertical, isIPad ? -6 : -4)
-                                .opacity(appeared ? 1 : 0)
-                            StickerWord(text: "ANIMAL", fill: Kids.pink,
-                                        fontSize: isLandscape ? (isIPad ? 60 : 40) : (isIPad ? 80 : 50), tilt: 2)
-                                .scaleEffect(appeared ? 1 : 0.2)
-                                .rotationEffect(.degrees(appeared ? titleTiltBottom : 20))
-                                .opacity(appeared ? 1 : 0)
+                                .padding(14)
+                                .frame(maxWidth: .infinity, minHeight: 48)
+                                .background(RetroPanelShape().fill(Kids.cream))
+                                .overlay(RetroPanelShape().strokeBorder(Kids.ink.opacity(0.5), lineWidth: 2))
+                            }
+                            .buttonStyle(KidButtonPressStyle())
+                            .accessibilityLabel("Surprise Me — start a random battle")
+                            .accessibilityIdentifier("home.surpriseBattle")
                         }
-                        .scaleEffect(titlePulse)              // unified ambient pulse
-
-                        // Subtitle
-                        Text("who would win?")
-                            .font(Kids.nunito(isIPad ? 22 : 14, weight: .bold))
-                            .foregroundColor(Kids.inkSoft)
-                            .padding(.top, isIPad ? 24 : 14)
-                            .opacity(appeared ? 1 : 0)
-
-                        // Always-available "How to Play" — discoverable, never forced.
+                        if settings.currentStreak >= 1 {
+                            StreakPill(days: settings.currentStreak)
+                        }
+                        dailyChallengeCard
+                        factOfTheDayCard
+                        VStack(alignment: .leading, spacing: 14) {
+                            HStack(spacing: 8) {
+                                Rectangle().fill(Kids.grassDeep).frame(width: 7, height: 7)
+                                Text("MORE WAYS TO PLAY").font(Kids.pixel(10)).foregroundColor(Kids.grassDeep)
+                            }
+                            progressChipsRow
+                        }
                         Button {
                             HapticsService.shared.tap()
                             showHowToPlay = true
                         } label: {
-                            HStack(spacing: 5) {
-                                Text("❓").font(.system(size: 13))
-                                Text("How to Play")
-                                    .font(Kids.fredoka(13, weight: .bold))
-                                    .foregroundColor(Kids.ink)
-                            }
-                            .padding(.horizontal, 14).padding(.vertical, 6)
-                            .background(Capsule().fill(.white.opacity(0.85)).overlay(Capsule().stroke(Kids.ink.opacity(0.5), lineWidth: 2)))
+                            Label("How to Play", systemImage: "questionmark.circle")
+                                .font(Kids.nunito(15)).foregroundColor(Kids.inkSoft)
+                                .frame(minHeight: 44)
                         }
-                        .buttonStyle(.plain)
-                        .padding(.top, isIPad ? 12 : 8)
-                        .opacity(appeared ? 1 : 0)
                         .accessibilityLabel("How to play")
-
-                        Spacer().frame(height: isLandscape ? (isIPad ? 12 : 8) : (isIPad ? 26 : 14))
-
-                        // Hero pair with VS star
-                        ZStack {
-                            HStack {
-                                AnimalBubble(
-                                    emoji: heroPairs[pairIndex].0,
-                                    size: isLandscape ? (isIPad ? 100 : 72) : (isIPad ? 140 : 86),
-                                    tint: heroPairs[pairIndex].2,
-                                    tilt: -6
-                                )
-                                .offset(y: animalBob)
-                                .transition(.scale.combined(with: .opacity))
-                                Spacer()
-                                AnimalBubble(
-                                    emoji: heroPairs[pairIndex].1,
-                                    size: isLandscape ? (isIPad ? 100 : 72) : (isIPad ? 140 : 86),
-                                    tint: heroPairs[pairIndex].3,
-                                    tilt: 6
-                                )
-                                .offset(y: -animalBob)
-                                .transition(.scale.combined(with: .opacity))
-                            }
-                            .padding(.horizontal, isIPad ? 80 : 60)
-                            // No .id(pairIndex) — it caused the HStack to be torn down
-                            // on every pair swap, which wiped the repeatForever bounce
-                            // CA animation on the new layer.
-
-                            StarSticker(text: "VS", size: isIPad ? 72 : 46, fill: Kids.pink)
-                                .scaleEffect(vsPulse)
-                                .rotationEffect(.degrees(vsPulse > 1 ? 4 : -4))
-                        }
-                        .scaleEffect(appeared ? 1 : 0.5)
-                        .opacity(appeared ? 1 : 0)
-
-                        Spacer().frame(height: isLandscape ? (isIPad ? 12 : 8) : (isIPad ? 24 : 14))
-
-                        // Streak badge
-                        if settings.currentStreak >= 1 {
-                            StreakPill(days: settings.currentStreak)
-                                .scaleEffect(appeared ? 1 : 0.3)
-                                .opacity(appeared ? 1 : 0)
-                                .padding(.bottom, isIPad ? 20 : 12)
-                        } else {
-                            Spacer().frame(height: isIPad ? 8 : 4)
-                        }
-
-                        // Daily Challenge — a fresh featured matchup every day.
-                        dailyChallengeCard
-                            .padding(.horizontal, isIPad ? 40 : 22)
-                            .padding(.bottom, isIPad ? 16 : 10)
-                            .offset(y: appeared ? 0 : 40)
-                            .opacity(appeared ? 1 : 0)
-
-                        // CTAs
-                        KidButton(title: "LET'S BATTLE!", icon: "⚡", color: Kids.grass, size: .xl) {
-                            HapticsService.shared.tap()
-                            goToPicker = true
-                        }
-                        .scaleEffect(btnBreath)
-                        // Extra padding on iPad so the button stops looking like a slab
-                        .padding(.horizontal, isIPad ? 90 : 24)
-                        .offset(y: appeared ? 0 : 40)
-                        .opacity(appeared ? 1 : 0)
-
-                        // Surprise Me — instant random matchup, no picking.
-                        Button {
-                            startSurprise()
-                        } label: {
-                            HStack(spacing: 8) {
-                                Text("🎲").font(.system(size: 18))
-                                Text("SURPRISE ME!")
-                                    .font(Kids.fredoka(16, weight: .bold))
-                                    .foregroundColor(Kids.ink)
-                            }
-                            .padding(.horizontal, 20).padding(.vertical, 10)
-                            .background(
-                                Capsule().fill(.white)
-                                    .overlay(Capsule().stroke(Kids.ink, lineWidth: 2.5))
-                            )
-                            .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
-                        }
-                        .buttonStyle(.plain)
-                        .padding(.top, isIPad ? 14 : 10)
-                        .offset(y: appeared ? 0 : 40)
-                        .opacity(appeared ? 1 : 0)
-                        .accessibilityLabel("Surprise Me — start a random battle")
-
-                        Spacer().frame(height: isLandscape ? (isIPad ? 12 : 8) : (isIPad ? 22 : 14))
-
-                        // Fact of the Day — teaches something every day, even
-                        // before a battle. Rotates deterministically by date.
-                        factOfTheDayCard
-                            .padding(.horizontal, isIPad ? 40 : 22)
-                            .padding(.bottom, isIPad ? 14 : 10)
-                            .offset(y: appeared ? 0 : 50)
-                            .opacity(appeared ? 1 : 0)
-
-                        // Progress chips row — iPad puts both chips side-by-side to use
-                        // the horizontal space and shorten the otherwise huge vertical sprawl.
-                        progressChipsRow
-                            .offset(y: appeared ? 0 : 50)
-                            .opacity(appeared ? 1 : 0)
-
-                        // Bottom breathing room before the safe-area edge. The
-                        // owl "tap an animal to swap buddies" tip used to live
-                        // here, but the round, thickly-outlined creature circles
-                        // already look obviously tappable, and the giant green
-                        // LET'S BATTLE button anchors the primary action — the
-                        // tip was redundant chrome that nagged experienced kids
-                        // and confused new ones ("buddies" reads as teammates
-                        // when these are opponents).
-                        if isLandscape {
-                            Color.clear.frame(height: isIPad ? 24 : 12)
-                        } else if isIPad {
-                            Color.clear.frame(height: 40)
-                        } else {
-                            Color.clear.frame(height: 30)
-                        }
-                            }
-                            .frame(maxWidth: isIPad ? 580 : .infinity)
-                            Spacer(minLength: 0)
-                        }
-                        .frame(minHeight: geo.size.height)  // fill the viewport in portrait
+                        .accessibilityIdentifier("home.howToPlay")
+                        Text("PICK A CREATURE. MAKE A LEGEND.")
+                            .font(Kids.nunito(10, weight: .heavy)).tracking(1.2)
+                            .foregroundColor(Kids.inkSoft)
+                            .padding(.bottom, 18)
                     }
+                    .padding(.horizontal, isIPad ? 28 : 18)
+                    .padding(.top, 12)
+                    .frame(maxWidth: isIPad ? 650 : 520)
+                    .frame(maxWidth: .infinity)
                 }
             }
             .navigationBarHidden(true)
@@ -327,11 +125,7 @@ struct KidsHomeView: View {
             }
         }
         .onAppear {
-            withAnimation(.spring(response: 0.55, dampingFraction: 0.6).delay(0.05)) {
-                appeared = true
-            }
             startRotation()
-            startAmbient()
             maybeOfferHowToPlay()
             maybeShowPaywall()
         }
@@ -371,6 +165,120 @@ struct KidsHomeView: View {
         } message: {
             Text("New here? Watch a quick battle, see the how-to, or jump right in!")
         }
+    }
+
+    private var homeToolbar: some View {
+        HStack(spacing: 8) {
+            CoinChip(count: coins.balance)
+            if settings.mysteryStickerAvailable {
+                KidIconBtn(icon: "🎁", fill: Kids.grass, a11yLabel: "Open today's mystery sticker") {
+                    claimMysterySticker()
+                }
+                .accessibilityIdentifier("home.mysterySticker")
+            }
+            Spacer(minLength: 0)
+            KidIconBtn(icon: "🏆", fill: Kids.cream) { showHallOfFame = true }
+            KidIconBtn(icon: "📔", fill: Kids.cream) { showBook = true }
+            KidIconBtn(icon: "⚙️", fill: Kids.cream) { showSettings = true }
+        }
+    }
+
+    private var homeWordmark: some View {
+        VStack(spacing: 10) {
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 8) {
+                    Text("ANIMAL").foregroundColor(Kids.ink)
+                    Text("vs").foregroundColor(Kids.grassDeep)
+                    Text("ANIMAL").foregroundColor(Kids.ink)
+                }.font(Kids.pixel(isIPad ? 20 : 14))
+                VStack(spacing: 7) {
+                    Text("ANIMAL").foregroundColor(Kids.ink)
+                    Text("vs ANIMAL").foregroundColor(Kids.grassDeep)
+                }.font(Kids.pixel(18))
+            }
+            Text("BIG MATCHUPS. LITTLE PIXELS.")
+                .font(Kids.nunito(10, weight: .heavy)).tracking(2)
+                .foregroundColor(Kids.inkSoft)
+        }
+        .padding(.vertical, 10)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Animal versus Animal. Big matchups, little pixels.")
+    }
+
+    private var heroFighters: (Animal, Animal) {
+        let pair = heroPairs[pairIndex]
+        let left = Animals.all.first(where: { $0.id == pair.0 }) ?? Animals.all[0]
+        let right = Animals.all.first(where: { $0.id == pair.1 }) ?? Animals.all[1]
+        return (left, right)
+    }
+
+    private var heroConsole: some View {
+        let fighters = heroFighters
+        return VStack(spacing: 0) {
+            HStack(spacing: 8) {
+                Rectangle().fill(Kids.grass).frame(width: 6, height: 6)
+                Text("ANIMAL ARENA").font(Kids.pixel(9))
+                Spacer()
+                Text("READY").font(Kids.nunito(10, weight: .heavy)).tracking(1.5)
+            }
+            .foregroundColor(Kids.cream)
+            .padding(.horizontal, 13).padding(.vertical, 14)
+            VStack(spacing: 0) {
+                HStack(alignment: .center) {
+                    Text(fighters.0.name.uppercased()).frame(maxWidth: .infinity, alignment: .leading)
+                    Text("VS").font(Kids.pixel(12)).foregroundColor(Kids.sun)
+                    Text(fighters.1.name.uppercased()).frame(maxWidth: .infinity, alignment: .trailing)
+                }
+                .font(Kids.nunito(11, weight: .heavy))
+                .foregroundColor(Kids.cream)
+                .padding(12)
+                .background(Kids.ink)
+                GeometryReader { geo in
+                    ZStack(alignment: .bottom) {
+                        RetroHomeLandscape()
+                        HStack(alignment: .bottom) {
+                            RetroCreatureArtwork(animal: fighters.0, size: min(geo.size.width * 0.43, 180))
+                            Spacer(minLength: 4)
+                            RetroCreatureArtwork(animal: fighters.1, size: min(geo.size.width * 0.43, 180))
+                                .scaleEffect(x: -1, y: 1)
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.bottom, 16)
+                    }
+                }
+                .frame(height: isIPad ? 220 : 174)
+                HStack(alignment: .top, spacing: 10) {
+                    Image(systemName: "play.fill").font(.system(size: 9, weight: .bold)).padding(.top, 4)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("THE MATCHUP").font(Kids.pixel(8)).foregroundColor(Kids.grassDeep)
+                        Text("Every creature has a story. Who will win yours?")
+                            .font(Kids.nunito(15, weight: .heavy)).foregroundColor(Kids.ink)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .foregroundColor(Kids.grassDeep)
+                .padding(14)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Kids.panel)
+            }
+            .overlay(Rectangle().strokeBorder(Kids.ink, lineWidth: 3))
+            .padding(.horizontal, 10)
+            HStack {
+                Text("143 CREATURES")
+                Spacer()
+                HStack(spacing: 5) {
+                    ForEach(0..<5, id: \.self) { _ in Rectangle().fill(Kids.ink).frame(width: 14, height: 3) }
+                }.accessibilityHidden(true)
+                Spacer()
+                Text("LET'S PLAY")
+            }
+            .font(Kids.nunito(8, weight: .heavy)).tracking(1)
+            .foregroundColor(Kids.cream.opacity(0.65)).padding(12)
+        }
+        .background(RetroPanelShape(cornerRadius: 18).fill(Kids.console))
+        .overlay(RetroPanelShape(cornerRadius: 18).strokeBorder(Kids.ink, lineWidth: 3))
+        .compositingGroup().shadow(color: Kids.ink, radius: 0, x: 0, y: 5)
+        .compositingGroup().shadow(color: Kids.creamDeep, radius: 0, x: 0, y: 10)
     }
 
     private func claimMysterySticker() {
@@ -418,7 +326,7 @@ struct KidsHomeView: View {
                 }
                 meleeRow
             }
-            .padding(.horizontal, 30)
+            .padding(.horizontal, 0)
         } else {
             // Phone, or one of the items is missing/replaced by a button — stack vertically
             VStack(spacing: isIPad ? 14 : 10) {
@@ -430,7 +338,8 @@ struct KidsHomeView: View {
                         CoinStore.shared.awardTournamentSeedIfNeeded()
                         showTournament = true
                     }
-                    .padding(.horizontal, isIPad ? 100 : 40)
+                    .accessibilityIdentifier("home.tournamentMode")
+                    .padding(.horizontal, 0)
                 } else {
                     UnlockCounterChip(
                         emoji: "🏆", label: "Tournament Mode",
@@ -438,7 +347,7 @@ struct KidsHomeView: View {
                         total: UserSettings.tournamentBattleThreshold,
                         color: Kids.grape
                     )
-                    .padding(.horizontal, isIPad ? 40 : 22)
+                    .padding(.horizontal, 0)
                 }
                 meleeRow
                 if let next = nextPack {
@@ -448,7 +357,7 @@ struct KidsHomeView: View {
                         total: next.threshold,
                         color: next.color
                     )
-                    .padding(.horizontal, isIPad ? 40 : 22)
+                    .padding(.horizontal, 0)
                 }
             }
         }
@@ -463,7 +372,7 @@ struct KidsHomeView: View {
                 HapticsService.shared.tap()
                 goToMelee = true
             }
-            .padding(.horizontal, isIPad ? 100 : 40)
+            .padding(.horizontal, 0)
         } else {
             Button {
                 HapticsService.shared.tap()
@@ -477,7 +386,7 @@ struct KidsHomeView: View {
                 )
             }
             .buttonStyle(.plain)
-            .padding(.horizontal, isIPad ? 40 : 22)
+            .padding(.horizontal, 0)
         }
     }
 
@@ -495,10 +404,10 @@ struct KidsHomeView: View {
         let fact = AnimalFacts.facts(for: a.id)
         return HStack(spacing: 12) {
             ZStack {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                RetroPanelShape(cornerRadius: 12, style: .continuous)
                     .fill(Kids.sky)
-                    .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Kids.sheen))
-                    .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                    .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).fill(Kids.sheen))
+                    .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
                 CreatureIcon(animal: a, size: 34)
             }
             .frame(width: 44, height: 44)
@@ -513,20 +422,19 @@ struct KidsHomeView: View {
                     .foregroundColor(Kids.ink)
                     .lineLimit(1).minimumScaleFactor(0.8)
                 Text(fact?.coolFact ?? "")
-                    .font(Kids.nunito(11, weight: .bold))
+                    .font(Kids.nunito(13, weight: .semibold))
                     .foregroundColor(Kids.inkSoft)
-                    .lineLimit(2).minimumScaleFactor(0.85)
                     .fixedSize(horizontal: false, vertical: true)
             }
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 12).padding(.vertical, 12)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(.white)
-                .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+            RetroPanelShape(cornerRadius: 18, style: .continuous)
+                .fill(Kids.cream)
+                .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
         )
-        .shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
     }
 
     // MARK: - Daily Challenge card
@@ -541,11 +449,11 @@ struct KidsHomeView: View {
         } label: {
             HStack(spacing: 12) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    RetroPanelShape(cornerRadius: 12, style: .continuous)
                         .fill(Kids.sun)
-                        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Kids.sheen))
-                        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
-                    Text(available ? "📅" : "✅").font(.system(size: 22))
+                        .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).fill(Kids.sheen))
+                        .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                    RetroSymbol(available ? "📅" : "✅", size: 22)
                 }
                 .frame(width: 44, height: 44)
 
@@ -555,10 +463,11 @@ struct KidsHomeView: View {
                         .foregroundColor(Kids.ink)
                     if available {
                         HStack(spacing: 5) {
-                            Text(pair.0.emoji).font(.system(size: 16))
+                            CreatureIcon(animal: pair.0, size: 28)
                             Text("vs").font(Kids.nunito(11, weight: .bold)).foregroundColor(Kids.inkSoft)
-                            Text(pair.1.emoji).font(.system(size: 16))
-                            Text("· +30 🪙").font(Kids.nunito(11, weight: .bold)).foregroundColor(Kids.inkSoft)
+                            CreatureIcon(animal: pair.1, size: 28)
+                            Text("+30").font(Kids.nunito(12, weight: .heavy)).foregroundColor(Kids.inkSoft)
+                            KidsGoldCoin(size: 14)
                         }
                     } else {
                         Text("Come back tomorrow for a new one!")
@@ -569,16 +478,16 @@ struct KidsHomeView: View {
                 }
                 Spacer()
                 if available {
-                    Text("▶").font(Kids.fredoka(16, weight: .bold)).foregroundColor(Kids.ink)
+                    Image(systemName: "play.fill").font(.system(size: 16, weight: .bold)).foregroundColor(Kids.ink)
                 }
             }
             .padding(.horizontal, 12).padding(.vertical, 12)
             .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(available ? Color(hex: "#FFF6E0") : .white)
-                    .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                RetroPanelShape(cornerRadius: 18, style: .continuous)
+                    .fill(available ? Kids.panel : .white)
+                    .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
             )
-            .shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+            .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
         }
         .buttonStyle(.plain)
         .disabled(!available)
@@ -639,40 +548,15 @@ struct KidsHomeView: View {
 
     private func startRotation() {
         pairTimer?.invalidate()
-        pairTimer = Timer.scheduledTimer(withTimeInterval: 4.0, repeats: true) { _ in
-            withAnimation(.spring(response: 0.45, dampingFraction: 0.6)) {
+        #if DEBUG
+        // Keep native screenshot fixtures between carousel transitions.
+        guard !(AppConfig.isUITesting && AppConfig.isIsolatedTestBuild) else { return }
+        #endif
+        guard !UIAccessibility.isReduceMotionEnabled else { return }
+        pairTimer = Timer.scheduledTimer(withTimeInterval: 7.0, repeats: true) { _ in
+            withAnimation(.easeOut(duration: 0.12)) {
                 pairIndex = (pairIndex + 1) % heroPairs.count
             }
-        }
-    }
-
-    private func startAmbient() {
-        // Respect Reduce Motion — kids with vestibular sensitivity (or parents
-        // who set it for them) should not get six perpetual wobble loops.
-        guard !UIAccessibility.isReduceMotionEnabled else { return }
-        withAnimation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true)) {
-            animalBob = -6
-        }
-        withAnimation(.easeInOut(duration: 1.1).repeatForever(autoreverses: true)) {
-            vsPulse = 1.1
-        }
-        withAnimation(.easeInOut(duration: 1.6).repeatForever(autoreverses: true)) {
-            btnBreath = 1.025
-        }
-        // Title rocks — each ANIMAL on its own clock so they wobble independently
-        withAnimation(.easeInOut(duration: 1.4).repeatForever(autoreverses: true)) {
-            titleTiltTop = 3      // top rocks from -3° to +3°
-        }
-        withAnimation(.easeInOut(duration: 1.7).repeatForever(autoreverses: true)) {
-            titleTiltBottom = -2  // bottom rocks from +2° to -2°
-        }
-        // Pulse stays unified on the outer VStack
-        withAnimation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true)) {
-            titlePulse = 1.04
-        }
-        // Gift icon wiggle to draw the eye to the daily mystery.
-        withAnimation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true)) {
-            giftWiggle = true
         }
     }
 
@@ -710,11 +594,11 @@ struct UnlockCounterChip: View {
         HStack(spacing: 12) {
             // Big colored emoji tile
             ZStack {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                RetroPanelShape(cornerRadius: 12, style: .continuous)
                     .fill(color)
-                    .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Kids.sheen))
-                    .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
-                Text(emoji).font(.system(size: 22))
+                    .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).fill(Kids.sheen))
+                    .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                RetroSymbol(emoji, size: 22)
             }
             .frame(width: 44, height: 44)
 
@@ -741,11 +625,11 @@ struct UnlockCounterChip: View {
         }
         .padding(.horizontal, 12).padding(.vertical, 12)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(.white)
-                .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+            RetroPanelShape(cornerRadius: 18, style: .continuous)
+                .fill(Kids.cream)
+                .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
         )
-        .shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
     }
 }
 
@@ -757,13 +641,43 @@ private struct CounterBar: View {
     var body: some View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
-                Capsule()
-                    .fill(Color(hex: "#F0EBF7"))
-                Capsule()
+                Rectangle()
+                    .fill(Kids.creamDeep)
+                Rectangle()
                     .fill(LinearGradient(colors: [fill.opacity(0.85), fill],
                                          startPoint: .leading, endPoint: .trailing))
                     .frame(width: max(8, geo.size.width * CGFloat(max(0, min(1, progress)))))
             }
         }
+    }
+}
+
+
+/// Quiet pixel landscape for the home preview; no timer, gameplay or assets.
+private struct RetroHomeLandscape: View {
+    var body: some View {
+        Canvas { context, size in
+            context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(Color(hex: "#EFE1AE")))
+            let unit: CGFloat = 5
+            let horizon = (size.height * 0.55 / unit).rounded() * unit
+            for row in 0..<4 {
+                let base = horizon + CGFloat(row) * 16
+                let color = ["#BEC296", "#94A477", "#6E895F", "#496845"][row]
+                for x in stride(from: CGFloat.zero, to: size.width, by: unit) {
+                    let lift = CGFloat(Int(sin(Double(x / 49 + CGFloat(row))) * 4)) * unit
+                    context.fill(Path(CGRect(x: x, y: base + lift, width: unit, height: size.height - base - lift)), with: .color(Color(hex: color)))
+                }
+            }
+            let sunX = (size.width * 0.57 / unit).rounded() * unit
+            let sunY: CGFloat = 22
+            context.fill(Path(CGRect(x: sunX, y: sunY, width: 30, height: 30)), with: .color(Kids.sun.opacity(0.5)))
+            context.fill(Path(CGRect(x: sunX + 5, y: sunY - 5, width: 20, height: 40)), with: .color(Kids.sun.opacity(0.35)))
+            context.fill(Path(CGRect(x: 0, y: size.height - 29, width: size.width, height: 29)), with: .color(Color(hex: "#B99C64")))
+            context.fill(Path(CGRect(x: 0, y: size.height - 32, width: size.width, height: 5)), with: .color(Kids.grassDeep))
+            for x in stride(from: CGFloat(8), to: size.width, by: 29) {
+                context.fill(Path(CGRect(x: x, y: size.height - 16, width: 5, height: 3)), with: .color(Kids.peachDeep.opacity(0.45)))
+            }
+        }
+        .accessibilityHidden(true)
     }
 }

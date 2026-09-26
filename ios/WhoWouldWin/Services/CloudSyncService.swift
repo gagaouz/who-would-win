@@ -94,6 +94,7 @@ final class CloudSyncService {
     // MARK: - Init
 
     private init() {
+        guard AppConfig.externalServicesEnabled else { return }
         // Listen for external changes pushed from another device or
         // after an initial iCloud download completes.
         NotificationCenter.default.addObserver(
@@ -114,6 +115,7 @@ final class CloudSyncService {
     /// Call this when you know state just changed and want it persisted
     /// to the cloud immediately (bypasses debounce).
     func syncToCloud() {
+        guard AppConfig.externalServicesEnabled else { return }
         // -- Ints --
         for key in intKeys {
             cloud.set(defaults.integer(forKey: key), forKey: key)
@@ -151,6 +153,7 @@ final class CloudSyncService {
     /// After merging, posts `CloudSyncService.didRestoreNotification` so
     /// any visible UI can refresh itself.
     func restoreFromCloud() {
+        guard AppConfig.externalServicesEnabled else { return }
         cloud.synchronize()
 
         // -- Int keys: MAX merge --
@@ -222,6 +225,7 @@ final class CloudSyncService {
     /// arrives within that window, the timer resets. This prevents
     /// hammering iCloud KV store during rapid-fire battles.
     func autoSync() {
+        guard AppConfig.externalServicesEnabled else { return }
         // Cancel any pending write.
         pendingWorkItem?.cancel()
 
@@ -244,6 +248,7 @@ final class CloudSyncService {
     /// Remove every tracked key from the iCloud key-value store so erased
     /// progress doesn't restore from the cloud. Backs the "erase all data" path.
     func wipeCloud() {
+        guard AppConfig.externalServicesEnabled else { return }
         // Cancel any pending debounced upload (a battle just before erase
         // schedules one up to 5s out) and block the immediate-path sync for the
         // next window — otherwise it would re-upload local values right after we

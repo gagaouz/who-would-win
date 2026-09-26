@@ -1,6 +1,6 @@
 # Maintaining 1.1.7 while developing 2.0
 
-## Created in this planning pass
+## Isolated source lines
 
 - Original checkout: `/Users/home/WWW/who-would-win`, branch `release/1.1.7`.
 - New checkout: `/Users/home/WWW/who-would-win-v2.0`, branch `develop/2.0`.
@@ -10,7 +10,7 @@
 - The approved retro prototype was copied into `prototypes/retro-mode/` in the new checkout.
 - Local planning commit includes only that prototype and `docs/v2.0/`.
 
-No original files were stashed, reset, cleaned, moved, or included in the planning commit. In particular, unfinished Android work stays in the original checkout. No app code is changed by this commit. The original prototype copy also remains available.
+No original files were stashed, reset, cleaned, moved, or included in the planning commit. In particular, unfinished Android work stays in the original checkout. Subsequent native implementation commits belong only to `develop/2.0`. The original prototype copy also remains available.
 
 ## Why a worktree
 
@@ -26,7 +26,7 @@ Worktrees do not isolate remote backend services, device installs, signing ident
 4. Never merge `develop/2.0` back into the maintenance branch. Forward-port relevant maintenance fixes into 2.0.
 5. Never `git add .` in the original checkout to capture a maintenance fix. Stage reviewed files/hunks only. Do not auto-commit pre-existing Android/web/marketing work.
 6. Use separate DerivedData, archive, export, simulator, test-log, and local-server locations. Do not run the existing upload script concurrently across the two folders.
-7. Before pushing a new branch, inspect GitHub/Railway/Netlify triggers and confirm the new branch cannot deploy to production by accident. This inspection has not yet been done. Push only the selected branch, never all branches/tags.
+7. Before pushing a new branch, inspect GitHub/Railway/Netlify triggers. The September 26 read-only audit found Railway and Netlify production triggers restricted to `main`, with no Railway PR environments. See [release evidence](RELEASE_READINESS_2026-09-26.md). Push only the selected branch, never all branches/tags; recheck if integration configuration changes.
 8. Once safely published, configure suitable required checks/protection on maintenance and 2.0 integration branches. A local branch is not a configured GitHub protection rule; none was claimed in this planning pass.
 9. Keep backend changes additive and test both client generations. Deploy incompatible experiments only to a separate staging environment.
 
@@ -64,9 +64,10 @@ Do not use a mass merge simply to eliminate divergence, and do not silently drop
 
 | Source | Version/build | Evidence | Status |
 | --- | --- | --- | --- |
-| Common base / iOS release commit `4ef855e` | 1.1.7 / 109 | Tracked `ios/WhoWouldWin/Info.plist` | Local source verified; current ASC availability not checked |
-| Common base generator | 1.1.6 / 108 | `ios/project.yml` | Stale; fix before regeneration |
-| First 2.0 native candidate | 2.0 / to be allocated | Must inspect ASC and coordinated ledger first | Not built |
+| Common base / iOS release commit `4ef855e` | 1.1.7 / 109 | ASC read-only audit September 26 | Valid build; App Store version ready for sale |
+| First 2.0 native candidate | 2.0 / see `ios/config/Version.xcconfig` | Allocation record required before archive | Native simulator validation in progress; see release ledger for current state |
+
+The old XcodeGen version drift has been removed. Both generated project and Info.plist now read `Version.xcconfig`. The maintenance branch keeps its existing source/configuration; do not copy v2 version settings into a hotfix.
 
 ## Recovery
 

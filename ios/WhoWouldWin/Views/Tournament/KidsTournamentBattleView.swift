@@ -23,8 +23,8 @@ struct KidsTournamentBattleView: View {
     @State private var bob: CGFloat = 0
     @State private var didNotify = false
     @State private var didStart = false
-    @State private var failsafeTimer: Timer? = nil
-    @State private var animationTimerWork: DispatchWorkItem? = nil
+    @State private var battleTask: Task<Void, Never>?
+    @State private var advanceTask: Task<Void, Never>?
 
     @Environment(\.horizontalSizeClass) private var sizeClass
     private var isIPad: Bool { sizeClass == .regular }
@@ -48,22 +48,13 @@ struct KidsTournamentBattleView: View {
 
     var body: some View {
         ZStack {
-            // NOTE: there used to be a hidden triple-tap-to-forfeit gesture here
-            // as an escape hatch for stuck battles. Removed: an excited kid
-            // triple-tapping mid-battle would silently wipe their whole
-            // tournament (bracket + wagers, no confirmation). The 25s failsafe
-            // below already guarantees the battle can never get stuck.
+            // Resolution deadlines live in the model, never in a view timer.
             gradientBG.ignoresSafeArea()
 
             HStack(spacing: 0) {
                 Spacer(minLength: 0)
                 Group {
-                    // Same fix as KidsBattleView: show the result as soon as
-                    // narration arrives AND the animation timer has fired.
-                    // The view-model's .complete phase only ticks AFTER a 6s
-                    // typewriter the result panel doesn't even render — gating
-                    // on it would freeze the cheer meter at full for that whole
-                    // window.
+                    // Reveal only the accepted result after its presentation.
                     if let result = viewModel.battleResult, viewModel.animationComplete {
                         ResultPanel(
                             fighter1: fighter1, fighter2: fighter2, result: result,
@@ -76,31 +67,32 @@ struct KidsTournamentBattleView: View {
                                 onComplete(result)
                             }
                         )
-                        .transition(.scale.combined(with: .opacity))
+                        .accessibilityIdentifier("battle.result")
+                        .transition(.opacity)
                         .onAppear {
                             if quickMode, !didNotify {
                                 // Quick mode resolves instantly — auto-advance.
                                 didNotify = true
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+                                advanceTask = Task { @MainActor in
+                                    do { try await Task.sleep(nanoseconds: 700_000_000) }
+                                    catch { return }
+                                    guard !Task.isCancelled else { return }
                                     onComplete(result)
                                 }
                             }
                         }
                     } else {
-                        BuildContent(
-                            fighter1: fighter1, fighter2: fighter2,
-                            environment: environment,
-                            arenaEffectsEnabled: arenaEffectsEnabled,
-                            cheerProgress: cheerProgress,
-                            vsPulse: vsPulse, bob: bob,
-                            appeared: appeared,
-                            tournamentTag: tournamentTag,
-                            isIPad: isIPad,
-                            // True while the SpriteKit fight is over but the
-                            // narration still hasn't arrived — flips the cheer
-                            // meter + bottom text to the active "judging" UI.
-                            isJudging: viewModel.animationComplete && viewModel.battleResult == nil
+                        RetroBattleStage(
+                            sessionID: viewModel.presentationID,
+                            teamA: [fighter1], teamB: [fighter2],
+                            environment: environment, arenaEffectsEnabled: arenaEffectsEnabled,
+                            outcome: RetroBattleOutcome.solo(viewModel.battleResult, first: fighter1, second: fighter2),
+                            title: tournamentTag,
+                            onComplete: { [session = viewModel.presentationID] in
+                                viewModel.animationDidComplete(for: session)
+                            }
                         )
+                        .id(viewModel.presentationID)
                     }
                 }
                 .frame(maxWidth: isIPad ? 680 : .infinity)
@@ -109,80 +101,19 @@ struct KidsTournamentBattleView: View {
         }
         .navigationBarBackButtonHidden(true)
         .onAppear {
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) { appeared = true }
-            withAnimation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true)) { vsPulse = 1.12 }
-            withAnimation(.easeInOut(duration: 1.6).repeatForever(autoreverses: true)) { bob = -6 }
-            withAnimation(.easeIn(duration: quickMode ? 1.2 : 6.0)) { cheerProgress = 0.95 }
-            // onAppear can re-fire (transition quirks, sheets) — never start a
-            // second battle task or stack duplicate timers on this view model.
             guard !didStart else { return }
             didStart = true
-            Task { await viewModel.startBattle() }
-            if !quickMode {
-                // Match the cheer-fill duration (6s easeIn) so the animation
-                // signal fires the instant the meter visually maxes out.
-                // Cancellable work item so backing out of the battle doesn't
-                // leave a stray closure mutating a dismissed view's model.
-                let work = DispatchWorkItem { viewModel.animationDidComplete() }
-                animationTimerWork = work
-                DispatchQueue.main.asyncAfter(deadline: .now() + 6.0, execute: work)
-            }
-            // Failsafe: if the battle hasn't completed after 25 seconds, force it.
-            // This prevents the tournament from getting stuck if the result never arrives.
-            // IMPORTANT: the rescue condition must mirror the RESULT GATE above
-            // (battleResult != nil && animationComplete) — it used to check
-            // `phase != .complete`, which quick mode satisfies immediately,
-            // so a stuck quick battle was never rescued.
-            failsafeTimer = Timer.scheduledTimer(withTimeInterval: 25.0, repeats: false) { _ in
-                if viewModel.battleResult == nil || !viewModel.animationComplete {
-                    // Force the result panel to appear by marking animation complete
-                    // and ensuring battleResult is set. The winner is the
-                    // stat-favored fighter for THIS arena — never a fixed slot,
-                    // which used to silently crown fighter1 on every timeout.
-                    if viewModel.battleResult == nil {
-                        // Quick mode carries a real-but-INERT random arena —
-                        // the timeout winner must be picked with neutral stats,
-                        // matching the env-less fight the kid actually watched.
-                        let statEnv: BattleEnvironment = arenaEffectsEnabled ? environment : .grassland
-                        let s1 = AnimalStats.generate(for: fighter1, environment: statEnv)
-                        let s2 = AnimalStats.generate(for: fighter2, environment: statEnv)
-                        let score1 = s1.speed + s1.power + s1.agility + s1.defense
-                        let score2 = s2.speed + s2.power + s2.agility + s2.defense
-                        let w  = score1 >= score2 ? fighter1 : fighter2
-                        let l  = score1 >= score2 ? fighter2 : fighter1
-                        let fallback = BattleResult(
-                            winner: w.id,
-                            narration: "What a marathon! The \(w.name) and the \(l.name) traded blow after blow until the judges called it — the \(w.name) edges out the win and roars in triumph!",
-                            funFact: "Even the closest battles have a winner — stamina and grit decide the ones that go the distance!",
-                            winnerHealthPercent: 45,
-                            loserHealthPercent: 12,
-                            isOfflineFallback: true
-                        )
-                        viewModel.battleResult = fallback
-                    }
-                    viewModel.animationDidComplete()
-                }
-                failsafeTimer?.invalidate()
-                failsafeTimer = nil
-            }
+            battleTask = Task { await viewModel.startBattle() }
         }
         .onDisappear {
-            failsafeTimer?.invalidate()
-            failsafeTimer = nil
-            animationTimerWork?.cancel()
-            animationTimerWork = nil
+            battleTask?.cancel(); battleTask = nil
+            advanceTask?.cancel(); advanceTask = nil
+            viewModel.cancelBattle()
         }
     }
 
     private var gradientBG: LinearGradient {
-        if viewModel.phase == .complete {
-            return LinearGradient(
-                colors: [Color(hex: "#FFE6B8"), Kids.pink, Kids.grape],
-                startPoint: .top, endPoint: .bottom)
-        }
-        return LinearGradient(
-            colors: [Color(hex: "#FFD9B0"), Color(hex: "#FFB6C9"), Color(hex: "#C6A8F5")],
-            startPoint: .top, endPoint: .bottom)
+        LinearGradient(colors: [Kids.cream, Kids.cream], startPoint: .top, endPoint: .bottom)
     }
 
     /// Compact "Quarterfinal · Match 2/4" badge shown atop the build screen.
@@ -228,7 +159,7 @@ private struct BuildContent: View {
                 // Tournament tag pill (replaces the close button — you cannot
                 // abandon a tournament battle mid-match).
                 HStack(spacing: 6) {
-                    Text("🏆").font(.system(size: isIPad ? 18 : 14))
+                    RetroSymbol("🏆", size: isIPad ? 18 : 14)
                     Text(tournamentTag)
                         .font(Kids.fredoka(isIPad ? 14 : 11, weight: .bold))
                         .tracking(1)
@@ -236,22 +167,24 @@ private struct BuildContent: View {
                 }
                 .padding(.horizontal, 12).padding(.vertical, 5)
                 .background(
-                    Capsule().fill(Kids.sun)
-                        .overlay(Capsule().stroke(Kids.ink, lineWidth: 2))
+                    RetroPanelShape().fill(Kids.sun)
+                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
                 )
+                .compositingGroup()
                 .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
 
                 Spacer()
 
                 if arenaEffectsEnabled {
                     HStack(spacing: 5) {
-                        Text(environment.emoji).font(.system(size: isIPad ? 18 : 14))
+                        RetroSymbol(environment.emoji, size: isIPad ? 18 : 14)
                         Text(environment.name.uppercased())
                             .font(Kids.fredoka(isIPad ? 14 : 11, weight: .bold))
                             .foregroundColor(Kids.ink)
                     }
                     .padding(.horizontal, 10).padding(.vertical, 5)
-                    .background(Capsule().fill(.white).overlay(Capsule().stroke(Kids.ink, lineWidth: 2)))
+                    .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
+                    .compositingGroup()
                     .shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 2)
                 }
             }
@@ -262,10 +195,11 @@ private struct BuildContent: View {
                 .foregroundColor(Kids.ink)
                 .padding(.horizontal, 16).padding(.vertical, 8)
                 .background(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    RetroPanelShape(cornerRadius: 18, style: .continuous)
                         .fill(Kids.sun)
-                        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                        .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 3))
                 )
+                .compositingGroup()
                 .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
                 .rotationEffect(.degrees(-1.5))
                 .scaleEffect(vsPulse * 0.95)
@@ -282,8 +216,7 @@ private struct BuildContent: View {
 
             VStack(spacing: 10) {
                 HStack(spacing: 6) {
-                    Text(isJudging ? "⚖️" : "🎺")
-                        .font(.system(size: isIPad ? 18 : 14))
+                    RetroSymbol(isJudging ? "⚖️" : "🎺", size: isIPad ? 18 : 14)
                         .scaleEffect(isJudging ? judgingPulse : 1.0)
                     Text(isJudging ? "JUDGES VOTING" : "CROWD CHEER METER")
                         .font(Kids.fredoka(isIPad ? 15 : 12, weight: .bold))
@@ -306,10 +239,11 @@ private struct BuildContent: View {
             }
             .padding(14)
             .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                RetroPanelShape(cornerRadius: 20, style: .continuous)
                     .fill(.white)
-                    .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                    .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
             )
+            .compositingGroup()
             .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
             .padding(.horizontal, 18)
             .padding(.top, 22)
@@ -354,8 +288,8 @@ private struct BuildContent: View {
                 .lineLimit(1).minimumScaleFactor(0.6)
                 .padding(.horizontal, 10).padding(.vertical, 3)
                 .background(
-                    Capsule().fill(tint)
-                        .overlay(Capsule().stroke(Kids.ink, lineWidth: 2))
+                    RetroPanelShape().fill(tint)
+                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
                 )
             ProgressPill(progress: 0.75, fill: tint)
                 .frame(width: isIPad ? 110 : 90, height: isIPad ? 10 : 8)
@@ -385,7 +319,7 @@ private struct ResultPanel: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 14) {
-                Text("👑").font(.system(size: isIPad ? 66 : 50))
+                RetroSymbol("👑", size: isIPad ? 66 : 50)
                     .scaleEffect(appeared ? 1 : 0)
                     .rotationEffect(.degrees(appeared ? 0 : -40))
                     .padding(.top, 30)
@@ -403,14 +337,19 @@ private struct ResultPanel: View {
                         .scaleEffect(appeared ? 1 : 0.3)
                 }
 
+                if result.isOfflineFallback {
+                    Text("Offline result").font(Kids.nunito(12, weight: .bold))
+                        .accessibilityIdentifier("battle.offlineIndicator")
+                }
                 // Compact narration card
                 VStack(alignment: .leading, spacing: 6) {
                     Text("BATTLE STORY")
                         .font(Kids.fredoka(isIPad ? 13 : 10, weight: .bold))
                         .foregroundColor(Kids.ink)
                         .padding(.horizontal, 8).padding(.vertical, 3)
-                        .background(Capsule().fill(Kids.pink).overlay(Capsule().stroke(Kids.ink, lineWidth: 1.5)))
+                        .background(RetroPanelShape().fill(Kids.pink).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5)))
                     Text(result.narration.withoutEmoji)
+                        .accessibilityIdentifier("battle.narration")
                         .font(Kids.nunito(isIPad ? 16 : 12, weight: .bold))
                         .foregroundColor(Kids.ink)
                         .fixedSize(horizontal: false, vertical: true)
@@ -418,10 +357,11 @@ private struct ResultPanel: View {
                 .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    RetroPanelShape(cornerRadius: 18, style: .continuous)
                         .fill(.white)
-                        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                        .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
                 )
+                .compositingGroup()
                 .shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
                 .padding(.horizontal, 18)
                 .opacity(appeared ? 1 : 0)
@@ -437,9 +377,8 @@ private struct ResultPanel: View {
             }
         }
         .onAppear {
-            withAnimation(.spring(response: 0.55, dampingFraction: 0.55).delay(0.1)) {
-                appeared = true
-            }
+            if UIAccessibility.isReduceMotionEnabled { appeared = true }
+            else { withAnimation(.spring(response: 0.55, dampingFraction: 0.55).delay(0.1)) { appeared = true } }
             HapticsService.shared.success()
             SoundService.shared.play(.win)   // victory fanfare (was silent)
         }

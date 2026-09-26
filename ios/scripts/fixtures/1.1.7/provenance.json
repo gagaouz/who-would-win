@@ -1,0 +1,14 @@
+{
+  "sourceCommit": "107bf7327f1c82e85282101e2294fb6f9ded3639",
+  "sourceVersion": "1.1.7",
+  "sourceBuild": "109",
+  "fixtureType": "synthetic baseline-encoded model and preference data",
+  "limitations": [
+    "Not an App Store receipt, cloud account, keychain backup, or physical-device upgrade test"
+  ],
+  "files": {
+    "progress-1.1.7.plist": "0fea2ddee9d06764b9973490fcfd03d7745c92c5803dc39386e13a372ebc0e35",
+    "tournament-pending-1.1.7.json": "e32165afb0d7438b46588b4e7444cd5c3e19fc319518623b19fc857d07efe094",
+    "tournament-settled-1.1.7.json": "ca2306c31a280d327676b7363bf2c30e10c855f1389163bf4127f63e0ee1cf10"
+  }
+}

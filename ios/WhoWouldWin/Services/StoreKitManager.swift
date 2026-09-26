@@ -88,6 +88,7 @@ final class StoreKitManager: ObservableObject {
     private var transactionListenerTask: Task<Void, Never>?
 
     private init() {
+        guard AppConfig.externalServicesEnabled else { return }
         transactionListenerTask = listenForTransactions()
         Task { await loadProducts() }
     }
@@ -102,6 +103,7 @@ final class StoreKitManager: ObservableObject {
     /// the reviewer / user doesn't end up with an empty Buy button because of
     /// a flaky first network call.
     func loadProducts() async {
+        guard AppConfig.externalServicesEnabled else { return }
         // Up to 4 attempts with growing backoff (≈ 0.5s, 1.5s, 4.5s)
         for attempt in 0..<4 {
             do {
@@ -141,6 +143,7 @@ final class StoreKitManager: ObservableObject {
 
     @discardableResult
     func purchase(_ product: Product) async -> PurchaseOutcome {
+        guard AppConfig.externalServicesEnabled else { return .failed }
         isPurchasing = true
         lastError = nil
         defer { isPurchasing = false }
@@ -172,6 +175,7 @@ final class StoreKitManager: ObservableObject {
     // MARK: - Restore
 
     func restorePurchases() async {
+        guard AppConfig.externalServicesEnabled else { return }
         isPurchasing = true
         lastError = nil
         defer { isPurchasing = false }
@@ -192,6 +196,7 @@ final class StoreKitManager: ObservableObject {
     /// purchases (individual packs, the Everything Bundle) stay in
     /// currentEntitlements, so they survive. Called on launch.
     func refreshEntitlements() async {
+        guard AppConfig.externalServicesEnabled else { return }
         // StoreKit-readiness guard: only reconcile when StoreKit is actually
         // responsive. Otherwise a transient blank snapshot at cold launch could
         // momentarily strip a paying subscriber. currentEntitlements is cached/

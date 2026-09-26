@@ -15,7 +15,7 @@ struct BadgeToast: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            Text(emoji).font(.system(size: 26))
+            RetroSymbol(emoji, size: 26)
             VStack(alignment: .leading, spacing: 1) {
                 Text(kicker)
                     .font(Kids.fredoka(11, weight: .bold))
@@ -27,10 +27,10 @@ struct BadgeToast: View {
         }
         .padding(.horizontal, 16).padding(.vertical, 10)
         .background(
-            Capsule().fill(fill)
-                .overlay(Capsule().stroke(Kids.ink, lineWidth: 3))
+            RetroPanelShape().fill(fill)
+                .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 3))
         )
-        .shadow(color: Kids.ink.opacity(0.18), radius: 0, x: 0, y: 5)
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.18), radius: 0, x: 0, y: 5)
         .scaleEffect(shown ? 1 : 0.6)
         .offset(y: shown ? 0 : -90)
         .opacity(shown ? 1 : 0)

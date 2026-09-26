@@ -32,18 +32,9 @@ struct KidsBattleView: View {
     @State private var cheer2: Double = 0.14
     @State private var cheerTaps1 = 0
     @State private var cheerTaps2 = 0
-    @State private var vsPulse: CGFloat = 1
-    @State private var bob: CGFloat = 0
-    /// Pulses on each scripted "clash" moment during the build-up.
-    @State private var clashFlash = false
-    /// Scheduled clash moments, cancelled on disappear/rematch.
-    @State private var clashWork: [DispatchWorkItem] = []
     /// The in-flight battle orchestration task, cancelled on disappear.
     @State private var battleTask: Task<Void, Never>? = nil
-    // Single-flight, cancellable 6s animation gate. Rematch used to stack a
-    // second asyncAfter on top of the first, and backing out of the screen
-    // left the closure alive to mutate a dismissed view's model.
-    @State private var animationTimerWork: DispatchWorkItem? = nil
+    @State private var didStart = false
 
     init(fighter1: Animal, fighter2: Animal,
          environment: BattleEnvironment, arenaEffectsEnabled: Bool,
@@ -63,14 +54,11 @@ struct KidsBattleView: View {
         ZStack {
             gradientBG.ignoresSafeArea()
 
-            // Show ResultContent as soon as we have BOTH the narration AND the
-            // SpriteKit fight finishing. The view-model's .complete phase only
-            // fires AFTER a 6-second typewriter the kids ResultContent doesn't
-            // even render — gating on it would freeze the user staring at the
-            // cheer meter for that whole extra interval.
+            // The accepted answer and the scene completion share one session.
             if let result = viewModel.battleResult, viewModel.animationComplete {
                 ResultContent(
                     fighter1: fighter1, fighter2: fighter2, result: result,
+                    battleID: viewModel.presentationID,
                     environment: currentEnvironment,
                     arenaEffectsEnabled: currentArenaEffects,
                     cheeredFighter: cheeredFighter,
@@ -87,27 +75,21 @@ struct KidsBattleView: View {
                     onNextChallenger: onNextChallenger,
                     onClose: { dismiss() }
                 )
-                .transition(.scale.combined(with: .opacity))
+                .accessibilityIdentifier("battle.result")
+                .transition(.opacity)
             } else {
-                BattleContent(
-                    fighter1: fighter1, fighter2: fighter2,
+                RetroBattleStage(
+                    sessionID: viewModel.presentationID,
+                    teamA: [fighter1], teamB: [fighter2],
                     environment: currentEnvironment,
                     arenaEffectsEnabled: currentArenaEffects,
-                    cheer1: cheer1, cheer2: cheer2,
-                    cheeredSide: cheeredSide,
-                    vsPulse: vsPulse, bob: bob,
-                    appeared: appeared,
-                    clashFlash: clashFlash,
-                    preview: BattleInsight.matchupPreview(fighter1, fighter2),
-                    // True once the SpriteKit fight has finished but the
-                    // backend hasn't returned the narration yet — UI uses
-                    // this to swap the static bottom text for an active
-                    // "judges deliberating" panel so the screen doesn't
-                    // look frozen on a slow Claude response.
-                    isJudging: viewModel.animationComplete && viewModel.battleResult == nil,
-                    onCheer: { side in registerCheer(side: side) },
-                    onClose: { dismiss() }
+                    outcome: RetroBattleOutcome.solo(viewModel.battleResult, first: fighter1, second: fighter2),
+                    pickedSide: cheeredSide,
+                    onCheer: { registerCheer(side: $0) },
+                    onClose: { dismiss() },
+                    onComplete: { [session = viewModel.presentationID] in viewModel.animationDidComplete(for: session) }
                 )
+                .id(viewModel.presentationID)
             }
         }
         .navigationBarHidden(true)
@@ -129,25 +111,15 @@ struct KidsBattleView: View {
             )
         }
         .onAppear {
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) { appeared = true }
-            // Perpetual ambient loops are skipped under Reduce Motion (the
-            // entrance spring above stays — it's a one-shot, not a loop).
-            if !UIAccessibility.isReduceMotionEnabled {
-                withAnimation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true)) { vsPulse = 1.12 }
-                withAnimation(.easeInOut(duration: 1.6).repeatForever(autoreverses: true)) { bob = -6 }
-            }
+            guard !didStart else { return }
+            didStart = true
+            appeared = true
             battleTask = Task { await viewModel.startBattle() }
-            scheduleAnimationGate()
-            scheduleClashes()
         }
         .onDisappear {
-            animationTimerWork?.cancel()
-            animationTimerWork = nil
-            cancelClashes()
-            // Cancel the in-flight battle orchestration so backing out mid-fight
-            // doesn't leave startBattle() suspended on its continuation.
             battleTask?.cancel()
             battleTask = nil
+            viewModel.cancelBattle()
         }
     }
 
@@ -181,49 +153,8 @@ struct KidsBattleView: View {
         }
     }
 
-    /// Schedules 2 scripted "clash" beats during the build — a whoosh + impact
-    /// haptic + a quick visual pulse — so the wait has rising action.
-    private func scheduleClashes() {
-        cancelClashes()
-        let beats: [Double] = [2.0, 4.0]
-        for t in beats {
-            let work = DispatchWorkItem {
-                SoundService.shared.play(.whoosh, volume: 0.8)
-                HapticsService.shared.medium()
-                withAnimation(.easeOut(duration: 0.12)) { clashFlash = true }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
-                    withAnimation(.easeIn(duration: 0.2)) { clashFlash = false }
-                }
-            }
-            clashWork.append(work)
-            DispatchQueue.main.asyncAfter(deadline: .now() + t, execute: work)
-        }
-    }
-
-    private func cancelClashes() {
-        clashWork.forEach { $0.cancel() }
-        clashWork.removeAll()
-    }
-
-    /// (Re)arms the 6s animation gate, cancelling any pending one first so
-    /// rematches can never double-fire it. Matches the cheer-fill duration so
-    /// animationComplete fires right as the meter visually maxes out.
-    private func scheduleAnimationGate() {
-        animationTimerWork?.cancel()
-        let work = DispatchWorkItem { viewModel.animationDidComplete() }
-        animationTimerWork = work
-        DispatchQueue.main.asyncAfter(deadline: .now() + 6.0, execute: work)
-    }
-
     private var gradientBG: LinearGradient {
-        if viewModel.phase == .complete {
-            return LinearGradient(
-                colors: [Color(hex: "#FFE6B8"), Kids.pink, Kids.grape],
-                startPoint: .top, endPoint: .bottom)
-        }
-        return LinearGradient(
-            colors: [Color(hex: "#FFD9B0"), Color(hex: "#FFB6C9"), Color(hex: "#C6A8F5")],
-            startPoint: .top, endPoint: .bottom)
+        LinearGradient(colors: [Kids.cream, Kids.cream], startPoint: .top, endPoint: .bottom)
     }
 
     @MainActor
@@ -231,16 +162,13 @@ struct KidsBattleView: View {
         // Sync the latest env choice into the viewmodel
         viewModel.environment = currentEnvironment
         viewModel.arenaEffectsEnabled = currentArenaEffects
-        // rematch() resets phase/result/narration AND safely releases any
-        // suspended animation continuation from the previous run — resetting
-        // the fields by hand here used to leave that continuation dangling.
+        // Cancel the old fetch before giving the new presentation an identity.
+        battleTask?.cancel()
         viewModel.rematch()
         // Reset both cheer meters + relaunch the build
         cheer1 = 0.14; cheer2 = 0.14
         cheerTaps1 = 0; cheerTaps2 = 0
-        scheduleAnimationGate()
-        scheduleClashes()
-        await viewModel.startBattle()
+        battleTask = Task { await viewModel.startBattle() }
     }
 }
 
@@ -286,16 +214,17 @@ private struct BattleContent: View {
                 Spacer()
                 if arenaEffectsEnabled {
                     HStack(spacing: 6) {
-                        Text(environment.emoji).font(.system(size: 16))
+                        RetroSymbol(environment.emoji, size: 16)
                         Text("\(environment.name.uppercased()) ARENA")
                             .font(Kids.fredoka(13, weight: .bold))
                             .foregroundColor(Kids.ink)
                     }
                     .padding(.horizontal, 12).padding(.vertical, 6)
                     .background(
-                        Capsule().fill(.white)
-                            .overlay(Capsule().stroke(Kids.ink, lineWidth: 2.5))
+                        RetroPanelShape().fill(.white)
+                            .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
                     )
+                    .compositingGroup()
                     .shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
                 }
                 Spacer()
@@ -309,10 +238,11 @@ private struct BattleContent: View {
                 .foregroundColor(Kids.ink)
                 .padding(.horizontal, 16).padding(.vertical, 8)
                 .background(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    RetroPanelShape(cornerRadius: 18, style: .continuous)
                         .fill(Kids.sun)
-                        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                        .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 3))
                 )
+                .compositingGroup()
                 .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
                 .rotationEffect(.degrees(-1.5))
                 .scaleEffect(vsPulse * 0.95)
@@ -340,8 +270,8 @@ private struct BattleContent: View {
                     .foregroundColor(Kids.ink)
                     .padding(.horizontal, 12).padding(.vertical, 5)
                     .background(
-                        Capsule().fill(preview.isClose ? Kids.grass : Kids.sky)
-                            .overlay(Capsule().stroke(Kids.ink, lineWidth: 2))
+                        RetroPanelShape().fill(preview.isClose ? Kids.grass : Kids.sky)
+                            .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
                     )
                     .padding(.top, 12)
             }
@@ -351,7 +281,7 @@ private struct BattleContent: View {
             VStack(spacing: 8) {
                 if isJudging {
                     HStack(spacing: 6) {
-                        Text("⚖️").font(.system(size: 16)).scaleEffect(judgingPulse)
+                        RetroSymbol("⚖️", size: 16).scaleEffect(judgingPulse)
                         Text("JUDGES VOTING")
                             .font(Kids.fredoka(14, weight: .bold))
                             .foregroundColor(Kids.ink)
@@ -376,10 +306,11 @@ private struct BattleContent: View {
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12).padding(.horizontal, 14)
             .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                RetroPanelShape(cornerRadius: 20, style: .continuous)
                     .fill(.white)
-                    .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                    .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
             )
+            .compositingGroup()
             .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
             .padding(.horizontal, 18)
             .padding(.top, 18)
@@ -433,11 +364,11 @@ private struct BattleContent: View {
                     .offset(y: bobY)
                     .scaleEffect(popped ? 1.12 : 1.0)
                 if isPick {
-                    Text("⭐ MY PICK")
+                    Text("MY PICK")
                         .font(Kids.fredoka(9, weight: .bold))
                         .foregroundColor(Kids.ink)
                         .padding(.horizontal, 7).padding(.vertical, 2)
-                        .background(Capsule().fill(Kids.sun).overlay(Capsule().stroke(Kids.ink, lineWidth: 1.5)))
+                        .background(RetroPanelShape().fill(Kids.sun).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5)))
                         .offset(y: -10)
                         .transition(.scale.combined(with: .opacity))
                 }
@@ -448,14 +379,14 @@ private struct BattleContent: View {
                 .lineLimit(1).minimumScaleFactor(0.6)
                 .padding(.horizontal, 10).padding(.vertical, 3)
                 .background(
-                    Capsule().fill(tint)
-                        .overlay(Capsule().stroke(Kids.ink, lineWidth: 2))
+                    RetroPanelShape().fill(tint)
+                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
                 )
             // This fighter's own crowd-cheer meter.
             ProgressPill(progress: fill, fill: tint)
                 .frame(width: 96, height: 12)
                 .overlay(
-                    Text("📣").font(.system(size: 9))
+                    RetroSymbol("📣", size: 9)
                         .opacity(fill > 0.25 ? 1 : 0)
                         .padding(.leading, 5),
                     alignment: .leading
@@ -518,8 +449,7 @@ struct JudgingIndicator: View {
                     // repeatForever bob is killed and both timers get rebuilt on
                     // every message cycle. The emoji's string changes in place
                     // (same identity), so the in-flight bob animation survives.
-                    Text(emoji)
-                        .font(.system(size: 22))
+                    RetroSymbol(emoji, size: 22)
                         .offset(y: emojiBob)
                     Text(label + String(repeating: ".", count: dots))
                         .font(Kids.nunito(14, weight: .bold))
@@ -530,9 +460,10 @@ struct JudgingIndicator: View {
                 }
                 .padding(.horizontal, 18).padding(.vertical, 11)
                 .background(
-                    Capsule().fill(.white)
-                        .overlay(Capsule().stroke(Kids.ink.opacity(0.45), lineWidth: 2.5))
+                    RetroPanelShape().fill(.white)
+                        .overlay(RetroPanelShape().stroke(Kids.ink.opacity(0.45), lineWidth: 2.5))
                 )
+                .compositingGroup()
                 .shadow(color: Kids.ink.opacity(0.10), radius: 0, x: 0, y: 4)
                 .transition(.scale.combined(with: .opacity))
                 .onAppear {
@@ -575,11 +506,11 @@ private struct TraitChip: View {
     let color: Color
     var body: some View {
         HStack(spacing: 4) {
-            Text(emoji).font(.system(size: 12))
+            RetroSymbol(emoji, size: 12)
             Text(label).font(Kids.fredoka(10, weight: .bold)).foregroundColor(Kids.ink)
         }
         .padding(.horizontal, 8).padding(.vertical, 3)
-        .background(Capsule().fill(color).overlay(Capsule().stroke(Kids.ink, lineWidth: 2)))
+        .background(RetroPanelShape().fill(color).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
     }
 }
 
@@ -589,6 +520,7 @@ private struct ResultContent: View {
     let fighter1: Animal
     let fighter2: Animal
     let result: BattleResult
+    let battleID: UUID
     let environment: BattleEnvironment
     let arenaEffectsEnabled: Bool
     /// The fighter the kid cheered for during the build (their prediction), or
@@ -608,6 +540,7 @@ private struct ResultContent: View {
     @StateObject private var speech = SpeechService()
     @ObservedObject private var feed = AchievementFeed.shared
     @ObservedObject private var settings = UserSettings.shared
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     // Captured exactly once, when the result first appears.
     @State private var didRunSideEffects = false
@@ -699,11 +632,11 @@ private struct ResultContent: View {
                 showRemoveAdsHint = true
                 AdManager.shared.suggestRemoveAds = false
             }
-            withAnimation(.spring(response: 0.55, dampingFraction: 0.55).delay(0.1)) {
-                appeared = true
-            }
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.45).delay(0.12)) {
-                crownDropped = true
+            if reduceMotion {
+                appeared = true; crownDropped = true
+            } else {
+                withAnimation(.spring(response: 0.55, dampingFraction: 0.55).delay(0.1)) { appeared = true }
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.45).delay(0.12)) { crownDropped = true }
             }
             showNextBadgeIfIdle()
         }
@@ -728,7 +661,7 @@ private struct ResultContent: View {
                 .padding(.horizontal, 16).padding(.top, 10)
 
                 // Crown "slams" down from above with a bounce.
-                Text("👑").font(.system(size: 54))
+                RetroSymbol("👑", size: 54)
                     .scaleEffect(crownDropped ? 1 : 1.7)
                     .offset(y: crownDropped ? 0 : -46)
                     .rotationEffect(.degrees(crownDropped ? 0 : -22))
@@ -740,7 +673,7 @@ private struct ResultContent: View {
                         .rotationEffect(.degrees(appeared ? -2 : -20))
                         .scaleEffect(appeared ? 1 : 0.3)
 
-                    // Hero portrait — real image if available, emoji fallback
+                    // Catalog and custom creatures share the cached sprite artwork.
                     FighterPortrait(animal: w, size: 150, ringColor: Kids.peach)
                         .scaleEffect(appeared ? 1 : 0.4)
 
@@ -767,6 +700,11 @@ private struct ResultContent: View {
                 // de-emojified — the model sometimes emits emoji that render as
                 // empty placeholder boxes on device. Guard against an empty
                 // string (e.g. a cached all-emoji result) leaving a blank card.
+                if result.isOfflineFallback {
+                    Text("Offline result")
+                        .font(Kids.nunito(12, weight: .bold)).foregroundColor(Kids.inkSoft)
+                        .accessibilityIdentifier("battle.offlineIndicator")
+                }
                 let story = result.narration.withoutEmoji
                 if !story.isEmpty {
                     infoCard(tag: "BATTLE STORY", tagColor: Kids.pink, text: story)
@@ -830,9 +768,11 @@ private struct ResultContent: View {
                     KidsMiniButton(emoji: "🔁", label: "Rematch", color: Kids.peach) {
                         proceed(onRematch)
                     }
+                    .accessibilityIdentifier("battle.rematch")
                     KidsMiniButton(emoji: "🌍", label: "New Arena", color: Kids.grape) {
                         onTryNewArena()
                     }
+                    .accessibilityIdentifier("battle.newArena")
                     KidsMiniButton(emoji: "📤", label: "Share", color: Kids.sky) {
                         HapticsService.shared.medium()
                         // Pre-fetch custom-creature photos so they actually make it
@@ -862,14 +802,14 @@ private struct ResultContent: View {
                         KidsCoinShop.present()
                     } label: {
                         HStack(spacing: 6) {
-                            Text("🚫").font(.system(size: 13))
+                            RetroSymbol("🚫", size: 13)
                             Text("Grown-ups: you can remove ads forever")
                                 .font(Kids.nunito(11, weight: .bold))
                                 .foregroundColor(Kids.inkSoft)
                                 .underline()
                         }
                         .padding(.horizontal, 12).padding(.vertical, 7)
-                        .background(Capsule().fill(.white.opacity(0.7)))
+                        .background(RetroPanelShape().fill(.white.opacity(0.7)))
                     }
                     .buttonStyle(.plain)
                     .padding(.top, 8)
@@ -914,8 +854,8 @@ private struct ResultContent: View {
             .lineLimit(1).minimumScaleFactor(0.7)
             .padding(.horizontal, 13).padding(.vertical, 6)
             .background(
-                Capsule().fill(tint)
-                    .overlay(Capsule().stroke(Kids.ink, lineWidth: 2.5))
+                RetroPanelShape().fill(tint)
+                    .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
             )
     }
 
@@ -930,9 +870,10 @@ private struct ResultContent: View {
         }
         .padding(.horizontal, 16).padding(.vertical, 7)
         .background(
-            Capsule().fill(Kids.sun)
-                .overlay(Capsule().stroke(Kids.ink, lineWidth: 3))
+            RetroPanelShape().fill(Kids.sun)
+                .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 3))
         )
+        .compositingGroup()
         .shadow(color: Kids.ink.opacity(0.12), radius: 0, x: 0, y: 4)
         .transition(.scale.combined(with: .opacity))
     }
@@ -946,8 +887,9 @@ private struct ResultContent: View {
                 .font(Kids.fredoka(11, weight: .bold))
                 .foregroundColor(Kids.ink)
                 .padding(.horizontal, 10).padding(.vertical, 4)
-                .background(Capsule().fill(tagColor).overlay(Capsule().stroke(Kids.ink, lineWidth: 2)))
+                .background(RetroPanelShape().fill(tagColor).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
             Text(text)
+                .accessibilityIdentifier(tag == "BATTLE STORY" ? "battle.narration" : "battle.info.\(tag)")
                 .font(Kids.nunito(13, weight: .bold))
                 .foregroundColor(Kids.ink)
                 .fixedSize(horizontal: false, vertical: true)
@@ -955,10 +897,11 @@ private struct ResultContent: View {
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
+            RetroPanelShape(cornerRadius: 20, style: .continuous)
                 .fill(.white)
-                .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
         )
+        .compositingGroup()
         .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
         .padding(.horizontal, 18)
         .opacity(appeared ? 1 : 0)
@@ -982,10 +925,11 @@ private struct ResultContent: View {
             .foregroundColor(Kids.ink)
             .padding(.horizontal, 20).padding(.vertical, 11)
             .background(
-                Capsule().fill(Kids.sky)
-                    .overlay(Capsule().fill(Kids.sheen))
-                    .overlay(Capsule().stroke(Kids.ink, lineWidth: 2.5))
+                RetroPanelShape().fill(Kids.sky)
+                    .overlay(RetroPanelShape().fill(Kids.sheen))
+                    .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
             )
+            .compositingGroup()
             .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
         }
         .buttonStyle(.plain)
@@ -997,6 +941,7 @@ private struct ResultContent: View {
     private func runSideEffectsIfNeeded() {
         guard !didRunSideEffects else { return }
         didRunSideEffects = true
+        guard RetroBattleSettlement.claim(battleID) else { return }
 
         // Drop any badge backlog earned OUTSIDE a battle (melee/tournament/voice
         // search/shop) so the only "NEW BADGE!" toasts shown here belong to THIS
@@ -1112,7 +1057,7 @@ private struct ResultContent: View {
             default: suffix = "th"
             }
         }
-        return n == 1 ? "\(name)'s 1st win! 🎉" : "\(name)'s \(n)\(suffix) win!"
+        return "\(name)'s \(n)\(suffix) win!"
     }
 }
 
@@ -1136,76 +1081,40 @@ struct KidsMiniButton: View {
             action()
         } label: {
             HStack(spacing: 6) {
-                Text(emoji).font(.system(size: 16))
+                RetroSymbol(emoji, size: 16)
                 Text(label)
                     .font(Kids.fredoka(13, weight: .bold))
                     .foregroundColor(Kids.ink)
             }
             .frame(maxWidth: .infinity, minHeight: 42)
             .background(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                RetroPanelShape(cornerRadius: 14, style: .continuous)
                     .fill(color)
-                    .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
-                    .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                    .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
+                    .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
             )
+            .compositingGroup()
             .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
         }
         .buttonStyle(.plain)
     }
 }
 
-// MARK: - FighterPortrait
-// Real artwork if it ships in the asset catalog (creature_<id>), otherwise
-// the Wikipedia / Pollinations image URL for custom creatures, otherwise the
-// emoji. Wrapped in a chunky double-ring "sticker" frame.
+// MARK: - Shared retro result portrait
 
 struct FighterPortrait: View {
     let animal: Animal
     var size: CGFloat = 150
     var ringColor: Color = Kids.peach
 
-    private var bundledImage: UIImage? {
-        guard let name = animal.creatureAssetName else { return nil }
-        return UIImage(named: name)
-    }
-
     var body: some View {
-        ZStack {
-            // Outer color ring
-            Circle()
-                .fill(ringColor)
-                .frame(width: size, height: size)
-            // Mid white pad
-            Circle()
-                .fill(Color.white)
-                .frame(width: size - 14, height: size - 14)
-            // Ink frame
-            Circle()
-                .stroke(Kids.ink, lineWidth: 4)
-                .frame(width: size, height: size)
-
-            content
-                .frame(width: size - 22, height: size - 22)
-                .clipShape(Circle())
-        }
-        .shadow(color: Kids.ink.opacity(0.11), radius: 0, x: 0, y: 5)
-    }
-
-    @ViewBuilder
-    private var content: some View {
-        if let ui = bundledImage {
-            // Built-in animal that ships with a bundled creature_<id> sprite.
-            Image(uiImage: ui)
-                .resizable()
-                .scaledToFill()
-        } else if animal.isCustom {
-            // User-typed creature: always its searched image (self-heals a nil
-            // imageURL via the name-keyed cache); neutral placeholder, never emoji.
-            CustomCreatureImage(name: animal.name, imageURL: animal.imageURL, side: size - 22)
-        } else {
-            // Sprite-less built-in (the ~25 core animals) → curated emoji.
-            Text(animal.emoji).font(.system(size: size * 0.6))
-        }
+        RetroCreatureArtwork(animal: animal, size: size - 22)
+            .frame(width: size, height: size)
+            .background(RetroPanelShape().fill(ringColor.opacity(0.24)))
+            .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 3))
+            .compositingGroup()
+            .shadow(color: Kids.ink.opacity(0.11), radius: 0, x: 0, y: 5)
+            .accessibilityLabel(animal.name)
     }
 }
 

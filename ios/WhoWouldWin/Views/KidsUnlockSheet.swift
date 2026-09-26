@@ -35,7 +35,7 @@ struct KidsUnlockSheet: View {
     private var isIPad: Bool { sizeClass == .regular }
 
     @State private var appeared = false
-    @State private var heroBob: CGFloat = 0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     // Real-money purchases only — the coin-unlock path stays ungated.
     @State private var showParentGate = false
@@ -44,9 +44,7 @@ struct KidsUnlockSheet: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [config.color, config.darkAccent],
-                           startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea()
+            SkyBG()
 
             // Subtle stars
             GeometryReader { _ in
@@ -66,9 +64,9 @@ struct KidsUnlockSheet: View {
                     Spacer()
                     Button { isPresented = false } label: {
                         ZStack {
-                            Circle().fill(.white)
-                                .overlay(Circle().stroke(Kids.ink, lineWidth: 2.5))
-                                .frame(width: 36, height: 36)
+                            RetroPanelShape().fill(.white)
+                                .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
+                                .frame(width: 44, height: 44)
                             Image(systemName: "xmark")
                                 .font(.system(size: 14, weight: .bold))
                                 .foregroundColor(Kids.ink)
@@ -84,9 +82,8 @@ struct KidsUnlockSheet: View {
                         Spacer(minLength: 0)
                         VStack(spacing: 18) {
                         // Hero emoji
-                        Text(config.emoji)
-                            .font(.system(size: isIPad ? 100 : 76))
-                            .offset(y: heroBob)
+                        RetroSymbol(config.emoji, size: isIPad ? 100 : 76)
+
                             .scaleEffect(appeared ? 1 : 0.3)
 
                         // Title sticker
@@ -96,7 +93,7 @@ struct KidsUnlockSheet: View {
 
                         Text(config.blurb)
                             .font(Kids.nunito(isIPad ? 16 : 13, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(Kids.ink)
                             .multilineTextAlignment(.center)
                             .opacity(appeared ? 1 : 0)
                             .padding(.horizontal, 24)
@@ -112,12 +109,12 @@ struct KidsUnlockSheet: View {
 
                         // OR divider
                         HStack(spacing: 10) {
-                            Rectangle().fill(Color.white.opacity(0.35)).frame(height: 1)
+                            Rectangle().fill(Kids.ink.opacity(0.25)).frame(height: 1)
                             Text("OR UNLOCK NOW")
                                 .font(Kids.fredoka(isIPad ? 13 : 11, weight: .bold))
-                                .foregroundColor(.white)
+                                .foregroundColor(Kids.ink)
                                 .tracking(1)
-                            Rectangle().fill(Color.white.opacity(0.35)).frame(height: 1)
+                            Rectangle().fill(Kids.ink.opacity(0.25)).frame(height: 1)
                         }
 
                         // Paid CTA — parental gate first, then StoreKit.
@@ -135,7 +132,7 @@ struct KidsUnlockSheet: View {
                                 .font(Kids.fredoka(isIPad ? 16 : 13, weight: .bold))
                                 .foregroundColor(Kids.ink)
                                 .padding(.horizontal, 10).padding(.vertical, 3)
-                                .background(Capsule().fill(Kids.sun).overlay(Capsule().stroke(Kids.ink, lineWidth: 2)))
+                                .background(RetroPanelShape().fill(Kids.sun).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
                                 .offset(x: 0, y: -38)
                                 .rotationEffect(.degrees(-2))
                                 .allowsHitTesting(false),
@@ -146,7 +143,7 @@ struct KidsUnlockSheet: View {
                             Text("👑")
                             Text("Also included with Premium")
                                 .font(Kids.nunito(isIPad ? 13 : 11, weight: .bold))
-                                .foregroundColor(.white.opacity(0.85))
+                                .foregroundColor(Kids.inkSoft)
                         }
 
                         Button {
@@ -154,7 +151,7 @@ struct KidsUnlockSheet: View {
                         } label: {
                             Text("Restore purchases")
                                 .font(Kids.fredoka(isIPad ? 13 : 11, weight: .bold))
-                                .foregroundColor(.white.opacity(0.85))
+                                .foregroundColor(Kids.inkSoft)
                                 .underline()
                         }
                         .buttonStyle(.plain)
@@ -169,11 +166,8 @@ struct KidsUnlockSheet: View {
             }
         }
         .onAppear {
-            withAnimation(.spring(response: 0.55, dampingFraction: 0.55)) {
+            withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) {
                 appeared = true
-            }
-            withAnimation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true)) {
-                heroBob = -8
             }
         }
         .parentGate(isPresented: $showParentGate) { startPurchase() }
@@ -204,21 +198,34 @@ struct KidsUnlockSheet: View {
         }
     }
 
+    private func previewAnimal(named name: String) -> Animal? {
+        let aliases = ["T-Rex": "t_rex", "Therizino": "therizinosaurus", "Mammoth": "woolly_mammoth",
+                       "Raptor": "velociraptor", "Shark": "great_white_shark", "Eagle": "bald_eagle"]
+        if let id = aliases[name], let animal = Animals.all.first(where: { $0.id == id }) { return animal }
+        return Animals.all.first { $0.name.caseInsensitiveCompare(name) == .orderedSame }
+    }
+
     private var creaturePreview: some View {
         HStack(spacing: 6) {
             ForEach(0..<config.preview.count, id: \.self) { i in
                 let (emoji, name) = config.preview[i]
                 VStack(spacing: 4) {
                     ZStack {
-                        Circle().fill(.white)
-                            .overlay(Circle().stroke(Kids.ink, lineWidth: 2.5))
+                        RetroPanelShape().fill(.white)
+                            .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
                             .frame(width: isIPad ? 56 : 44, height: isIPad ? 56 : 44)
-                            .shadow(color: Kids.ink.opacity(0.10), radius: 0, x: 0, y: 2)
-                        Text(emoji).font(.system(size: isIPad ? 30 : 24))
+                            .compositingGroup().shadow(color: Kids.ink.opacity(0.10), radius: 0, x: 0, y: 2)
+                        Group {
+                            if let animal = previewAnimal(named: name) {
+                                RetroCreatureArtwork(animal: animal, size: isIPad ? 50 : 40)
+                            } else {
+                                RetroSymbol(emoji, size: isIPad ? 30 : 24)
+                            }
+                        }
                     }
                     Text(name)
                         .font(Kids.fredoka(isIPad ? 11 : 9, weight: .bold))
-                        .foregroundColor(.white)
+                        .foregroundColor(Kids.ink)
                         .lineLimit(1).minimumScaleFactor(0.7)
                 }
                 .rotationEffect(.degrees(Double(i % 2 == 0 ? -2 : 2)))
@@ -253,16 +260,16 @@ struct KidsUnlockSheet: View {
             } else {
                 Text("✓ You unlocked it for FREE!")
                     .font(Kids.fredoka(isIPad ? 15 : 12, weight: .bold))
-                    .foregroundColor(Kids.grass)
+                    .foregroundColor(Kids.grassDeep)
             }
         }
         .padding(isIPad ? 18 : 14)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RetroPanelShape(cornerRadius: 18, style: .continuous)
                 .fill(.white)
-                .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 3))
         )
-        .shadow(color: Kids.ink.opacity(0.10), radius: 0, x: 0, y: 4)
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.10), radius: 0, x: 0, y: 4)
     }
 
     private var coinUnlockButton: some View {
@@ -286,17 +293,17 @@ struct KidsUnlockSheet: View {
                     .foregroundColor(config.isCoinAffordable ? Kids.ink : Kids.inkSoft)
                     .padding(.horizontal, 10).padding(.vertical, 6)
                     .background(
-                        Capsule().fill(config.isCoinAffordable ? Kids.sun : Color(hex: "#E8DFF5"))
-                            .overlay(Capsule().stroke(Kids.ink, lineWidth: 2))
+                        RetroPanelShape().fill(config.isCoinAffordable ? Kids.sun : Kids.creamDeep)
+                            .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
                     )
             }
             .padding(isIPad ? 16 : 12)
             .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                RetroPanelShape(cornerRadius: 18, style: .continuous)
                     .fill(.white)
-                    .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                    .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 3))
             )
-            .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
+            .compositingGroup().shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
         }
         .buttonStyle(.plain)
         .disabled(!config.isCoinAffordable)

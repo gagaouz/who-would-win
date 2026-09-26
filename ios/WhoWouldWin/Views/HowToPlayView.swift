@@ -34,9 +34,7 @@ struct HowToPlayView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Color(hex: "#FFE9BA"), Kids.pink.opacity(0.45), Kids.grape.opacity(0.4)],
-                           startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea()
+            SkyBG()
 
             VStack(spacing: 0) {
                 HStack {
@@ -49,7 +47,7 @@ struct HowToPlayView: View {
                             .font(Kids.fredoka(15, weight: .bold))
                             .foregroundColor(Kids.inkSoft)
                             .padding(.horizontal, 14).padding(.vertical, 7)
-                            .background(Capsule().fill(.white).overlay(Capsule().stroke(Kids.ink.opacity(0.4), lineWidth: 2)))
+                            .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.ink.opacity(0.4), lineWidth: 2)))
                     }
                     .buttonStyle(.plain)
                 }
@@ -84,12 +82,12 @@ struct HowToPlayView: View {
         VStack(spacing: isIPad ? 22 : 16) {
             Spacer()
             ZStack {
-                Circle().fill(s.color)
-                    .overlay(Circle().fill(Kids.sheen))
-                    .overlay(Circle().stroke(Kids.ink, lineWidth: 4))
+                RetroPanelShape().fill(s.color)
+                    .overlay(RetroPanelShape().fill(Kids.sheen))
+                    .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 4))
                     .frame(width: isIPad ? 180 : 140, height: isIPad ? 180 : 140)
-                    .shadow(color: Kids.ink.opacity(0.12), radius: 0, x: 0, y: 6)
-                Text(s.emoji).font(.system(size: isIPad ? 92 : 72))
+                    .compositingGroup().shadow(color: Kids.ink.opacity(0.12), radius: 0, x: 0, y: 6)
+                RetroSymbol(s.emoji, size: isIPad ? 92 : 72)
             }
             Text(s.title)
                 .font(Kids.fredoka(isIPad ? 26 : 21, weight: .bold))

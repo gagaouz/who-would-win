@@ -236,12 +236,10 @@ struct TournamentRootView: View {
         let limit = CoinStore.shared.tournamentDailyFreeLimit
 
         ZStack {
-            LinearGradient(colors: [Color(hex: "#FFE9BA"), Kids.peach.opacity(0.7)],
-                           startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea()
+            SkyBG()
 
             VStack(spacing: isIPad ? 22 : 16) {
-                Text("⏰").font(.system(size: isIPad ? 96 : 64)).padding(.top, isIPad ? 42 : 28)
+                RetroSymbol("⏰", size: isIPad ? 96 : 64).padding(.top, isIPad ? 42 : 28)
 
                 StickerWord(text: "DAILY LIMIT", fill: Kids.sun, fontSize: isIPad ? 32 : 22, tilt: -2)
 
@@ -263,7 +261,7 @@ struct TournamentRootView: View {
                     KidsGoldCoin(size: isIPad ? 18 : 14)
                 }
                 .padding(.horizontal, isIPad ? 20 : 14).padding(.vertical, isIPad ? 10 : 7)
-                .background(Capsule().fill(.white).overlay(Capsule().stroke(Kids.ink, lineWidth: 2)))
+                .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
 
                 VStack(spacing: isIPad ? 14 : 10) {
                     Button {
@@ -278,7 +276,7 @@ struct TournamentRootView: View {
                         pendingStart = nil
                     } label: {
                         HStack(spacing: isIPad ? 9 : 6) {
-                            Text("⚡").font(.system(size: isIPad ? 22 : 16))
+                            RetroSymbol("⚡", size: isIPad ? 22 : 16)
                             Text("UNLOCK FOR \(cost)")
                                 .font(Kids.fredoka(isIPad ? 18 : 14, weight: .bold))
                                 .foregroundColor(Kids.ink)
@@ -286,12 +284,12 @@ struct TournamentRootView: View {
                         }
                         .frame(maxWidth: .infinity, minHeight: isIPad ? 64 : 50)
                         .background(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            RetroPanelShape(cornerRadius: 16, style: .continuous)
                                 .fill(Kids.sun)
-                                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Kids.sheen))
-                                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).fill(Kids.sheen))
+                                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
                         )
-                        .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
+                        .compositingGroup().shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
                     }
                     .buttonStyle(.plain)
                     .disabled(!canAfford)
@@ -300,22 +298,22 @@ struct TournamentRootView: View {
                     if !canAfford {
                         Text("Need \(cost - balance) more coins — earn more by playing battles.")
                             .font(Kids.fredoka(11, weight: .bold))
-                            .foregroundColor(Kids.pink)
+                            .foregroundColor(Kids.pinkDeep)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 16)
                         BuyCoinsButton().padding(.horizontal, 4)
                     } else if canAfford && (balance - cost) < CoinStore.shared.tournamentMatchupWagerFloor {
                         HStack(spacing: 6) {
-                            Text("⚠️").font(.system(size: 13))
+                            RetroSymbol("⚠️", size: 13)
                             Text("You'll only have \(balance - cost) coin\(balance - cost == 1 ? "" : "s") left — not enough to wager. You can still play, but you can earn coins by watching an ad during the tournament.")
                                 .font(Kids.nunito(11, weight: .bold))
                                 .foregroundColor(Kids.ink)
                         }
                         .padding(.horizontal, 12).padding(.vertical, 8)
                         .background(
-                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            RetroPanelShape(cornerRadius: 12, style: .continuous)
                                 .fill(Kids.sun.opacity(0.3))
-                                .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Kids.sun, lineWidth: 1.5))
+                                .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.sun, lineWidth: 1.5))
                         )
                         .padding(.horizontal, 4)
                     }

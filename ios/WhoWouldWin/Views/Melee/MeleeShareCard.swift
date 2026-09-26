@@ -13,8 +13,7 @@ struct MeleeShareCard: View {
     let teamA: [Animal]
     let teamB: [Animal]
     let result: MeleeResult
-    // Pre-resolved UIImages for custom creatures. ImageRenderer is synchronous
-    // so AsyncImage doesn't have time to load — we hand the bytes in directly.
+    // Kept for source compatibility; portraits read the shared retro art cache.
     var teamAImages: [UIImage?] = []
     var teamBImages: [UIImage?] = []
 
@@ -25,14 +24,6 @@ struct MeleeShareCard: View {
     private var mvpAnimal: Animal? {
         winningTeam.first(where: { $0.id == result.mvp }) ?? winningTeam.first
     }
-    private var mvpImage: UIImage? {
-        guard let mvp = mvpAnimal,
-              let idx = winningTeam.firstIndex(where: { $0.id == mvp.id }),
-              idx < winningImages.count
-        else { return nil }
-        return winningImages[idx]
-    }
-
     private var narrationExcerpt: String {
         let t = result.narration.withoutEmoji.trimmingCharacters(in: .whitespaces)
         return t.hasSuffix(".") ? t : t + "."
@@ -40,10 +31,7 @@ struct MeleeShareCard: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            // Pastel gradient background — matches melee result screen.
-            LinearGradient(colors: [Color(hex: "#FFE6B8"), Kids.pink, Kids.grape],
-                           startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea()
+            Kids.cream.ignoresSafeArea()
 
             // Confetti sprinkles for delight
             confetti
@@ -51,15 +39,15 @@ struct MeleeShareCard: View {
             VStack(spacing: 0) {
                 // Branding pill
                 HStack(spacing: 5) {
-                    Text("⚔️").font(.system(size: 12))
+                    RetroSymbol("⚔️", size: 12)
                     Text("MELEE MODE")
                         .font(Kids.fredoka(11, weight: .bold))
                         .tracking(2.5)
                         .foregroundColor(.white)
-                    Text("⚔️").font(.system(size: 12))
+                    RetroSymbol("⚔️", size: 12)
                 }
                 .padding(.horizontal, 14).padding(.vertical, 6)
-                .background(Capsule().fill(Kids.ink).overlay(Capsule().stroke(.white, lineWidth: 2)))
+                .background(RetroPanelShape().fill(Kids.ink).overlay(RetroPanelShape().stroke(.white, lineWidth: 2)))
                 .padding(.top, 24)
 
                 Text("who would win? team battle")
@@ -70,7 +58,7 @@ struct MeleeShareCard: View {
                     .padding(.bottom, 10)
 
                 // Crown + winner banner
-                Text("👑").font(.system(size: 42))
+                RetroSymbol("👑", size: 42)
                 StickerWord(text: "TEAM \(result.winningTeam.rawValue) WINS!",
                             fill: Kids.sun, fontSize: 32, tilt: -2)
                     .rotationEffect(.degrees(-2))
@@ -118,43 +106,15 @@ struct MeleeShareCard: View {
 
     private var mvpHero: some View {
         VStack(spacing: 8) {
-            ZStack {
-                Circle()
-                    .fill(Kids.sun)
-                    .frame(width: 144, height: 144)
-                Circle()
-                    .fill(.white)
-                    .frame(width: 130, height: 130)
-                Circle()
-                    .stroke(Kids.ink, lineWidth: 4.5)
-                    .frame(width: 144, height: 144)
-                Group {
-                    if let mvp = mvpAnimal,
-                       let assetName = mvp.creatureAssetName,
-                       let img = UIImage(named: assetName) {
-                        Image(uiImage: img).resizable().scaledToFill()
-                    } else if let mvp = mvpAnimal, mvp.isCustom, let img = mvpImage {
-                        Image(uiImage: img).resizable().scaledToFill()
-                    } else if let mvp = mvpAnimal {
-                        Text(mvp.emoji).font(.system(size: 78))
-                    }
+            Group {
+                if let mvp = mvpAnimal {
+                    AnimalBubble(animal: mvp, size: 144, tint: Kids.sun)
                 }
-                .frame(width: 118, height: 118)
-                .clipShape(Circle())
-                // Glossy sheen blob
-                Ellipse()
-                    .fill(Color.white.opacity(0.45))
-                    .frame(width: 32, height: 48)
-                    .offset(x: -26, y: -28)
-                    .rotationEffect(.degrees(-25))
-                    .blur(radius: 4)
-                    .frame(width: 118, height: 118)
-                    .clipShape(Circle())
             }
-            .shadow(color: Kids.ink.opacity(0.15), radius: 0, x: 0, y: 5)
+            .compositingGroup().shadow(color: Kids.ink.opacity(0.15), radius: 0, x: 0, y: 5)
 
             HStack(spacing: 5) {
-                Text("⭐ MVP")
+                Text("MVP")
                     .font(Kids.fredoka(11, weight: .bold))
                     .foregroundColor(Kids.ink)
                     .tracking(1.5)
@@ -167,8 +127,8 @@ struct MeleeShareCard: View {
             }
             .padding(.horizontal, 12).padding(.vertical, 5)
             .background(
-                Capsule().fill(Kids.sun)
-                    .overlay(Capsule().stroke(Kids.ink, lineWidth: 2))
+                RetroPanelShape().fill(Kids.sun)
+                    .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
             )
         }
     }
@@ -184,21 +144,21 @@ struct MeleeShareCard: View {
                     .foregroundColor(Kids.ink)
                     .tracking(1.5)
                     .padding(.horizontal, 10).padding(.vertical, 3)
-                    .background(Capsule().fill(tint).overlay(Capsule().stroke(Kids.ink, lineWidth: 2)))
+                    .background(RetroPanelShape().fill(tint).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
                 if isWinner {
-                    Text("👑 WINNERS")
+                    Text("WINNERS")
                         .font(Kids.fredoka(9, weight: .bold))
                         .foregroundColor(Kids.ink)
                         .tracking(1)
                         .padding(.horizontal, 8).padding(.vertical, 3)
-                        .background(Capsule().fill(Kids.sun).overlay(Capsule().stroke(Kids.ink, lineWidth: 1.5)))
+                        .background(RetroPanelShape().fill(Kids.sun).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5)))
                 } else {
                     Text("DEFEATED")
                         .font(Kids.fredoka(9, weight: .bold))
                         .foregroundColor(Kids.ink.opacity(0.7))
                         .tracking(1)
                         .padding(.horizontal, 8).padding(.vertical, 3)
-                        .background(Capsule().fill(Color.white.opacity(0.7)).overlay(Capsule().stroke(Kids.ink.opacity(0.4), lineWidth: 1.5)))
+                        .background(RetroPanelShape().fill(Color.white.opacity(0.7)).overlay(RetroPanelShape().stroke(Kids.ink.opacity(0.4), lineWidth: 1.5)))
                 }
                 Spacer(minLength: 0)
                 Text("\(healthPct)%")
@@ -220,36 +180,21 @@ struct MeleeShareCard: View {
         }
         .padding(10)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RetroPanelShape(cornerRadius: 18, style: .continuous)
                 .fill(Color.white.opacity(isWinner ? 0.92 : 0.55))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    RetroPanelShape(cornerRadius: 18, style: .continuous)
                         .stroke(Kids.ink, lineWidth: isWinner ? 3 : 2)
                 )
         )
-        .shadow(color: Kids.ink.opacity(isWinner ? 0.16 : 0.08), radius: 0, x: 0, y: 4)
+        .compositingGroup().shadow(color: Kids.ink.opacity(isWinner ? 0.16 : 0.08), radius: 0, x: 0, y: 4)
         .opacity(isWinner ? 1.0 : 0.85)
     }
 
     private func rosterPortrait(animal: Animal, customImage: UIImage?, accent: Color) -> some View {
         let portraitSize: CGFloat = 56
         return VStack(spacing: 3) {
-            ZStack {
-                Circle().fill(accent).frame(width: portraitSize, height: portraitSize)
-                Circle().fill(.white).frame(width: portraitSize - 8, height: portraitSize - 8)
-                Circle().stroke(Kids.ink, lineWidth: 2.5).frame(width: portraitSize, height: portraitSize)
-                Group {
-                    if let assetName = animal.creatureAssetName, let img = UIImage(named: assetName) {
-                        Image(uiImage: img).resizable().scaledToFill()
-                    } else if animal.isCustom, let img = customImage {
-                        Image(uiImage: img).resizable().scaledToFill()
-                    } else {
-                        Text(animal.emoji).font(.system(size: 28))
-                    }
-                }
-                .frame(width: portraitSize - 14, height: portraitSize - 14)
-                .clipShape(Circle())
-            }
+            AnimalBubble(animal: animal, size: portraitSize, tint: accent)
             Text(animal.name.uppercased())
                 .font(Kids.fredoka(8, weight: .bold))
                 .foregroundColor(Kids.ink)
@@ -261,11 +206,10 @@ struct MeleeShareCard: View {
     private func healthBar(pct: Int, accent: Color) -> some View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
-                Capsule().fill(Color.white.opacity(0.65))
-                    .overlay(Capsule().stroke(Kids.ink.opacity(0.3), lineWidth: 1))
-                Capsule()
-                    .fill(LinearGradient(colors: [accent.opacity(0.85), accent],
-                                         startPoint: .leading, endPoint: .trailing))
+                RetroPanelShape().fill(Color.white.opacity(0.65))
+                    .overlay(RetroPanelShape().stroke(Kids.ink.opacity(0.3), lineWidth: 1))
+                RetroPanelShape()
+                    .fill(accent)
                     .frame(width: max(2, geo.size.width * CGFloat(pct) / 100))
             }
         }
@@ -280,7 +224,7 @@ struct MeleeShareCard: View {
                 .font(Kids.fredoka(9, weight: .bold))
                 .foregroundColor(Kids.ink)
                 .padding(.horizontal, 8).padding(.vertical, 3)
-                .background(Capsule().fill(Kids.pink).overlay(Capsule().stroke(Kids.ink, lineWidth: 1.5)))
+                .background(RetroPanelShape().fill(Kids.pink).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5)))
             Text("\u{201C}\(narrationExcerpt)\u{201D}")
                 .font(Kids.nunito(13, weight: .bold))
                 .foregroundColor(Kids.ink)
@@ -291,9 +235,9 @@ struct MeleeShareCard: View {
         .padding(.horizontal, 12).padding(.vertical, 10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
+            RetroPanelShape(cornerRadius: 14, style: .continuous)
                 .fill(Color.white)
-                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
         )
     }
 
@@ -303,7 +247,7 @@ struct MeleeShareCard: View {
                 .font(Kids.fredoka(9, weight: .bold))
                 .foregroundColor(Kids.ink)
                 .padding(.horizontal, 8).padding(.vertical, 3)
-                .background(Capsule().fill(Kids.sun).overlay(Capsule().stroke(Kids.ink, lineWidth: 1.5)))
+                .background(RetroPanelShape().fill(Kids.sun).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5)))
             Text(result.funFact.withoutEmoji)
                 .font(Kids.nunito(13, weight: .bold))
                 .foregroundColor(Kids.ink)
@@ -314,9 +258,9 @@ struct MeleeShareCard: View {
         .padding(.horizontal, 12).padding(.vertical, 10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
+            RetroPanelShape(cornerRadius: 14, style: .continuous)
                 .fill(Color.white)
-                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
         )
     }
 
@@ -330,11 +274,11 @@ struct MeleeShareCard: View {
                     .resizable()
                     .frame(width: 52, height: 52)
                     .padding(5)
-                    .background(RoundedRectangle(cornerRadius: 10).fill(.white))
-                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Kids.ink, lineWidth: 2))
+                    .background(RetroPanelShape(cornerRadius: 10).fill(.white))
+                    .overlay(RetroPanelShape(cornerRadius: 10).stroke(Kids.ink, lineWidth: 2))
             }
             VStack(alignment: .leading, spacing: 4) {
-                Text("🦁 Animal vs Animal")
+                Text("Animal vs Animal")
                     .font(Kids.fredoka(13, weight: .bold))
                     .foregroundColor(Kids.ink)
                 HStack(spacing: 4) {
@@ -350,10 +294,10 @@ struct MeleeShareCard: View {
         }
         .padding(.horizontal, 12).padding(.vertical, 10)
         .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
+            RetroPanelShape(cornerRadius: 14, style: .continuous)
                 .fill(Kids.sun)
-                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
-                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
+                .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
         )
     }
 
@@ -370,8 +314,7 @@ struct MeleeShareCard: View {
         return ZStack {
             ForEach(0..<pieces.count, id: \.self) { i in
                 let p = pieces[i]
-                Text(p.0)
-                    .font(.system(size: p.4))
+                RetroSymbol(p.0, size: p.4)
                     .rotationEffect(.degrees(p.3))
                     .position(x: p.1, y: p.2)
                     .opacity(0.85)
@@ -408,24 +351,11 @@ struct MeleeShareCard: View {
         return renderer.uiImage
     }
 
-    /// Pre-fetches each fighter's custom-creature UIImage (preserving roster
-    /// order — TaskGroup is unordered, so we await sequentially) and then
-    /// renders the card. Built-ins return nil from `image(for:)` and fall
-    /// through to the emoji / bundled artwork branch.
+    /// Prepare the shared pixel art cache before synchronous export.
     @MainActor
     static func renderWithCachedImages(teamA: [Animal], teamB: [Animal],
                                        result: MeleeResult) async -> UIImage? {
-        var aImages: [UIImage?] = []
-        aImages.reserveCapacity(teamA.count)
-        for a in teamA {
-            aImages.append(await AnimalImageService.shared.image(for: a))
-        }
-        var bImages: [UIImage?] = []
-        bImages.reserveCapacity(teamB.count)
-        for b in teamB {
-            bImages.append(await AnimalImageService.shared.image(for: b))
-        }
-        return render(teamA: teamA, teamB: teamB, result: result,
-                      teamAImages: aImages, teamBImages: bImages)
+        await RetroAssetStore.shared.prepare(teamA + teamB)
+        return render(teamA: teamA, teamB: teamB, result: result)
     }
 }

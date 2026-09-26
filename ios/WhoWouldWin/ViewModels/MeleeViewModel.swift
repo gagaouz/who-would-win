@@ -10,6 +10,9 @@ final class MeleeViewModel: ObservableObject {
     @Published var result: MeleeResult? = nil
     @Published var animationComplete: Bool = false
     @Published var errorMessage: String? = nil
+    @Published private(set) var presentationID = UUID()
+    private var lifecycle = RetroBattleLifecycle<MeleeResult>()
+    private var deadlineTask: Task<Void, Never>?
 
     let teamA: [Animal]
     let teamB: [Animal]
@@ -23,6 +26,7 @@ final class MeleeViewModel: ObservableObject {
         self.teamB = teamB
         self.environment = environment
         self.arenaEffectsEnabled = arenaEffectsEnabled
+        self.presentationID = lifecycle.id
     }
 
     /// Environment for LOCAL stat math (fallback + sanity check). With arena
@@ -34,23 +38,48 @@ final class MeleeViewModel: ObservableObject {
     }
 
     func startBattle() async {
+        guard let session = lifecycle.begin() else { return }
         phase = .animating
-        do {
-            let r = try await BattleService.shared.fetchMeleeResult(
-                teamA: teamA, teamB: teamB,
-                environment: environment,
-                arenaEffectsEnabled: arenaEffectsEnabled)
-            result = validatedMVP(sanityCheck(r))
-        } catch {
-            // Local fallback so the player isn't stuck if the backend is slow.
-            let isTrueOffline = (error as? BattleError) == .networkUnavailable
-            let fb = await BattleService.shared.generateMeleeFallback(
-                teamA: teamA, teamB: teamB,
-                environment: statEnvironment,
-                arenaEffectsEnabled: arenaEffectsEnabled,
-                markAsOffline: isTrueOffline)
-            result = validatedMVP(sanityCheck(fb))
+        deadlineTask = Task { @MainActor [weak self] in
+            do { try await Task.sleep(nanoseconds: 25_000_000_000) }
+            catch { return }
+            guard let self, !Task.isCancelled, self.lifecycle.id == session,
+                  self.lifecycle.result == nil, !self.lifecycle.cancelled else { return }
+            let fallback = await self.localFallback(offline: false)
+            guard !Task.isCancelled else { return }
+            self.accept(fallback, session: session)
         }
+        do {
+            let value = try await BattleService.shared.fetchMeleeResult(
+                teamA: teamA, teamB: teamB, environment: environment,
+                arenaEffectsEnabled: arenaEffectsEnabled)
+            guard !Task.isCancelled, !lifecycle.cancelled else { return }
+            accept(value, session: session)
+        } catch {
+            guard !Task.isCancelled, !lifecycle.cancelled else { return }
+            let fallback = await localFallback(offline: (error as? BattleError) == .networkUnavailable)
+            guard !Task.isCancelled else { return }
+            accept(fallback, session: session)
+        }
+    }
+
+    private func localFallback(offline: Bool) async -> MeleeResult {
+        await BattleService.shared.generateMeleeFallback(
+            teamA: teamA, teamB: teamB, environment: statEnvironment,
+            arenaEffectsEnabled: arenaEffectsEnabled, markAsOffline: offline)
+    }
+
+    private func accept(_ value: MeleeResult, session: UUID) {
+        guard lifecycle.id == session, !lifecycle.cancelled, lifecycle.result == nil else { return }
+        let finalResult = validatedMVP(sanityCheck(value))
+        guard lifecycle.accept(finalResult, for: session) else { return }
+        deadlineTask?.cancel(); deadlineTask = nil
+        result = finalResult
+    }
+
+    func cancelBattle() {
+        deadlineTask?.cancel(); deadlineTask = nil
+        lifecycle.cancel()
     }
 
     /// The MVP id comes from the backend and is untrusted — if it isn't a
@@ -72,7 +101,11 @@ final class MeleeViewModel: ObservableObject {
         )
     }
 
-    func animationDidComplete() { animationComplete = true }
+    func animationDidComplete(for session: UUID? = nil) {
+        guard lifecycle.finish(session ?? presentationID) else { return }
+        animationComplete = true
+        phase = .complete
+    }
 
     /// Mirror of the 1v1 sanity check. Compute each team's env-adjusted
     /// score; if the *declared winner's* power is less than 30% of the

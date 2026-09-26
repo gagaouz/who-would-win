@@ -36,6 +36,7 @@ actor AnimalImageService {
     /// Tries Wikipedia first; falls back to a Pollinations.ai URL.
     /// The result is cached so repeat calls are instant.
     func imageURL(for name: String) async -> URL {
+        guard AppConfig.externalServicesEnabled else { return URL(string: "http://localhost:1/fixture-art")! }
         let key = name.lowercased()
         if let cached = urlCache[key] { return cached }
 
@@ -71,6 +72,7 @@ actor AnimalImageService {
     /// Downloads and caches the best image for a custom animal.
     /// Returns nil for built-in (non-custom) animals so callers can fall back to emoji.
     func image(for animal: Animal) async -> UIImage? {
+        guard AppConfig.externalServicesEnabled else { return nil }
         guard animal.isCustom else { return nil }
 
         if let cached = imageCache[animal.id] { return cached }
@@ -88,6 +90,7 @@ actor AnimalImageService {
 
     /// Asks the backend for the best emoji + category + colour for a name.
     func fetchAnimalInfo(name: String) async -> (emoji: String, category: AnimalCategory, color: String) {
+        guard AppConfig.externalServicesEnabled else { return ("🐾", .land, "#496845") }
         guard let url = URL(string: "\(AppConfig.backendBaseURL)/api/animal") else {
             return ("🐾", .land, "#888888")
         }

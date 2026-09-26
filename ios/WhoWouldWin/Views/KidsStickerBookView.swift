@@ -36,9 +36,7 @@ struct KidsStickerBookView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Color(hex: "#FFD9B0"), Kids.pink, Kids.grape],
-                           startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea()
+            SkyBG()
 
             ScrollView {
                 HStack(spacing: 0) {
@@ -52,13 +50,13 @@ struct KidsStickerBookView: View {
                                 category: .land)
                         section(title: "Ocean Pals",     emoji: "🌊", color: Kids.sky,
                                 category: .sea)
-                        section(title: "Sky Friends",    emoji: "☁️", color: Color(hex: "#A89BE8"),
+                        section(title: "Sky Friends",    emoji: "☁️", color: Kids.grape,
                                 category: .air)
                         section(title: "Little Buddies", emoji: "🐛", color: Kids.peach,
                                 category: .insect)
-                        section(title: "Pet Pals",       emoji: "🐶", color: Color(hex: "#F4B6C2"),
+                        section(title: "Pet Pals",       emoji: "🐶", color: Kids.peach,
                                 category: .pets)
-                        section(title: "Farm Friends",   emoji: "🚜", color: Color(hex: "#E8B96E"),
+                        section(title: "Farm Friends",   emoji: "🚜", color: Kids.grass,
                                 category: .farm)
 
                         // Pack-gated sections — show always, lock the contents.
@@ -69,7 +67,7 @@ struct KidsStickerBookView: View {
                         section(title: "Mythic Legends",  emoji: "⚡",  color: Kids.sunDeep,
                                 category: .mythic,      lockedIfMissing: true)
                         if cheat.olympusUnlocked || settings.isOlympusVisible {
-                            section(title: "Olympus Gods", emoji: "🔱", color: Color(hex: "#E0B040"),
+                            section(title: "Olympus Gods", emoji: "🔱", color: Kids.sunDeep,
                                     category: .olympus, lockedIfMissing: true)
                         }
 
@@ -112,7 +110,7 @@ struct KidsStickerBookView: View {
         HStack {
             KidIconBtn(icon: "←", fill: .white) { dismiss() }
             Spacer()
-            Text("📖 MY STICKER BOOK")
+            Text("MY STICKER BOOK")
                 .font(Kids.fredoka(isIPad ? 24 : 18, weight: .bold))
                 .foregroundColor(Kids.ink)
             Spacer()
@@ -127,7 +125,7 @@ struct KidsStickerBookView: View {
     private var progressCard: some View {
         VStack(alignment: .leading, spacing: isIPad ? 14 : 10) {
             HStack(spacing: isIPad ? 14 : 10) {
-                Text("🏆").font(.system(size: isIPad ? 40 : 32))
+                RetroSymbol("🏆", size: isIPad ? 40 : 32)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("\(collectedCount) of \(totalCount) collected")
                         .font(Kids.fredoka(isIPad ? 19 : 15, weight: .bold))
@@ -144,11 +142,11 @@ struct KidsStickerBookView: View {
         .padding(isIPad ? 18 : 14)
         .frame(maxWidth: .infinity)
         .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
+            RetroPanelShape(cornerRadius: 20, style: .continuous)
                 .fill(.white)
-                .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
         )
-        .shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
         .padding(.horizontal, isIPad ? 20 : 16)
     }
 
@@ -171,13 +169,12 @@ struct KidsStickerBookView: View {
         if !pool.isEmpty {
             VStack(alignment: .leading, spacing: isIPad ? 14 : 10) {
                 HStack(spacing: isIPad ? 8 : 6) {
-                    Text(emoji).font(.system(size: isIPad ? 20 : 16))
+                    RetroSymbol(emoji, size: isIPad ? 20 : 16)
                     Text(title)
                         .font(Kids.fredoka(isIPad ? 18 : 14, weight: .bold))
                         .foregroundColor(Kids.ink)
                     if displayLocked {
-                        Text("🔒")
-                            .font(.system(size: isIPad ? 15 : 12))
+                        RetroSymbol("🔒", size: isIPad ? 15 : 12)
                     }
                     Spacer(minLength: 8)
                     if displayLocked {
@@ -189,8 +186,8 @@ struct KidsStickerBookView: View {
                                 .foregroundColor(Kids.ink)
                                 .padding(.horizontal, isIPad ? 14 : 10).padding(.vertical, isIPad ? 6 : 4)
                                 .background(
-                                    Capsule().fill(Kids.sun)
-                                        .overlay(Capsule().stroke(Kids.ink, lineWidth: 2))
+                                    RetroPanelShape().fill(Kids.sun)
+                                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
                                 )
                         }
                         .buttonStyle(.plain)
@@ -250,16 +247,13 @@ private struct BookProgressBar: View {
     var body: some View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
-                Capsule().fill(Color(hex: "#F0EBF7"))
-                Capsule()
-                    .fill(LinearGradient(
-                        colors: [Kids.grass, Color(hex: "#5BC050")],
-                        startPoint: .leading, endPoint: .trailing
-                    ))
+                RetroPanelShape().fill(Kids.creamDeep)
+                RetroPanelShape()
+                    .fill(Kids.grassDeep)
                     .frame(width: max(8, geo.size.width * CGFloat(max(0, min(1, progress)))))
             }
-            .clipShape(Capsule())
-            .overlay(Capsule().stroke(Kids.ink.opacity(0.15), lineWidth: 1))
+            .clipShape(RetroPanelShape())
+            .overlay(RetroPanelShape().stroke(Kids.ink.opacity(0.15), lineWidth: 1))
         }
     }
 }
@@ -272,22 +266,15 @@ private struct StickerTile: View {
     let lockedPack: Bool
     var isIPad: Bool = false
 
-    @State private var fetchedURL: URL? = nil
-
-    private var bundledImage: UIImage? {
-        guard let name = animal.creatureAssetName else { return nil }
-        return UIImage(named: name)
-    }
-
     var body: some View {
         let tileSize: CGFloat = isIPad ? 80 : 64
         let innerSize: CGFloat = isIPad ? 66 : 52
         VStack(spacing: isIPad ? 6 : 4) {
             ZStack {
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(collected ? .white : (lockedPack ? Color(hex: "#E1D5F0") : Color.white.opacity(0.5)))
+                RetroPanelShape(cornerRadius: 16, style: .continuous)
+                    .fill(collected ? .white : (lockedPack ? Kids.creamDeep : Color.white.opacity(0.5)))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        RetroPanelShape(cornerRadius: 16, style: .continuous)
                             .stroke(
                                 collected ? Kids.ink : Kids.ink.opacity(lockedPack ? 0.3 : 0.35),
                                 style: StrokeStyle(
@@ -299,12 +286,9 @@ private struct StickerTile: View {
                     .frame(width: tileSize, height: tileSize)
 
                 if collected {
-                    collectedContent
-                        .frame(width: innerSize, height: innerSize)
-                        .clipShape(RoundedRectangle(cornerRadius: 11, style: .continuous))
+                    RetroCreatureArtwork(animal: animal, size: innerSize)
                 } else if lockedPack {
-                    Text("🔒")
-                        .font(.system(size: isIPad ? 28 : 22))
+                    RetroSymbol("🔒", size: isIPad ? 28 : 22)
                         .opacity(0.6)
                 } else {
                     Text("?")
@@ -318,35 +302,9 @@ private struct StickerTile: View {
                 .lineLimit(1).minimumScaleFactor(0.7)
                 .frame(width: tileSize)
         }
-        .shadow(color: Kids.ink.opacity(collected ? 0.14 : 0.06), radius: 0, x: 0, y: 3)
-        .task(id: animal.id + (collected ? "-1" : "-0")) {
-            // Real photos only for CUSTOM creatures. Built-in animals show
-            // their hand-picked emoji (or bundled art when one ships).
-            guard collected, animal.isCustom, fetchedURL == nil else { return }
-            if let u = animal.imageURL {
-                fetchedURL = u
-            } else {
-                fetchedURL = await AnimalImageService.shared.imageURL(for: animal.name)
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var collectedContent: some View {
-        if let ui = bundledImage {
-            Image(uiImage: ui).resizable().scaledToFill()
-        } else if animal.isCustom, let url = fetchedURL {
-            AsyncImage(url: url) { phase in
-                switch phase {
-                case .success(let img):
-                    img.resizable().scaledToFill()
-                default:
-                    Text(animal.emoji).font(.system(size: isIPad ? 38 : 30))
-                }
-            }
-        } else {
-            Text(animal.emoji).font(.system(size: 30))
-        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(collected ? animal.name : (lockedPack ? "Locked creature" : "Uncollected creature"))
+        .accessibilityValue(collected ? "Collected" : "")
     }
 }
 

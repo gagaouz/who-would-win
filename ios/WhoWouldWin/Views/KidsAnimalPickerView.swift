@@ -34,8 +34,8 @@ struct KidsAnimalPickerView: View {
             (.sea,    "Sea",    "🌊", Kids.sky),
             (.air,    "Air",    "☁️", Kids.grape),
             (.insect, "Bugs",   "🐛", Kids.peach),
-            (.pets,   "Pets",   "🐶", Color(hex: "#F4B6C2")),
-            (.farm,   "Farm",   "🚜", Color(hex: "#E8B96E")),
+            (.pets,   "Pets",   "🐶", Kids.peach),
+            (.farm,   "Farm",   "🚜", Kids.grass),
         ]
         list.append((.prehistoric, "Dinos",   "🦖", Kids.sun))
         list.append((.fantasy,     "Fantasy", "🐉", Kids.grape))
@@ -58,7 +58,7 @@ struct KidsAnimalPickerView: View {
                     searchBar
                     if let err = speech.dictationError {
                         HStack(spacing: 5) {
-                            Text("🎤").font(.system(size: isIPad ? 14 : 11))
+                            RetroSymbol("🎤", size: isIPad ? 14 : 11)
                             Text(err)
                                 .font(Kids.nunito(isIPad ? 13 : 11, weight: .bold))
                                 .foregroundColor(Kids.ink)
@@ -157,11 +157,11 @@ struct KidsAnimalPickerView: View {
         }
         .padding(.horizontal, isIPad ? 14 : 8).padding(.vertical, isIPad ? 14 : 10)
         .background(
-            RoundedRectangle(cornerRadius: 26, style: .continuous)
+            RetroPanelShape(cornerRadius: 26, style: .continuous)
                 .fill(.white)
-                .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous).stroke(Kids.ink, lineWidth: 3.5))
+                .overlay(RetroPanelShape(cornerRadius: 26, style: .continuous).stroke(Kids.ink, lineWidth: 3.5))
         )
-        .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
         .padding(.horizontal, isIPad ? 20 : 14)
         .padding(.top, isIPad ? 16 : 12)
     }
@@ -203,8 +203,8 @@ struct KidsAnimalPickerView: View {
                 }
             } label: {
                 ZStack {
-                    Circle().fill(speech.isListening ? Kids.pink : Color.white)
-                        .overlay(Circle().stroke(Kids.ink, lineWidth: 2))
+                    RetroPanelShape().fill(speech.isListening ? Kids.pink : Color.white)
+                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
                         .frame(width: isIPad ? 40 : 30, height: isIPad ? 40 : 30)
                     Image(systemName: speech.isListening ? "mic.fill" : "mic")
                         .font(.system(size: isIPad ? 17 : 13, weight: .bold))
@@ -214,24 +214,24 @@ struct KidsAnimalPickerView: View {
         }
         .padding(.horizontal, isIPad ? 18 : 12).padding(.vertical, isIPad ? 13 : 9)
         .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+            RetroPanelShape(cornerRadius: 16, style: .continuous)
                 .fill(Color.white)
-                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
         )
-        .shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 2)
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 2)
         .padding(.horizontal, isIPad ? 20 : 14)
         .padding(.top, isIPad ? 14 : 10)
     }
 
     private var customHint: some View {
         HStack(spacing: isIPad ? 7 : 5) {
-            Text("✨").font(.system(size: isIPad ? 17 : 13))
+            RetroSymbol("✨", size: isIPad ? 17 : 13)
             Text("Try 'Penguin', 'Hamster', or even your pet's name!")
                 .font(Kids.nunito(isIPad ? 14 : 11, weight: .bold))
                 .foregroundColor(Kids.ink)
         }
         .padding(.horizontal, isIPad ? 16 : 12).padding(.vertical, isIPad ? 6 : 4)
-        .background(Capsule().fill(Kids.sun.opacity(0.5)).overlay(Capsule().stroke(Kids.ink, lineWidth: 1.5)))
+        .background(RetroPanelShape().fill(Kids.sun.opacity(0.5)).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5)))
         .padding(.top, isIPad ? 8 : 6)
         .onAppear { customHintShownCount += 1 }
     }
@@ -344,21 +344,21 @@ struct KidsAnimalPickerView: View {
             }
         } label: {
             ZStack {
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                RetroPanelShape(cornerRadius: 22, style: .continuous)
                     .fill(Kids.grape)
-                    .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Kids.sheen))
-                    .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(Kids.ink, lineWidth: 3.5))
+                    .overlay(RetroPanelShape(cornerRadius: 22, style: .continuous).fill(Kids.sheen))
+                    .overlay(RetroPanelShape(cornerRadius: 22, style: .continuous).stroke(Kids.ink, lineWidth: 3.5))
                     .aspectRatio(1, contentMode: .fit)
                 VStack(spacing: isIPad ? 3 : 2) {
-                    Text("🎲").font(.system(size: isIPad ? 50 : 42))
+                    RetroSymbol("🎲", size: isIPad ? 50 : 42)
                     Text("SURPRISE ME!")
                         .font(Kids.fredoka(isIPad ? 13 : 11, weight: .bold))
-                        .foregroundColor(.white)
+                        .foregroundColor(Kids.ink)
                         .lineLimit(1).minimumScaleFactor(0.7)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .shadow(color: Kids.ink.opacity(0.10), radius: 0, x: 0, y: 4)
+            .compositingGroup().shadow(color: Kids.ink.opacity(0.10), radius: 0, x: 0, y: 4)
         }
         .buttonStyle(.plain)
     }
@@ -371,28 +371,28 @@ struct KidsAnimalPickerView: View {
             searchFocused = true
         } label: {
             ZStack {
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                RetroPanelShape(cornerRadius: 22, style: .continuous)
                     .fill(Kids.pink)
-                    .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Kids.sheen))
-                    .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(Kids.ink, lineWidth: 3.5))
+                    .overlay(RetroPanelShape(cornerRadius: 22, style: .continuous).fill(Kids.sheen))
+                    .overlay(RetroPanelShape(cornerRadius: 22, style: .continuous).stroke(Kids.ink, lineWidth: 3.5))
                     .aspectRatio(1, contentMode: .fit)
                 VStack(spacing: isIPad ? 3 : 2) {
-                    Text("✏️").font(.system(size: isIPad ? 48 : 40))
+                    RetroSymbol("✏️", size: isIPad ? 48 : 40)
                     Text("MAKE YOUR OWN!")
                         .font(Kids.fredoka(isIPad ? 13 : 10, weight: .bold))
-                        .foregroundColor(.white)
+                        .foregroundColor(Kids.ink)
                         .lineLimit(1).minimumScaleFactor(0.65)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .shadow(color: Kids.ink.opacity(0.10), radius: 0, x: 0, y: 4)
+            .compositingGroup().shadow(color: Kids.ink.opacity(0.10), radius: 0, x: 0, y: 4)
         }
         .buttonStyle(.plain)
     }
 
     private var emptyState: some View {
         VStack(spacing: isIPad ? 11 : 8) {
-            Text("🔍").font(.system(size: isIPad ? 50 : 38))
+            RetroSymbol("🔍", size: isIPad ? 50 : 38)
             Text("No animals found")
                 .font(Kids.fredoka(isIPad ? 22 : 16, weight: .bold))
                 .foregroundColor(Kids.ink)
@@ -407,7 +407,7 @@ struct KidsAnimalPickerView: View {
 
     private func lockedAnimalPrompt(_ a: Animal) -> some View {
         HStack(spacing: isIPad ? 14 : 10) {
-            Text("🔒").font(.system(size: isIPad ? 32 : 24))
+            RetroSymbol("🔒", size: isIPad ? 32 : 24)
             VStack(alignment: .leading, spacing: isIPad ? 3 : 2) {
                 Text(a.name)
                     .font(Kids.fredoka(isIPad ? 18 : 14, weight: .bold))
@@ -427,15 +427,15 @@ struct KidsAnimalPickerView: View {
                 }
             }
             .font(Kids.fredoka(isIPad ? 15 : 12, weight: .bold))
-            .foregroundColor(.white)
+            .foregroundColor(Kids.ink)
             .padding(.horizontal, isIPad ? 16 : 12).padding(.vertical, isIPad ? 8 : 6)
-            .background(Capsule().fill(Kids.grape).overlay(Capsule().stroke(Kids.ink, lineWidth: 2)))
+            .background(RetroPanelShape().fill(Kids.grape).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
         }
         .padding(isIPad ? 16 : 12)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RetroPanelShape(cornerRadius: 18, style: .continuous)
                 .fill(.white)
-                .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
         )
         .padding(.horizontal, isIPad ? 20 : 14)
         .padding(.top, isIPad ? 18 : 14)
@@ -445,7 +445,7 @@ struct KidsAnimalPickerView: View {
         let canAfford = coins.canAfford(CoinStore.shared.customCreatureCost)
         return VStack(spacing: isIPad ? 13 : 10) {
             HStack(spacing: isIPad ? 14 : 10) {
-                // Real photo (Wikipedia / Pollinations) inside a chunky sticker frame
+                // The local retro avatar is prepared after the fighter is selected.
                 CustomAnimalAvatar(animal: custom, size: isIPad ? 64 : 50)
                 VStack(alignment: .leading, spacing: isIPad ? 3 : 2) {
                     Text("Battle as \"\(custom.name)\"")
@@ -453,10 +453,15 @@ struct KidsAnimalPickerView: View {
                         .foregroundColor(Kids.ink)
                     Text(customFreeUsed ? "Choose how to unlock" : "First custom battle FREE!")
                         .font(Kids.nunito(isIPad ? 14 : 11, weight: .bold))
-                        .foregroundColor(customFreeUsed ? Kids.inkSoft : Kids.grass)
+                        .foregroundColor(customFreeUsed ? Kids.inkSoft : Kids.grassDeep)
                 }
                 Spacer()
             }
+
+            Text("We'll give your fighter a retro avatar, made on your device.")
+                .font(Kids.nunito(isIPad ? 14 : 12, weight: .semibold))
+                .foregroundColor(Kids.inkSoft)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
             if !customFreeUsed {
                 KidButton(title: "BATTLE FREE!", icon: "✨", color: Kids.grass, size: .md) {
@@ -484,9 +489,9 @@ struct KidsAnimalPickerView: View {
                         .foregroundColor(canAfford ? Kids.ink : Kids.inkSoft)
                         .frame(maxWidth: .infinity, minHeight: isIPad ? 50 : 40)
                         .background(
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .fill(canAfford ? Kids.sun : Color(hex: "#E8DFF5"))
-                                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2))
+                            RetroPanelShape(cornerRadius: 14, style: .continuous)
+                                .fill(canAfford ? Kids.sun : Kids.panel)
+                                .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2))
                         )
                     }
                     .disabled(!canAfford)
@@ -503,9 +508,9 @@ struct KidsAnimalPickerView: View {
                         .foregroundColor(Kids.ink)
                         .frame(maxWidth: .infinity, minHeight: isIPad ? 50 : 40)
                         .background(
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            RetroPanelShape(cornerRadius: 14, style: .continuous)
                                 .fill(Kids.grass)
-                                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2))
+                                .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2))
                         )
                     }
                 }
@@ -513,11 +518,11 @@ struct KidsAnimalPickerView: View {
         }
         .padding(isIPad ? 16 : 12)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RetroPanelShape(cornerRadius: 18, style: .continuous)
                 .fill(.white)
-                .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Kids.sun, lineWidth: 3))
+                .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.sun, lineWidth: 3))
         )
-        .shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
         .padding(.horizontal, isIPad ? 20 : 14)
         .padding(.top, isIPad ? 18 : 14)
     }
@@ -547,14 +552,14 @@ struct KidsAnimalPickerView: View {
                 .padding(.horizontal, isIPad ? 20 : 14)
             } else {
                 HStack {
-                    Text("🦉").font(.system(size: isIPad ? 24 : 18))
+                    RetroSymbol("🦉", size: isIPad ? 24 : 18)
                     Text("Tap 2 buddies to start your match-up!")
                         .font(Kids.fredoka(isIPad ? 17 : 13, weight: .bold))
                         .foregroundColor(Kids.ink)
                 }
                 .padding(.horizontal, isIPad ? 20 : 14).padding(.vertical, isIPad ? 12 : 9)
-                .background(Capsule().fill(.white).overlay(Capsule().stroke(Kids.ink, lineWidth: 2.5)))
-                .shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+                .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5)))
+                .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
             }
         }
         .padding(.bottom, isIPad ? 36 : 30)
@@ -609,9 +614,9 @@ private struct KidsFighterSlot: View {
                     Button(action: onClear) {
                         Text("✕")
                             .font(Kids.fredoka(isIPad ? 16 : 13, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(Kids.ink)
                             .frame(width: isIPad ? 28 : 22, height: isIPad ? 28 : 22)
-                            .background(Circle().fill(Kids.ink))
+                            .background(RetroPanelShape().fill(Kids.ink))
                     }
                     .offset(x: isIPad ? 6 : 4, y: isIPad ? -6 : -4)
                 }
@@ -621,15 +626,15 @@ private struct KidsFighterSlot: View {
                     .lineLimit(1).minimumScaleFactor(0.55)
                     .padding(.horizontal, isIPad ? 11 : 8).padding(.vertical, isIPad ? 5 : 3)
                     .background(
-                        Capsule().fill(tint)
-                            .overlay(Capsule().stroke(Kids.ink, lineWidth: 2))
+                        RetroPanelShape().fill(tint)
+                            .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
                     )
                     .frame(maxWidth: isIPad ? 140 : 100)
             } else {
                 ZStack {
-                    Circle()
+                    RetroPanelShape()
                         .strokeBorder(Kids.ink.opacity(0.35), style: StrokeStyle(lineWidth: 3, dash: [6, 4]))
-                        .background(Circle().fill(Color.white.opacity(0.5)))
+                        .background(RetroPanelShape().fill(Color.white.opacity(0.5)))
                         .frame(width: bubbleSize, height: bubbleSize)
                     Text("?").font(Kids.fredoka(isIPad ? 44 : 32, weight: .bold)).foregroundColor(Kids.ink.opacity(0.4))
                 }
@@ -637,7 +642,7 @@ private struct KidsFighterSlot: View {
                     .font(Kids.nunito(isIPad ? 13 : 10, weight: .heavy)).tracking(1)
                     .foregroundColor(Kids.inkSoft)
                     .padding(.horizontal, isIPad ? 11 : 8).padding(.vertical, isIPad ? 5 : 3)
-                    .background(Capsule().fill(Color.white.opacity(0.7)))
+                    .background(RetroPanelShape().fill(Color.white.opacity(0.7)))
             }
         }
         .frame(maxWidth: .infinity)
@@ -655,7 +660,7 @@ private struct KidsCategoryPill: View {
     var isIPad: Bool = false
     var body: some View {
         HStack(spacing: isIPad ? 6 : 4) {
-            Text(locked ? "🔒" : emoji).font(.system(size: isIPad ? 19 : 15))
+            RetroSymbol(locked ? "🔒" : emoji, size: isIPad ? 19 : 16).font(.system(size: isIPad ? 19 : 15))
             Text(label)
                 .font(Kids.fredoka(isIPad ? 16 : 13, weight: .bold))
                 .foregroundColor(locked ? Kids.inkSoft : Kids.ink)
@@ -663,11 +668,11 @@ private struct KidsCategoryPill: View {
         .padding(.horizontal, isIPad ? 16 : 11)
         .frame(height: isIPad ? 48 : 38)
         .background(
-            Capsule().fill(locked ? Color(hex: "#E8DFF5") : (active ? color : .white))
-                .overlay(active && !locked ? Capsule().fill(Kids.sheen) : nil)
-                .overlay(Capsule().stroke(Kids.ink, lineWidth: 2.5))
+            RetroPanelShape().fill(locked ? Kids.panel : (active ? color : .white))
+                .overlay(active && !locked ? RetroPanelShape().fill(Kids.sheen) : nil)
+                .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
         )
-        .shadow(color: Kids.ink.opacity(active ? 0.18 : 0.08), radius: 0, x: 0, y: active ? 3 : 2)
+        .compositingGroup().shadow(color: Kids.ink.opacity(active ? 0.18 : 0.08), radius: 0, x: 0, y: active ? 3 : 2)
         .offset(y: active ? -1 : 0)
     }
 }
@@ -675,15 +680,11 @@ private struct KidsCategoryPill: View {
 // MARK: - Grid card
 
 private struct KidsAnimalCard: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let animal: Animal
     let selected: Bool
     let locked: Bool
     var isIPad: Bool = false
-
-    private var bundledImage: UIImage? {
-        guard let name = animal.creatureAssetName else { return nil }
-        return UIImage(named: name)
-    }
 
     private var cardColor: Color {
         switch animal.category {
@@ -691,8 +692,8 @@ private struct KidsAnimalCard: View {
         case .sea:         return Kids.sky
         case .air:         return Kids.grape
         case .insect:      return Kids.peach
-        case .pets:        return Color(hex: "#F4B6C2")
-        case .farm:        return Color(hex: "#E8B96E")
+        case .pets:        return Kids.peach
+        case .farm:        return Kids.grass
         case .prehistoric: return Kids.sun
         case .fantasy:     return Kids.grape
         case .mythic:      return Kids.pink
@@ -703,30 +704,29 @@ private struct KidsAnimalCard: View {
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(locked ? Color(hex: "#BFB1D6") : (selected ? cardColor : .white))
+            RetroPanelShape(cornerRadius: 20, style: .continuous)
+                .fill(locked ? Kids.panel : (selected ? cardColor : .white))
                 .overlay(
                     Group {
-                        if selected { RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Kids.sheen) }
+                        if selected { RetroPanelShape(cornerRadius: 20, style: .continuous).fill(Kids.sheen) }
                     }
                 )
                 .overlay(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    RetroPanelShape(cornerRadius: 20, style: .continuous)
                         .stroke(Kids.ink, lineWidth: 3)
                 )
                 .aspectRatio(1, contentMode: .fit)
 
             VStack(spacing: isIPad ? 3 : 2) {
-                if locked {
-                    Text("🔒").font(.system(size: isIPad ? 46 : 38))
-                } else if let ui = bundledImage {
-                    Image(uiImage: ui)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: isIPad ? 72 : 60, height: isIPad ? 72 : 60)
-                } else {
-                    Text(animal.emoji).font(.system(size: isIPad ? 46 : 38))
-                }
+                RetroCreatureArtwork(animal: animal, size: isIPad ? 72 : 60)
+                    .opacity(locked ? 0.3 : 1)
+                    .overlay {
+                        if locked {
+                            Image(systemName: "lock.fill")
+                                .font(.system(size: isIPad ? 28 : 24, weight: .bold))
+                                .foregroundColor(Kids.ink)
+                        }
+                    }
                 Text(animal.name)
                     .font(Kids.fredoka(isIPad ? 13 : 11, weight: .bold))
                     .foregroundColor(locked ? Kids.inkSoft : Kids.ink)
@@ -736,17 +736,17 @@ private struct KidsAnimalCard: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             if selected {
-                Circle().fill(Kids.grass)
-                    .overlay(Circle().stroke(Kids.ink, lineWidth: 2.5))
+                RetroPanelShape().fill(Kids.grass)
+                    .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
                     .frame(width: isIPad ? 32 : 26, height: isIPad ? 32 : 26)
                     .overlay(Text("✓").font(Kids.fredoka(isIPad ? 17 : 14, weight: .bold)).foregroundColor(Kids.ink))
                     .offset(x: isIPad ? 6 : 4, y: isIPad ? -8 : -6)
             }
         }
-        .rotationEffect(.degrees(selected ? -1.5 : 0))
+
         .offset(y: selected ? -2 : 0)
-        .shadow(color: Kids.ink.opacity(selected ? 0.18 : 0.1), radius: 0, x: 0, y: selected ? 4 : 3)
-        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: selected)
+        .compositingGroup().shadow(color: Kids.ink.opacity(selected ? 0.18 : 0.1), radius: 0, x: 0, y: selected ? 4 : 3)
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.15), value: selected)
         // Read as "Lion, selected" / "Dragon, locked" rather than emoji names.
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(animal.name)
@@ -757,47 +757,13 @@ private struct KidsAnimalCard: View {
 }
 
 // MARK: - CustomAnimalAvatar
-// Small chunky sticker frame that shows the live-fetched photo for a
-// user-typed creature (Wikipedia or Pollinations). Falls back to emoji while
-// the URL resolves.
-
+// The same cached pixel portrait is used in selection, battle, and sharing.
 private struct CustomAnimalAvatar: View {
     let animal: Animal
     var size: CGFloat = 50
-    @State private var url: URL? = nil
 
     var body: some View {
-        ZStack {
-            Circle().fill(Kids.sun)
-                .frame(width: size, height: size)
-            Circle().fill(.white)
-                .frame(width: size - 8, height: size - 8)
-            Circle().stroke(Kids.ink, lineWidth: 2.5)
-                .frame(width: size, height: size)
-
-            content
-                .frame(width: size - 14, height: size - 14)
-                .clipShape(Circle())
-        }
-        .task(id: animal.id) {
-            if let u = animal.imageURL { url = u }
-            else { url = await AnimalImageService.shared.imageURL(for: animal.name) }
-        }
-    }
-
-    @ViewBuilder
-    private var content: some View {
-        if let u = url {
-            AsyncImage(url: u) { phase in
-                switch phase {
-                case .success(let img):
-                    img.resizable().scaledToFill()
-                default:
-                    Text(animal.emoji).font(.system(size: size * 0.55))
-                }
-            }
-        } else {
-            Text(animal.emoji).font(.system(size: size * 0.55))
-        }
+        RetroCustomCreaturePreview(size: size)
+            .accessibilityLabel("Preview for \(animal.name). A retro avatar is made on your device after selection.")
     }
 }

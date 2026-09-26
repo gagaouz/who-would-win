@@ -1,0 +1,46 @@
+{
+  "checkedAt": "2026-09-26T10:46:23.960016+00:00",
+  "readOnly": true,
+  "graphql": {
+    "data": {
+      "project": {
+        "prDeploys": false,
+        "botPrEnvironments": false,
+        "focusedPrEnvironments": true,
+        "services": {
+          "edges": [
+            {
+              "node": {
+                "id": "4f73a4bc-86d7-4233-b9a6-bd599754a719",
+                "name": "backend",
+                "repoTriggers": {
+                  "edges": [
+                    {
+                      "node": {
+                        "branch": "main",
+                        "repository": "gagaouz/who-would-win",
+                        "environmentId": "2ed3111a-8768-440e-8d38-90c008aaf3ea",
+                        "provider": "github",
+                        "checkSuites": false,
+                        "serviceId": "4f73a4bc-86d7-4233-b9a6-bd599754a719"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "node": {
+                "id": "626e21dc-abea-4c25-b6ae-6db48e383e05",
+                "name": "Postgres",
+                "repoTriggers": {
+                  "edges": []
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

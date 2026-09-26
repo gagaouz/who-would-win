@@ -18,14 +18,11 @@ struct KidsPreBattleView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [Color(hex: "#7a5cc8"), Color(hex: "#b396f0")],
-                startPoint: .top, endPoint: .bottom
-            ).ignoresSafeArea()
+            SkyBG()
 
             VStack(spacing: 0) {
                 // Handle
-                Capsule().fill(Color.white.opacity(0.4))
+                RetroPanelShape().fill(Color.white.opacity(0.4))
                     .frame(width: 44, height: 5)
                     .padding(.top, 10)
 
@@ -36,7 +33,7 @@ struct KidsPreBattleView: View {
                             .font(Kids.fredoka(24, weight: .bold))
                             .foregroundColor(Kids.ink)
                             .padding(.top, 10)
-                        Text("The place changes who has the edge ✨")
+                        Text("The place changes who has the edge")
                             .font(Kids.nunito(12, weight: .bold))
                             .foregroundColor(Kids.inkSoft)
 
@@ -70,7 +67,7 @@ struct KidsPreBattleView: View {
 
                         // Arena effects toggle
                         HStack(spacing: 10) {
-                            Text("✨").font(.system(size: 22))
+                            RetroSymbol("✨", size: 22)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("Arena Effects")
                                     .font(Kids.fredoka(15, weight: .bold))
@@ -84,11 +81,11 @@ struct KidsPreBattleView: View {
                         }
                         .padding(.horizontal, 14).padding(.vertical, 12)
                         .background(
-                            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                .fill(Color(hex: "#FFF6E3"))
-                                .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                            RetroPanelShape(cornerRadius: 18, style: .continuous)
+                                .fill(Kids.panel)
+                                .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 3))
                         )
-                        .shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+                        .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
                         .padding(.horizontal, 16)
 
                         // Go button
@@ -136,17 +133,22 @@ private struct ArenaTile: View {
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(locked ? Color(hex: "#C8B8D8") : Color.white)
+            RetroPanelShape(cornerRadius: 18, style: .continuous)
+                .fill(locked ? Kids.creamDeep : Color.white)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    RetroPanelShape(cornerRadius: 18, style: .continuous)
                         .stroke(selected ? Kids.sun : Kids.ink, lineWidth: selected ? 4 : 3)
                 )
                 .aspectRatio(1, contentMode: .fit)
-                .shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: selected ? 4 : 3)
+                .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: selected ? 4 : 3)
 
             VStack(spacing: 4) {
-                Text(locked ? "🔒" : env.emoji).font(.system(size: 28))
+                RetroArenaThumbnail(environment: env)
+                    .frame(height: 38)
+                    .opacity(locked ? 0.35 : 1)
+                    .overlay {
+                        if locked { Image(systemName: "lock.fill").foregroundColor(Kids.ink) }
+                    }
                 Text(env.name)
                     .font(Kids.fredoka(12, weight: .bold))
                     .foregroundColor(locked ? Kids.inkSoft : Kids.ink)
@@ -161,9 +163,9 @@ private struct ArenaTile: View {
             if isNew && !locked {
                 Text("NEW")
                     .font(Kids.fredoka(9, weight: .bold))
-                    .foregroundColor(.white)
+                    .foregroundColor(Kids.ink)
                     .padding(.horizontal, 6).padding(.vertical, 2)
-                    .background(Capsule().fill(Kids.grass).overlay(Capsule().stroke(Kids.ink, lineWidth: 2)))
+                    .background(RetroPanelShape().fill(Kids.grass).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
                     .offset(x: -6, y: -6)
             }
         }

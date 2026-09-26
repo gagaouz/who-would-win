@@ -22,9 +22,7 @@ struct PaywallView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Color(hex: "#FFE9BA"), Kids.pink.opacity(0.5), Kids.grape.opacity(0.45)],
-                           startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea()
+            SkyBG()
 
             ScrollView {
                 VStack(spacing: 16) {
@@ -32,13 +30,13 @@ struct PaywallView: View {
                         Spacer()
                         Button { dismiss() } label: {
                             Text("✕").font(Kids.fredoka(16, weight: .bold)).foregroundColor(Kids.ink)
-                                .frame(width: 38, height: 38)
-                                .background(Circle().fill(.white).overlay(Circle().stroke(Kids.ink, lineWidth: 2.5)))
+                                .frame(width: 44, height: 44)
+                                .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5)))
                         }.buttonStyle(.plain)
                     }
                     .padding(.horizontal, 16).padding(.top, 10)
 
-                    Text("🎉").font(.system(size: 64))
+                    RetroSymbol("🎉", size: 64)
                     StickerWord(text: "UNLOCK EVERYTHING!", fill: Kids.sun, fontSize: isIPad ? 30 : 24, tilt: -2)
 
                     VStack(spacing: 8) {
@@ -50,8 +48,8 @@ struct PaywallView: View {
                     .padding(16)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(
-                        RoundedRectangle(cornerRadius: 20, style: .continuous).fill(.white)
-                            .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                        RetroPanelShape(cornerRadius: 20, style: .continuous).fill(.white)
+                            .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
                     )
                     .padding(.horizontal, 20)
 
@@ -85,7 +83,7 @@ struct PaywallView: View {
                                     .font(Kids.nunito(10, weight: .bold)).foregroundColor(Kids.inkSoft)
                             }
                             .frame(maxWidth: .infinity).padding(.vertical, 11)
-                            .background(Capsule().fill(.white).overlay(Capsule().stroke(Kids.ink, lineWidth: 2.5)))
+                            .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5)))
                         }
                         .buttonStyle(.plain)
                         .padding(.horizontal, 30)
@@ -115,7 +113,7 @@ struct PaywallView: View {
 
     private func benefit(_ emoji: String, _ text: String) -> some View {
         HStack(spacing: 10) {
-            Text(emoji).font(.system(size: 18)).frame(width: 24)
+            RetroSymbol(emoji, size: 18).frame(width: 24)
             Text(text).font(Kids.nunito(13, weight: .bold)).foregroundColor(Kids.ink)
                 .fixedSize(horizontal: false, vertical: true)
             Spacer()

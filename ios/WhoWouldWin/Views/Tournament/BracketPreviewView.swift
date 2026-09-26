@@ -21,9 +21,7 @@ struct BracketPreviewView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Color(hex: "#FFE9BA"), Kids.pink.opacity(0.5), Kids.grape.opacity(0.6)],
-                           startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea()
+            SkyBG()
 
             HStack(spacing: 0) {
                 Spacer(minLength: 0)
@@ -36,7 +34,7 @@ struct BracketPreviewView: View {
                     ScrollView(showsIndicators: false) {
                         VStack(spacing: isIPad ? 12 : 8) {
                             HStack(spacing: isIPad ? 9 : 6) {
-                                Text("⚔️").font(.system(size: isIPad ? 20 : 14))
+                                RetroSymbol("⚔️", size: isIPad ? 20 : 14)
                                 Text("ROUND 1 MATCH-UPS")
                                     .font(Kids.fredoka(isIPad ? 15 : 11, weight: .bold))
                                     .tracking(1.5)
@@ -94,8 +92,8 @@ struct BracketPreviewView: View {
                 Text("✕")
                     .font(Kids.fredoka(isIPad ? 22 : 16, weight: .bold))
                     .foregroundColor(Kids.ink)
-                    .frame(width: isIPad ? 50 : 38, height: isIPad ? 50 : 38)
-                    .background(Circle().fill(.white).overlay(Circle().stroke(Kids.ink, lineWidth: 2.5)))
+                    .frame(width: isIPad ? 50 : 44, height: isIPad ? 50 : 44)
+                    .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5)))
             }
             Spacer()
             VStack(spacing: isIPad ? 4 : 2) {
@@ -110,7 +108,7 @@ struct BracketPreviewView: View {
             if settings.wageringEnabled {
                 CoinChip(count: coinStore.balance)
             } else {
-                Color.clear.frame(width: isIPad ? 50 : 38, height: isIPad ? 50 : 38)
+                Color.clear.frame(width: isIPad ? 50 : 44, height: isIPad ? 50 : 44)
             }
         }
     }
@@ -128,9 +126,9 @@ struct BracketPreviewView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             Text("VS")
                 .font(Kids.fredoka(isIPad ? 15 : 11, weight: .bold))
-                .foregroundColor(.white)
+                .foregroundColor(Kids.ink)
                 .padding(.horizontal, isIPad ? 9 : 6).padding(.vertical, isIPad ? 3 : 2)
-                .background(Capsule().fill(Kids.pink).overlay(Capsule().stroke(Kids.ink, lineWidth: 1.5)))
+                .background(RetroPanelShape().fill(Kids.pink).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5)))
                 .fixedSize()
             Text(matchup.fighter2.name)
                 .font(Kids.fredoka(isIPad ? 15 : 11, weight: .bold))
@@ -143,11 +141,11 @@ struct BracketPreviewView: View {
         .padding(.vertical, isIPad ? 12 : 8)
         .padding(.horizontal, isIPad ? 14 : 10)
         .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
+            RetroPanelShape(cornerRadius: 14, style: .continuous)
                 .fill(.white)
-                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
         )
-        .shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 2)
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 2)
     }
 
     // MARK: - Action buttons
@@ -170,7 +168,7 @@ struct BracketPreviewView: View {
                     }
                 } label: {
                     HStack(spacing: isIPad ? 9 : 6) {
-                        Text("🎲").font(.system(size: isIPad ? 22 : 16))
+                        RetroSymbol("🎲", size: isIPad ? 22 : 16)
                         Text("RE-ROLL BRACKET")
                             .font(Kids.fredoka(isIPad ? 17 : 13, weight: .bold))
                             .foregroundColor(Kids.ink)
@@ -184,12 +182,12 @@ struct BracketPreviewView: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: isIPad ? 62 : 46)
                     .background(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        RetroPanelShape(cornerRadius: 16, style: .continuous)
                             .fill(Kids.grape)
-                            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Kids.sheen))
-                            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                            .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).fill(Kids.sheen))
+                            .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
                     )
-                    .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
+                    .compositingGroup().shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
                 }
                 .buttonStyle(.plain)
             } else if tournament.rerollUsed && settings.wageringEnabled {
@@ -206,25 +204,7 @@ struct BracketPreviewView: View {
 private struct FighterMini: View {
     let animal: Animal
     let isIPad: Bool
-    private var bundledImage: UIImage? {
-        guard let name = animal.creatureAssetName else { return nil }
-        return UIImage(named: name)
-    }
     var body: some View {
-        ZStack {
-            Circle()
-                .fill(.white)
-                .overlay(Circle().stroke(Kids.ink, lineWidth: 2))
-                .frame(width: isIPad ? 38 : 28, height: isIPad ? 38 : 28)
-            Group {
-                if let ui = bundledImage {
-                    Image(uiImage: ui).resizable().scaledToFill()
-                } else {
-                    CreatureGlyph(animal: animal, size: isIPad ? 22 : 16)
-                }
-            }
-            .frame(width: isIPad ? 30 : 22, height: isIPad ? 30 : 22)
-            .clipShape(Circle())
-        }
+        AnimalBubble(animal: animal, size: isIPad ? 38 : 28, tint: Kids.sun)
     }
 }

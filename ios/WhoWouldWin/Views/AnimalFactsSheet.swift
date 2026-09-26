@@ -15,9 +15,7 @@ struct AnimalFactsSheet: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Color(hex: "#FFF3DC"), Kids.sky.opacity(0.45)],
-                           startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea()
+            SkyBG()
 
             ScrollView {
                 VStack(spacing: 16) {
@@ -38,8 +36,8 @@ struct AnimalFactsSheet: View {
                             .foregroundColor(Kids.ink)
                             .padding(.horizontal, 14).padding(.vertical, 6)
                             .background(
-                                Capsule().fill(Kids.peach.opacity(0.9))
-                                    .overlay(Capsule().stroke(Kids.ink, lineWidth: 2.5))
+                                RetroPanelShape().fill(Kids.peach.opacity(0.9))
+                                    .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
                             )
                     }
 
@@ -54,11 +52,11 @@ struct AnimalFactsSheet: View {
 
                         // The one wow-fact, in a highlighted card.
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("🤯 DID YOU KNOW?")
+                            Text("DID YOU KNOW?")
                                 .font(Kids.fredoka(11, weight: .bold))
                                 .foregroundColor(Kids.ink)
                                 .padding(.horizontal, 10).padding(.vertical, 4)
-                                .background(Capsule().fill(Kids.grass).overlay(Capsule().stroke(Kids.ink, lineWidth: 2)))
+                                .background(RetroPanelShape().fill(Kids.grass).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
                             Text(f.coolFact)
                                 .font(Kids.nunito(14, weight: .bold))
                                 .foregroundColor(Kids.ink)
@@ -67,9 +65,9 @@ struct AnimalFactsSheet: View {
                         .padding(14)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(
-                            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            RetroPanelShape(cornerRadius: 20, style: .continuous)
                                 .fill(.white)
-                                .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                                .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
                         )
                         .padding(.horizontal, 18)
 
@@ -88,8 +86,8 @@ struct AnimalFactsSheet: View {
                             .foregroundColor(Kids.ink)
                             .padding(.horizontal, 20).padding(.vertical, 10)
                             .background(
-                                Capsule().fill(Kids.sky)
-                                    .overlay(Capsule().stroke(Kids.ink, lineWidth: 2.5))
+                                RetroPanelShape().fill(Kids.sky)
+                                    .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
                             )
                         }
                         .buttonStyle(.plain)
@@ -111,7 +109,7 @@ struct AnimalFactsSheet: View {
     @ViewBuilder
     private func factRow(_ emoji: String, _ label: String, _ value: String) -> some View {
         HStack(spacing: 12) {
-            Text(emoji).font(.system(size: 22)).frame(width: 30)
+            RetroSymbol(emoji, size: 22).frame(width: 30)
             VStack(alignment: .leading, spacing: 1) {
                 Text(label.uppercased())
                     .font(Kids.fredoka(10, weight: .bold))
@@ -126,9 +124,9 @@ struct AnimalFactsSheet: View {
         .padding(.horizontal, 14).padding(.vertical, 10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+            RetroPanelShape(cornerRadius: 16, style: .continuous)
                 .fill(.white)
-                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
         )
     }
 

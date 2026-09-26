@@ -10,9 +10,7 @@ struct MysteryStickerSheet: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Kids.grape.opacity(0.5), Kids.pink.opacity(0.5)],
-                           startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea()
+            SkyBG()
 
             if opened {
                 ConfettiView().ignoresSafeArea().allowsHitTesting(false)
@@ -29,12 +27,11 @@ struct MysteryStickerSheet: View {
                         .transition(.scale.combined(with: .opacity))
                     StickerWord(text: animal.name.uppercased(), fill: Kids.sun,
                                 fontSize: 30, tilt: -2)
-                    Text("Added to your sticker book 📖")
+                    Text("Added to your sticker book")
                         .font(Kids.nunito(14, weight: .bold))
                         .foregroundColor(Kids.ink)
                 } else {
-                    Text("🎁")
-                        .font(.system(size: 120))
+                    RetroSymbol("🎁", size: 120)
                         .scaleEffect(opened ? 1.2 : 1)
                 }
 
@@ -49,14 +46,14 @@ struct MysteryStickerSheet: View {
                 } label: {
                     Text(opened ? "YAY!" : "OPEN IT!")
                         .font(Kids.fredoka(18, weight: .bold))
-                        .foregroundColor(.white)
+                        .foregroundColor(Kids.ink)
                         .padding(.horizontal, 40).padding(.vertical, 14)
                         .background(
-                            Capsule().fill(Kids.grass)
-                                .overlay(Capsule().fill(Kids.sheen))
-                                .overlay(Capsule().stroke(Kids.ink, lineWidth: 3))
+                            RetroPanelShape().fill(Kids.grass)
+                                .overlay(RetroPanelShape().fill(Kids.sheen))
+                                .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 3))
                         )
-                        .shadow(color: Kids.ink.opacity(0.15), radius: 0, x: 0, y: 5)
+                        .compositingGroup().shadow(color: Kids.ink.opacity(0.15), radius: 0, x: 0, y: 5)
                 }
                 .buttonStyle(.plain)
                 .padding(.top, 8)

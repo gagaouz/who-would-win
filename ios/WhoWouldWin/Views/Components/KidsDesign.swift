@@ -1,67 +1,171 @@
 import SwiftUI
 
-// MARK: - Animal Arena Jr. Design System
-// Kid-friendly sticker aesthetic from design_handoff_animal_arena.
-// Signature: chunky ink outlines, hard offset shadows, toy-bright palette,
-// Fredoka display + Nunito body fonts.
-
-// MARK: - Color Tokens
-
+// Native retro UI. Existing component names remain stable so every game flow
+// shares one presentation without changing its state, commerce or navigation.
 enum Kids {
+    static let sun = Color(hex: "#FFD266")
+    static let sunDeep = Color(hex: "#C39F57")
+    static let sky = Color(hex: "#B8D3CF")
+    static let skyDeep = Color(hex: "#497A79")
+    static let pink = Color(hex: "#D9B5A4")
+    static let pinkDeep = Color(hex: "#98584C")
+    static let grass = Color(hex: "#BEDB7D")
+    static let grassDeep = Color(hex: "#496845")
+    static let grape = Color(hex: "#BCB9CE")
+    static let grapeDeep = Color(hex: "#625D79")
+    static let peach = Color(hex: "#E6C48E")
+    static let peachDeep = Color(hex: "#A27749")
+    static let cream = Color(hex: "#F4F1E6")
+    static let creamDeep = Color(hex: "#E5E2D4")
+    static let panel = Color(hex: "#F8EDCE")
+    static let console = Color(hex: "#383649")
+    static let ink = Color(hex: "#282638")
+    static let inkSoft = Color(hex: "#606657")
 
-    // Palette (exact hex from handoff)
-    static let sun       = Color(hex: "#FFD43B")
-    static let sunDeep   = Color(hex: "#FFB800")
-    static let sky       = Color(hex: "#5EC8FF")
-    static let skyDeep   = Color(hex: "#2BA7E3")
-    static let pink      = Color(hex: "#FF7AB8")
-    static let pinkDeep  = Color(hex: "#E84A97")
-    static let grass     = Color(hex: "#7BD66B")
-    static let grassDeep = Color(hex: "#4CB043")
-    static let grape     = Color(hex: "#9B6BFF")
-    static let grapeDeep = Color(hex: "#7244E8")
-    static let peach     = Color(hex: "#FF9A6B")
-    static let peachDeep = Color(hex: "#E87340")
-    static let cream     = Color(hex: "#FFF6E3")
-    static let creamDeep = Color(hex: "#FCEAC1")
-
-    /// The One True Outline & Text color. Never use pure black.
-    static let ink       = Color(hex: "#2D1B4E")
-    static let inkSoft   = Color(hex: "#574178")
-
-    // MARK: Typography
-
-    /// Fredoka — rounded display font. Used for headlines, sticker words, titles.
-    /// Falls back to system rounded if unavailable.
+    // The legacy helper name is preserved for callers; small headings remain
+    // readable, dynamically scaled text. Pixel type is reserved for display.
     static func fredoka(_ size: CGFloat, weight: Font.Weight = .bold) -> Font {
-        .custom("Fredoka", size: size).weight(weight)
+        .custom("Nunito", size: size, relativeTo: .headline).weight(weight)
     }
-
-    /// Nunito — friendly body font. Used for captions, labels, body copy.
     static func nunito(_ size: CGFloat, weight: Font.Weight = .bold) -> Font {
-        .custom("Nunito", size: size).weight(weight)
+        .custom("Nunito", size: size, relativeTo: .body).weight(weight)
     }
-
-    // MARK: Shadow recipes
-
-    /// The signature offset-only ink shadow — the whole aesthetic depends on this.
+    static func pixel(_ size: CGFloat) -> Font {
+        .custom("PressStart2P-Regular", size: size, relativeTo: .headline)
+    }
     struct InkShadow: ViewModifier {
-        var y: CGFloat = 6
+        var y: CGFloat = 4
         var opacity: Double = 0.22
-        var soft: Bool = true
+        var soft: Bool = false
         func body(content: Content) -> some View {
-            content
-                .shadow(color: Kids.ink.opacity(opacity), radius: 0, x: 0, y: y)
-                .shadow(color: soft ? Kids.ink.opacity(0.07) : .clear,
-                        radius: soft ? 12 : 0, x: 0, y: soft ? y + 4 : 0)
+            content.compositingGroup().shadow(color: Kids.ink.opacity(opacity), radius: 0, x: 0, y: y)
         }
     }
+    // Kept as a flat token for source compatibility with existing surfaces.
+    static let sheen = LinearGradient(colors: [.clear, .clear], startPoint: .top, endPoint: .bottom)
+}
 
-    /// Plastic-toy sheen — linear white overlay on colored fills.
-    static let sheen = LinearGradient(
-        colors: [Color.white.opacity(0.35), Color.white.opacity(0)],
-        startPoint: .top, endPoint: .init(x: 0.5, y: 0.55)
-    )
+/// A stepped corner rather than a rounded card. Insettable for crisp borders.
+struct RetroPanelShape: InsettableShape {
+    var cornerRadius: CGFloat = 5
+    var style: RoundedCornerStyle = .continuous
+    private var insetAmount: CGFloat = 0
+
+    init(cornerRadius: CGFloat = 5, style: RoundedCornerStyle = .continuous) {
+        self.cornerRadius = cornerRadius
+        self.style = style
+    }
+    func path(in rect: CGRect) -> Path {
+        let r = rect.insetBy(dx: insetAmount, dy: insetAmount)
+        let c = min(6, min(max(2, cornerRadius / 3), max(0, min(r.width, r.height) / 4)))
+        var p = Path()
+        p.move(to: CGPoint(x: r.minX + c, y: r.minY))
+        let vertices = [
+            CGPoint(x: r.maxX - c, y: r.minY), CGPoint(x: r.maxX - c, y: r.minY + c),
+            CGPoint(x: r.maxX, y: r.minY + c), CGPoint(x: r.maxX, y: r.maxY - c),
+            CGPoint(x: r.maxX - c, y: r.maxY - c), CGPoint(x: r.maxX - c, y: r.maxY),
+            CGPoint(x: r.minX + c, y: r.maxY), CGPoint(x: r.minX + c, y: r.maxY - c),
+            CGPoint(x: r.minX, y: r.maxY - c), CGPoint(x: r.minX, y: r.minY + c),
+            CGPoint(x: r.minX + c, y: r.minY + c)
+        ]
+        for vertex in vertices { p.addLine(to: vertex) }
+        p.closeSubpath()
+        return p
+    }
+    func inset(by amount: CGFloat) -> some InsettableShape {
+        var copy = self
+        copy.insetAmount += amount
+        return copy
+    }
+}
+
+/// Monochrome interface symbols; creature glyphs resolve through real artwork.
+struct RetroSymbol: View {
+    let glyph: String
+    var size: CGFloat = 18
+    init(_ glyph: String, size: CGFloat = 18) { self.glyph = glyph; self.size = size }
+    private var systemName: String? {
+        switch glyph {
+        case "←": return "arrow.left"
+        case "⌫": return "delete.left.fill"
+        case "✕", "✖", "×": return "xmark"
+        case "🏆": return "trophy.fill"
+        case "📔", "📖", "📚", "📗", "📕", "📘", "📙": return "book.closed.fill"
+        case "⚙️": return "gearshape.fill"
+        case "🎁": return "gift.fill"
+        case "⚡": return "bolt.fill"
+        case "⚔️", "🥊": return "bolt.shield.fill"
+        case "🎲": return "dice.fill"
+        case "❓": return "questionmark.circle"
+        case "📅": return "calendar"
+        case "✅", "✓": return "checkmark"
+        case "🔒": return "lock.fill"
+        case "🔓": return "lock.open.fill"
+        case "🔥": return "flame.fill"
+        case "✨", "⭐", "🌟", "★": return "sparkle"
+        case "🌍", "🌎": return "globe.americas.fill"
+        case "🌿", "🌳": return "leaf.fill"
+        case "📤": return "square.and.arrow.up"
+        case "🔊", "🗣️": return "speaker.wave.2.fill"
+        case "📳": return "iphone.radiowaves.left.and.right"
+        case "▶", "▶️": return "play.fill"
+        case "🪙": return "centsign.circle.fill"
+        case "👑": return "crown.fill"
+        case "🏠": return "house.fill"
+        case "🎤": return "mic.fill"
+        case "✏️": return "pencil"
+        case "🔍": return "magnifyingglass"
+        case "🌈": return "square.grid.2x2.fill"
+        case "🌊": return "water.waves"
+        case "☁️": return "cloud.fill"
+        case "🚜": return "leaf.fill"
+        case "🔱": return "sparkles"
+        case "🎉", "🎊": return "sparkles"
+        case "📊": return "chart.bar.fill"
+        case "🏅", "🥇", "🥈", "🥉": return "medal.fill"
+        case "⚖️": return "scalemass.fill"
+        case "🎺", "📣": return "megaphone.fill"
+        case "🎙️": return "mic.fill"
+        case "🐾": return "pawprint.fill"
+        case "🚫": return "nosign"
+        case "🔁": return "arrow.clockwise"
+        case "🌋": return "mountain.2.fill"
+        case "🌙", "🌃": return "moon.stars.fill"
+        case "⛈️", "🌩️", "🌪️": return "cloud.bolt.rain.fill"
+        case "❄️", "🧊": return "snowflake"
+        case "🏜️", "☀️": return "sun.max.fill"
+        case "🌴": return "tree.fill"
+        case "👏", "🙌": return "hands.clap.fill"
+        case "👉": return "arrow.right"
+        case "✍️": return "pencil"
+        case "🧚", "🪄": return "wand.and.stars"
+        case "🏛️": return "building.columns.fill"
+        case "🍽️": return "fork.knife"
+        case "💨": return "wind"
+        case "👋": return "hand.wave.fill"
+        case "🐶": return "pawprint.fill"
+        case "🌅": return "sunrise.fill"
+        case "🎬": return "play.rectangle.fill"
+        case "🎯": return "target"
+        case "🧝", "🧝‍♂️", "🧝‍♀️": return "person.2.fill"
+        case "🔎": return "magnifyingglass"
+        case "🧠": return "brain.head.profile"
+        default: return nil
+        }
+    }
+    var body: some View {
+        Group {
+            if let systemName {
+                Image(systemName: systemName).font(.system(size: size, weight: .bold))
+            } else if let animal = Animals.all.first(where: { $0.emoji == glyph }) {
+                RetroCreatureArtwork(animal: animal, size: size * 1.25)
+            } else {
+                Text(glyph).font(Kids.nunito(size, weight: .black))
+            }
+        }
+        .foregroundColor(Kids.ink)
+        .accessibilityHidden(true)
+    }
 }
 
 extension View {
@@ -86,52 +190,29 @@ struct StickerShape<S: Shape>: View {
     }
 }
 
-// MARK: - SkyBG — soft three-stop gradient background
+// MARK: - SkyBG — paper and a quiet pixel texture
 
 struct SkyBG: View {
     enum Variant { case day, sunset, meadow }
     var variant: Variant = .day
-
-    private var colors: [Color] {
-        switch variant {
-        case .day:     return [Color(hex: "#FFE9A8"), Color(hex: "#FFD1EC"), Color(hex: "#C8E8FF")]
-        case .sunset:  return [Color(hex: "#FFC593"), Color(hex: "#FF9FC5"), Color(hex: "#A495F5")]
-        case .meadow:  return [Color(hex: "#D4F1A8"), Color(hex: "#FFE9A8"), Color(hex: "#C8E8FF")]
-        }
-    }
-
     var body: some View {
         GeometryReader { geo in
-            ZStack(alignment: .top) {
-                LinearGradient(colors: colors, startPoint: .top, endPoint: .bottom)
-                    .ignoresSafeArea()
-
-                // TOP-band drifters
-                DriftingCloud(w: 120, h: 50, opacity: 0.9,
-                              startX: geo.size.width * 0.18, y: 80,
-                              drift: 28, duration: 18, phase: 0.0)
-                DriftingCloud(w: 90,  h: 38, opacity: 0.85,
-                              startX: geo.size.width * 0.82, y: 130,
-                              drift: -22, duration: 22, phase: 0.4)
-                DriftingCloud(w: 70,  h: 30, opacity: 0.75,
-                              startX: geo.size.width * 0.10, y: 200,
-                              drift: 32, duration: 26, phase: 0.7)
-
-                // Sparkles (twinkle, not drift)
-                TwinkleSparkle(symbol: "✨", size: 14, x: geo.size.width * 0.88, y: 180, phase: 0.0)
-                TwinkleSparkle(symbol: "⭐", size: 12, x: geo.size.width * 0.92, y:  80, phase: 0.5)
-                TwinkleSparkle(symbol: "✨", size: 10, x: geo.size.width * 0.08, y: 280, phase: 0.9)
-
-                // BOTTOM-band drifters
-                DriftingCloud(w: 100, h: 42, opacity: 0.7,
-                              startX: geo.size.width * 0.85, y: geo.size.height - 90,
-                              drift: -30, duration: 20, phase: 0.2)
-                DriftingCloud(w: 80,  h: 34, opacity: 0.6,
-                              startX: geo.size.width * 0.18, y: geo.size.height - 60,
-                              drift: 26, duration: 24, phase: 0.6)
+            ZStack(alignment: .bottom) {
+                Kids.cream
+                Canvas { context, size in
+                    for y in stride(from: CGFloat(16), to: size.height, by: 32) {
+                        for x in stride(from: CGFloat(16), to: size.width, by: 32) {
+                            context.fill(Path(CGRect(x: x, y: y, width: 2, height: 2)), with: .color(Kids.grassDeep.opacity(0.055)))
+                        }
+                    }
+                }
+                Rectangle().fill(Kids.grassDeep.opacity(0.06)).frame(height: geo.size.height * 0.12)
+                Rectangle().fill(Kids.grassDeep.opacity(0.035)).frame(height: geo.size.height * 0.18)
             }
         }
         .ignoresSafeArea()
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }
 
@@ -153,12 +234,13 @@ struct DriftingCloud: View {
     var duration: Double = 18
     /// 0…1 phase offset so multiple clouds don't move in lockstep.
     var phase: Double = 0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        TimelineView(.animation) { context in
+        TimelineView(.animation(minimumInterval: 0.125, paused: reduceMotion)) { context in
             let t = context.date.timeIntervalSinceReferenceDate
             let theta = (t / duration + phase) * 2 * .pi
-            let dx = sin(theta) * Double(drift)
+            let dx = reduceMotion ? 0 : (sin(theta) * Double(drift) / 2).rounded() * 2
             Cloud(w: w, h: h)
                 .opacity(opacity)
                 .position(x: startX + CGFloat(dx), y: y)
@@ -175,15 +257,15 @@ struct TwinkleSparkle: View {
     let y: CGFloat
     var phase: Double = 0
     var period: Double = 2.6
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        TimelineView(.animation) { context in
+        TimelineView(.animation(minimumInterval: 0.125, paused: reduceMotion)) { context in
             let t = context.date.timeIntervalSinceReferenceDate
             let theta = (t / period + phase) * 2 * .pi
             // sin sweeps -1…1 → opacity 0.55…1.0 and scale 0.88…1.12
-            let s = (sin(theta) + 1) / 2   // 0…1
-            Text(symbol)
-                .font(.system(size: size))
+            let s = reduceMotion ? 1 : (sin(theta) + 1) / 2
+            RetroSymbol(symbol, size: size)
                 .opacity(0.55 + 0.45 * s)
                 .scaleEffect(0.88 + 0.24 * s)
                 .position(x: x, y: y)
@@ -202,14 +284,10 @@ struct Cloud: View {
     var h: CGFloat = 40
     var body: some View {
         ZStack {
-            Capsule().fill(Color.white)
-            Circle().fill(Color.white).frame(width: h * 1.3, height: h * 1.3).offset(x: -w*0.25)
-            Circle().fill(Color.white).frame(width: h * 1.1, height: h * 1.1).offset(x: w*0.22, y: 2)
-        }
-        .frame(width: w, height: h)
-        .overlay(
-            Capsule().stroke(Kids.ink, lineWidth: 2.5).frame(width: w, height: h)
-        )
+            Rectangle().fill(Kids.panel).frame(width: w, height: h * 0.45).offset(y: h * 0.2)
+            Rectangle().fill(Kids.panel).frame(width: w * 0.65, height: h * 0.55)
+            Rectangle().fill(Kids.panel).frame(width: w * 0.28, height: h * 0.35).offset(x: -w * 0.1, y: -h * 0.3)
+        }.frame(width: w, height: h).accessibilityHidden(true)
     }
 }
 
@@ -217,8 +295,8 @@ struct Cloud: View {
 
 struct KidButton: View {
     enum Size { case sm, md, lg, xl
-        var height: CGFloat { switch self { case .sm: return 44; case .md: return 56; case .lg: return 72; case .xl: return 88 } }
-        var fontSize: CGFloat { switch self { case .sm: return 16; case .md: return 20; case .lg: return 26; case .xl: return 32 } }
+        var height: CGFloat { switch self { case .sm: return 44; case .md: return 52; case .lg: return 60; case .xl: return 68 } }
+        var fontSize: CGFloat { switch self { case .sm: return 15; case .md: return 18; case .lg: return 20; case .xl: return 22 } }
         var radius: CGFloat { switch self { case .sm: return 16; case .md: return 20; case .lg: return 28; case .xl: return 34 } }
     }
 
@@ -242,19 +320,20 @@ struct KidButton: View {
 
         Button(action: action) {
             HStack(spacing: 10 * scale) {
-                if let icon { Text(icon).font(.system(size: fs * 0.95)) }
+                if let icon { RetroSymbol(icon, size: fs * 0.78) }
                 Text(title)
                     .font(Kids.fredoka(fs, weight: .bold))
-                    .tracking(2)                                       // matches StickerWord spacing
+                    .tracking(0.5)
                     .foregroundColor(Kids.ink)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.5)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.horizontal, 18 * scale) // keep text away from the rounded corners
             .frame(maxWidth: .infinity)
-            .frame(height: h)
+            .frame(minHeight: h)
             .background(
-                StickerShape(shape: RoundedRectangle(cornerRadius: r, style: .continuous), fill: color)
+                StickerShape(shape: RetroPanelShape(cornerRadius: r, style: .continuous), fill: color)
             )
         }
         .buttonStyle(KidButtonPressStyle(y: pressed ? 5 : 0))
@@ -264,18 +343,13 @@ struct KidButton: View {
 struct KidButtonPressStyle: ButtonStyle {
     var y: CGFloat = 0
     func makeBody(configuration: Configuration) -> some View {
-        let down = configuration.isPressed
-        return configuration.label
-            .offset(y: down ? 4 : 0)
-            .shadow(color: Kids.ink.opacity(down ? 0.16 : 0.16),
-                    radius: 0, x: 0, y: down ? 1 : 4)
-            .shadow(color: Kids.ink.opacity(down ? 0.06 : 0.08),
-                    radius: down ? 2 : 8, x: 0, y: down ? 2 : 8)
-            .animation(.spring(response: 0.12, dampingFraction: 0.5), value: down)
+        configuration.label
+            .offset(y: configuration.isPressed ? 3 : 0)
+            .compositingGroup().shadow(color: Kids.ink.opacity(0.25), radius: 0, x: 0, y: configuration.isPressed ? 0 : 3)
     }
 }
 
-// MARK: - AnimalBubble — sticker portrait
+// MARK: - AnimalBubble — retro creature portrait
 
 struct AnimalBubble: View {
     let emoji: String
@@ -283,268 +357,123 @@ struct AnimalBubble: View {
     var tint: Color = Kids.sun
     var tilt: Double = 0
     var selected: Bool = false
-    /// Optional bundled asset name (`creature_<id>`). If present in the asset
-    /// catalog, renders the real artwork instead of the emoji.
     var assetName: String? = nil
-    /// Optional remote image URL — used for custom creatures + Wikipedia photos.
     var imageURL: URL? = nil
-    /// Custom (user-typed) creature → renders its searched image, never emoji.
     var isCustom: Bool = false
-    /// Display name — lets the custom path self-heal a nil imageURL by re-resolving.
     var animalName: String = ""
+    var animal: Animal? = nil
 
-    private var bundledImage: UIImage? {
-        guard let name = assetName else { return nil }
-        return UIImage(named: name)
+    private var resolvedAnimal: Animal? {
+        if let animal { return animal }
+        if let assetName, let builtIn = Animals.all.first(where: { $0.creatureAssetName == assetName }) { return builtIn }
+        if isCustom {
+            return Animal(id: "retro_custom_preview", name: animalName, emoji: emoji, category: .land,
+                          pixelColor: "#496845", size: 3, isCustom: true, imageURL: imageURL)
+        }
+        return Animals.all.first(where: { $0.emoji == emoji })
     }
-
     var body: some View {
-        // The inner photo area is `size * 0.74` (13% padding on each side).
-        // Photos are explicitly sized to that square and clipped to a Circle
-        // of the same diameter so .scaledToFill overflow can't bleed into
-        // the white ring — that was the "image escapes the circle" bug.
-        let photoSide = size * 0.74
-
         ZStack {
-            // Outer radial ring
-            Circle()
-                .fill(RadialGradient(colors: [.white, tint], center: .init(x: 0.35, y: 0.3), startRadius: size * 0.1, endRadius: size * 0.6))
-                .overlay(Circle().stroke(Kids.ink, lineWidth: 4.5))
-            // Inner white disc
-            Circle()
-                .fill(Color.white)
-                .overlay(Circle().stroke(Kids.ink, lineWidth: 2.5))
-                .padding(size * 0.11)
-
-            // Photo (bundled or remote) → emoji fallback
-            innerContent(photoSide: photoSide)
+            RetroPanelShape().fill(Kids.cream)
+            RetroPanelShape().fill(tint.opacity(0.35))
+            RetroPanelShape().strokeBorder(selected ? Kids.grassDeep : Kids.ink.opacity(0.65), lineWidth: selected ? 3 : 2)
+            if let resolvedAnimal {
+                RetroCreatureArtwork(animal: resolvedAnimal, size: size * 0.90)
+            } else {
+                Image(systemName: "questionmark").font(Kids.pixel(size * 0.22)).foregroundColor(Kids.inkSoft)
+            }
         }
         .frame(width: size, height: size)
-        .rotationEffect(.degrees(tilt))
-        .shadow(color: Kids.ink.opacity(0.10), radius: 0, x: 0, y: 4)
-        .shadow(color: Kids.ink.opacity(0.05), radius: 8, x: 0, y: 7)
-        .overlay(
-            Group {
-                if selected {
-                    Circle().stroke(Color.white, lineWidth: 6)
-                        .padding(-6)
-                    Circle().stroke(tint, lineWidth: 4)
-                        .padding(-12)
-                }
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.14), radius: 0, x: 0, y: 3)
+        .overlay(alignment: .topTrailing) {
+            if selected {
+                Image(systemName: "checkmark").font(.system(size: 12, weight: .black))
+                    .foregroundColor(Kids.cream).padding(5).background(Kids.grassDeep)
             }
-        )
-    }
-
-    @ViewBuilder
-    private func innerContent(photoSide: CGFloat) -> some View {
-        if let ui = bundledImage {
-            // Built-in animal with a bundled creature_<id> sprite.
-            Image(uiImage: ui)
-                .resizable()
-                .scaledToFill()
-                .frame(width: photoSide, height: photoSide)
-                .clipShape(Circle())
-        } else if isCustom {
-            // Custom creature → always its searched image (never emoji).
-            CustomCreatureImage(name: animalName, imageURL: imageURL, side: photoSide)
-        } else {
-            // Sprite-less built-in (the ~25 core animals) → curated emoji.
-            Text(emoji).font(.system(size: size * 0.58))
         }
     }
 }
 
-/// The SINGLE render path for a CUSTOM creature's searched image. Resolves the
-/// image URL from `imageURL` (or, if nil because of the picker fetch race, by
-/// re-resolving from the name — the AnimalImageService cache is keyed by name so
-/// it returns the exact same URL the picker showed). While loading or on failure
-/// it shows a NEUTRAL placeholder — NEVER an emoji. Built-in animals never use
-/// this; they keep their bundled-sprite-or-emoji ladder.
+/// Shared custom-art path for legacy callers. The root artwork provider owns
+/// generation/cache/fallback state; presentation never fetches a photo directly.
 struct CustomCreatureImage: View {
     let name: String
     var imageURL: URL? = nil
     var side: CGFloat
-    @State private var resolved: URL? = nil
-    /// The AI-cartoon fallback can take 45 s+ to draw a brand-new name and
-    /// sometimes fails outright; AsyncImage never retries on its own. Each
-    /// bump re-creates ONLY the inner AsyncImage (not this view, so any
-    /// animation on the parent bubble is untouched) for another try — by then
-    /// the picture is usually ready.
-    @State private var attempt = 0
-
     var body: some View {
-        Group {
-            if let url = resolved {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .success(let img):
-                        img.resizable().scaledToFill()
-                    case .failure:
-                        placeholder.task {
-                            guard attempt < 2 else { return }
-                            try? await Task.sleep(nanoseconds: 3_000_000_000)
-                            guard !Task.isCancelled else { return }
-                            attempt += 1
-                        }
-                    default:
-                        placeholder
-                    }
-                }
-                .id(attempt)
-            } else {
-                placeholder
-            }
-        }
-        .frame(width: side, height: side)
-        .clipShape(Circle())
-        .task(id: name) {
-            // Reset first: this view gets REUSED with a new creature (king-of-
-            // the-hill swaps fighters in place), and holding the previous URL
-            // would flash the old creature's photo under the new name.
-            attempt = 0
-            resolved = imageURL
-            if resolved == nil {
-                let url = await AnimalImageService.shared.imageURL(for: name)
-                // If the id changed mid-flight this task was cancelled and
-                // `url` belongs to the OLD name — never clobber the new
-                // task's result with it.
-                guard !Task.isCancelled else { return }
-                resolved = url
-            }
-        }
-    }
-
-    private var placeholder: some View {
-        ZStack {
-            Color(hex: "#F7F2FF")
-            Image(systemName: "photo")
-                .font(.system(size: side * 0.30))
-                .foregroundColor(Kids.inkSoft.opacity(0.45))
-        }
+        RetroCreatureArtwork(animal: Animal(id: "retro_custom_preview", name: name, emoji: "", category: .land,
+            pixelColor: "#496845", size: 3, isCustom: true, imageURL: imageURL), size: side)
     }
 }
 
-// Convenience that takes a full Animal.
-// Render priority: bundled creature_<id> artwork → custom searched image → emoji.
 extension AnimalBubble {
     init(animal: Animal, size: CGFloat = 120, tint: Color = Kids.sun,
          tilt: Double = 0, selected: Bool = false) {
-        self.init(
-            emoji: animal.emoji,
-            size: size,
-            tint: tint,
-            tilt: tilt,
-            selected: selected,
-            assetName: animal.creatureAssetName,
-            imageURL: animal.isCustom ? animal.imageURL : nil,
-            isCustom: animal.isCustom,
-            animalName: animal.name
-        )
+        self.init(emoji: animal.emoji, size: size, tint: tint, tilt: tilt, selected: selected,
+                  assetName: animal.creatureAssetName, imageURL: animal.imageURL,
+                  isCustom: animal.isCustom, animalName: animal.name, animal: animal)
     }
 }
 
-/// Small inline creature icon: shows the bundled `creature_<id>` sprite when one
-/// exists, otherwise the curated emoji. Used in dense spots (Tale of the Tape,
-/// Fact of the Day) so creatures that HAVE art show their art instead of an
-/// emoji — only the ~25 sprite-less core animals fall back to emoji.
 struct CreatureIcon: View {
     let animal: Animal
     var size: CGFloat = 24
-    private var bundled: UIImage? {
-        guard let name = animal.creatureAssetName else { return nil }
-        return UIImage(named: name)
-    }
-    var body: some View {
-        if let ui = bundled {
-            Image(uiImage: ui)
-                .resizable()
-                .scaledToFit()
-                .frame(width: size, height: size)
-        } else {
-            Text(animal.emoji).font(.system(size: size * 0.82))
-        }
-    }
+    var body: some View { RetroCreatureArtwork(animal: animal, size: size) }
 }
 
-/// Emoji-sized creature glyph for dense tournament chips: a custom creature
-/// shows its searched photo (never a stand-in emoji); built-ins keep their
-/// curated emoji. `size` matches the emoji point size it replaces.
 struct CreatureGlyph: View {
     let animal: Animal
     var size: CGFloat
-    var body: some View {
-        if animal.isCustom {
-            CustomCreatureImage(name: animal.name, imageURL: animal.imageURL, side: size * 1.15)
-        } else {
-            Text(animal.emoji).font(.system(size: size))
-        }
-    }
+    var body: some View { RetroCreatureArtwork(animal: animal, size: size * 1.15) }
 }
 
-// MARK: - WinnerSunburst — spinning rays behind a winner
-
-/// A slowly-spinning sunburst of rays radiating from behind a winner — a calmer,
-/// recolorable cousin of the tournament champion's rays, so the regular battle
-/// and melee winners get the same triumphant backdrop in their own colors.
-/// Self-animating and Reduce-Motion-aware (holds still when on). Drop it behind
-/// the winner hero (e.g. as the bottom layer of the result ZStack).
+// MARK: - WinnerSunburst — static pixel celebration
+// Public arguments remain compatible with existing result screens.
 struct WinnerSunburst: View {
     var count: Int = 16
     var color: Color = Kids.sun.opacity(0.38)
-    /// Vertical position of the rays' origin, as a fraction of height (0 = top).
     var centerY: CGFloat = 0.24
     var lineWidth: CGFloat = 26
     var spinSeconds: Double = 28
 
-    @State private var spin: Double = 0
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
     var body: some View {
-        GeometryReader { geo in
-            let c = CGPoint(x: geo.size.width / 2, y: geo.size.height * centerY)
-            let r = max(geo.size.width, geo.size.height) * 1.4
-            ZStack {
-                ForEach(0..<count, id: \.self) { i in
-                    Path { p in
-                        let a = Double(i) * (.pi * 2) / Double(count)
-                        p.move(to: c)
-                        p.addLine(to: CGPoint(x: c.x + cos(a) * r, y: c.y + sin(a) * r))
-                    }
-                    .stroke(color, lineWidth: lineWidth)
+        Canvas { context, size in
+            let center = CGPoint(x: size.width / 2, y: size.height * centerY)
+            for i in 0..<max(1, count) {
+                let angle = Double(i) * .pi * 2 / Double(max(1, count))
+                let radius = size.width * (i.isMultiple(of: 2) ? 0.44 : 0.31)
+                let side = max(4, lineWidth * (i.isMultiple(of: 3) ? 0.45 : 0.25))
+                let x = (center.x + cos(angle) * radius).rounded()
+                let y = (center.y + sin(angle) * radius).rounded()
+                context.fill(Path(CGRect(x: x, y: y, width: side, height: side)), with: .color(color))
+                if i.isMultiple(of: 3) {
+                    context.fill(Path(CGRect(x: x - side, y: y + side, width: side * 3, height: side)), with: .color(color))
+                    context.fill(Path(CGRect(x: x, y: y + side * 2, width: side, height: side)), with: .color(color))
                 }
             }
-            .rotationEffect(.degrees(spin), anchor: UnitPoint(x: 0.5, y: centerY))
         }
         .allowsHitTesting(false)
-        .onAppear {
-            guard !reduceMotion else { return }
-            withAnimation(.linear(duration: spinSeconds).repeatForever(autoreverses: false)) {
-                spin = 360
-            }
-        }
+        .accessibilityHidden(true)
     }
 }
 
-// MARK: - StarSticker — 5-point star (used for "VS")
+// MARK: - StarSticker — square versus marker
 
 struct StarSticker: View {
     var text: String = "VS"
     var size: CGFloat = 64
-    var fill: Color = Kids.pink
-
+    var fill: Color = Kids.sun
     var body: some View {
         ZStack {
-            StarShape(points: 5)
-                .fill(fill)
-                .overlay(StarShape(points: 5).fill(Kids.sheen))
-                .overlay(StarShape(points: 5).stroke(Kids.ink, lineWidth: 3.5))
-            Text(text)
-                .font(Kids.fredoka(size * 0.32, weight: .bold))
-                .foregroundColor(.white)
-                .shadow(color: Kids.ink, radius: 0, x: 0, y: 2)
-        }
-        .frame(width: size, height: size)
-        .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
+            RetroPanelShape().fill(fill)
+            RetroPanelShape().strokeBorder(Kids.ink, lineWidth: 2)
+            if text == "VS" {
+                Text(text).font(Kids.pixel(size * 0.23)).foregroundColor(Kids.ink)
+            } else {
+                RetroSymbol(text, size: size * 0.4)
+            }
+        }.frame(width: size, height: size)
+            .compositingGroup().shadow(color: Kids.ink.opacity(0.2), radius: 0, x: 0, y: 3)
     }
 }
 
@@ -574,13 +503,13 @@ struct SpeechBubble<Content: View>: View {
     @ViewBuilder var content: () -> Content
     var body: some View {
         ZStack(alignment: tailOnLeft ? .bottomLeading : .bottomTrailing) {
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(Color.white)
+            RetroPanelShape(cornerRadius: 24, style: .continuous)
+                .fill(Kids.cream)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    RetroPanelShape(cornerRadius: 24, style: .continuous)
                         .stroke(Kids.ink, lineWidth: 3.5)
                 )
-                .shadow(color: Kids.ink.opacity(0.09), radius: 0, x: 0, y: 5)
+                .compositingGroup().shadow(color: Kids.ink.opacity(0.09), radius: 0, x: 0, y: 5)
             content()
                 .padding(.horizontal, 16).padding(.vertical, 10)
         }
@@ -597,12 +526,12 @@ struct ProgressPill: View {
     var body: some View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
-                Capsule()
-                    .fill(Color.white)
-                    .overlay(Capsule().stroke(Kids.ink, lineWidth: 3))
-                Capsule()
+                RetroPanelShape()
+                    .fill(Kids.cream)
+                    .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 3))
+                RetroPanelShape()
                     .fill(fill)
-                    .overlay(Capsule().fill(Kids.sheen))
+                    .overlay(RetroPanelShape().fill(Kids.sheen))
                     .frame(width: max(8, geo.size.width * CGFloat(max(0, min(1, progress)))))
                     .padding(3)
                 if let label {
@@ -616,27 +545,25 @@ struct ProgressPill: View {
     }
 }
 
-// MARK: - StickerWord — tilted rounded tag used in titles
+// MARK: - StickerWord — stepped display title
 
 struct StickerWord: View {
     let text: String
     var fill: Color = Kids.sun
     var fontSize: CGFloat = 46
     var tilt: Double = -3
-
     var body: some View {
         Text(text)
-            .font(Kids.fredoka(fontSize, weight: .bold))
-            .tracking(2)
+            .font(Kids.pixel(max(10, fontSize * 0.56)))
+            .lineSpacing(5)
             .foregroundColor(Kids.ink)
-            .padding(.horizontal, fontSize * 0.35)
-            .padding(.vertical, fontSize * 0.12)
-            .background(
-                StickerShape(shape: RoundedRectangle(cornerRadius: 22, style: .continuous), fill: fill, strokeWidth: 4.5)
-            )
-            .rotationEffect(.degrees(tilt))
-            .shadow(color: Kids.ink.opacity(0.10), radius: 0, x: 0, y: 4)
-            .shadow(color: Kids.ink.opacity(0.05), radius: 10, x: 0, y: 6)
+            .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.horizontal, max(12, fontSize * 0.24))
+            .padding(.vertical, max(10, fontSize * 0.18))
+            .background(RetroPanelShape().fill(fill))
+            .overlay(RetroPanelShape().strokeBorder(Kids.ink, lineWidth: 2))
+            .compositingGroup().shadow(color: Kids.ink.opacity(0.20), radius: 0, x: 0, y: 3)
     }
 }
 
@@ -647,20 +574,22 @@ struct KidToggle: View {
     var body: some View {
         Button { withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { isOn.toggle() } } label: {
             ZStack(alignment: isOn ? .trailing : .leading) {
-                Capsule()
-                    .fill(isOn ? Kids.grass : Color(hex: "#DCD4E8"))
-                    .overlay(Capsule().fill(Kids.sheen))
-                    .overlay(Capsule().stroke(Kids.ink, lineWidth: 3))
+                RetroPanelShape()
+                    .fill(isOn ? Kids.grass : Kids.creamDeep)
+                    .overlay(RetroPanelShape().fill(Kids.sheen))
+                    .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 3))
                     .frame(width: 54, height: 30)
-                Circle()
-                    .fill(Color.white)
-                    .overlay(Circle().stroke(Kids.ink, lineWidth: 2.5))
+                Rectangle()
+                    .fill(Kids.cream)
+                    .overlay(Rectangle().stroke(Kids.ink, lineWidth: 2))
                     .frame(width: 22, height: 22)
-                    .shadow(color: Kids.ink.opacity(0.18), radius: 0, x: 0, y: 2)
+                    .compositingGroup().shadow(color: Kids.ink.opacity(0.18), radius: 0, x: 0, y: 2)
                     .padding(4)
             }
         }
         .buttonStyle(.plain)
+        .accessibilityValue(isOn ? "On" : "Off")
+        .frame(minWidth: 54, minHeight: 44)
     }
 }
 
@@ -692,10 +621,10 @@ struct KidIconBtn: View {
 
     var body: some View {
         Button(action: action) {
-            Text(icon).font(.system(size: isIPad ? 30 : 22))
+            RetroSymbol(icon, size: isIPad ? 25 : 20)
                 .frame(width: isIPad ? 64 : 48, height: isIPad ? 64 : 48)
                 .background(
-                    StickerShape(shape: RoundedRectangle(cornerRadius: isIPad ? 18 : 14, style: .continuous),
+                    StickerShape(shape: RetroPanelShape(cornerRadius: isIPad ? 18 : 14, style: .continuous),
                                  fill: fill, strokeWidth: isIPad ? 4 : 3)
                 )
         }
@@ -712,35 +641,13 @@ struct KidIconBtn: View {
 
 struct KidsGoldCoin: View {
     var size: CGFloat = 22
-    private let goldLight = Color(hex: "#FFE36B")
-    private let goldMid   = Color(hex: "#FFC83B")
-    private let goldDeep  = Color(hex: "#E8A20A")
-
     var body: some View {
         ZStack {
-            // Outer ink ring
-            Circle()
-                .fill(LinearGradient(colors: [goldLight, goldDeep],
-                                     startPoint: .topLeading, endPoint: .bottomTrailing))
-                .overlay(Circle().stroke(Kids.ink, lineWidth: max(1.5, size * 0.12)))
-            // Inner face
-            Circle()
-                .fill(LinearGradient(colors: [goldLight, goldMid],
-                                     startPoint: .top, endPoint: .bottom))
-                .frame(width: size * 0.66, height: size * 0.66)
-                .overlay(Circle().stroke(Kids.ink.opacity(0.85), lineWidth: max(1, size * 0.06)))
-            // Sheen blob
-            Ellipse()
-                .fill(Color.white.opacity(0.55))
-                .frame(width: size * 0.32, height: size * 0.18)
-                .offset(x: -size * 0.12, y: -size * 0.16)
-                .blur(radius: max(0.5, size * 0.02))
-            // Dollar/star mark
-            Text("★")
-                .font(.system(size: size * 0.38, weight: .black))
-                .foregroundColor(goldDeep)
-        }
-        .frame(width: size, height: size)
+            RetroPanelShape(cornerRadius: size * 0.8).fill(Kids.sun)
+            RetroPanelShape(cornerRadius: size * 0.8).strokeBorder(Kids.peachDeep, lineWidth: max(1, size * 0.08))
+            Rectangle().fill(Kids.sunDeep).frame(width: max(2, size * 0.13), height: size * 0.48)
+            Rectangle().fill(Kids.panel).frame(width: max(2, size * 0.10), height: size * 0.30).offset(x: -size * 0.24)
+        }.frame(width: size, height: size).accessibilityHidden(true)
     }
 }
 
@@ -785,12 +692,14 @@ struct CoinChip: View {
             }
             .padding(.horizontal, isIPad ? 16 : 12).padding(.vertical, isIPad ? 10 : 7)
             .background(
-                StickerShape(shape: Capsule(), fill: Kids.sun, strokeWidth: isIPad ? 4 : 3)
+                StickerShape(shape: RetroPanelShape(), fill: Kids.sun, strokeWidth: isIPad ? 4 : 3)
             )
-            .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
+            .compositingGroup().shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
             .scaleEffect(pop)
         }
         .buttonStyle(.plain)
+        .frame(minHeight: 44)
+        .contentShape(Rectangle())
         .accessibilityLabel("\(count) coins. Opens the coin shop.")
         .onChange(of: count) { _ in
             withAnimation(.spring(response: 0.25, dampingFraction: 0.55)) { pop = 1.18 }
@@ -820,7 +729,7 @@ struct StreakPill: View {
     private var isIPad: Bool { sizeClass == .regular }
     var body: some View {
         HStack(spacing: isIPad ? 8 : 6) {
-            Text("🔥").font(.system(size: isIPad ? 22 : 16))
+            RetroSymbol("🔥", size: isIPad ? 22 : 16)
             Text("\(days) DAY STREAK!")
                 .font(Kids.nunito(isIPad ? 16 : 12, weight: .heavy))
                 .tracking(1)
@@ -828,9 +737,9 @@ struct StreakPill: View {
         }
         .padding(.horizontal, isIPad ? 20 : 14).padding(.vertical, isIPad ? 11 : 8)
         .background(
-            StickerShape(shape: Capsule(), fill: Kids.peach, strokeWidth: isIPad ? 4 : 3)
+            StickerShape(shape: RetroPanelShape(), fill: Kids.peach, strokeWidth: isIPad ? 4 : 3)
         )
-        .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
     }
 }
 
@@ -851,7 +760,7 @@ struct ConfettiView: View {
     private let pieces: [Piece] = {
         let colors: [Color] = [
             Theme.gold, Theme.orange, Theme.purple, Theme.cyan, Theme.teal, Theme.red, .white,
-            Color(hex: "#FF69B4"), Color(hex: "#7CFC00"), Color(hex: "#00BFFF")
+            Kids.peach, Kids.grass, Kids.sky
         ]
         return (0..<55).map { i in
             Piece(
@@ -872,7 +781,7 @@ struct ConfettiView: View {
     var body: some View {
         GeometryReader { geo in
             ForEach(pieces) { piece in
-                RoundedRectangle(cornerRadius: 2)
+                RetroPanelShape(cornerRadius: 2)
                     .fill(piece.color)
                     .frame(width: piece.size.width, height: piece.size.height)
                     .rotationEffect(.degrees(isAnimating ? piece.rotationEnd : piece.rotationStart))
@@ -898,3 +807,241 @@ struct ConfettiView: View {
         }
     }
 }
+
+/// Uncommitted custom-name preview. Deliberately does not request paid artwork.
+struct RetroCustomCreaturePreview: View {
+    var size: CGFloat = 50
+    var body: some View {
+        ZStack {
+            RetroPanelShape().fill(Kids.panel)
+            RetroPanelShape().strokeBorder(Kids.ink.opacity(0.65), lineWidth: 2)
+            Image(systemName: "pencil.and.outline")
+                .font(.system(size: size * 0.38, weight: .bold))
+                .foregroundColor(Kids.grassDeep)
+        }
+        .frame(width: size, height: size)
+        .accessibilityLabel("Custom creature preview")
+    }
+}
+
+/// Small, deterministic arena scene; keeps the selector in the game's pixel language.
+struct RetroArenaThumbnail: View {
+    let environment: BattleEnvironment
+    var body: some View {
+        Canvas { context, size in
+            let unit = size.width / 32
+            func block(_ x: CGFloat, _ y: CGFloat, _ w: CGFloat, _ h: CGFloat, _ color: Color) {
+                context.fill(Path(CGRect(x: x * unit, y: y * unit, width: w * unit, height: h * unit)), with: .color(color))
+            }
+            let isDark = environment == .night || environment == .storm || environment == .volcano
+            block(0, 0, 32, 20, isDark ? Kids.console : Kids.sky)
+            block(0, 14, 32, 6, environment == .ocean ? Kids.skyDeep : environment == .arctic ? Kids.cream : environment == .desert ? Kids.peach : Kids.grassDeep)
+            switch environment {
+            case .ocean:
+                for x in stride(from: CGFloat(0), to: 32, by: 9) {
+                    block(x, 12, 6, 2, Kids.skyDeep)
+                    block(x + 1, 16, 4, 1, Kids.sky)
+                }
+            case .sky:
+                block(3, 5, 10, 3, Kids.cream); block(5, 3, 5, 2, Kids.cream)
+                block(21, 9, 9, 3, Kids.cream); block(23, 7, 4, 2, Kids.cream)
+                block(0, 14, 32, 6, Kids.sky)
+            case .arctic:
+                block(6, 10, 11, 4, Kids.cream); block(8, 7, 7, 3, Kids.cream)
+                block(10, 4, 3, 3, Kids.cream); block(20, 11, 8, 3, Kids.panel)
+            case .desert:
+                block(6, 7, 2, 8, Kids.grassDeep); block(3, 9, 3, 2, Kids.grassDeep)
+                block(9, 6, 2, 6, Kids.grassDeep); block(8, 10, 3, 2, Kids.grassDeep)
+                block(23, 3, 5, 5, Kids.sun)
+            case .jungle:
+                for x in stride(from: CGFloat(2), to: 32, by: 10) {
+                    block(x + 3, 5, 2, 10, Kids.peachDeep)
+                    block(x, 3, 8, 5, Kids.grassDeep); block(x + 1, 1, 6, 3, Kids.grassDeep)
+                }
+            case .volcano:
+                block(8, 10, 17, 5, Kids.ink); block(11, 7, 11, 3, Kids.ink)
+                block(14, 4, 5, 3, Kids.pinkDeep); block(16, 6, 2, 8, Kids.peach)
+                block(0, 17, 32, 3, Kids.pinkDeep)
+            case .night:
+                block(24, 3, 5, 5, Kids.sun); block(26, 2, 4, 4, Kids.console)
+                block(4, 4, 1, 1, Kids.cream); block(12, 7, 1, 1, Kids.cream); block(18, 3, 1, 1, Kids.cream)
+            case .storm:
+                block(5, 3, 21, 4, Kids.ink); block(9, 1, 11, 2, Kids.ink)
+                block(16, 7, 3, 3, Kids.sun); block(14, 10, 4, 2, Kids.sun); block(15, 12, 2, 3, Kids.sun)
+            case .grassland:
+                block(24, 3, 4, 4, Kids.sun)
+                block(3, 11, 9, 3, Kids.grass); block(6, 9, 5, 2, Kids.grass)
+                block(20, 12, 10, 2, Kids.grass)
+            }
+        }
+        .aspectRatio(1.6, contentMode: .fit)
+        .clipShape(RetroPanelShape())
+        .accessibilityHidden(true)
+    }
+}
+
+#if DEBUG
+/// Visual QA uses the production views with isolated, deterministic local state.
+/// This host is compiled out of Release and accepts only the Testing bundle.
+@MainActor
+struct RetroUIFixtureHost: View {
+    let screen: String
+    @State private var arena: BattleEnvironment = .grassland
+    @State private var effects = true
+    @State private var presented = true
+    @State private var exportImage: UIImage?
+
+    static func supports(_ screen: String) -> Bool {
+        ["ui-home-navigation", "ui-picker", "ui-arena", "ui-book", "ui-facts", "ui-settings", "ui-shop", "ui-coins",
+         "ui-parent", "ui-pin", "ui-grownups", "ui-help", "ui-tournament", "ui-bracket",
+         "ui-wager", "ui-champion", "ui-share-duel", "ui-share-team", "ui-share-tournament", "ui-share-custom"].contains(screen)
+    }
+
+    init(screen: String) {
+        self.screen = screen
+    }
+
+    /// Call once during isolated test app startup, before SwiftUI evaluates body.
+    static func prepare(screen: String) {
+        guard AppConfig.isUITesting, AppConfig.isIsolatedTestBuild else { return }
+        if screen == "ui-home-navigation" {
+            UserSettings.shared.tournamentUnlocked = true
+            TournamentManager.shared.clear()
+        }
+        for animal in [Animals.lion, Animals.gorilla, Animals.tiger, Animals.wolf, Animals.elephant,
+                       Animals.great_white_shark, Animals.bald_eagle, Animals.t_rex] {
+            StickerCollection.shared.collect(animal)
+        }
+        if screen == "ui-wager" || screen == "ui-champion" {
+            TournamentManager.shared.activeTournament = Self.tournament(completed: screen == "ui-champion")
+        }
+    }
+
+    var body: some View {
+        Group {
+            if AppConfig.isUITesting && AppConfig.isIsolatedTestBuild {
+                fixtureContent
+            } else {
+                KidsHomeView()
+            }
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("fixture.screen.\(screen)")
+    }
+
+    @ViewBuilder
+    private var fixtureContent: some View {
+        switch screen {
+        case "ui-home-navigation": KidsHomeView()
+        case "ui-picker": NavigationStack { KidsAnimalPickerView() }
+        case "ui-arena":
+            KidsPreBattleView(fighter1: Animals.lion, fighter2: Animals.great_white_shark,
+                              selectedEnvironment: $arena, arenaEffectsEnabled: $effects,
+                              isPresented: $presented, onStart: {})
+        case "ui-book": KidsStickerBookView()
+        case "ui-facts": AnimalFactsSheet(animal: Animals.lion)
+        case "ui-settings": KidsSettingsView()
+        case "ui-shop": KidsShopView()
+        case "ui-coins": KidsCoinShopSheet(isPresented: $presented)
+        case "ui-parent": ParentGateSheet(isPresented: $presented, onSuccess: {})
+        case "ui-pin": ParentalPINSheet(mode: .setup, onSuccess: {}, onCancel: {})
+        case "ui-grownups": GrownUpZoneView()
+        case "ui-help": HowToPlayView()
+        case "ui-tournament": NavigationStack { TournamentSetupView(onContinue: { _, _ in }) }
+        case "ui-bracket":
+            NavigationStack {
+                BracketPreviewView(tournament: Self.tournament(), onConfirm: {}, onReroll: {}, onForfeit: {})
+            }
+        case "ui-wager":
+            NavigationStack { RoundWagerView(tournament: Self.tournament(), roundIndex: 0, onDone: {}) }
+        case "ui-champion":
+            TournamentCompleteView(tournament: Self.tournament(completed: true), onPlayAgain: {}, onExit: {})
+        case "ui-share-duel", "ui-share-team", "ui-share-tournament", "ui-share-custom":
+            ZStack {
+                Kids.cream.ignoresSafeArea()
+                if let exportImage {
+                    ScrollView {
+                        Image(uiImage: exportImage).resizable().interpolation(.none).scaledToFit()
+                            .accessibilityLabel("Rendered retro share card")
+                            .accessibilityIdentifier("fixture.export.ready")
+                    }
+                } else {
+                    ProgressView("Rendering share card")
+                }
+            }
+            .task { await renderExport() }
+        default: KidsHomeView()
+        }
+    }
+
+    private static func result(_ winner: Animal) -> BattleResult {
+        BattleResult(winner: winner.id,
+                     narration: "The lion held its ground while the gorilla made one final charge. A quick sidestep and a powerful roar gave the lion the edge in this close match.",
+                     funFact: "A lion's roar can be heard up to five miles away.",
+                     winnerHealthPercent: 64, loserHealthPercent: 12,
+                     why: "Strong paws and quick footwork helped the lion hold its ground.")
+    }
+
+    private static func tournament(completed: Bool = false) -> Tournament {
+        let pool = Array(Animals.all.prefix(16))
+        var round = stride(from: 0, to: pool.count, by: 2).map { index in
+            Matchup(id: UUID(), fighter1: pool[index], fighter2: pool[index + 1], environment: .grassland,
+                    wager: nil, result: completed ? result(pool[index]) : nil)
+        }
+        var rounds = [round]
+        if completed {
+            while round.count > 1 {
+                let winners = round.compactMap(\.winningFighter)
+                round = stride(from: 0, to: winners.count, by: 2).map { index in
+                    Matchup(id: UUID(), fighter1: winners[index], fighter2: winners[index + 1],
+                            environment: .grassland, wager: nil, result: result(winners[index]))
+                }
+                rounds.append(round)
+            }
+        } else {
+            rounds += [[], [], []]
+        }
+        return Tournament(id: UUID(), createdAt: Date(timeIntervalSince1970: 0), size: .sixteen,
+                          selectionMode: .manual, phase: completed ? .complete : .roundWager(roundIndex: 0),
+                          bracket: Bracket(rounds: rounds), grandChampion: nil, rerollUsed: false,
+                          ledger: [], schemaVersion: Tournament.currentSchemaVersion,
+                          resolvedRounds: completed ? Set(0..<4) : [], grandChampionResolved: completed)
+    }
+
+    private func renderExport() async {
+        let image: UIImage?
+        switch screen {
+        case "ui-share-custom":
+            let lion = Animal(id: "custom_fixture_blue_lion", name: "Blue Lion", emoji: "", category: .land,
+                              pixelColor: "#5997B8", size: 3, isCustom: true)
+            let fantasy = Animal(id: "custom_fixture_glimmerflux", name: "Glimmerflux", emoji: "", category: .fantasy,
+                                 pixelColor: "#9D83C5", size: 3, isCustom: true)
+            let result = BattleResult(winner: lion.id,
+                                      narration: "Blue Lion stood firm as Glimmerflux bounded across the arena. A quick sidestep gave Blue Lion the edge.",
+                                      funFact: "A lion's roar can be heard up to five miles away.",
+                                      winnerHealthPercent: 64, loserHealthPercent: 12)
+            image = await KidsShareCard.renderWithCachedImages(fighter1: lion, fighter2: fantasy, result: result)
+        case "ui-share-team":
+            let teamA = [Animals.lion, Animals.gorilla, Animals.tiger, Animals.wolf]
+            let teamB = [Animals.elephant, Animals.great_white_shark, Animals.bald_eagle, Animals.t_rex]
+            let result = MeleeResult(winningTeam: .A, narration: Self.result(Animals.lion).narration,
+                                    funFact: Self.result(Animals.lion).funFact, mvp: Animals.lion.id,
+                                    teamAHealth: 64, teamBHealth: 12)
+            image = await MeleeShareCard.renderWithCachedImages(teamA: teamA, teamB: teamB, result: result)
+        case "ui-share-tournament":
+            image = await TournamentShareCard.renderWithCachedImages(tournament: Self.tournament(completed: true),
+                                                                      grandChampionPayout: 100, netCoinDelta: 150)
+        default:
+            image = await KidsShareCard.renderWithCachedImages(fighter1: Animals.lion, fighter2: Animals.gorilla,
+                                                               result: Self.result(Animals.lion), environment: .jungle,
+                                                               arenaEffectsEnabled: true)
+        }
+        exportImage = image
+        if let data = image?.pngData() {
+            // QA runner can copy the full-size rendered artifact from the isolated app container.
+            let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(screen).png")
+            try? data.write(to: url, options: .atomic)
+        }
+    }
+}
+#endif

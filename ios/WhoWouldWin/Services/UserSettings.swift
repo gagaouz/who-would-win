@@ -226,6 +226,7 @@ final class UserSettings: ObservableObject {
         AchievementTracker.shared.eraseAll()
         CoinStore.shared.resetForTesting()
         StickerCollection.shared.eraseAll()
+        RetroAssetStore.shared.clearMemoryCache()
         NotificationService.shared.cancelAll()
         // Wipe iCloud LAST — after the local resets — so the freshly-reset local
         // values (and the cancelled debounce inside wipeCloud) leave nothing to

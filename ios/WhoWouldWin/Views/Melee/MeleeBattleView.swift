@@ -1,93 +1,58 @@
 import SwiftUI
 
-/// Team-vs-team battle screen. Mirrors KidsBattleView but with rosters.
+/// The team resolver owns the answer; the shared stage only performs it.
 struct MeleeBattleView: View {
     let teamA: [Animal]
     let teamB: [Animal]
-
     @StateObject private var viewModel: MeleeViewModel
     @Environment(\.dismiss) private var dismiss
-
-    @State private var appeared = false
-    @State private var cheerProgress: Double = 0.2
-    @State private var vsPulse: CGFloat = 1
-    @State private var bob: CGFloat = 0
-    @State private var didStart = false
-    @State private var animationTimerWork: DispatchWorkItem? = nil
-
     @Environment(\.horizontalSizeClass) private var sizeClass
+    @State private var didStart = false
+    @State private var battleTask: Task<Void, Never>?
     private var isIPad: Bool { sizeClass == .regular }
 
     init(teamA: [Animal], teamB: [Animal]) {
-        self.teamA = teamA
-        self.teamB = teamB
+        self.teamA = teamA; self.teamB = teamB
         _viewModel = StateObject(wrappedValue: MeleeViewModel(teamA: teamA, teamB: teamB))
     }
 
     var body: some View {
         ZStack {
-            gradientBG.ignoresSafeArea()
-
+            Color(hex: "#F4EDD8").ignoresSafeArea()
             if let result = viewModel.result, viewModel.animationComplete {
-                ResultContent(
-                    result: result,
-                    teamA: teamA, teamB: teamB,
-                    isIPad: isIPad,
-                    onAgain: { dismiss() },
-                    onClose: { dismiss() }
-                )
-                .transition(.scale.combined(with: .opacity))
-                .onAppear {
-                    let streakMilestoneBonus = UserSettings.shared.recordBattle()
-                    CoinStore.shared.earnBattleCoins(milestoneBonus: streakMilestoneBonus)
-                }
+                ResultContent(result: result, teamA: teamA, teamB: teamB, isIPad: isIPad,
+                              onAgain: { dismiss() }, onClose: { dismiss() })
+                    .accessibilityIdentifier("battle.result")
+                    .transition(.opacity)
+                    .onAppear {
+                        guard RetroBattleSettlement.claim(viewModel.presentationID) else { return }
+                        let bonus = UserSettings.shared.recordBattle()
+                        CoinStore.shared.earnBattleCoins(milestoneBonus: bonus)
+                    }
             } else {
-                BattleContent(
-                    teamA: teamA, teamB: teamB,
-                    cheerProgress: cheerProgress,
-                    vsPulse: vsPulse, bob: bob,
-                    appeared: appeared,
-                    isJudging: viewModel.animationComplete && viewModel.result == nil,
-                    isIPad: isIPad,
-                    onClose: { dismiss() }
+                RetroBattleStage(
+                    sessionID: viewModel.presentationID, teamA: teamA, teamB: teamB,
+                    environment: viewModel.environment,
+                    arenaEffectsEnabled: viewModel.arenaEffectsEnabled,
+                    outcome: RetroBattleOutcome.team(viewModel.result), title: "TEAM BATTLE",
+                    onClose: { dismiss() },
+                    onComplete: { [session = viewModel.presentationID] in
+                        viewModel.animationDidComplete(for: session)
+                    }
                 )
+                .id(viewModel.presentationID)
             }
         }
         .navigationBarHidden(true)
         .onAppear {
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) { appeared = true }
-            // Perpetual loops are skipped under Reduce Motion (the entrance
-            // spring and the one-shot cheer fill stay — they're not loops).
-            // Mirrors the 1v1 battle screen.
-            if !UIAccessibility.isReduceMotionEnabled {
-                withAnimation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true)) { vsPulse = 1.12 }
-                withAnimation(.easeInOut(duration: 1.6).repeatForever(autoreverses: true)) { bob = -6 }
-            }
-            withAnimation(.easeIn(duration: 6.0)) { cheerProgress = 0.95 }
-            // onAppear can re-fire (sheet dismissal over this view, nav pop
-            // back) — never start a second battle or stack a second timer.
             guard !didStart else { return }
             didStart = true
-            Task { await viewModel.startBattle() }
-            let work = DispatchWorkItem { viewModel.animationDidComplete() }
-            animationTimerWork = work
-            DispatchQueue.main.asyncAfter(deadline: .now() + 6.0, execute: work)
+            battleTask = Task { await viewModel.startBattle() }
         }
         .onDisappear {
-            animationTimerWork?.cancel()
-            animationTimerWork = nil
+            battleTask?.cancel(); battleTask = nil
+            viewModel.cancelBattle()
         }
-    }
-
-    private var gradientBG: LinearGradient {
-        if viewModel.phase == .complete {
-            return LinearGradient(
-                colors: [Color(hex: "#FFE6B8"), Kids.pink, Kids.grape],
-                startPoint: .top, endPoint: .bottom)
-        }
-        return LinearGradient(
-            colors: [Color(hex: "#FFD9B0"), Color(hex: "#FFB6C9"), Color(hex: "#C6A8F5")],
-            startPoint: .top, endPoint: .bottom)
     }
 }
 
@@ -122,10 +87,11 @@ private struct BattleContent: View {
                 .foregroundColor(Kids.ink)
                 .padding(.horizontal, 16).padding(.vertical, 8)
                 .background(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    RetroPanelShape(cornerRadius: 18, style: .continuous)
                         .fill(Kids.sun)
-                        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                        .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 3))
                 )
+                .compositingGroup()
                 .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
                 .rotationEffect(.degrees(-1.5))
                 .scaleEffect(vsPulse * 0.95)
@@ -144,8 +110,7 @@ private struct BattleContent: View {
             // Cheer meter
             VStack(spacing: 10) {
                 HStack(spacing: 6) {
-                    Text(isJudging ? "⚖️" : "🎺")
-                        .font(.system(size: 14))
+                    RetroSymbol(isJudging ? "⚖️" : "🎺", size: 14)
                         .scaleEffect(isJudging ? judgingPulse : 1.0)
                     Text(isJudging ? "JUDGES VOTING" : "CROWD CHEER METER")
                         .font(Kids.fredoka(12, weight: .bold))
@@ -165,10 +130,11 @@ private struct BattleContent: View {
             }
             .padding(14)
             .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                RetroPanelShape(cornerRadius: 20, style: .continuous)
                     .fill(.white)
-                    .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                    .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
             )
+            .compositingGroup()
             .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
             .padding(.horizontal, 18)
             .padding(.top, 18)
@@ -213,7 +179,7 @@ private struct BattleContent: View {
                 .font(Kids.fredoka(isIPad ? 14 : 11, weight: .bold))
                 .foregroundColor(Kids.ink)
                 .padding(.horizontal, 10).padding(.vertical, 3)
-                .background(Capsule().fill(tint).overlay(Capsule().stroke(Kids.ink, lineWidth: 2)))
+                .background(RetroPanelShape().fill(tint).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
             HStack(spacing: isIPad ? 10 : 6) {
                 ForEach(team) { animal in
                     VStack(spacing: 4) {
@@ -269,7 +235,7 @@ private struct ResultContent: View {
                 }
                 .padding(.horizontal, 16).padding(.top, 10)
 
-                Text("👑").font(.system(size: isIPad ? 64 : 50))
+                RetroSymbol("👑", size: isIPad ? 64 : 50)
                     .scaleEffect(appeared ? 1 : 0)
                     .rotationEffect(.degrees(appeared ? 0 : -40))
 
@@ -285,11 +251,11 @@ private struct ResultContent: View {
                     VStack(spacing: 6) {
                         FighterPortrait(animal: mvp, size: isIPad ? 170 : 130, ringColor: Kids.sun)
                             .scaleEffect(appeared ? 1 : 0.4)
-                        Text("⭐ MVP — \(mvp.name.uppercased())")
+                        Text("MVP · \(mvp.name.uppercased())")
                             .font(Kids.fredoka(isIPad ? 16 : 13, weight: .bold))
                             .foregroundColor(Kids.ink)
                             .padding(.horizontal, 12).padding(.vertical, 4)
-                            .background(Capsule().fill(Kids.sun).overlay(Capsule().stroke(Kids.ink, lineWidth: 2)))
+                            .background(RetroPanelShape().fill(Kids.sun).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
                     }
                 }
 
@@ -310,6 +276,10 @@ private struct ResultContent: View {
                 .opacity(appeared ? 1 : 0)
 
                 // Narration
+                if result.isOfflineFallback {
+                    Text("Offline result").font(Kids.nunito(12, weight: .bold))
+                        .accessibilityIdentifier("battle.offlineIndicator")
+                }
                 infoCard(title: "BATTLE STORY", titleColor: Kids.pink, body: result.narration.withoutEmoji)
                     .opacity(appeared ? 1 : 0)
 
@@ -334,8 +304,8 @@ private struct ResultContent: View {
                     .foregroundColor(Kids.ink)
                     .padding(.horizontal, 14).padding(.vertical, 8)
                     .background(
-                        Capsule().fill(Kids.sky)
-                            .overlay(Capsule().stroke(Kids.ink, lineWidth: 2))
+                        RetroPanelShape().fill(Kids.sky)
+                            .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
                     )
                 }
                 .buttonStyle(.plain)
@@ -388,9 +358,8 @@ private struct ResultContent: View {
             }
         }
         .onAppear {
-            withAnimation(.spring(response: 0.55, dampingFraction: 0.55).delay(0.1)) {
-                appeared = true
-            }
+            if UIAccessibility.isReduceMotionEnabled { appeared = true }
+            else { withAnimation(.spring(response: 0.55, dampingFraction: 0.55).delay(0.1)) { appeared = true } }
             HapticsService.shared.success()
             SoundService.shared.play(.win)   // victory fanfare (was silent)
         }
@@ -404,8 +373,9 @@ private struct ResultContent: View {
                 .font(Kids.fredoka(11, weight: .bold))
                 .foregroundColor(Kids.ink)
                 .padding(.horizontal, 10).padding(.vertical, 4)
-                .background(Capsule().fill(titleColor).overlay(Capsule().stroke(Kids.ink, lineWidth: 2)))
+                .background(RetroPanelShape().fill(titleColor).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2)))
             Text(body)
+                .accessibilityIdentifier(title == "BATTLE STORY" ? "battle.narration" : "battle.info.\(title)")
                 .font(Kids.nunito(13, weight: .bold))
                 .foregroundColor(Kids.ink)
                 .fixedSize(horizontal: false, vertical: true)
@@ -413,10 +383,11 @@ private struct ResultContent: View {
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
+            RetroPanelShape(cornerRadius: 20, style: .continuous)
                 .fill(.white)
-                .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.ink, lineWidth: 3))
         )
+        .compositingGroup()
         .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
         .padding(.horizontal, 18)
     }

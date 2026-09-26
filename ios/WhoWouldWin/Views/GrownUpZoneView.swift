@@ -33,7 +33,7 @@ struct GrownUpZoneView: View {
     /// teaches, built from data already tracked.
     private var learningCard: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("📚 WHAT THEY'RE LEARNING")
+            Text("WHAT THEY'RE LEARNING")
                 .font(Kids.fredoka(12, weight: .bold)).foregroundColor(Kids.ink)
             learnRow("🔎", "Animals explored", "\(collectedCount) of \(Animals.all.filter { !$0.isCustom }.count)")
             if let acc = settings.predictionAccuracy {
@@ -46,15 +46,15 @@ struct GrownUpZoneView: View {
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color(hex: "#EAF1FF"))
-                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+            RetroPanelShape(cornerRadius: 16, style: .continuous)
+                .fill(Kids.panel)
+                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
         )
     }
 
     private func learnRow(_ emoji: String, _ label: String, _ value: String) -> some View {
         HStack(alignment: .top, spacing: 8) {
-            Text(emoji).font(.system(size: 16)).frame(width: 22)
+            RetroSymbol(emoji, size: 16).frame(width: 22)
             VStack(alignment: .leading, spacing: 1) {
                 Text(label).font(Kids.fredoka(12, weight: .bold)).foregroundColor(Kids.ink)
                 Text(value).font(Kids.nunito(11, weight: .bold)).foregroundColor(Kids.inkSoft)
@@ -66,9 +66,7 @@ struct GrownUpZoneView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Color(hex: "#EAF2FF"), Color(hex: "#F3EAFF")],
-                           startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea()
+            SkyBG()
 
             ScrollView {
                 VStack(spacing: 16) {
@@ -93,9 +91,9 @@ struct GrownUpZoneView: View {
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
                             .background(
-                                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                RetroPanelShape(cornerRadius: 16, style: .continuous)
                                     .fill(.white)
-                                    .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                                    .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
                             )
                     }
                     .buttonStyle(.plain)
@@ -111,11 +109,11 @@ struct GrownUpZoneView: View {
                     } label: {
                         Text("Erase all data")
                             .font(Kids.fredoka(14, weight: .bold))
-                            .foregroundColor(Kids.pink)
+                            .foregroundColor(Kids.pinkDeep)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 11)
                             .background(
-                                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                RetroPanelShape(cornerRadius: 16, style: .continuous)
                                     .stroke(Kids.pink.opacity(0.7), lineWidth: 2)
                             )
                     }
@@ -172,12 +170,12 @@ struct GrownUpZoneView: View {
         } label: {
             HStack(spacing: 12) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    RetroPanelShape(cornerRadius: 12, style: .continuous)
                         .fill(Kids.grape)
-                        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Kids.sheen))
-                        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                        .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).fill(Kids.sheen))
+                        .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
                         .frame(width: 40, height: 40)
-                    Text("🪙").font(.system(size: 20))
+                    RetroSymbol("🪙", size: 20)
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Tournament Wagering")
@@ -193,11 +191,11 @@ struct GrownUpZoneView: View {
             }
             .padding(.horizontal, 12).padding(.vertical, 10)
             .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                RetroPanelShape(cornerRadius: 16, style: .continuous)
                     .fill(.white)
-                    .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                    .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
             )
-            .shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 2)
+            .compositingGroup().shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 2)
         }
         .buttonStyle(.plain)
     }
@@ -219,9 +217,9 @@ struct GrownUpZoneView: View {
             .foregroundColor(Kids.ink)
             .padding(.horizontal, 10).padding(.vertical, 4)
             .background(
-                Capsule()
-                    .fill(on ? Kids.grass : Color(hex: "#E8E0F0"))
-                    .overlay(Capsule().stroke(Kids.ink, lineWidth: 2))
+                RetroPanelShape()
+                    .fill(on ? Kids.grass : Kids.creamDeep)
+                    .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
             )
     }
 
@@ -238,7 +236,7 @@ struct GrownUpZoneView: View {
                 gatedLink("Support", url: "https://animal-vs-animal.com/support.html")
             }
             .font(Kids.nunito(11, weight: .bold))
-            .foregroundColor(Kids.grape)
+            .foregroundColor(Kids.grapeDeep)
         }
         .padding(.top, 2)
     }
@@ -258,7 +256,7 @@ struct GrownUpZoneView: View {
 
     private var header: some View {
         HStack {
-            Text("👋 GROWN-UP ZONE")
+            Text("GROWN-UP ZONE")
                 .font(Kids.fredoka(isIPad ? 24 : 19, weight: .bold))
                 .foregroundColor(Kids.ink)
             Spacer()
@@ -284,7 +282,7 @@ struct GrownUpZoneView: View {
 
     private func statTile(_ emoji: String, _ value: String, _ label: String) -> some View {
         VStack(spacing: 4) {
-            Text(emoji).font(.system(size: 26))
+            RetroSymbol(emoji, size: 26)
             Text(value).font(Kids.fredoka(20, weight: .bold)).foregroundColor(Kids.ink)
                 .lineLimit(1).minimumScaleFactor(0.6)
             Text(label).font(Kids.nunito(11, weight: .bold)).foregroundColor(Kids.inkSoft)
@@ -292,9 +290,9 @@ struct GrownUpZoneView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 14)
         .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+            RetroPanelShape(cornerRadius: 16, style: .continuous)
                 .fill(.white)
-                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
         )
     }
 
@@ -317,20 +315,20 @@ struct GrownUpZoneView: View {
             if reminderDeniedNote {
                 Text("Notifications are off for this app. Turn them on in iOS Settings → Notifications to use reminders.")
                     .font(Kids.nunito(11, weight: .bold))
-                    .foregroundColor(Kids.pink)
+                    .foregroundColor(Kids.pinkDeep)
             }
         }
         .padding(14)
         .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+            RetroPanelShape(cornerRadius: 16, style: .continuous)
                 .fill(.white)
-                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
         )
     }
 
     private var safetyCard: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("🛡️ SAFE FOR KIDS")
+            Text("SAFE FOR KIDS")
                 .font(Kids.fredoka(12, weight: .bold)).foregroundColor(Kids.ink)
             safetyRow("Purchases & external links are behind a grown-up gate.")
             safetyRow("We never sell data. Voice search stays on this device.")
@@ -340,15 +338,15 @@ struct GrownUpZoneView: View {
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color(hex: "#EAFBEA"))
-                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+            RetroPanelShape(cornerRadius: 16, style: .continuous)
+                .fill(Kids.panel)
+                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
         )
     }
 
     private func safetyRow(_ text: String) -> some View {
         HStack(alignment: .top, spacing: 8) {
-            Text("✓").font(Kids.fredoka(13, weight: .bold)).foregroundColor(Kids.grass)
+            Text("✓").font(Kids.fredoka(13, weight: .bold)).foregroundColor(Kids.grassDeep)
             Text(text).font(Kids.nunito(12, weight: .bold)).foregroundColor(Kids.ink)
                 .fixedSize(horizontal: false, vertical: true)
         }

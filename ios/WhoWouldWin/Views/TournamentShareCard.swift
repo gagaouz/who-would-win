@@ -17,25 +17,9 @@ struct TournamentShareCard: View {
         tournament.bracket.rounds.last?.first?.winningFighter
     }
 
-    private var championImage: UIImage? {
-        guard let c = champion, let name = c.creatureAssetName else { return nil }
-        return UIImage(named: name)
-    }
-
     var body: some View {
         ZStack(alignment: .top) {
-            // Sunburst-style radial background
-            RadialGradient(
-                colors: [Kids.sun, Color(hex: "#FF8AC5"), Color(hex: "#4A2E7A")],
-                center: .init(x: 0.5, y: 0.25),
-                startRadius: 30, endRadius: 540
-            )
-            .ignoresSafeArea()
-
-            // Rays behind the champion
-            sunRays
-                .opacity(0.18)
-                .allowsHitTesting(false)
+            Kids.cream.ignoresSafeArea()
 
             // Confetti sprinkles
             confetti
@@ -44,23 +28,23 @@ struct TournamentShareCard: View {
 
                 // Brand pill
                 HStack(spacing: 5) {
-                    Text("🏆").font(.system(size: 12))
+                    RetroSymbol("🏆", size: 12)
                     Text("TOURNAMENT CHAMPION")
                         .font(Kids.fredoka(11, weight: .bold))
                         .tracking(2.5)
                         .foregroundColor(Kids.sun)
-                    Text("🏆").font(.system(size: 12))
+                    RetroSymbol("🏆", size: 12)
                 }
                 .padding(.horizontal, 14).padding(.vertical, 6)
                 .background(
-                    Capsule().fill(Kids.ink)
-                        .overlay(Capsule().stroke(Kids.sun, lineWidth: 2))
+                    RetroPanelShape().fill(Kids.ink)
+                        .overlay(RetroPanelShape().stroke(Kids.sun, lineWidth: 2))
                 )
                 .padding(.top, 24)
 
                 Text("who would win?")
                     .font(Kids.nunito(11, weight: .bold))
-                    .foregroundColor(.white.opacity(0.85))
+                    .foregroundColor(Kids.inkSoft)
                     .tracking(1.5)
                     .padding(.top, 6)
                     .padding(.bottom, 14)
@@ -103,43 +87,19 @@ struct TournamentShareCard: View {
 
     private var championHero: some View {
         VStack(spacing: 10) {
-            Text("👑 CHAMPION 👑")
+            Text("CHAMPION")
                 .font(Kids.fredoka(11, weight: .bold))
                 .foregroundColor(Kids.sun)
                 .tracking(2.5)
                 .padding(.horizontal, 12).padding(.vertical, 4)
-                .background(Capsule().fill(Kids.ink).overlay(Capsule().stroke(Kids.sun, lineWidth: 1.5)))
+                .background(RetroPanelShape().fill(Kids.ink).overlay(RetroPanelShape().stroke(Kids.sun, lineWidth: 1.5)))
 
-            ZStack {
-                Circle()
-                    .fill(Kids.sun)
-                    .frame(width: 178, height: 178)
-                Circle()
-                    .fill(.white)
-                    .frame(width: 162, height: 162)
-                Circle()
-                    .stroke(Kids.ink, lineWidth: 5)
-                    .frame(width: 178, height: 178)
-                Group {
-                    if let img = championImage {
-                        Image(uiImage: img).resizable().scaledToFill()
-                    } else if let c = champion {
-                        Text(c.emoji).font(.system(size: 100))
-                    }
+            Group {
+                if let c = champion {
+                    AnimalBubble(animal: c, size: 178, tint: Kids.sun)
                 }
-                .frame(width: 148, height: 148)
-                .clipShape(Circle())
-                // Glossy sheen blob
-                Ellipse()
-                    .fill(Color.white.opacity(0.5))
-                    .frame(width: 40, height: 60)
-                    .offset(x: -30, y: -34)
-                    .rotationEffect(.degrees(-25))
-                    .blur(radius: 4)
-                    .frame(width: 148, height: 148)
-                    .clipShape(Circle())
             }
-            .shadow(color: Kids.ink.opacity(0.15), radius: 0, x: 0, y: 6)
+            .compositingGroup().shadow(color: Kids.ink.opacity(0.15), radius: 0, x: 0, y: 6)
 
             StickerWord(text: (champion?.name ?? "???").uppercased(),
                         fill: Kids.sun, fontSize: 32, tilt: -3)
@@ -150,7 +110,7 @@ struct TournamentShareCard: View {
 
             if tournament.grandChampion != nil, grandChampionPayout > 0 {
                 HStack(spacing: 5) {
-                    Text("✨ GRAND CHAMPION HIT")
+                    Text("GRAND CHAMPION HIT")
                         .font(Kids.fredoka(9, weight: .bold))
                         .foregroundColor(Kids.ink)
                         .tracking(1.5)
@@ -161,8 +121,8 @@ struct TournamentShareCard: View {
                 }
                 .padding(.horizontal, 10).padding(.vertical, 5)
                 .background(
-                    Capsule().fill(Kids.sun)
-                        .overlay(Capsule().stroke(Kids.ink, lineWidth: 2))
+                    RetroPanelShape().fill(Kids.sun)
+                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
                 )
                 .padding(.top, 6)
             }
@@ -170,11 +130,11 @@ struct TournamentShareCard: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 14)
         .background(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
+            RetroPanelShape(cornerRadius: 24, style: .continuous)
                 .fill(Color.white.opacity(0.9))
-                .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                .overlay(RetroPanelShape(cornerRadius: 24, style: .continuous).stroke(Kids.ink, lineWidth: 3))
         )
-        .shadow(color: Kids.ink.opacity(0.11), radius: 0, x: 0, y: 5)
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.11), radius: 0, x: 0, y: 5)
     }
 
     // MARK: - Bracket summary (Kids-styled compact)
@@ -182,7 +142,7 @@ struct TournamentShareCard: View {
     private var bracketSummary: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("🌳 BRACKET")
+                Text("BRACKET")
                     .font(Kids.fredoka(11, weight: .bold))
                     .foregroundColor(Kids.ink)
                     .tracking(1)
@@ -196,11 +156,12 @@ struct TournamentShareCard: View {
                 ForEach(Array(tournament.bracket.rounds.enumerated()), id: \.offset) { (roundIdx, round) in
                     VStack(spacing: 5) {
                         Text(roundLabel(roundIdx))
+                            .lineLimit(1).minimumScaleFactor(0.6)
                             .font(Kids.fredoka(8, weight: .bold))
                             .foregroundColor(Kids.ink)
                             .tracking(1)
                             .padding(.horizontal, 5).padding(.vertical, 2)
-                            .background(Capsule().fill(Kids.sun).overlay(Capsule().stroke(Kids.ink, lineWidth: 1)))
+                            .background(RetroPanelShape().fill(Kids.sun).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1)))
                         ForEach(round) { matchup in
                             matchupMiniCard(matchup)
                         }
@@ -211,11 +172,11 @@ struct TournamentShareCard: View {
         }
         .padding(12)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RetroPanelShape(cornerRadius: 18, style: .continuous)
                 .fill(.white)
-                .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
         )
-        .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 4)
     }
 
     private func matchupMiniCard(_ m: Matchup) -> some View {
@@ -228,33 +189,24 @@ struct TournamentShareCard: View {
         .padding(.vertical, 4)
         .padding(.horizontal, 5)
         .background(
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(Color(hex: "#F7F2FF"))
-                .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).stroke(Kids.ink.opacity(0.25), lineWidth: 1))
+            RetroPanelShape(cornerRadius: 8, style: .continuous)
+                .fill(Kids.panel)
+                .overlay(RetroPanelShape(cornerRadius: 8, style: .continuous).stroke(Kids.ink.opacity(0.25), lineWidth: 1))
         )
     }
 
     private func fighterMiniRow(_ a: Animal, isWinner: Bool) -> some View {
         HStack(spacing: 3) {
-            ZStack {
-                Circle().fill(.white)
-                    .overlay(Circle().stroke(Kids.ink, lineWidth: 1))
-                    .frame(width: 14, height: 14)
-                if let assetName = a.creatureAssetName, let img = UIImage(named: assetName) {
-                    Image(uiImage: img).resizable().scaledToFill()
-                        .frame(width: 11, height: 11).clipShape(Circle())
-                } else {
-                    Text(a.emoji).font(.system(size: 8))
-                }
-            }
+            RetroCreatureArtwork(animal: a, size: 18)
             Text(a.name)
-                .font(Kids.fredoka(7, weight: .bold))
+                .font(Kids.nunito(9, weight: .bold))
                 .foregroundColor(isWinner ? Kids.ink : Kids.inkSoft.opacity(0.7))
-                .lineLimit(1)
-                .minimumScaleFactor(0.5)
+                .lineLimit(2)
+                .minimumScaleFactor(0.65)
+                .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
             if isWinner {
-                Text("👑").font(.system(size: 7))
+                RetroSymbol("👑", size: 7)
             }
         }
     }
@@ -277,18 +229,19 @@ struct TournamentShareCard: View {
                     .foregroundColor(Kids.ink)
                     .lineLimit(1).minimumScaleFactor(0.6)
                 if let s = valueSuffix {
-                    Text(s).font(.system(size: 12))
+                    if s == "🪙" { KidsGoldCoin(size: 12) }
+                    else { RetroSymbol(s, size: 12) }
                 }
             }
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 10)
         .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
+            RetroPanelShape(cornerRadius: 14, style: .continuous)
                 .fill(.white)
-                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(color, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(color, lineWidth: 2.5))
         )
-        .shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
     }
 
     // MARK: - Footer
@@ -301,11 +254,11 @@ struct TournamentShareCard: View {
                     .resizable()
                     .frame(width: 52, height: 52)
                     .padding(5)
-                    .background(RoundedRectangle(cornerRadius: 10).fill(.white))
-                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Kids.ink, lineWidth: 2))
+                    .background(RetroPanelShape(cornerRadius: 10).fill(.white))
+                    .overlay(RetroPanelShape(cornerRadius: 10).stroke(Kids.ink, lineWidth: 2))
             }
             VStack(alignment: .leading, spacing: 4) {
-                Text("🦁 Animal vs Animal")
+                Text("Animal vs Animal")
                     .font(Kids.fredoka(13, weight: .bold))
                     .foregroundColor(Kids.ink)
                 HStack(spacing: 4) {
@@ -321,10 +274,10 @@ struct TournamentShareCard: View {
         }
         .padding(.horizontal, 12).padding(.vertical, 10)
         .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
+            RetroPanelShape(cornerRadius: 14, style: .continuous)
                 .fill(Kids.sun)
-                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
-                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
+                .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
         )
     }
 
@@ -357,8 +310,7 @@ struct TournamentShareCard: View {
         return ZStack {
             ForEach(0..<pieces.count, id: \.self) { i in
                 let p = pieces[i]
-                Text(p.0)
-                    .font(.system(size: p.4))
+                RetroSymbol(p.0, size: p.4)
                     .rotationEffect(.degrees(p.3))
                     .position(x: p.1, y: p.2)
                     .opacity(0.85)
@@ -384,6 +336,16 @@ struct TournamentShareCard: View {
     }
 
     // MARK: - Renderer
+
+    @MainActor
+    static func renderWithCachedImages(tournament: Tournament,
+                                       grandChampionPayout: Int,
+                                       netCoinDelta: Int) async -> UIImage? {
+        await RetroAssetStore.shared.prepare(tournament.bracket.allFighters)
+        return render(tournament: tournament,
+                      grandChampionPayout: grandChampionPayout,
+                      netCoinDelta: netCoinDelta)
+    }
 
     @MainActor
     static func render(tournament: Tournament,

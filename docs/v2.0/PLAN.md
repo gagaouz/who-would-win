@@ -1,6 +1,6 @@
 # Animal vs Animal 2.0 — implementation and TestFlight plan
 
-Status: **planning and isolation complete; product implementation has not started.**
+Status: **implementation in progress.** Native retro UI/battles and all 143 catalog sprites are implemented; final visual validation, the on-device custom avatar kit, and release work remain. Hosted custom image generation is no longer a delivery requirement: the owner explicitly declined recurring image-service charges. See [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) for measured evidence and open gates.
 
 Owner direction, September 26, 2026: the approved pixel-art prototype becomes the visual direction for the entire game. **2.0 is retro only. There is no classic-theme switch.** Existing functionality, progress, and purchases must carry forward. The final deliverable is a complete, processed 2.0 build available to the owner in TestFlight, ready for testing.
 
@@ -19,14 +19,14 @@ The original checkout has extensive unfinished Android changes and some marketin
 
 This creates local separation, not GitHub branch protection or a remote backup. Remote branch publication and deployment-trigger verification are an early implementation task. See [BRANCHING.md](BRANCHING.md).
 
-**Known defects in release preparation:** the actual iOS plist is 1.1.7/build 109, but `ios/project.yml` still says 1.1.6/build 108. The generator must not be run before this is reconciled. Existing deployment tooling does not enforce tests, clean source, or both version fields. The current UI smoke test can contact production. These are prerequisites, not details to defer until upload.
+**Baseline release findings at `107bf73`:** the iOS plist was 1.1.7/build 109 while `ios/project.yml` said 1.1.6/build 108; deployment tooling did not enforce tests, clean source, or both version fields, and the UI smoke test could contact production. P1 addresses these prerequisites. Current corrections and remaining verification belong in [TESTFLIGHT_RELEASE.md](TESTFLIGHT_RELEASE.md) and the release evidence ledger, rather than treating these historical findings as current build status.
 
 ## 2. What “complete 2.0” means
 
 - Every currently reachable iOS feature remains reachable and works in the new presentation. A visually finished one-on-one battle alone is not a complete release.
 - The home screen, creature picker, search/custom creation, arena picker, all battle modes, result screens, collections, achievements, shops, unlocks, settings, parent controls, leaderboards, and share cards use one coherent retro design.
 - All **143 currently catalogued creatures** have approved retro artwork, tracked by stable animal ID. The **nine existing arenas** have compatible retro presentation. Automated manifest checks reconcile these counts to source so additions cannot silently be omitted.
-- All supported custom-creature flows have a working pixel-art path, with caching, loading, retry, and offline behavior. Custom creatures are not removed or restricted to the three demo characters.
+- All supported custom-creature flows use a deterministic avatar assembled on the device from a bundled retro sprite kit. Recognizable animal/type words select appropriate recipes; unknown names receive a stable fantasy avatar. Artwork needs no API, paid runtime service, or persistent disk cache, and first-use artwork works offline. Exact semantic likeness is not guaranteed. Custom creatures remain available beyond the demo characters.
 - One-on-one, quick match, rematch, next challenger, tournament rounds, and melee use actual existing results and rules. Current melee supports one to four animals per team.
 - Progress, unlocked content, coins, collections, achievements, tournament state (including embedded custom-animal records), and purchase entitlements survive an upgrade from 1.1.7. Preserve custom creation and selection; do not claim an existing favorites or standalone saved-custom library, which the source audit did not find.
 - The app works online and through its existing offline paths; unavailable artwork or narration cannot permanently strand a battle.
@@ -63,17 +63,17 @@ Start with a representative art/animation batch: a large quadruped, primate, sma
 
 Every catalog animal gets an approved ready sprite and a movement archetype. Use shared native motion for idle, approach, recoil, and celebration where appropriate. Add authored anticipation/attack/reaction frames by archetype or creature where a static-pose motion would look weak. Completion requires visibly appropriate motion for all archetypes, not a promise of unlimited bespoke animation for every possible input.
 
-Custom generation is a separate workstream with its own acceptance gate:
+**Custom artwork policy — owner decision, September 26, 2026:** use an entirely on-device curated sprite kit. There is no recurring paid image service, image-provider integration, or new sprite backend dependency in the shipped custom flow. This replaces the earlier hosted-generation proposal.
 
-1. Reuse the current validated custom-creature identity/description and child-safety checks.
-2. Generate a consistent side-facing sprite in the approved style through a server-owned provider integration. No provider secret ships in the app.
-3. Keep the existing custom animal UUIDs. Separately deduplicate artwork by normalized identity/description plus style/model version behind an opaque artifact ID; do not key reusable art solely by a new local UUID. Raw child-entered names must not become public filenames, artifact URLs, or indefinite analytics history. Define bounded retention and deletion behavior before service deployment.
-4. Fetch asynchronously and deduplicate concurrent requests. Bound dimensions, file size, timeout, retries, storage, and provider usage. Use existing request authentication and rate limits appropriately; do not weaken production protections to make generation work.
-5. Provide an immediate intentional retro placeholder while art loads. Existing custom creatures remain selectable and playable. Previously generated sprites remain available offline. Newly entered offline creatures use a clearly temporary silhouette with later retry; this is a failure state, not a shipped replacement for online generation.
-6. Reuse shared motion for arbitrary anatomy. More elaborate custom pose generation can only enter this release after consistency and latency are proven; it must not become an endless prerequisite that prevents custom play.
-7. Test several substantially different custom prompts, duplicate names/descriptions, denied/invalid input, punctuation, very long names, two simultaneous requests, timeout, restart, and cache invalidation.
+1. Preserve validated custom names, existing content checks, random custom animal UUIDs, selection/unlock routes, coin/ad rules, battles, Next Challenger, tournament records, and sharing. Rendering does not introduce another charge or change the battle resolver.
+2. Interpret recognizable animal/type words through explicit local recipes using bundled base sprites, palettes, and safe accessories. Select a stable fantasy recipe for unknown names. This is a retro avatar system, not an arbitrary text-to-image model; a literal or exact likeness is not guaranteed.
+3. Derive appearance deterministically from normalized name and a versioned recipe policy, independently of random participant UUIDs. Equivalent names produce a stable appearance across selection, battle, result, sharing, and relaunch. Keep gameplay IDs and stored `Animal` fields compatible with 1.1.7; no custom-library or save-schema redesign is implied.
+4. Render with bounded in-memory caching. Bundle the kit and recreate derived images when needed; no network request, persisted image, disk index, or background retry is required for correctness. First-time offline names work using the same recipe policy as online names.
+5. Keep the intentional pencil preview while the name is uncommitted. After selection, use the composed avatar consistently everywhere. If an asset is unexpectedly missing, use the local fallback without blocking the fight. Avoid promising a unique image for every possible name or silently using old photo URLs.
+6. Use the recipe's anatomy profile for restrained shared motion. Validate recognizable quadruped, bird, sea, serpent, arthropod and humanoid/fantasy cases; unknown inputs retain a suitable fantasy profile. Artwork never changes combat strength, results or rewards.
+7. Test equivalent normalized names with different UUIDs, distinct unknown names, punctuation and length limits, blocked input, two-custom battles, custom versus catalog, share rendering, relaunch and active-bracket resume, cache eviction, and first-use offline creation. Assert no image-service calls and no duplicate custom-selection spend.
 
-Batch generation and any new hosted generation service need a concrete provider, usage estimate, and budget before paid production calls. There is no claim that the built-in prototype image tool is a production app API or that large-scale generation is free. Confirm relevant image-provider policies, retention, and app privacy disclosures before enabling the service.
+Build-time authoring of bundled sprites is separate from runtime artwork. The shipped app uses its included kit without provider credentials or per-image costs. See [CUSTOM_ART_SERVICE.md](CUSTOM_ART_SERVICE.md) for the current implementation/status record.
 
 ## 6. Work packages and completion gates
 
@@ -82,7 +82,7 @@ Batch generation and any new hosted generation service need a concrete provider,
 | P0 — isolate and specify | — | 1.1.7 stays intact; 2.0 worktree, preserved prototype, source audit, plan | Separate branches/paths, original state comparison, scoped planning commit |
 | P1 — reproducible baseline | P0 | Shared build/test schemes, version source of truth, independent build outputs, fixture-driven tests, API environment separation | Baseline builds; existing tests run; production calls excluded from routine tests; upgrade fixtures captured |
 | P2 — design system and native slice | P1 | Retro components and a real native lion/gorilla/custom battle from existing result models | Runs on iPhone/iPad; art review; real result synchronization; cancellation/replay/reward tests; representative performance measurement |
-| P3 — production art and custom service | P2 | Catalog manifest, nine arena assets, approved movement archetypes, cached custom generation | No missing catalog IDs; sample archetypes approved before bulk production; online/offline/custom failure tests pass |
+| P3 — production art and custom avatar kit | P2 | Catalog manifest, nine arena assets, approved movement archetypes, bundled deterministic custom recipes | No missing catalog IDs; sample archetypes approved; recognized-name and unknown-name avatars stable across views/relaunch; cold offline creation and missing-asset tests pass |
 | P4 — full UI conversion | P2 | All primary and secondary screens/states retro | Every row of feature inventory mapped to new screen and test; no unreachable feature; accessibility review |
 | P5 — all game modes | P2, initial P3 | Quick/normal battles, next challenger, tournament progression, melee, results, sharing integrated with renderer | Deterministic outcome/reward tests, persisted interrupted tournament fixtures, 1v1 through 4v4 melee checks |
 | P6 — compatibility and hardening | P3–P5 | Upgrade/data/commerce/network/accessibility/performance regression pass | Full parity matrix green; no critical/high-severity open defects; asset and build validators pass |
@@ -107,7 +107,7 @@ Audit existing cloud merge behavior rather than assuming it is complete. Current
 Use cheap deterministic tests throughout, then broaden at defined integration points.
 
 - **Model/unit:** unchanged resolver outcomes and health, stable IDs, no duplicate rewards/records, tournament decoding and settlement, cloud merge fixtures, entitlement restoration, cache keys/validation, display preferences unrelated to removed theme choice, input moderation, reduced-motion behavior.
-- **Contract/backend:** 1.1.7 requests and responses remain compatible after any new sprite endpoint is added; current authentication, quotas, idempotency, story safety, rankings, custom tracking, and fallback semantics remain intact. Use isolated data and provider fixtures, not paid/live calls for every test.
+- **Contract/backend:** 1.1.7 battle requests and responses remain compatible; current authentication, quotas, idempotency, story safety, rankings, custom tracking, and fallback semantics remain intact. Custom artwork performs no backend/image-provider request. Use isolated battle-service fixtures and verify the local avatar path independently of backend availability.
 - **UI:** every routed flow in the feature matrix, including lock/unlock, purchase cancel/fail/restore, denied permissions, nil/empty/error states, long labels, navigation during playback, rematch spamming, background/foreground, and returning from system settings.
 - **Visual:** review every catalog sprite and arena; review meaningful screen states at supported phone/tablet sizes; contact sheets and missing-asset checks supplement but do not replace visual inspection. Check alpha edges, crisp scale, cut-off feet/wings/tails, overlap, simultaneous effects, and narration consistency.
 - **Accessibility:** VoiceOver names/order and result announcements, touch targets, text scaling, contrast, independent sound/haptics settings, reduced motion with no shake/strobe, information not conveyed by color alone.
@@ -115,7 +115,7 @@ Use cheap deterministic tests throughout, then broaden at defined integration po
 - **Upgrade:** install 1.1.7 with fixtures, upgrade in place, compare state, exercise purchases/cloud/tournament resume, and relaunch offline. Keep upgrade and fresh-install tests separate.
 - **Release:** Release configuration and archive checks, entitlements/App Attest, pinned dependencies, real-device StoreKit/ads/Game Center/iCloud/speech/notification behavior as available, privacy manifest and metadata review, exact TestFlight build access.
 
-Current test inventory is small (13 unit test methods and one UI smoke test found in source), not proof of broad coverage. Existing checks must first be run and evaluated for meaningful assertions. Add tests for high-risk behavior and failure paths; avoid testing trivial view styling mechanically.
+The audited 1.1.7 baseline contained 13 unit test methods and one UI smoke test; that inventory was not proof of broad coverage. Use the current evidence ledger for executed 2.0 test counts and results. Add tests for high-risk behavior and failure paths; avoid testing trivial view styling mechanically.
 
 ## 9. Risk register and decisions that cannot be hand-waved
 
@@ -126,14 +126,14 @@ Current test inventory is small (13 unit test methods and one UI smoke test foun
 | Retro accidentally loses a screen/control | Complete feature inventory and route-by-route parity signoff |
 | Animation winner disagrees with result | Result-driven timeline; terminal-state assertions; no prototype winner script |
 | Closing/rematch causes duplicate rewards or stale callbacks | Cancellable coordinator, battle identity, exactly-once model settlement tests |
-| Custom artwork is slow/inconsistent/expensive | Small anatomy spike, persistent cache, bounded jobs, genuine fallback, measured cost before bulk generation |
+| Custom avatar fails to resemble an unusual name | Recognizable keyword/type recipes and a deterministic fantasy fallback; accurate avatar wording, curated silhouette review, local memory bounds, no recurring image-service charge |
 | Melee becomes unreadable | Early 4v4 prototype, stable formations, restrained per-actor effects, phone test |
 | Upgrade loses purchases or save data | Stable keys/IDs, in-place upgrade fixtures, sandbox/cloud isolation, explicit migrations only |
 | Beta harms production backend | Separate staging; additive contracts; production branch/deploy controls verified before publishing |
 | Fake confidence from simulator tests | Physical-device capabilities called out; unknown results stay unknown; evidence ledger |
 | Apple processing/review/login delay | Check readiness early; internal owner testing where eligible; report actual processing/access state |
 
-Do not promise a release date until P1 and the P2/P3 anatomy/custom-generation spike establish actual effort. The project is more than a skin swap; asset coverage, every mode, and upgrade safety are real workstreams.
+Do not promise a release date until P1 and the P2/P3 anatomy/custom-avatar validation establish actual effort. The project is more than a skin swap; asset coverage, every mode, and upgrade safety are real workstreams.
 
 ## 10. Release and handoff
 

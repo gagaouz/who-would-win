@@ -3,14 +3,41 @@ import SwiftUI
 @main
 struct WhoWouldWinApp: App {
 
-    @ObservedObject private var settings = UserSettings.shared
+    @ObservedObject private var settings: UserSettings
     @Environment(\.scenePhase) private var scenePhase
+
+    init() {
+        AppConfig.prepareTestRuntime()
+        _settings = ObservedObject(wrappedValue: UserSettings.shared)
+        #if DEBUG
+        if AppConfig.isUITesting && AppConfig.isIsolatedTestBuild {
+            if let screen = AppConfig.fixtureScreen {
+                RetroUIFixtureHost.prepare(screen: screen)
+            }
+            UpgradeFixtureAudit.captureIfRequested()
+        }
+        #endif
+    }
 
     var body: some Scene {
         WindowGroup {
-            KidsHomeView()
+            rootContent
                 .preferredColorScheme(.light)
+                .overlay(alignment: .bottomLeading) {
+                    #if DEBUG
+                    if AppConfig.isUITesting {
+                        Text("TEST: \(AppConfig.fixtureScenario)")
+                            .font(.system(size: 9, design: .monospaced))
+                            .padding(3)
+                            .background(Color.black)
+                            .foregroundColor(.white)
+                            .accessibilityIdentifier("uitest.fixtureMode")
+                            .allowsHitTesting(false)
+                    }
+                    #endif
+                }
                 .onAppear {
+                    guard AppConfig.externalServicesEnabled else { return }
                     // Wake the Railway backend NOW so a cold-start doesn't time
                     // out the first battle (which would drop to the generic
                     // offline template — bad, especially for custom creatures).
@@ -53,9 +80,38 @@ struct WhoWouldWinApp: App {
         .onChange(of: scenePhase) { phase in
             // If the user went to iOS Settings to sign into Game Center and
             // came back, re-check auth so leaderboards/achievements open cleanly.
-            if phase == .active && !GameCenterManager.shared.isAuthenticated {
+            if AppConfig.externalServicesEnabled && phase == .active && !GameCenterManager.shared.isAuthenticated {
                 GameCenterManager.shared.authenticate()
             }
         }
     }
+
+    @ViewBuilder
+    private var rootContent: some View {
+        #if DEBUG
+        if AppConfig.fixtureScreen == "melee" {
+            MeleeBattleView(teamA: [Animals.lion, Animals.gorilla, Animals.wolf, Animals.tiger],
+                            teamB: [Animals.elephant, Animals.great_white_shark, Animals.bald_eagle, Animals.t_rex])
+        } else if AppConfig.fixtureScreen == "custom" {
+            MeleeBattleView(teamA: [customFixture("blue_lion", "Blue Lion"), customFixture("ice_dragon", "Ice Dragon")],
+                            teamB: [customFixture("robot", "Robot"), customFixture("glimmerflux", "Glimmerflux")])
+        } else if AppConfig.fixtureScreen == "solo" {
+            KidsBattleView(fighter1: Animals.lion, fighter2: Animals.gorilla,
+                           environment: .grassland, arenaEffectsEnabled: true)
+        } else if let screen = AppConfig.fixtureScreen, RetroUIFixtureHost.supports(screen) {
+            RetroUIFixtureHost(screen: screen)
+        } else {
+            KidsHomeView()
+        }
+        #else
+        KidsHomeView()
+        #endif
+    }
+
+    #if DEBUG
+    private func customFixture(_ identifier: String, _ name: String) -> Animal {
+        Animal(id: "custom_qa_\(identifier)", name: name, emoji: "🐾", category: .fantasy,
+               pixelColor: "#4E7E45", size: 3, isCustom: true)
+    }
+    #endif
 }

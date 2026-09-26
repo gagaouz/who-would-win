@@ -24,8 +24,8 @@ struct TournamentBracketDiagram: View {
                         .tracking(1)
                         .padding(.horizontal, isIPad ? 12 : 8).padding(.vertical, isIPad ? 5 : 3)
                         .background(
-                            Capsule().fill(Kids.sun)
-                                .overlay(Capsule().stroke(Kids.ink, lineWidth: 1.5))
+                            RetroPanelShape().fill(Kids.sun)
+                                .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5))
                         )
 
                     if round.isEmpty {
@@ -93,11 +93,11 @@ struct TournamentBracketDiagram: View {
         .padding(.horizontal, isIPad ? 12 : 8)
         .frame(width: isIPad ? 188 : 128)
         .background(
-            RoundedRectangle(cornerRadius: isIPad ? 16 : 12, style: .continuous)
+            RetroPanelShape(cornerRadius: isIPad ? 16 : 12, style: .continuous)
                 .fill(.white)
-                .overlay(RoundedRectangle(cornerRadius: isIPad ? 16 : 12, style: .continuous).stroke(Kids.ink, lineWidth: 2))
+                .overlay(RetroPanelShape(cornerRadius: isIPad ? 16 : 12, style: .continuous).stroke(Kids.ink, lineWidth: 2))
         )
-        .shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 2)
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 2)
     }
 
     @ViewBuilder
@@ -112,8 +112,7 @@ struct TournamentBracketDiagram: View {
                 .strikethrough(isLoser)
             Spacer(minLength: 0)
             if isWinner {
-                Text("👑")
-                    .font(.system(size: isIPad ? 15 : 11))
+                RetroSymbol("👑", size: isIPad ? 15 : 11)
             }
         }
     }
@@ -134,11 +133,11 @@ struct TournamentBracketDiagram: View {
         .padding(.horizontal, isIPad ? 12 : 8)
         .frame(width: isIPad ? 188 : 128)
         .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color(hex: "#F7F2FF"))
+            RetroPanelShape(cornerRadius: 12, style: .continuous)
+                .fill(Kids.panel)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
+            RetroPanelShape(cornerRadius: 12, style: .continuous)
                 .stroke(Kids.ink.opacity(0.15), style: StrokeStyle(lineWidth: 1.5, dash: [3, 3]))
         )
     }
@@ -147,26 +146,7 @@ struct TournamentBracketDiagram: View {
 private struct DiagramMini: View {
     let animal: Animal
     let isIPad: Bool
-    private var bundledImage: UIImage? {
-        guard let name = animal.creatureAssetName else { return nil }
-        return UIImage(named: name)
-    }
     var body: some View {
-        let outer: CGFloat = isIPad ? 30 : 22
-        let inner: CGFloat = isIPad ? 22 : 16
-        ZStack {
-            Circle().fill(.white)
-                .overlay(Circle().stroke(Kids.ink, lineWidth: 1.5))
-                .frame(width: outer, height: outer)
-            Group {
-                if let ui = bundledImage {
-                    Image(uiImage: ui).resizable().scaledToFill()
-                } else {
-                    CreatureGlyph(animal: animal, size: isIPad ? 16 : 12)
-                }
-            }
-            .frame(width: inner, height: inner)
-            .clipShape(Circle())
-        }
+        AnimalBubble(animal: animal, size: isIPad ? 30 : 22, tint: Kids.sun)
     }
 }

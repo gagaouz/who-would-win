@@ -62,8 +62,8 @@ struct TournamentCreaturePickerView: View {
                 Text("←")
                     .font(Kids.fredoka(isIPad ? 26 : 20, weight: .bold))
                     .foregroundColor(Kids.ink)
-                    .frame(width: isIPad ? 50 : 38, height: isIPad ? 50 : 38)
-                    .background(Circle().fill(.white).overlay(Circle().stroke(Kids.ink, lineWidth: 2.5)))
+                    .frame(width: isIPad ? 50 : 44, height: isIPad ? 50 : 44)
+                    .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5)))
             }
             .buttonStyle(.plain)
             Spacer()
@@ -112,11 +112,11 @@ struct TournamentCreaturePickerView: View {
         }
         .padding(.horizontal, isIPad ? 16 : 12).padding(.vertical, isIPad ? 13 : 9)
         .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+            RetroPanelShape(cornerRadius: 16, style: .continuous)
                 .fill(Color.white)
-                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
         )
-        .shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 2)
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 2)
     }
 
     // MARK: - Category pills
@@ -132,16 +132,16 @@ struct TournamentCreaturePickerView: View {
                         }
                     } label: {
                         HStack(spacing: isIPad ? 6 : 4) {
-                            Text(categoryEmoji(cat)).font(.system(size: isIPad ? 18 : 14))
+                            RetroSymbol(categoryEmoji(cat), size: isIPad ? 18 : 14)
                             Text(categoryLabel(cat))
                                 .font(Kids.fredoka(isIPad ? 15 : 12, weight: .bold))
                                 .foregroundColor(Kids.ink)
                         }
                         .padding(.horizontal, isIPad ? 14 : 10).padding(.vertical, isIPad ? 9 : 6)
                         .background(
-                            Capsule().fill(selectedCategory == cat ? categoryColor(cat) : .white)
-                                .overlay(selectedCategory == cat ? Capsule().fill(Kids.sheen) : nil)
-                                .overlay(Capsule().stroke(Kids.ink, lineWidth: 2))
+                            RetroPanelShape().fill(selectedCategory == cat ? categoryColor(cat) : .white)
+                                .overlay(selectedCategory == cat ? RetroPanelShape().fill(Kids.sheen) : nil)
+                                .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
                         )
                         .offset(y: selectedCategory == cat ? -1 : 0)
                     }
@@ -189,8 +189,8 @@ struct TournamentCreaturePickerView: View {
         case .sea: return Kids.sky
         case .air: return Kids.grape
         case .insect: return Kids.peach
-        case .pets: return Color(hex: "#F4B6C2")
-        case .farm: return Color(hex: "#E8B96E")
+        case .pets: return Kids.peach
+        case .farm: return Kids.grass
         case .prehistoric: return Kids.sun
         case .fantasy: return Kids.grape
         case .mythic: return Kids.sunDeep
@@ -218,8 +218,8 @@ struct TournamentCreaturePickerView: View {
                             }
                             .padding(.vertical, isIPad ? 7 : 5).padding(.horizontal, isIPad ? 13 : 10)
                             .background(
-                                Capsule().fill(Kids.sun)
-                                    .overlay(Capsule().stroke(Kids.ink, lineWidth: 1.5))
+                                RetroPanelShape().fill(Kids.sun)
+                                    .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5))
                             )
                         }
                         .buttonStyle(.plain)
@@ -274,20 +274,20 @@ struct TournamentCreaturePickerView: View {
             }
         } label: {
             ZStack {
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                RetroPanelShape(cornerRadius: 18, style: .continuous)
                     .fill(Kids.grape)
-                    .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Kids.sheen))
-                    .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 3))
+                    .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).fill(Kids.sheen))
+                    .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 3))
                     .aspectRatio(1, contentMode: .fit)
                 VStack(spacing: isIPad ? 4 : 2) {
-                    Text("🎲").font(.system(size: isIPad ? 56 : 38))
+                    RetroSymbol("🎲", size: isIPad ? 56 : 38)
                     Text("SURPRISE!")
                         .font(Kids.fredoka(isIPad ? 13 : 10, weight: .bold))
-                        .foregroundColor(.white)
+                        .foregroundColor(Kids.ink)
                         .lineLimit(1).minimumScaleFactor(0.7)
                 }
             }
-            .shadow(color: Kids.ink.opacity(0.09), radius: 0, x: 0, y: 3)
+            .compositingGroup().shadow(color: Kids.ink.opacity(0.09), radius: 0, x: 0, y: 3)
         }
         .buttonStyle(.plain)
     }
@@ -303,22 +303,7 @@ struct TournamentCreaturePickerView: View {
 
         VStack(spacing: 10) {
             HStack(spacing: 10) {
-                Group {
-                    if let url = pickerVM.customAnimalImageURL {
-                        AsyncImage(url: url) { phase in
-                            if case .success(let img) = phase {
-                                img.resizable().scaledToFill()
-                            } else {
-                                Text(pickerVM.customAnimalEmoji).font(.system(size: 28))
-                            }
-                        }
-                    } else {
-                        Text(pickerVM.customAnimalEmoji).font(.system(size: 28))
-                    }
-                }
-                .frame(width: 50, height: 50)
-                .clipShape(Circle())
-                .overlay(Circle().stroke(Kids.ink, lineWidth: 2.5))
+                RetroCustomCreaturePreview(size: 50)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Add \"\(animal.name)\"")
@@ -337,6 +322,11 @@ struct TournamentCreaturePickerView: View {
                 Spacer()
             }
 
+            Text("We'll give your fighter a retro avatar, made on your device.")
+                .font(Kids.nunito(12, weight: .semibold))
+                .foregroundColor(Kids.inkSoft)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
             if alreadyPicked {
                 Button { toggle(animal) } label: {
                     Text("✓ Added — tap to remove")
@@ -344,9 +334,9 @@ struct TournamentCreaturePickerView: View {
                         .foregroundColor(Kids.ink)
                         .frame(maxWidth: .infinity, minHeight: 40)
                         .background(
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            RetroPanelShape(cornerRadius: 14, style: .continuous)
                                 .fill(Kids.grass)
-                                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2))
+                                .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2))
                         )
                 }
                 .buttonStyle(.plain)
@@ -372,12 +362,12 @@ struct TournamentCreaturePickerView: View {
                     }
                     .frame(maxWidth: .infinity, minHeight: 44)
                     .background(
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .fill(canAfford ? Kids.sun : Color(hex: "#E8DFF5"))
-                            .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
-                            .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                        RetroPanelShape(cornerRadius: 14, style: .continuous)
+                            .fill(canAfford ? Kids.sun : Kids.panel)
+                            .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).fill(Kids.sheen))
+                            .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
                     )
-                    .shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+                    .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
                     .opacity(canAfford ? 1.0 : 0.6)
                 }
                 .buttonStyle(.plain)
@@ -390,11 +380,11 @@ struct TournamentCreaturePickerView: View {
         }
         .padding(14)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RetroPanelShape(cornerRadius: 18, style: .continuous)
                 .fill(.white)
-                .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Kids.sun, lineWidth: 3))
+                .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.sun, lineWidth: 3))
         )
-        .shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.07), radius: 0, x: 0, y: 3)
     }
 
     // MARK: - Continue bar
@@ -476,16 +466,12 @@ struct TournamentCreaturePickerView: View {
 // MARK: - Pick card
 
 private struct TournamentPickCard: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let animal: Animal
     let selected: Bool
     let disabled: Bool
     let isIPad: Bool
     let onTap: () -> Void
-
-    private var bundledImage: UIImage? {
-        guard let name = animal.creatureAssetName else { return nil }
-        return UIImage(named: name)
-    }
 
     private var cardColor: Color {
         switch animal.category {
@@ -493,8 +479,8 @@ private struct TournamentPickCard: View {
         case .sea: return Kids.sky
         case .air: return Kids.grape
         case .insect: return Kids.peach
-        case .pets: return Color(hex: "#F4B6C2")
-        case .farm: return Color(hex: "#E8B96E")
+        case .pets: return Kids.peach
+        case .farm: return Kids.grass
         case .prehistoric: return Kids.sun
         case .fantasy: return Kids.grape
         case .mythic: return Kids.pink
@@ -506,18 +492,14 @@ private struct TournamentPickCard: View {
     var body: some View {
         Button(action: onTap) {
             ZStack(alignment: .topTrailing) {
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                RetroPanelShape(cornerRadius: 18, style: .continuous)
                     .fill(selected ? cardColor : .white)
-                    .overlay(selected ? RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Kids.sheen) : nil)
-                    .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                    .overlay(selected ? RetroPanelShape(cornerRadius: 18, style: .continuous).fill(Kids.sheen) : nil)
+                    .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
                     .aspectRatio(1, contentMode: .fit)
 
                 VStack(spacing: isIPad ? 4 : 2) {
-                    if let ui = bundledImage {
-                        Image(uiImage: ui).resizable().scaledToFit().frame(width: isIPad ? 72 : 50, height: isIPad ? 72 : 50)
-                    } else {
-                        CreatureGlyph(animal: animal, size: isIPad ? 50 : 34)
-                    }
+                    RetroCreatureArtwork(animal: animal, size: isIPad ? 72 : 50)
                     Text(animal.name)
                         .font(Kids.fredoka(isIPad ? 14 : 10, weight: .bold))
                         .foregroundColor(Kids.ink)
@@ -527,18 +509,18 @@ private struct TournamentPickCard: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                 if selected {
-                    Circle().fill(Kids.grass)
-                        .overlay(Circle().stroke(Kids.ink, lineWidth: 2))
+                    RetroPanelShape().fill(Kids.grass)
+                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
                         .frame(width: isIPad ? 30 : 22, height: isIPad ? 30 : 22)
                         .overlay(Text("✓").font(Kids.fredoka(isIPad ? 16 : 12, weight: .bold)).foregroundColor(Kids.ink))
                         .offset(x: isIPad ? 6 : 4, y: isIPad ? -8 : -6)
                 }
             }
-            .rotationEffect(.degrees(selected ? -1.5 : 0))
+
             .offset(y: selected ? -2 : 0)
             .opacity(disabled ? 0.4 : 1.0)
-            .shadow(color: Kids.ink.opacity(selected ? 0.16 : 0.08), radius: 0, x: 0, y: selected ? 3 : 2)
-            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: selected)
+            .compositingGroup().shadow(color: Kids.ink.opacity(selected ? 0.16 : 0.08), radius: 0, x: 0, y: selected ? 3 : 2)
+            .animation(reduceMotion ? nil : .easeOut(duration: 0.15), value: selected)
         }
         .buttonStyle(.plain)
         .disabled(disabled)

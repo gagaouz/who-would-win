@@ -43,12 +43,10 @@ struct ParentalPINSheet: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Color(hex: "#FFE9BA"), Kids.peach.opacity(0.7), Kids.grape.opacity(0.4)],
-                           startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea()
+            SkyBG()
 
             VStack(spacing: isIPad ? 24 : 18) {
-                Text("🔒").font(.system(size: isIPad ? 96 : 64))
+                RetroSymbol("🔒", size: isIPad ? 96 : 64)
                     .padding(.top, isIPad ? 50 : 32)
                     .scaleEffect(appeared ? 1 : 0.6)
 
@@ -66,7 +64,7 @@ struct ParentalPINSheet: View {
                 if let err = error {
                     Text(err)
                         .font(Kids.fredoka(isIPad ? 14 : 12, weight: .bold))
-                        .foregroundColor(Kids.pink)
+                        .foregroundColor(Kids.pinkDeep)
                         .transition(.opacity)
                 }
 
@@ -102,10 +100,10 @@ struct ParentalPINSheet: View {
         let active = (stage == .confirm ? confirmEntry : entry).count
         return HStack(spacing: isIPad ? 18 : 14) {
             ForEach(0..<4, id: \.self) { i in
-                Circle()
+                RetroPanelShape()
                     .fill(i < active ? Kids.ink : Color.white)
                     .frame(width: isIPad ? 22 : 18, height: isIPad ? 22 : 18)
-                    .overlay(Circle().stroke(Kids.ink, lineWidth: 2.5))
+                    .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
                     .scaleEffect(i < active ? 1.0 : 0.85)
                     .animation(.spring(response: 0.25, dampingFraction: 0.6), value: active)
             }
@@ -141,10 +139,10 @@ struct ParentalPINSheet: View {
                 .foregroundColor(Kids.ink)
                 .frame(width: keySize, height: keySize)
                 .background(
-                    Circle().fill(.white)
-                        .overlay(Circle().stroke(Kids.ink, lineWidth: 2.5))
+                    RetroPanelShape().fill(.white)
+                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
                 )
-                .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
+                .compositingGroup().shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
         }
         .buttonStyle(.plain)
     }
@@ -154,15 +152,14 @@ struct ParentalPINSheet: View {
             HapticsService.shared.tap()
             removeLast()
         } label: {
-            Text("⌫")
-                .font(.system(size: isIPad ? 30 : 22, weight: .bold))
+            RetroSymbol("⌫", size: isIPad ? 30 : 22)
                 .foregroundColor(Kids.ink)
                 .frame(width: keySize, height: keySize)
                 .background(
-                    Circle().fill(Kids.peach)
-                        .overlay(Circle().stroke(Kids.ink, lineWidth: 2.5))
+                    RetroPanelShape().fill(Kids.peach)
+                        .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
                 )
-                .shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
+                .compositingGroup().shadow(color: Kids.ink.opacity(0.08), radius: 0, x: 0, y: 3)
         }
         .buttonStyle(.plain)
     }

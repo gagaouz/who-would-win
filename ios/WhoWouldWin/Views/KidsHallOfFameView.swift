@@ -40,9 +40,7 @@ struct KidsHallOfFameView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Color(hex: "#FFE9BA"), Kids.peach.opacity(0.7), Kids.pink.opacity(0.5)],
-                           startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea()
+            SkyBG()
 
             VStack(spacing: 0) {
                 header
@@ -73,15 +71,15 @@ struct KidsHallOfFameView: View {
                 Text("✕")
                     .font(Kids.fredoka(isIPad ? 22 : 16, weight: .bold))
                     .foregroundColor(Kids.ink)
-                    .frame(width: isIPad ? 50 : 38, height: isIPad ? 50 : 38)
-                    .background(Circle().fill(.white).overlay(Circle().stroke(Kids.ink, lineWidth: 2.5)))
+                    .frame(width: isIPad ? 50 : 44, height: isIPad ? 50 : 44)
+                    .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5)))
             }
             .buttonStyle(.plain)
             Spacer()
             StickerWord(text: "HALL OF FAME 🏆", fill: Kids.sun, fontSize: isIPad ? 26 : 20, tilt: -2)
                 .rotationEffect(.degrees(-2))
             Spacer()
-            Color.clear.frame(width: isIPad ? 50 : 38, height: isIPad ? 50 : 38)
+            Color.clear.frame(width: isIPad ? 50 : 44, height: isIPad ? 50 : 44)
         }
     }
 
@@ -97,7 +95,7 @@ struct KidsHallOfFameView: View {
                     }
                 } label: {
                     HStack(spacing: 4) {
-                        Text(tab.emoji).font(.system(size: isIPad ? 16 : 13))
+                        RetroSymbol(tab.emoji, size: isIPad ? 16 : 13)
                         Text(tab.label)
                             .font(Kids.fredoka(isIPad ? 13 : 10, weight: .bold))
                             .tracking(1)
@@ -108,11 +106,11 @@ struct KidsHallOfFameView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, isIPad ? 10 : 8)
                     .background(
-                        Capsule()
+                        RetroPanelShape()
                             .fill(selectedTab == tab ? Kids.sun : Color.white)
-                            .overlay(Capsule().stroke(Kids.ink, lineWidth: 2.5))
+                            .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
                     )
-                    .shadow(color: Kids.ink.opacity(selectedTab == tab ? 0.10 : 0.04),
+                    .compositingGroup().shadow(color: Kids.ink.opacity(selectedTab == tab ? 0.10 : 0.04),
                             radius: 0, x: 0, y: 2)
                 }
                 .buttonStyle(.plain)
@@ -158,7 +156,7 @@ struct KidsHallOfFameView: View {
     private var emptyState: some View {
         VStack(spacing: 14) {
             Spacer().frame(height: 40)
-            Text("🏆").font(.system(size: isIPad ? 96 : 76))
+            RetroSymbol("🏆", size: isIPad ? 96 : 76)
             StickerWord(text: "NO BATTLES YET", fill: Kids.sun, fontSize: isIPad ? 22 : 18, tilt: -2)
             Text("Play some battles, then come back to see\nwho's leading the pack!")
                 .font(Kids.nunito(isIPad ? 16 : 12, weight: .bold))
@@ -196,18 +194,18 @@ struct KidsHallOfFameView: View {
         .padding(.horizontal, isIPad ? 14 : 10)
         .padding(.vertical, isIPad ? 10 : 8)
         .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+            RetroPanelShape(cornerRadius: 16, style: .continuous)
                 .fill(.white)
-                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
+                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.ink, lineWidth: 2.5))
         )
-        .shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 2)
+        .compositingGroup().shadow(color: Kids.ink.opacity(0.06), radius: 0, x: 0, y: 2)
     }
 
     @ViewBuilder
     private func rankBadge(_ rank: Int) -> some View {
         let (fill, txt) = rankStyle(rank)
         ZStack {
-            Circle().fill(fill).overlay(Circle().stroke(Kids.ink, lineWidth: 2))
+            RetroPanelShape().fill(fill).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
                 .frame(width: isIPad ? 34 : 28, height: isIPad ? 34 : 28)
             Text(txt)
                 .font(Kids.fredoka(isIPad ? 14 : 12, weight: .bold))
@@ -234,9 +232,9 @@ struct KidsHallOfFameView: View {
     }
 
     private var placeholder: some View {
-        Circle()
-            .fill(Color(hex: "#E1D5F0"))
-            .overlay(Circle().stroke(Kids.ink, lineWidth: 2.5))
+        RetroPanelShape()
+            .fill(Kids.creamDeep)
+            .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2.5))
             .frame(width: isIPad ? 60 : 48, height: isIPad ? 60 : 48)
             .overlay(Text("?").font(Kids.fredoka(20, weight: .bold)).foregroundColor(Kids.ink))
     }
@@ -261,9 +259,9 @@ struct KidsHallOfFameView: View {
             .padding(.horizontal, isIPad ? 12 : 9)
             .padding(.vertical, isIPad ? 6 : 4)
             .background(
-                Capsule()
+                RetroPanelShape()
                     .fill(color)
-                    .overlay(Capsule().stroke(Kids.ink, lineWidth: 2))
+                    .overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 2))
             )
     }
 
@@ -297,7 +295,7 @@ struct KidsHallOfFameView: View {
                         Task { await service.refresh(force: true) }
                     } label: {
                         HStack(spacing: 4) {
-                            Text("🔄").font(.system(size: isIPad ? 13 : 11))
+                            RetroSymbol("🔄", size: isIPad ? 13 : 11)
                             Text("Tap to retry")
                                 .font(Kids.fredoka(isIPad ? 12 : 10, weight: .bold))
                                 .foregroundColor(Kids.ink)
@@ -305,7 +303,7 @@ struct KidsHallOfFameView: View {
                         .padding(.horizontal, isIPad ? 12 : 10)
                         .padding(.vertical, isIPad ? 6 : 4)
                         .background(
-                            Capsule().fill(.white).overlay(Capsule().stroke(Kids.ink, lineWidth: 1.5))
+                            RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.ink, lineWidth: 1.5))
                         )
                     }
                     .buttonStyle(.plain)
