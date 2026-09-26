@@ -1,0 +1,131 @@
+{
+  "checkedAt": "2026-09-26T16:36:43.612831+00:00",
+  "appID": "6761319389",
+  "bundleID": "com.whowouldin.WhoWouldWin",
+  "version": "2.0",
+  "build": "110",
+  "sourceCommit": "583b5e54a3f6fb6279705dacb50465197318ce67",
+  "testedNativeCommit": "ebcc38ed81b7745434bbd1760efe4780ae94e3ee",
+  "sourceEquivalence": {
+    "ios/WhoWouldWin": {
+      "testedObject": "74d6d714833211e9b3e9b6030d07e1935ba44320",
+      "archiveObject": "74d6d714833211e9b3e9b6030d07e1935ba44320"
+    },
+    "ios/WhoWouldWin.xcodeproj": {
+      "testedObject": "ea05f2fc1e3cc6ed02e9cd5864596009bac7cbed",
+      "archiveObject": "ea05f2fc1e3cc6ed02e9cd5864596009bac7cbed"
+    },
+    "ios/config": {
+      "testedObject": "5e31733a79d89475d8d7ac531a0d5d63d2de57d2",
+      "archiveObject": "5e31733a79d89475d8d7ac531a0d5d63d2de57d2"
+    },
+    "ios/WhoWouldWinTests": {
+      "testedObject": "ad4a3fc42f20f3d5f0188dae22d772cdee079446",
+      "archiveObject": "ad4a3fc42f20f3d5f0188dae22d772cdee079446"
+    },
+    "ios/WhoWouldWinUITests": {
+      "testedObject": "365b6cdabb4a6c36068a9d7520e63b0d2e6f249c",
+      "archiveObject": "365b6cdabb4a6c36068a9d7520e63b0d2e6f249c"
+    },
+    "ios/project.yml": {
+      "testedObject": "7961088bfce3a23dadb5e424b4b4529fb370226e",
+      "archiveObject": "7961088bfce3a23dadb5e424b4b4529fb370226e"
+    }
+  },
+  "uploadCommandSucceeded": true,
+  "uploadCompletedAt": "2026-09-26T16:32:14Z",
+  "apple": {
+    "id": "45e26632-f537-4f2b-bf55-897742c476c1",
+    "uploadedDate": "2026-09-26T09:33:09-07:00",
+    "expirationDate": "2026-12-25T08:33:09-08:00",
+    "expired": false,
+    "processingState": "VALID",
+    "buildAudienceType": "INTERNAL_ONLY",
+    "usesNonExemptEncryption": false
+  },
+  "betaStates": {
+    "internalBuildState": "IN_BETA_TESTING",
+    "externalBuildState": "NOT_APPLICABLE"
+  },
+  "internalGroups": [
+    {
+      "id": "bbe48189-3ad0-4d20-bd77-9adb1120eb75",
+      "name": "self",
+      "hasAccessToAllBuilds": true,
+      "candidatePresentInBuildList": true,
+      "buildListHTTPStatus": 200,
+      "moreBuilds": false
+    }
+  ],
+  "whatToTestReadBack": [
+    {
+      "locale": "en-US",
+      "whatsNew": "Welcome to Animal vs Animal 2.0!\n\nThe whole game now uses retro pixel artwork, with animated duels, team battles and tournaments. All 143 catalog creatures are included. Custom fighters receive stable avatars made on your device, with no image-generation service or per-image charge. Familiar animal/type words guide their appearance; unfamiliar names receive a fantasy avatar.\n\nPlease check your existing progress and parental PIN after updating from 1.1.7. Try solo battles, rematches, teams, full/quick tournaments, wagers, custom fighters, collections and sharing. Check Restore Purchases, your owned packs, narration, sound, haptics, Game Center, iCloud and reminders on your device. Also try background/resume, larger text and Reduce Motion.\n\nAutomated iPhone/iPad checks and a disposable upgrade test are completed before distribution. Real account purchases, iCloud behavior and physical-device performance need your testing. Please report the build number, device/iOS version and steps for any issue."
+    }
+  ],
+  "invitationsSent": false,
+  "externalGroupChanged": false,
+  "ownerDeviceInstallVerified": false,
+  "physicalDeviceStatus": "pending-owner-testflight",
+  "ownerDeviceChecks": [
+    "Install internal2.0/110 over actual1.1.7 with same bundle; verify recorded progress, coins, unlocks, stickers, achievements, active tournament and parentalPIN.",
+    "Verify existing entitlement restore and all applicable StoreKit products/subscription states through intended sandbox/TestFlight behavior; no real consumable purchase was used for QA.",
+    "Verify signed-device AppAttest, real narration/backend fallback, GameCenter/iCloud and account synchronization; services were isolated during automated UI tests.",
+    "Verify dictation/microphone permission, notification/reminder permissions, narration/audio/haptics and eligible ad consent/reward lifecycle.",
+    "Complete owner battle/tournament/custom/share flows and check exactly-once rewards, VoiceOver, large text, ReduceMotion, phone/tablet orientations, older supported iOS and sustained device performance."
+  ],
+  "tests": {
+    "nativeExecutions": 55,
+    "nativeBreakdown": {
+      "phoneUnit": 41,
+      "phoneUI": 9,
+      "tabletUI": 5
+    },
+    "backendPassed": 46,
+    "failures": 0,
+    "skips": 0,
+    "upgradeCases": [
+      {
+        "scenario": "settled",
+        "loadedStatePreserved": true,
+        "preferencesPreserved": true,
+        "keychainPINPreserved": true,
+        "baselineColdLaunchPassed": true,
+        "documentsPreserved": true,
+        "dataContainerRelocated": true,
+        "status": "passed"
+      },
+      {
+        "scenario": "pending",
+        "loadedStatePreserved": true,
+        "preferencesPreserved": true,
+        "keychainPINPreserved": true,
+        "baselineColdLaunchPassed": true,
+        "documentsPreserved": true,
+        "dataContainerRelocated": true,
+        "status": "passed"
+      }
+    ]
+  },
+  "artwork": {
+    "catalog": 143,
+    "covered": 143,
+    "customBases": 12,
+    "atlases": 20,
+    "missing": []
+  },
+  "backendSourceUnchangedFrom": "107bf7327f1c82e85282101e2294fb6f9ded3639",
+  "inspectedLocalIPASHA256": "78d8478d0a5742f7769b7d905364d0fa9362abaa31bbfe68ec1d377de1671622",
+  "symbolUploadRequested": true,
+  "appDSYMPresent": true,
+  "missingThirdPartyDSYMWarnings": [
+    "GoogleMobileAds.framework",
+    "UserMessagingPlatform.framework"
+  ],
+  "originalCheckoutStatusMatchesSnapshot": true,
+  "limitations": [
+    "No physical iOS hardware was attached. This gate authorizes only the complete internal beta for owner acceptance, not external/public release.",
+    "Original parity audit is an inventory/test plan; fixture screen captures establish presentation and selected navigation, not live commerce/account/permission correctness.",
+    "Compiler warnings exist in untouched baseline SpeechService and XCTest SDK compatibility diagnostics; zero test failures does not mean warning-free compilation."
+  ]
+}

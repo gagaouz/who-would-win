@@ -1,6 +1,8 @@
 # Owner checks for the internal 2.0 beta
 
-The requested deliverable is an internal TestFlight build for the owner to test. Automated checks and disposable simulator upgrades are performed before upload. No physical iPhone or iPad is attached to the development host, so the checks below require the owner's device and account. They remain pending until observed; passing simulator fixtures does not stand in for StoreKit, iCloud, or a real upgrade.
+**2.0 (110) is ready in TestFlight → Animal vs Animal.** Apple processing and access to the existing internal `self` group were verified on September 26, 2026. See the [release record](RELEASE_2.0_110.md).
+
+Automated checks and disposable simulator upgrades passed before upload. No physical iPhone or iPad was attached to the development host, so the checks below require the owner's device and account. They remain pending until observed; passing simulator fixtures does not stand in for StoreKit, iCloud, or a real upgrade.
 
 ## Before installing
 

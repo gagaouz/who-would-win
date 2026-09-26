@@ -2,6 +2,10 @@
 
 Audit date: 2026-09-26. Baseline: native iOS source at `107bf73`, inspected in `/Users/home/WWW/who-would-win`; the new `develop/2.0` worktree begins at the same commit. Baseline `Info.plist` is version 1.1.7, build 109. This document is a source audit and test plan: **every runtime acceptance item below is NOT TESTED**. No build, simulator, device, StoreKit sandbox, iCloud, backend, or accessibility test was executed for this audit. Test-method counts are source inventory, not coverage percentages or passing results.
 
+**Subsequent candidate evidence:** [2.0 (110) release record](RELEASE_2.0_110.md) records verified internal TestFlight availability at **2026-09-26T16:36:11Z** (`VALID`, `INTERNAL_ONLY`, internally `IN_BETA_TESTING`, accessible to the owner's `self` group). Final validation passed **55 native test executions** (41 unit + 9 iPhone UI + 5 targeted iPad UI), **46 backend tests**, and **two synthetic in-place upgrade cases**. Archived `583b5e5` has identical native app/project/config/test trees to tested `ebcc38e`.
+
+These results cover the scenarios linked in that release record; they do **not** convert this dated inventory or every F-row below to PASS. Owner installation, canonical physical upgrade, StoreKit/account/iCloud behavior, permissions, accessibility and hardware performance remain pending where untested. See [owner TestFlight checks](OWNER_TESTFLIGHT_CHECKS.md); broader external/public distribution is outside this internal-beta milestone.
+
 ## Scope and preservation rule
 
 Version 2.0 is the whole game in the retro visual language. There is no classic theme selector in 2.0. The 1.1.7 branch preserves the old presentation and its hotfix path. Every reachable flow below must remain usable in 2.0, with equivalent entitlements, saved progress, results, learning content, parental controls, rewards, and purchase behavior. Screens, sheets, loading states, errors, shared images, and accessibility representations are part of the theme work; replacing only the duel screen does not satisfy this contract.

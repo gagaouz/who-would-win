@@ -1,8 +1,10 @@
 # Animal vs Animal 2.0 — TestFlight release gates
 
-Audit date: September 26, 2026. This is a release plan and a record of read-only source/toolchain checks, not a completed release. No app build, archive, test suite, signing operation, upload, deployment, or App Store Connect account inspection was performed in this audit. Credential contents were not read.
+**Verified internal beta:** [2.0 (110) release record](RELEASE_2.0_110.md). At **2026-09-26T16:36:11Z**, Apple reported the exact build `VALID`, `INTERNAL_ONLY`, and internally `IN_BETA_TESTING`; the owner's `self` group contains the candidate and has all-build access. The build is available through internal TestFlight. External testing is `NOT_APPLICABLE`; no public release is included.
 
-Implementation has since started. The subsequent baseline compile, new harness, live read-only ASC inspection, deployment-trigger checks, and synthetic upgrade fixtures are recorded separately in [RELEASE_READINESS_2026-09-26.md](RELEASE_READINESS_2026-09-26.md). The observations below remain the original planning baseline; they must not be mistaken for current execution status.
+Final evidence comprises **55 native test executions** (41 unit, 9 iPhone UI, 5 targeted iPad UI), **46 backend tests**, and **two in-place synthetic upgrade cases**, all passed. Archived source is `583b5e5`; app/project/config/test trees are identical to tested native source `ebcc38e`. Owner installation and physical-device/account acceptance remain pending; see the [owner checklist](OWNER_TESTFLIGHT_CHECKS.md). Passing these measured checks does not mark every planned matrix scenario tested.
+
+Original planning audit: September 26, 2026. The observations below describe the read-only source/toolchain audit before implementation; no build, test, signing operation, upload, deployment, or ASC account inspection was performed **by that initial audit**. Subsequent execution is documented in [release readiness evidence](RELEASE_READINESS_2026-09-26.md) and the final release record above. Credential contents were not recorded in these documents.
 
 The owner wants the **entire app to become retro in 2.0**, with existing functionality preserved. There is no classic presentation option. Loading, reduced-motion, missing-art, and offline fallbacks must also remain intentionally retro: a static sprite, restrained effect, or temporary pixel silhouette. A fallback cannot remove custom creatures or prevent a battle from completing.
 
@@ -146,18 +148,6 @@ The TestFlight milestone is complete only when **all** of the following are evid
 
 Suggested owner test route: verify retained progress/purchases; create an unusual custom creature; run a normal battle and quick/next-challenger flow; exercise a tournament and 4v4 melee; inspect collections/facts/share output; test settings/parent gates/reduced motion; repeat with network unavailable. Record observed results against the supplied build rather than the browser prototype.
 
-Final handoff fields:
-
-| Field | Value at release |
-| --- | --- |
-| App / version / build | Pending |
-| Source commit and archive | Pending |
-| TestFlight processing status | Not uploaded by this planning pass |
-| Owner group/access and verified availability | Unverified |
-| Required regression/upgrade evidence | Not executed by this audit |
-| Physical-device smoke | Not executed by this audit |
-| Owner installed / owner acceptance | Not yet requested or claimed |
-| Known remaining limitations | Populate from candidate review |
-| Feedback route | Populate with actual TestFlight/in-app route |
+The completed candidate's exact source, archive, Apple build identity, verified internal availability, measured validation, and handoff details are in [RELEASE_2.0_110.md](RELEASE_2.0_110.md). Owner installation/acceptance, physical upgrade, StoreKit/account behavior, iCloud, permissions, accessibility, and device performance remain explicitly pending where not exercised; internal availability does not imply owner acceptance.
 
 The objective is measurable readiness and recoverability. A plan cannot guarantee zero defects; a passed and documented set of release gates can make mistakes easier to detect before the owner receives the beta.

@@ -1,6 +1,10 @@
 # Release readiness evidence — September 26, 2026
 
-This updates the earlier planning-only audit. It is not an uploaded or complete 2.0 release.
+**Final outcome: 2.0 (110) is available in internal TestFlight.** Apple reports `VALID`, `INTERNAL_ONLY`, and `IN_BETA_TESTING`; the exact build is present in the existing `self` group and its What to Test notes were published and verified. See the [final release record](RELEASE_2.0_110.md) and [sanitized Apple evidence](evidence/testflight-2.0-110.json).
+
+Final validation passed 41 unit, 9 iPhone UI, 5 targeted iPad UI, 46 backend tests, and both strict in-place synthetic upgrade cases. Archived source is `583b5e5`; native source equivalence to tested `ebcc38e` is recorded. The original maintenance checkout is unchanged. Physical installation/account/capability acceptance remains pending through the [owner checklist](OWNER_TESTFLIGHT_CHECKS.md).
+
+The sections below retain the day's earlier checkpoints as **historical evidence**, superseded by the final record above. Their provisional allocation, earlier test counts, and not-yet-uploaded statements describe those earlier times, not current release status.
 
 ## Native baseline and build harness
 
@@ -65,9 +69,9 @@ The owner-requested deliverable is an internal TestFlight beta they can test. Th
 
 At **2026-09-26T16:00:47Z**, fresh read-only ASC history remained complete with highest uploaded build 109 and no build 110. Maintenance checkout metadata remains 1.1.7 / 109. **2.0 / 110 is now allocated locally to this internal-beta candidate**, recorded in `ios/config/BuildAllocation.json` and [sanitized ASC evidence](evidence/asc-allocation-2026-09-26.json). This is coordination, not an ASC reservation. The next unallocated global number at that check is 111; maintenance work must choose a different number. Recheck before upload.
 
-## Remaining release gate
+## Earlier remaining release gate — subsequently completed
 
-Complete the whole retro app and local art pipeline, automated/simulator parity and synthetic upgrade checks, backend compatibility, coordinated build allocation, and release artifact inspection. Record outstanding owner hardware acceptance checks separately. Then upload the reviewed archive, wait for Apple processing, and verify that the owner can install the precise build. No TestFlight availability is claimed here.
+At this checkpoint, the remaining work was the final native/local-art suite, strict synthetic upgrade, backend compatibility, release artifact inspection, upload, and Apple processing/access verification. Those internal-beta gates subsequently completed; see [RELEASE_2.0_110.md](RELEASE_2.0_110.md). Actual owner installation and physical/account acceptance remain unverified.
 
 ## Published source checkpoint
 

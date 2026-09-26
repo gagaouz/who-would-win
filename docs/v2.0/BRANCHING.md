@@ -65,9 +65,9 @@ Do not use a mass merge simply to eliminate divergence, and do not silently drop
 | Source | Version/build | Evidence | Status |
 | --- | --- | --- | --- |
 | Common base / iOS release commit `4ef855e` | 1.1.7 / 109 | ASC read-only audit September 26 | Valid build; App Store version ready for sale |
-| First 2.0 native candidate | 2.0 / see `ios/config/Version.xcconfig` | Allocation record required before archive | Native simulator validation in progress; see release ledger for current state |
+| Released internal candidate `583b5e5` | 2.0 / 110 | [Final release record](RELEASE_2.0_110.md) | Apple VALID; available to internal `self` group on September 26 |
 
-The old XcodeGen version drift has been removed. Both generated project and Info.plist now read `Version.xcconfig`. The maintenance branch keeps its existing source/configuration; do not copy v2 version settings into a hotfix.
+The old XcodeGen version drift has been removed. Both generated project and Info.plist now read `Version.xcconfig`. The maintenance branch keeps its existing source/configuration; do not copy v2 version settings into a hotfix. Build 110 is now uploaded; recheck ASC history and allocate a new unused number for the next build on either source line.
 
 ## Recovery
 
