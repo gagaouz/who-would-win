@@ -95,20 +95,43 @@ def new_run(action, values):
     return output, metadata
 
 
-def execute(command, output, metadata):
-    metadata["command"] = command
+def execute(command, output, metadata, redactions=()):
+    def redact(value):
+        for secret in redactions:
+            value = value.replace(secret, "[redacted ASC authentication metadata]")
+        return value
+    metadata["command"] = [redact(item) for item in command]
+    (output / "run.json").write_text(json.dumps(metadata, indent=2) + "\n")
     print(f"Running {metadata['action']}; full output: {output / 'xcodebuild.log'}", flush=True)
     environment = os.environ.copy()
     if metadata["action"] == "test":
         environment["AVA_BLOCK_EXTERNAL_SERVICES"] = "1"
     with (output / "xcodebuild.log").open("w") as log:
-        result = subprocess.run(command, cwd=IOS, stdout=log, stderr=subprocess.STDOUT, env=environment)
-    metadata.update(status="passed" if result.returncode == 0 else "failed", exitCode=result.returncode)
+        process = subprocess.Popen(command, cwd=IOS, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                   env=environment, text=True, errors="replace")
+        for line in process.stdout:
+            log.write(redact(line))
+            log.flush()
+        exit_code = process.wait()
+    metadata.update(status="passed" if exit_code == 0 else "failed", exitCode=exit_code)
     (output / "run.json").write_text(json.dumps(metadata, indent=2) + "\n")
-    if result.returncode:
+    if exit_code:
         print("\n".join((output / "xcodebuild.log").read_text(errors="replace").splitlines()[-35:]))
         raise ValueError(f"xcodebuild failed; retain {output} for diagnosis")
     print(f"Passed: {output}")
+
+
+def archive_authentication(config):
+    """Parse identifiers from trusted existing config; Xcode alone reads the key."""
+    source = config.read_text()
+    key_match = re.search(r'^ASC_KEY_ID="([A-Z0-9]+)"$', source, re.M)
+    issuer_match = re.search(r'^ASC_ISSUER_ID="([a-f0-9-]+)"$', source, re.M)
+    require(key_match and issuer_match, "Trusted ASC configuration lacks expected identifiers")
+    key_id, issuer = key_match.group(1), issuer_match.group(1)
+    key_path = Path.home() / ".appstoreconnect/private_keys" / f"AuthKey_{key_id}.p8"
+    require(key_path.is_file(), "Configured ASC authentication key file is unavailable")
+    return (["-authenticationKeyPath", str(key_path), "-authenticationKeyID", key_id,
+             "-authenticationKeyIssuerID", issuer], (str(key_path), key_id, issuer))
 
 
 def isolated_simulator():
@@ -177,7 +200,10 @@ def main():
     parser.add_argument("--qa-record", type=Path)
     parser.add_argument("--archive-path", type=Path, help="Existing archive to inspect")
     parser.add_argument("--allow-provisioning-updates", action="store_true", help="Explicitly permit Xcode provisioning during archive")
+    parser.add_argument("--credential-config", type=Path,
+                        help="Archive only: trusted existing ASC configuration; authentication metadata is redacted from logs")
     args = parser.parse_args()
+    require(not args.credential_config or args.action == "archive", "ASC archive authentication is only accepted for archive")
     values = validate_source(distribution=args.distribution or args.action == "archive")
     if args.action == "preflight":
         print(json.dumps({"version": values["MARKETING_VERSION"], "build": values["CURRENT_PROJECT_VERSION"],
@@ -194,6 +220,7 @@ def main():
                "-derivedDataPath", str(output / "DerivedData"), "-disableAutomaticPackageResolution",
                "-onlyUsePackageVersionsFromResolvedFile"]
     created_device = None
+    redactions = ()
     try:
         if args.action == "build":
             command += ["-configuration", "Debug", "-sdk", "iphonesimulator", "-destination", "generic/platform=iOS Simulator", "CODE_SIGNING_ALLOWED=YES", "CODE_SIGN_IDENTITY=-", "build"]
@@ -202,8 +229,10 @@ def main():
             if not args.device:
                 created_device = device
             metadata["simulator"] = device
+            metadata["diagnostics"] = "Verbose simulator diagnostic collection disabled after observed post-test collector hang; XCTest assertions, logs and result attachments retained"
             command += ["-configuration", "Testing", "-destination", f"platform=iOS Simulator,id={device}",
-                        "-parallel-testing-enabled", "NO", "-resultBundlePath", str(output / "Tests.xcresult"),
+                        "-parallel-testing-enabled", "NO", "-collect-test-diagnostics", "never",
+                        "-resultBundlePath", str(output / "Tests.xcresult"),
                         "CODE_SIGNING_ALLOWED=YES", "CODE_SIGN_IDENTITY=-"]
             command += [f"-only-testing:{target}" for target in args.only_testing]
             command += ["test"]
@@ -211,8 +240,11 @@ def main():
             command += ["-configuration", "Release", "-destination", "generic/platform=iOS", "-archivePath", str(output / "WhoWouldWin.xcarchive")]
             if args.allow_provisioning_updates:
                 command += ["-allowProvisioningUpdates"]
+            if args.credential_config:
+                authentication, redactions = archive_authentication(args.credential_config)
+                command += authentication
             command += ["archive"]
-        execute(command, output, metadata)
+        execute(command, output, metadata, redactions)
         if args.action == "archive":
             inspect_archive(output / "WhoWouldWin.xcarchive", values)
     finally:

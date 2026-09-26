@@ -31,7 +31,7 @@ At **2026-09-26T10:46:23Z**, an authenticated read-only Railway GraphQL query of
 
 Netlify's live site API, refreshed at **2026-09-26T15:37:51Z**, reports production branch `main`, allowed branches `["main"]`, builds enabled, and the published deployment on `main` for site `9b3c727f-15d5-4424-bc7c-62c07212856b`. [Sanitized Netlify response](evidence/netlify-trigger-audit-2026-09-26.json). These are point-in-time observations; recheck before any subsequent publishing if configuration changes.
 
-**No branch was pushed and no remote configuration was changed.** The v2 checkout was not linked to the production Railway service. These observations establish the inspected integrations' main-only branch behavior; they do not authorize deployment or prove that every possible external integration has been discovered.
+**At the inspection checkpoint no branch had been pushed and no remote configuration was changed.** The v2 checkout was not linked to the production Railway service. These observations establish the inspected integrations' main-only branch behavior; they do not authorize deployment or prove that every possible external integration has been discovered.
 
 ## Upgrade fixtures and limitations
 
@@ -68,3 +68,7 @@ At **2026-09-26T16:00:47Z**, fresh read-only ASC history remained complete with 
 ## Remaining release gate
 
 Complete the whole retro app and local art pipeline, automated/simulator parity and synthetic upgrade checks, backend compatibility, coordinated build allocation, and release artifact inspection. Record outstanding owner hardware acceptance checks separately. Then upload the reviewed archive, wait for Apple processing, and verify that the owner can install the precise build. No TestFlight availability is claimed here.
+
+## Published source checkpoint
+
+After the main-only trigger audit, root pushed only `develop/2.0` at `7b03a2a` on September 26. The maintenance branch remains at `107bf73`; its working-directory status still matches the isolation snapshot. No backend source changes or production deployment were part of this push. Later tested/released commits are recorded separately.

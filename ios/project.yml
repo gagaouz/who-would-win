@@ -122,6 +122,7 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.whowouldin.WhoWouldWinTests
+        GENERATE_INFOPLIST_FILE: YES
     dependencies:
       - target: WhoWouldWin
 

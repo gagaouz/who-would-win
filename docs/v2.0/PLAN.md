@@ -73,7 +73,7 @@ Every catalog animal gets an approved ready sprite and a movement archetype. Use
 6. Use the recipe's anatomy profile for restrained shared motion. Validate recognizable quadruped, bird, sea, serpent, arthropod and humanoid/fantasy cases; unknown inputs retain a suitable fantasy profile. Artwork never changes combat strength, results or rewards.
 7. Test equivalent normalized names with different UUIDs, distinct unknown names, punctuation and length limits, blocked input, two-custom battles, custom versus catalog, share rendering, relaunch and active-bracket resume, cache eviction, and first-use offline creation. Assert no image-service calls and no duplicate custom-selection spend.
 
-Build-time authoring of bundled sprites is separate from runtime artwork. The shipped app uses its included kit without provider credentials or per-image costs. See [CUSTOM_ART_SERVICE.md](CUSTOM_ART_SERVICE.md) for the current implementation/status record.
+Build-time authoring of bundled sprites is separate from runtime artwork. The shipped app uses its included kit without provider credentials or per-image costs. See [CUSTOM_AVATARS.md](CUSTOM_AVATARS.md) for the current implementation/status record.
 
 ## 6. Work packages and completion gates
 

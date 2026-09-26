@@ -160,7 +160,7 @@ final class RetroBattleUITests: XCTestCase {
                        "Locally made artwork must not turn a successful battle into an offline fallback.")
         Thread.sleep(forTimeInterval: 0.8)
         capture("retro_custom_result")
-        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "BLUE LION")).firstMatch.exists,
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "BLUE LION")).firstMatch.exists,
                       "The result must preserve the custom name, not replace its identity with the base animal.")
     }
 }
