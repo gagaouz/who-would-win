@@ -24,8 +24,9 @@ struct TournamentBracketDiagram: View {
                         .tracking(1)
                         .padding(.horizontal, isIPad ? 12 : 8).padding(.vertical, isIPad ? 5 : 3)
                         .background(
-                            RetroPanelShape().fill(Kids.sun)
-                                .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1))
+                            RetroPanelShape()
+                                .fill(highlightedRoundIndex == nil || highlightedRoundIndex == roundIdx ? Kids.sun : Kids.cream)
+                                .overlay(RetroPanelShape().stroke(highlightedRoundIndex == roundIdx ? Kids.grassDeep : Kids.outline, lineWidth: 1))
                         )
 
                     if round.isEmpty {
@@ -38,7 +39,6 @@ struct TournamentBracketDiagram: View {
                         }
                     }
                 }
-                .opacity(highlightedRoundIndex == nil || highlightedRoundIndex == roundIdx ? 1.0 : 0.55)
             }
         }
         .padding(.horizontal, isIPad ? 14 : 8)
@@ -106,7 +106,7 @@ struct TournamentBracketDiagram: View {
             DiagramMini(animal: animal, isIPad: isIPad)
             Text(animal.name)
                 .font(Kids.fredoka(isIPad ? 13 : 10, weight: .bold))
-                .foregroundColor(isLoser ? Kids.inkSoft.opacity(0.5) : Kids.ink)
+                .foregroundColor(isLoser ? Kids.inkSoft : Kids.ink)
                 .lineLimit(1)
                 .minimumScaleFactor(0.65)
                 .strikethrough(isLoser)

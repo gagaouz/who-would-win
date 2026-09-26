@@ -487,7 +487,7 @@ struct KidsShopView: View {
                 earnRow(amount: "+25", label: "first battle each day")
                 earnRow(amount: "+75", label: "watch an ad (8/day max)")
                 if !settings.isSubscribed {
-                    earnRow(amount: "2×", label: "with Premium 👑", emphasize: true)
+                    earnRow(amount: "2×", label: "with Premium", emphasize: true)
                 }
             }
 
@@ -519,7 +519,7 @@ struct KidsShopView: View {
         HStack(spacing: 6) {
             Text(amount)
                 .font(Kids.fredoka(isIPad ? 15 : 13, weight: .bold))
-                .foregroundColor(emphasize ? Kids.pink : Kids.ink)
+                .foregroundColor(emphasize ? Kids.pinkDeep : Kids.ink)
             Text(label)
                 .font(Kids.nunito(isIPad ? 14 : 12, weight: .bold))
                 .foregroundColor(Kids.inkSoft)

@@ -200,7 +200,7 @@ struct TournamentShareCard: View {
             RetroCreatureArtwork(animal: a, size: 18)
             Text(a.name)
                 .font(Kids.nunito(9, weight: .bold))
-                .foregroundColor(isWinner ? Kids.ink : Kids.inkSoft.opacity(0.7))
+                .foregroundColor(isWinner ? Kids.ink : Kids.inkSoft)
                 .lineLimit(2)
                 .minimumScaleFactor(0.65)
                 .fixedSize(horizontal: false, vertical: true)

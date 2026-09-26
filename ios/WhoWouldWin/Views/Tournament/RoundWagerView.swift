@@ -134,7 +134,10 @@ struct RoundWagerView: View {
                         .fill(quickMode ? Kids.sun : Kids.panel)
                         .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                         .frame(width: isIPad ? 60 : 44, height: isIPad ? 60 : 44)
-                    Text(quickMode ? "⚡" : "🐢").font(.system(size: isIPad ? 30 : 22))
+                    Image(systemName: quickMode ? "bolt.fill" : "tortoise.fill")
+                        .font(.system(size: isIPad ? 30 : 22))
+                        .foregroundColor(Kids.ink)
+                        .accessibilityHidden(true)
                 }
                 VStack(alignment: .leading, spacing: isIPad ? 4 : 2) {
                     Text(quickMode ? "QUICK MODE: ON" : "QUICK MODE: OFF")
