@@ -1,0 +1,494 @@
+{
+  "checkedAt": "2026-09-26T17:32:18.957958+00:00",
+  "appID": "6761319389",
+  "bundleID": "com.whowouldin.WhoWouldWin",
+  "version": "2.0",
+  "build": "111",
+  "sourceCommit": "5ea7ba1966bcf71e85918a390ad2e234c976f8c4",
+  "uploadCommandSucceeded": true,
+  "uploadCompletedAt": "2026-09-26T17:29:57Z",
+  "apple": {
+    "id": "cf90c71c-871a-42d1-9b47-6c781f8638cf",
+    "uploadedDate": "2026-09-26T10:30:39-07:00",
+    "expirationDate": "2026-12-25T09:30:39-08:00",
+    "expired": false,
+    "processingState": "VALID",
+    "buildAudienceType": "INTERNAL_ONLY",
+    "usesNonExemptEncryption": false
+  },
+  "betaStates": {
+    "internalBuildState": "IN_BETA_TESTING",
+    "externalBuildState": "NOT_APPLICABLE"
+  },
+  "internalGroups": [
+    {
+      "id": "bbe48189-3ad0-4d20-bd77-9adb1120eb75",
+      "name": "self",
+      "hasAccessToAllBuilds": true,
+      "candidatePresentInBuildList": true,
+      "buildListHTTPStatus": 200,
+      "moreBuilds": false
+    }
+  ],
+  "whatToTestReadBack": [
+    {
+      "locale": "en-US",
+      "whatsNew": "Build 111: more creature motion and a brighter interface.\n\n18 creatures now have four distinct action poses, up from two in build 110. The others move through eight anatomy-based animation families, and custom avatars retain their matching source poses. The interface now uses sky, mint and ivory backgrounds with compact rounded buttons.\n\nPlease compare several animals, including birds, snakes, sea creatures and custom fighters. Try a 4v4 battle, background/resume, rematch and Reduce Motion. Check that the displayed winner and rewards remain correct. Review home, pickers, shops, parental settings, tournaments and shared images for readability or clipping on your device.\n\nReport build number, device/iOS version and steps for any problem. Real account purchases, iCloud and physical-device performance remain owner checks."
+    }
+  ],
+  "invitationsSent": false,
+  "externalGroupChanged": false,
+  "ownerDeviceInstallVerified": false,
+  "physicalDeviceStatus": "pending-owner-testflight",
+  "ownerDeviceChecks": [
+    "Install the exact2.0(111) internal beta on the owner device, verify progress, coins, unlocks, collection, active tournament and parentalPIN; no actual111 upgrade was performed locally.",
+    "Verify real entitlement restore and applicable StoreKit product/subscription states through intended TestFlight/sandbox behavior.",
+    "Verify signed-device AppAttest, actual narration/backend fallback, GameCenter/iCloud and account synchronization.",
+    "Verify microphone/notification permissions, narration/audio/haptics and eligible ad/consent/reward behavior.",
+    "Check creature motion across anatomy families and custom avatars, backgrounds/buttons/readability, 4v4 play, background/rematch, ReduceMotion, VoiceOver, largertext, orientations, older supportedOS and sustained physical performance."
+  ],
+  "tests": {
+    "nativeExecutions": 119,
+    "distinctTestCountClaimed": false,
+    "runs": {
+      "broadPhone": {
+        "result": "Passed",
+        "passed": 59,
+        "failed": 0,
+        "skipped": 0,
+        "xcresult": "ios/build/runs/20260926T170850Z-test-2.0-111-5205bf50-75f6eb/Tests.xcresult",
+        "sourceCommit": "5205bf50ed3f2bb4f6966ff10dfbea4c27ebaf8c",
+        "unit": 50,
+        "ui": 9
+      },
+      "motionParentPhone": {
+        "result": "Passed",
+        "passed": 53,
+        "failed": 0,
+        "skipped": 0,
+        "xcresult": "ios/build/runs/20260926T171419Z-test-2.0-111-2a5264d7-f31bfc/Tests.xcresult",
+        "sourceCommit": "2a5264d7067d4828ff4a3391c2fe6d852c05dfed",
+        "unit": 50,
+        "ui": 3
+      },
+      "tablet": {
+        "status": "Passed",
+        "sourceCommit": "2a5264d7067d4828ff4a3391c2fe6d852c05dfed",
+        "runDirectory": "ios/build/runs/20260926T171718Z-test-2.0-111-2a5264d7-83c929",
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0,
+        "xcresult": "ios/build/runs/20260926T171718Z-test-2.0-111-2a5264d7-83c929/Tests.xcresult"
+      },
+      "finalAffectedUICases": {
+        "status": "Passed",
+        "sourceCommit": "5ea7ba1966bcf71e85918a390ad2e234c976f8c4",
+        "targets": [
+          "WhoWouldWinUITests/RetroScreenUITests/testSettingsCommerceAndParentScreens",
+          "WhoWouldWinUITests/RetroScreenUITests/testTournamentAndExports"
+        ],
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0,
+        "xcresult": "ios/build/runs/20260926T172036Z-test-2.0-111-5ea7ba19-b1ba30/Tests.xcresult"
+      }
+    },
+    "newBackendRunExecuted": false,
+    "actualBuild111UpgradeExecuted": false,
+    "inheritedBackend": {
+      "classification": "prior-passed-run-carried-by-exact-source-identity",
+      "executedForBuild111": false,
+      "priorTests": 46,
+      "priorPassed": 46,
+      "priorFailed": 0,
+      "priorSkipped": 0,
+      "priorRunLog": "ios/build/backend-tests-583b5e5.log",
+      "priorCompatibilityRecord": "ios/build/backend-compatibility-final.json",
+      "sameBackendTree": true,
+      "includes": "Complete tracked backend source, tests, package manifest and lockfile. Existing route/classification/narration contracts are unchanged.",
+      "newDeploymentRequired": false
+    },
+    "inheritedSyntheticUpgrade": {
+      "classification": "prior-build110-strict-upgrade-evidence-carried-for-unchanged-persistence-paths",
+      "executedForBuild111": false,
+      "actualBuild111UpgradePassed": false,
+      "priorReport": "ios/build/runs/20260926T162110Z-upgrade-71d167/upgrade-report.json",
+      "priorSourceBaseline": "107bf7327f1c82e85282101e2294fb6f9ded3639",
+      "priorCandidateBuild": "110",
+      "priorCases": [
+        {
+          "scenario": "settled",
+          "loadedStatePreserved": true,
+          "preferencesPreserved": true,
+          "keychainPINPreserved": true,
+          "baselineColdLaunchPassed": true,
+          "documentsPreserved": true,
+          "dataContainerRelocated": true,
+          "status": "passed"
+        },
+        {
+          "scenario": "pending",
+          "loadedStatePreserved": true,
+          "preferencesPreserved": true,
+          "keychainPINPreserved": true,
+          "baselineColdLaunchPassed": true,
+          "documentsPreserved": true,
+          "dataContainerRelocated": true,
+          "status": "passed"
+        }
+      ],
+      "scope": "Same model schemas, persistence service implementations/keys, UserDefaults initialization, KeychainPIN implementation, coin and transaction tracking, saved tournament decode/settlement, startup observer, data IDs, lifecycle settlement guards, canonical identity/entitlements and release configuration. The same synthetic fixture data and strict harness remain available.",
+      "whatThisSupports": "No persistence/code-schema regression introduced by this presentation-only iteration in the compared paths; the prior pending/settled saved-state results remain applicable evidence for those unchanged paths.",
+      "whatThisDoesNotProve": "No fresh 1.1.7 \u2192 111 or 110 \u2192 111 simulator/device installation has been performed. It does not prove physical App Store/TestFlight upgrade, real receipts, iCloud/account state, or every possible saved-data combination."
+    }
+  },
+  "sourceEquivalence": {
+    "objects": {
+      "backend": {
+        "previous": "a7d55743ba7a55e37b1f935a541201706171a3cd",
+        "candidate": "a7d55743ba7a55e37b1f935a541201706171a3cd",
+        "identical": true
+      },
+      "ios/WhoWouldWin/Models": {
+        "previous": "c76bc4519bfe0bea92c41c9e67788fd1d5808375",
+        "candidate": "c76bc4519bfe0bea92c41c9e67788fd1d5808375",
+        "identical": true
+      },
+      "ios/WhoWouldWin/Services": {
+        "previous": "73a14299ce0d33bd50e37a66bdb855db66bbe2f5",
+        "candidate": "73a14299ce0d33bd50e37a66bdb855db66bbe2f5",
+        "identical": true
+      },
+      "ios/WhoWouldWin/App": {
+        "previous": "1e08a964e8203fdf9aad51969afd9b6c8cd3a26d",
+        "candidate": "1e08a964e8203fdf9aad51969afd9b6c8cd3a26d",
+        "identical": true
+      },
+      "ios/WhoWouldWin/ViewModels": {
+        "previous": "dd5894f98aef7d8c46c3e8008dce5ac873dab183",
+        "candidate": "dd5894f98aef7d8c46c3e8008dce5ac873dab183",
+        "identical": true
+      },
+      "ios/WhoWouldWin/Data": {
+        "previous": "ab9fd8676c22a06a82fa978159c2be4a74b371b2",
+        "candidate": "ab9fd8676c22a06a82fa978159c2be4a74b371b2",
+        "identical": true
+      },
+      "ios/WhoWouldWin/Info.plist": {
+        "previous": "730ed8de4b7a1f086de2132295fa8592c87006a5",
+        "candidate": "730ed8de4b7a1f086de2132295fa8592c87006a5",
+        "identical": true
+      },
+      "ios/WhoWouldWin/WhoWouldWin.entitlements": {
+        "previous": "edd0a26dae2a46b88046fa5621cee94926361705",
+        "candidate": "edd0a26dae2a46b88046fa5621cee94926361705",
+        "identical": true
+      },
+      "ios/WhoWouldWin/Retro/RetroBattleLifecycle.swift": {
+        "previous": "02082dd90d0654b92efd3764c7b7f92ff02b7d9f",
+        "candidate": "02082dd90d0654b92efd3764c7b7f92ff02b7d9f",
+        "identical": true
+      },
+      "ios/WhoWouldWin/Services/UserSettings.swift": {
+        "previous": "27ac3a20ee3f364bbd147af4145dc0f8bd604f6d",
+        "candidate": "27ac3a20ee3f364bbd147af4145dc0f8bd604f6d",
+        "identical": true
+      },
+      "ios/WhoWouldWin/Services/CoinStore.swift": {
+        "previous": "6003988c1d57ad95f6e4919c5e47eba46fc7cda5",
+        "candidate": "6003988c1d57ad95f6e4919c5e47eba46fc7cda5",
+        "identical": true
+      },
+      "ios/WhoWouldWin/Services/TournamentManager.swift": {
+        "previous": "60f6e8a7780f636f3f8ddd93bd2c23eaacd1725a",
+        "candidate": "60f6e8a7780f636f3f8ddd93bd2c23eaacd1725a",
+        "identical": true
+      },
+      "ios/WhoWouldWin/Services/ParentalPIN.swift": {
+        "previous": "c73bd15d26d0067889e6065133464b14bf97bf76",
+        "candidate": "c73bd15d26d0067889e6065133464b14bf97bf76",
+        "identical": true
+      },
+      "ios/WhoWouldWin/Services/StickerCollection.swift": {
+        "previous": "b1871b6db71b3ada1dd63298922a1b72f497a55b",
+        "candidate": "b1871b6db71b3ada1dd63298922a1b72f497a55b",
+        "identical": true
+      },
+      "ios/WhoWouldWin/Services/AchievementTracker.swift": {
+        "previous": "81461cd1cdc11673527acdcbf3c4afa50956716e",
+        "candidate": "81461cd1cdc11673527acdcbf3c4afa50956716e",
+        "identical": true
+      },
+      "ios/WhoWouldWin/Services/CloudSyncService.swift": {
+        "previous": "7e85937b4690ae1454fdb34805362f79a3e72ec1",
+        "candidate": "7e85937b4690ae1454fdb34805362f79a3e72ec1",
+        "identical": true
+      },
+      "ios/config/Release.xcconfig": {
+        "previous": "4aef5c6e6fa6581e1f195307b2cc13136000fc5c",
+        "candidate": "4aef5c6e6fa6581e1f195307b2cc13136000fc5c",
+        "identical": true
+      },
+      "ios/config/Testing.xcconfig": {
+        "previous": "cccabdec25727c70671cb6e31ea670c76a1d6eb6",
+        "candidate": "cccabdec25727c70671cb6e31ea670c76a1d6eb6",
+        "identical": true
+      },
+      "ios/Products.storekit": {
+        "previous": "20086726001cc5a9b9205cc60016034ae383f054",
+        "candidate": "20086726001cc5a9b9205cc60016034ae383f054",
+        "identical": true
+      },
+      "ios/project.yml": {
+        "previous": "7961088bfce3a23dadb5e424b4b4529fb370226e",
+        "candidate": "7961088bfce3a23dadb5e424b4b4529fb370226e",
+        "identical": true
+      },
+      "ios/WhoWouldWin.xcodeproj/xcshareddata/xcschemes/WhoWouldWin.xcscheme": {
+        "previous": "7a78b4db57a5407d0944bc0ef5bc007d201aaba9",
+        "candidate": "7a78b4db57a5407d0944bc0ef5bc007d201aaba9",
+        "identical": true
+      },
+      "ios/WhoWouldWin.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved": {
+        "previous": "611d568885b13de1548a9daa26aa665f4785503f",
+        "candidate": "611d568885b13de1548a9daa26aa665f4785503f",
+        "identical": true
+      },
+      "ios/scripts/fixtures/1.1.7": {
+        "previous": "22be55d2f48330a5b7c639d06e4aed6e68439b33",
+        "candidate": "22be55d2f48330a5b7c639d06e4aed6e68439b33",
+        "identical": true
+      },
+      "ios/scripts/upgrade_simulator.py": {
+        "previous": "2956adb3ab60cd31c1e80979ae367dbbb71c06a1",
+        "candidate": "2956adb3ab60cd31c1e80979ae367dbbb71c06a1",
+        "identical": true
+      }
+    },
+    "broadParentUnchangedObjects": {
+      "ios/WhoWouldWin/Assets.xcassets": {
+        "tested": "0474e9a3e08703d17f02ce518bac3118687af323",
+        "final": "0474e9a3e08703d17f02ce518bac3118687af323"
+      },
+      "ios/WhoWouldWin/App": {
+        "tested": "1e08a964e8203fdf9aad51969afd9b6c8cd3a26d",
+        "final": "1e08a964e8203fdf9aad51969afd9b6c8cd3a26d"
+      },
+      "ios/WhoWouldWin/Services": {
+        "tested": "73a14299ce0d33bd50e37a66bdb855db66bbe2f5",
+        "final": "73a14299ce0d33bd50e37a66bdb855db66bbe2f5"
+      },
+      "ios/WhoWouldWin/Models": {
+        "tested": "c76bc4519bfe0bea92c41c9e67788fd1d5808375",
+        "final": "c76bc4519bfe0bea92c41c9e67788fd1d5808375"
+      },
+      "ios/WhoWouldWin/ViewModels": {
+        "tested": "dd5894f98aef7d8c46c3e8008dce5ac873dab183",
+        "final": "dd5894f98aef7d8c46c3e8008dce5ac873dab183"
+      },
+      "ios/WhoWouldWin/Data": {
+        "tested": "ab9fd8676c22a06a82fa978159c2be4a74b371b2",
+        "final": "ab9fd8676c22a06a82fa978159c2be4a74b371b2"
+      },
+      "ios/WhoWouldWin/Views/Components": {
+        "tested": "0e154847d220eab1daa46a35b29cccbf15c42755",
+        "final": "0e154847d220eab1daa46a35b29cccbf15c42755"
+      },
+      "ios/WhoWouldWin/Retro/RetroAssetStore.swift": {
+        "tested": "1c7ab68c486e1e2addd4d0180bdd3fafe71a0aa8",
+        "final": "1c7ab68c486e1e2addd4d0180bdd3fafe71a0aa8"
+      },
+      "ios/WhoWouldWin/Retro/RetroBattleScene.swift": {
+        "tested": "d0c8d719496058bd405584dad40013c65b83042a",
+        "final": "d0c8d719496058bd405584dad40013c65b83042a"
+      },
+      "ios/WhoWouldWin/Retro/RetroBattleStage.swift": {
+        "tested": "6c4b8ee19aff08c1bc693cb0824061532ed8cb09",
+        "final": "6c4b8ee19aff08c1bc693cb0824061532ed8cb09"
+      },
+      "ios/WhoWouldWin/Retro/RetroSpriteManifest.json": {
+        "tested": "1d51e9ff2014370b5772fe77520c7298dac0c6d2",
+        "final": "1d51e9ff2014370b5772fe77520c7298dac0c6d2"
+      },
+      "ios/WhoWouldWin/Views/KidsBattleView.swift": {
+        "tested": "2961ec61645537d6d7105648be11aca974686098",
+        "final": "2961ec61645537d6d7105648be11aca974686098"
+      },
+      "ios/WhoWouldWin/Views/Melee/MeleeBattleView.swift": {
+        "tested": "5377c440e14aa68218dfa4751e63b2f3a7f38ea2",
+        "final": "5377c440e14aa68218dfa4751e63b2f3a7f38ea2"
+      },
+      "ios/WhoWouldWin/Views/Tournament/KidsTournamentBattleView.swift": {
+        "tested": "60d7f8b29c0fb9c98208d5a2012efb360669c2c9",
+        "final": "60d7f8b29c0fb9c98208d5a2012efb360669c2c9"
+      },
+      "ios/WhoWouldWinTests": {
+        "tested": "9b6caae5f65ae4d594e3d1eaa5985d1651d9f2a5",
+        "final": "9b6caae5f65ae4d594e3d1eaa5985d1651d9f2a5"
+      },
+      "ios/WhoWouldWinUITests": {
+        "tested": "365b6cdabb4a6c36068a9d7520e63b0d2e6f249c",
+        "final": "365b6cdabb4a6c36068a9d7520e63b0d2e6f249c"
+      },
+      "ios/WhoWouldWin.xcodeproj": {
+        "tested": "60a3ec006b806616a193a3955f28638ea9e85fb5",
+        "final": "60a3ec006b806616a193a3955f28638ea9e85fb5"
+      },
+      "ios/config": {
+        "tested": "919d2dd4d6850e36e52ca0031e5b61c985a6a7d6",
+        "final": "919d2dd4d6850e36e52ca0031e5b61c985a6a7d6"
+      }
+    },
+    "sourceLineage": {
+      "broadPhoneTestedCommit": "5205bf50ed3f2bb4f6966ff10dfbea4c27ebaf8c",
+      "motionUnitBattleTestedCommit": "2a5264d7067d4828ff4a3391c2fe6d852c05dfed",
+      "finalCommit": "5ea7ba1966bcf71e85918a390ad2e234c976f8c4",
+      "broadToMotionChange": {
+        "path": "ios/WhoWouldWin/Retro/RetroMotionRig.swift",
+        "summary": "One bird-wing vertical displacement expression: reduces gait during anticipation, increases windup/strike contrast; no callback, identity, persistence or outcome change."
+      },
+      "motionToFinalChangedPaths": [
+        "ios/WhoWouldWin/Views/KidsSettingsView.swift",
+        "ios/WhoWouldWin/Views/Tournament/RoundWagerView.swift",
+        "ios/WhoWouldWin/Views/Tournament/TournamentBracketDiagram.swift",
+        "ios/WhoWouldWin/Views/TournamentShareCard.swift"
+      ],
+      "motionToFinalSummary": "Premium label contrast/decorative crown removal; native accessible decorative speed icon; bracket history/loser text contrast while preserving round header highlighting; tournament export loser text contrast. No action, model, lifecycle or persistence change."
+    },
+    "motionParentUnchangedObjects": {
+      "ios/WhoWouldWin/Assets.xcassets": {
+        "tested": "0474e9a3e08703d17f02ce518bac3118687af323",
+        "final": "0474e9a3e08703d17f02ce518bac3118687af323"
+      },
+      "ios/WhoWouldWin/App": {
+        "tested": "1e08a964e8203fdf9aad51969afd9b6c8cd3a26d",
+        "final": "1e08a964e8203fdf9aad51969afd9b6c8cd3a26d"
+      },
+      "ios/WhoWouldWin/Services": {
+        "tested": "73a14299ce0d33bd50e37a66bdb855db66bbe2f5",
+        "final": "73a14299ce0d33bd50e37a66bdb855db66bbe2f5"
+      },
+      "ios/WhoWouldWin/Models": {
+        "tested": "c76bc4519bfe0bea92c41c9e67788fd1d5808375",
+        "final": "c76bc4519bfe0bea92c41c9e67788fd1d5808375"
+      },
+      "ios/WhoWouldWin/ViewModels": {
+        "tested": "dd5894f98aef7d8c46c3e8008dce5ac873dab183",
+        "final": "dd5894f98aef7d8c46c3e8008dce5ac873dab183"
+      },
+      "ios/WhoWouldWin/Data": {
+        "tested": "ab9fd8676c22a06a82fa978159c2be4a74b371b2",
+        "final": "ab9fd8676c22a06a82fa978159c2be4a74b371b2"
+      },
+      "ios/WhoWouldWin/Views/Components": {
+        "tested": "0e154847d220eab1daa46a35b29cccbf15c42755",
+        "final": "0e154847d220eab1daa46a35b29cccbf15c42755"
+      },
+      "ios/WhoWouldWin/Retro/RetroAssetStore.swift": {
+        "tested": "1c7ab68c486e1e2addd4d0180bdd3fafe71a0aa8",
+        "final": "1c7ab68c486e1e2addd4d0180bdd3fafe71a0aa8"
+      },
+      "ios/WhoWouldWin/Retro/RetroBattleScene.swift": {
+        "tested": "d0c8d719496058bd405584dad40013c65b83042a",
+        "final": "d0c8d719496058bd405584dad40013c65b83042a"
+      },
+      "ios/WhoWouldWin/Retro/RetroBattleStage.swift": {
+        "tested": "6c4b8ee19aff08c1bc693cb0824061532ed8cb09",
+        "final": "6c4b8ee19aff08c1bc693cb0824061532ed8cb09"
+      },
+      "ios/WhoWouldWin/Retro/RetroSpriteManifest.json": {
+        "tested": "1d51e9ff2014370b5772fe77520c7298dac0c6d2",
+        "final": "1d51e9ff2014370b5772fe77520c7298dac0c6d2"
+      },
+      "ios/WhoWouldWin/Views/KidsBattleView.swift": {
+        "tested": "2961ec61645537d6d7105648be11aca974686098",
+        "final": "2961ec61645537d6d7105648be11aca974686098"
+      },
+      "ios/WhoWouldWin/Views/Melee/MeleeBattleView.swift": {
+        "tested": "5377c440e14aa68218dfa4751e63b2f3a7f38ea2",
+        "final": "5377c440e14aa68218dfa4751e63b2f3a7f38ea2"
+      },
+      "ios/WhoWouldWin/Views/Tournament/KidsTournamentBattleView.swift": {
+        "tested": "60d7f8b29c0fb9c98208d5a2012efb360669c2c9",
+        "final": "60d7f8b29c0fb9c98208d5a2012efb360669c2c9"
+      },
+      "ios/WhoWouldWinTests": {
+        "tested": "9b6caae5f65ae4d594e3d1eaa5985d1651d9f2a5",
+        "final": "9b6caae5f65ae4d594e3d1eaa5985d1651d9f2a5"
+      },
+      "ios/WhoWouldWinUITests": {
+        "tested": "365b6cdabb4a6c36068a9d7520e63b0d2e6f249c",
+        "final": "365b6cdabb4a6c36068a9d7520e63b0d2e6f249c"
+      },
+      "ios/WhoWouldWin.xcodeproj": {
+        "tested": "60a3ec006b806616a193a3955f28638ea9e85fb5",
+        "final": "60a3ec006b806616a193a3955f28638ea9e85fb5"
+      },
+      "ios/config": {
+        "tested": "919d2dd4d6850e36e52ca0031e5b61c985a6a7d6",
+        "final": "919d2dd4d6850e36e52ca0031e5b61c985a6a7d6"
+      },
+      "ios/WhoWouldWin/Retro/RetroMotionRig.swift": {
+        "tested": "d7b1b6da9f5f7e4204188ead48318664639fa8de",
+        "final": "d7b1b6da9f5f7e4204188ead48318664639fa8de"
+      }
+    },
+    "finalChangedUIObjects": {
+      "ios/WhoWouldWin/Views/KidsSettingsView.swift": {
+        "motionParent": "725939716c7f4e72f6c7ffce4bd3a25408040972",
+        "final": "5db2004f81fd78cc61943a432d588db032f08e99"
+      },
+      "ios/WhoWouldWin/Views/Tournament/RoundWagerView.swift": {
+        "motionParent": "5e644161db26fbff278f11463880b19bb5d212fa",
+        "final": "9d74e22e2ff8d9a1360bee029dfdea63a7883c75"
+      },
+      "ios/WhoWouldWin/Views/Tournament/TournamentBracketDiagram.swift": {
+        "motionParent": "fa55eb61b10449c28091bafccc43009516cb55e5",
+        "final": "071d337227c8b8643ecd3c0ac2663ed01d7b5b91"
+      },
+      "ios/WhoWouldWin/Views/TournamentShareCard.swift": {
+        "motionParent": "d9bdc4e1b24035f1477f6e411fb4150929a71316",
+        "final": "04e0170e6af843a2273eb14e9c75d1faf83fc945"
+      }
+    }
+  },
+  "artwork": {
+    "catalogSprites": 143,
+    "customBases": 12,
+    "referencedAtlases": 23,
+    "authoredPoseSets": 18,
+    "remainingProceduralCatalogCreatures": 125,
+    "motionFamilies": 8,
+    "noRuntimeImageService": true
+  },
+  "visualReview": {
+    "result": "Accepted for internal beta",
+    "phoneMotionSource": "2a5264d7067d4828ff4a3391c2fe6d852c05dfed",
+    "tabletSource": "2a5264d7067d4828ff4a3391c2fe6d852c05dfed",
+    "affectedUIAndFullSizeExportsSource": "5ea7ba1966bcf71e85918a390ad2e234c976f8c4",
+    "scope": "Native production SpriteKit six-time contact sheets across 10 matchups; phone/tablet battle/4v4/custom stages and results; broad native screen captures and four full-size share exports. Final shop/bracket/wager/champion/export contrast reviewed. No new blocking visual defects. Static captures do not prove physical-device frame pacing."
+  },
+  "inspectedLocalIPASHA256": "759139967814caa68f0ed75c996efd74a08b99e250e5d4446d55c2bfb73679c1",
+  "signedArchiveInspectionPassed": true,
+  "internalIPAInspectionPassed": true,
+  "symbolUploadRequested": true,
+  "appDSYMPresent": true,
+  "missingThirdPartyDSYMWarnings": [
+    "GoogleMobileAds.framework",
+    "UserMessagingPlatform.framework"
+  ],
+  "originalCheckoutStatusMatchesSnapshot": true,
+  "maintenanceStatusCheckedAt": "2026-09-26T17:33:33.799952+00:00",
+  "maintenanceBranchCommit": "107bf7327f1c82e85282101e2294fb6f9ded3639",
+  "limitations": [
+    "No actual build111 simulator/device upgrade was executed. Prior build110 persistence results are explicitly carried with identical source proofs.",
+    "No physical iOS device/account acceptance was performed.",
+    "Parent-source native evidence is labeled by actual commit; do not present all cases as rerun on final5ea7ba1.",
+    "Archive warnings remain in untouched SpeechService, the unassigned legacy icon, and skipped App Intents metadata extraction. Upload completed with missing third-party dSYM warnings; the app dSYM is present."
+  ],
+  "presentationSourceReview": {
+    "sourceRange": "617c7645224a4a1910e99b202517cb39b675cf45..5ea7ba1966bcf71e85918a390ad2e234c976f8c4",
+    "changedPresentationFiles": 40,
+    "result": "No actionable regression found in reviewed routes, action closures, purchase/unlock calls, sheet bindings, disabled states, accessibility labels/IDs, or battle lifecycle callbacks. Source review is not live-account execution."
+  }
+}

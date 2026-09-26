@@ -4,6 +4,8 @@ Audit date: 2026-09-26. Baseline: native iOS source at `107bf73`, inspected in `
 
 **Subsequent candidate evidence:** [2.0 (110) release record](RELEASE_2.0_110.md) records verified internal TestFlight availability at **2026-09-26T16:36:11Z** (`VALID`, `INTERNAL_ONLY`, internally `IN_BETA_TESTING`, accessible to the owner's `self` group). Final validation passed **55 native test executions** (41 unit + 9 iPhone UI + 5 targeted iPad UI), **46 backend tests**, and **two synthetic in-place upgrade cases**. Archived `583b5e5` has identical native app/project/config/test trees to tested `ebcc38e`.
 
+**Build 111 visual iteration:** [Current release record](RELEASE_2.0_111.md): Animal vs Animal 2.0 (111) is available in internal TestFlight. Apple reports VALID, INTERNAL_ONLY, and IN_BETA_TESTING; the exact candidate is present in the existing self group. New runs passed 59 executions at `5205bf5`, 53 at `2a5264d`, 5 targeted iPad UI at `2a5264d`, and the 2 affected UI cases at final `5ea7ba1`. Motion/artwork and phone/tablet/share captures were reviewed. The previous 46 backend passes and two build 110 upgrade cases are carried by documented source identity, not claimed as rerun for build 111; no actual build 111 upgrade installation was performed.
+
 These results cover the scenarios linked in that release record; they do **not** convert this dated inventory or every F-row below to PASS. Owner installation, canonical physical upgrade, StoreKit/account/iCloud behavior, permissions, accessibility and hardware performance remain pending where untested. See [owner TestFlight checks](OWNER_TESTFLIGHT_CHECKS.md); broader external/public distribution is outside this internal-beta milestone.
 
 ## Scope and preservation rule

@@ -1,8 +1,8 @@
 # Owner checks for the internal 2.0 beta
 
-**2.0 (110) is ready in TestFlight → Animal vs Animal.** Apple processing and access to the existing internal `self` group were verified on September 26, 2026. See the [release record](RELEASE_2.0_110.md).
+**2.0 (111): Animal vs Animal 2.0 (111) is available in internal TestFlight. Apple reports VALID, INTERNAL_ONLY, and IN_BETA_TESTING; the exact candidate is present in the existing self group.** Open TestFlight → Animal vs Animal → **2.0 (111)**. See the [current release record](RELEASE_2.0_111.md); [build 110](RELEASE_2.0_110.md) remains documented separately.
 
-Automated checks and disposable simulator upgrades passed before upload. No physical iPhone or iPad was attached to the development host, so the checks below require the owner's device and account. They remain pending until observed; passing simulator fixtures does not stand in for StoreKit, iCloud, or a real upgrade.
+Build 111 native checks passed at the documented source states. The two disposable simulator upgrades were performed for build 110 and carried only for unchanged persistence paths; no actual build 111 upgrade was performed locally. No physical iPhone or iPad was attached to the development host, so the checks below require the owner's device and account. They remain pending until observed; passing simulator fixtures does not stand in for StoreKit, iCloud, or a real upgrade.
 
 ## Before installing
 
@@ -16,6 +16,12 @@ Automated checks and disposable simulator upgrades passed before upload. No phys
 3. Try a custom animal such as Blue Lion, a fantasy name such as Ice Dragon, and an unfamiliar name. Each receives a stable local retro avatar. Artwork works offline; existing narration/classification availability still follows the game's established network/fallback behavior.
 4. Resume or start a tournament, place a permitted wager, try full and quick matches, and finish a bracket. Confirm settlement and champion rewards happen once. Check that parental wagering restrictions still apply.
 5. Share a duel, team result, and tournament. Verify the exported card matches the participants and result.
+
+## Build 111 visual checks
+
+- Compare a lion/tiger/shark/eagle battle with creatures such as cheetah, owl, spider, fish, or slime. Eighteen catalog creatures use authored poses; the other 125 use body motion from eight anatomy families. Look for motion appropriate to the anatomy, stable scale, clear attacks, and readable team rosters.
+- Try Blue Lion, Ice Dragon, and an unfamiliar custom name. Authored source poses should survive custom recoloring; other forms should animate through their motion family. Avatar creation works offline without an image API charge; ordinary gameplay costs and narration network behavior remain unchanged.
+- Inspect home, selected picker/arena tiles, shop, parent controls, tournament history, results, and shared cards for readable text and comfortable rounded buttons. Try Reduce Motion, background/resume, and several consecutive 4v4 battles.
 
 ## Device/account capabilities
 
