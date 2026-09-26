@@ -73,11 +73,17 @@ struct RetroCustomRecipe: Equatable {
             matched = match.0; source = .base(match.1)
         }
         if source == nil {
-            let candidates = catalog.filter { !$0.isCustom }.flatMap { animal in
-                [(words(normalize(animal.name)), animal.id), (words(animal.id), animal.id)]
-            }.sorted { $0.0.count == $1.0.count ? $0.1 < $1.1 : $0.0.count > $1.0.count }
-            if let match = candidates.first(where: { !$0.0.isEmpty && has($0.0) }) {
-                matched = match.0; source = .catalog(match.1)
+            var candidates: [(phrase: String, id: String)] = []
+            for animal in catalog where !animal.isCustom {
+                candidates.append((phrase: words(normalize(animal.name)), id: animal.id))
+                candidates.append((phrase: words(animal.id), id: animal.id))
+            }
+            candidates.sort { first, second in
+                if first.phrase.count == second.phrase.count { return first.id < second.id }
+                return first.phrase.count > second.phrase.count
+            }
+            if let match = candidates.first(where: { !$0.phrase.isEmpty && has($0.phrase) }) {
+                matched = match.phrase; source = .catalog(match.id)
             }
         }
         if source == nil {
