@@ -1,0 +1,175 @@
+{
+  "recordedAt": "2026-09-26T23:26:35.120892+00:00",
+  "scope": "Post-upload internal beta provider activation; no iOS binary or application-source changes",
+  "build": {
+    "version": "2.0",
+    "number": "113",
+    "id": "e396210b-2dbb-4012-981b-519432c5c62a",
+    "sourceCommit": "3ae7a43f0e48097707d5cb32fc783b2d645944b8",
+    "processingState": "VALID",
+    "audience": "INTERNAL_ONLY",
+    "internalState": "IN_BETA_TESTING"
+  },
+  "provider": {
+    "dedicatedRestrictedKeyStoredServerSide": true,
+    "secretIncluded": false,
+    "keyExpires": "2026-12-25",
+    "modelAccessCheck": {
+      "checkedAt": "2026-09-26T23:18:54.322190+00:00",
+      "keyPresent": true,
+      "keyName": "AvA 2.0 custom fighters beta",
+      "keyExpires": "2026-12-25",
+      "service": "backend-v2",
+      "imageRequests": 0,
+      "semanticReviewRequests": 0,
+      "modelListHTTP": 200,
+      "requiredModelsAvailable": {
+        "gpt-image-2.5-flare-2026-09-08": true,
+        "gpt-4.1-mini-2025-04-14": true,
+        "omni-moderation-latest": true
+      }
+    },
+    "moderationCheck": {
+      "checkedAt": "2026-09-26T23:23:11.863869+00:00",
+      "service": "backend-v2",
+      "imageRequests": 0,
+      "semanticReviewRequests": 0,
+      "moderationHTTP": 200,
+      "benignSubjectAccepted": true
+    },
+    "paidImageRequestsPerformedByThisActivation": 0,
+    "paidReviewRequestsPerformedByThisActivation": 0,
+    "liveGeneratedPackVerified": false
+  },
+  "deployment": {
+    "checkedAt": "2026-09-26T23:23:48.842020+00:00",
+    "deployment": {
+      "id": "138ef722-baf2-4ef7-89c9-81b1f97ef7da",
+      "status": "SUCCESS",
+      "createdAt": "2026-09-26T23:22:24.992Z"
+    },
+    "imageDigest": "sha256:f2d90d7443435326dcaeb0a12568f9c7450c642c250b5174ab3c365df14e2bf5",
+    "config": {
+      "SPRITE_GENERATION_ENABLED": "true",
+      "SPRITE_ALLOW_SANDBOX": "true",
+      "SPRITE_ALLOW_PRODUCTION": "false",
+      "SPRITE_MONTHLY_ALLOWANCE": "3",
+      "SPRITE_BETA_BUDGET_USD": "5",
+      "SPRITE_ONLY_SERVICE": "true"
+    },
+    "providerKeyPresent": true,
+    "probes": {
+      "/health": {
+        "http": 200
+      },
+      "/api/custom-fighters/status": {
+        "http": 200,
+        "body": {
+          "enabled": true,
+          "configured": true,
+          "monthlyAllowance": 3,
+          "requiresSubscription": true
+        }
+      },
+      "/api/custom-fighters/privacy": {
+        "http": 200
+      },
+      "/api/custom-fighters": {
+        "http": 401
+      },
+      "/api/battle": {
+        "http": 404
+      }
+    }
+  },
+  "startupLogCheck": {
+    "checkedAt": "2026-09-26T23:25:18.116782+00:00",
+    "deploymentId": "138ef722-baf2-4ef7-89c9-81b1f97ef7da",
+    "logEntriesInspected": 8,
+    "bootMessageObserved": true,
+    "workerUnavailableWarnings": 0,
+    "unhandledErrors": 0,
+    "errorLevelEntries": 1,
+    "logMessagesIncluded": false,
+    "errorLevelTriage": {
+      "checkedAt": "2026-09-26T23:26:03.826528+00:00",
+      "message": "npm warn config production Use `--omit=dev` instead.",
+      "classification": "npm configuration deprecation warning on stderr; not an application failure"
+    }
+  },
+  "testFlightNotes": {
+    "checkedAt": "2026-09-26T23:24:28.207206+00:00",
+    "updatedAndExactReadbackMatched": true,
+    "notesSHA256": "0e19721d9da570459e0ae65d33249d59c275725b1627f1e1890db85990456d0c",
+    "invitationsSent": false,
+    "externalGroupChanged": false
+  },
+  "maintenance": {
+    "checkedAt": "2026-09-26T23:26:03.886423+00:00",
+    "head": "107bf7327f1c82e85282101e2294fb6f9ded3639",
+    "headUnchanged": true,
+    "statusSHA256": "a1fc5ca45e11abac1dc6133a62e4c61fe1ab9bfa859463ba7d82e8b1494ca42d",
+    "statusUnchanged": true
+  },
+  "limitations": [
+    "Model listing and text moderation do not verify image-generation billing, quality, latency or four-pose acceptance.",
+    "Real device Sign in with Apple, Sandbox Premium owner association and the first explicit creation remain pending.",
+    "The $5 lifetime application ledger is not an external provider billing cap.",
+    "Production creation remains disabled; public release is not qualified."
+  ],
+  "nextTest": "On TestFlight 2.0 (113), use My Fighters to sign in with Apple, activate or restore a valid Sandbox Premium subscription, then explicitly confirm one benign Robot creation and inspect all four poses.",
+  "localEvidenceFiles": [
+    "ios/build/release-tools/provider-key-preflight-113.json",
+    "ios/build/release-tools/provider-moderation-preflight-113.json",
+    "ios/build/release-tools/backend-v2-activation-113.json",
+    "ios/build/release-tools/backend-v2-activation-log-check-113.json",
+    "ios/build/release-tools/testflight-2.0-113-activation-notes.json",
+    "ios/build/release-tools/what-to-test-113-activated.txt",
+    "ios/build/release-tools/maintenance-activation-113.json",
+    "ios/build/release-tools/custom-fighter-activation-aggregate-20260926T2326Z.json"
+  ],
+  "postActivationAudit": {
+    "checkedAt": "2026-09-26T23:26:07.779Z",
+    "readOnly": true,
+    "providerCalls": 0,
+    "services": {
+      "backend-v2": {
+        "deploymentID": "138ef722-baf2-4ef7-89c9-81b1f97ef7da",
+        "status": "SUCCESS",
+        "createdAt": "2026-09-26T23:22:24.992Z"
+      },
+      "backend": {
+        "deploymentID": "dfefd10c-edaf-4391-812d-27418c99c182",
+        "status": "SUCCESS",
+        "createdAt": "2026-09-24T02:13:10.546Z"
+      }
+    },
+    "originalBackendUnchanged": true,
+    "accounts": {
+      "total": 0,
+      "active": 0,
+      "deleted": 0
+    },
+    "sessions": {
+      "total": 0,
+      "unexpired": 0
+    },
+    "jobs": {
+      "total": 0,
+      "queued": 0,
+      "active": 0,
+      "dispatched": 0
+    },
+    "jobStates": [],
+    "ledger": {
+      "scope": "beta-lifetime-v1",
+      "rowExists": false,
+      "reservedMicrodollars": 0,
+      "usageEstimatedMicrodollars": 0
+    },
+    "notes": [
+      "Only aggregate private database values recorded.",
+      "Usage estimate is not a provider billing verification."
+    ]
+  }
+}

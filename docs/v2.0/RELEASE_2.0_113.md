@@ -4,7 +4,17 @@
 
 My Fighters adds a private account library with four-pose previews, saved-fighter selection and restoration. It is accessible from home, settings, solo, team and tournament selection. Existing typed-name local avatars remain available. Selecting downloaded artwork does not spend another custom-creation charge, and downloaded fighters remain usable after Premium expires or a network session needs sign-in again. An explicit sign-out hides that owner's local library.
 
-**Live new-artwork generation is unavailable: the isolated service has no image-provider credential, and no paid quality trial has been completed.** This beta contains the account/library and generation workflow implementation; it is not a claim that real Sign in with Apple, a real subscription-to-owner association, or a paid generated sheet has succeeded. The new UI tests use explicitly isolated synthetic account/API responses and fixture artwork made from bundled sprites.
+**Upload-time state (22:05 UTC):** The service had no image-provider credential and live new-artwork generation was unavailable. The later activation below supersedes that configuration status; the original upload evidence remains unchanged. This beta contains the account/library and generation workflow implementation; it is not a claim that real Sign in with Apple, a real subscription-to-owner association, or a paid generated sheet has succeeded. The new UI tests use explicitly isolated synthetic account/API responses and fixture artwork made from bundled sprites.
+
+## Backend activation — September 26, 2026
+
+At **23:23:48 UTC**, deployment `138ef722-baf2-4ef7-89c9-81b1f97ef7da` succeeded and the private artwork service reported `enabled: true` and `configured: true`. The approved pilot is **Sandbox-only**, purchaser-only, with **three successful creations per UTC month** and the existing **$5 lifetime application budget / $1 paid-attempt reservation**. Production creation remains off. Private-library access still requires authentication (401 without it), and the old battle route remains absent from this service (404).
+
+The key expires **2026-12-25**. Its preflight listed all three required models, and a benign moderation request returned 200. These checks made **zero image-generation or semantic-review requests**; no live generated sheet has been accepted. The independent database check at 23:26:07 UTC found zero actual accounts, sessions, jobs or budget entries. Model visibility and moderation success do not establish the complete generation, quality or subscription flow.
+
+The next owner check is in **TestFlight 2.0 (113) → My Fighters**: complete real Sign in with Apple, establish the intended Sandbox Premium entitlement, then create **one benign fighter such as Robot** through the grown-up gate and explicit OpenAI consent. The activation and one-request pilot are already authorized. Check its four poses, one-credit accounting, saved-library entry and reuse. Account authentication, receipt association and live output quality remain unverified until observed.
+
+The same TestFlight build remained `VALID` / `INTERNAL_ONLY` / `IN_BETA_TESTING` with existing `self` access when its updated English notes were read back at **23:24:28 UTC**. See the [separate activation evidence](evidence/custom-fighter-activation-113.json). This backend configuration change does not replace frozen app source `3ae7a43f` or alter the [historical upload record](evidence/testflight-2.0-113.json).
 
 ## Delivery evidence
 
@@ -90,6 +100,6 @@ The app's own dSYM is present. Upload reported missing vendor dSYMs for GoogleMo
 
 ## Owner testing
 
-Open TestFlight → Animal vs Animal → **2.0 (113)** and use [the owner checklist](OWNER_TESTFLIGHT_CHECKS.md). First verify retained progress/PIN/tournament state, then real Sign in with Apple and existing subscription purchase/restore/account linkage. The unavailable artwork state is expected until the provider is configured and its separate approved trial passes. Do not treat fixture screenshots as accepted live-generated artwork.
+Open TestFlight → Animal vs Animal → **2.0 (113)** and use [the owner checklist](OWNER_TESTFLIGHT_CHECKS.md). First verify retained progress/PIN/tournament state, then real Sign in with Apple and existing subscription purchase/restore/account linkage. The Sandbox service is now configured for the authorized one-request pilot: sign in with Apple, establish Sandbox Premium, and explicitly confirm one benign request such as Robot. Its real account, receipt and generated-output checks remain pending. Do not treat fixture screenshots as accepted live-generated artwork.
 
 Physical installation, sustained motion/memory, accessibility, real receipts, App Attest/narration, iCloud/Game Center, permissions, audio/haptics and eligible ads remain owner checks. Broader external testing and App Store submission are outside this internal-beta delivery.

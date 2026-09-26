@@ -26,14 +26,14 @@ Frozen `3ae7a43f` passed **97 accepted native executions** (73 unit + 14 phone U
 
 ## My Fighters and account checks
 
-1. Open My Fighters from home and a fighter picker. New artwork should honestly report unavailable while the provider key is absent; existing typed-name local fighters remain available.
+1. Open **My Fighters** in TestFlight 2.0 (113), from home or a fighter picker. The Sandbox service was activated at 23:23:48 UTC; the updated testing notes were verified at 23:24:28 UTC. Existing typed-name local fighters remain available. See [activation evidence](evidence/custom-fighter-activation-113.json).
 2. With a grown-up, test real Sign in with Apple, cancellation, sign-out, reauthentication and account recovery. The capability is enabled, but device authentication and private-library restoration are still unverified.
 3. Test existing Premium purchase/restore and subscriber association through the intended Sandbox flow. The beta gives 3 successful creations per UTC calendar month, purchaser-only; local custom benefits are separate. Do not infer eligibility from a fixture screenshot.
-4. Only after an approved live provider pilot is configured, verify typing/cancelled consent creates nothing; explicit parent+OpenAI confirmation creates once; closing/relaunching resumes the same request. An uncertain terminal result returns the customer credit and never automatically retries; a replacement needs fresh confirmation.
+4. After real Apple sign-in and Sandbox Premium association, run the authorized **one-request pilot** with a benign name such as **Robot**. Verify typing/cancelled consent creates nothing, then complete the grown-up gate and explicit OpenAI confirmation once. Inspect all four poses, the saved-library entry and the one-credit result. Closing/relaunching must resume the same request. An uncertain terminal result returns the customer credit and never automatically retries; a replacement needs fresh confirmation.
 5. With authorized actual downloaded art, inspect all four poses and reuse in solo/team/tournament/share paths, offline and after creation eligibility expires. Verify another signed-in device restores the same private fighter without regeneration.
 6. On dedicated test data, verify unsafe reporting, per-fighter deletion and account deletion across devices. **Erase game data** clears local/downloaded state and game progress; **My Fighters → Account** separately deletes the private online library. Apple grant revocation and managed-backup expiry remain public-release gates.
 
-No paid provider result, real receipt-to-account association or live cross-device restoration has been established by the automated fixture tests.
+At activation, required models were listed and a benign moderation request succeeded; there had been zero image/semantic-review requests and no accepted live sheet. Real receipt-to-account association and cross-device restoration remain unverified. The Sandbox-only service retains 3 successful creations per UTC month and the $5 lifetime application budget; Production creation remains off.
 
 ## Device/account capabilities
 

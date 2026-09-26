@@ -1,6 +1,6 @@
 # Local custom avatars and private downloaded artwork
 
-Build 112 reflects the owner's earlier choice of custom artwork without recurring image-generation charges. It creates a retro avatar on the device from bundled artwork. It does not call an image provider, send a name to an additional service, or require an image API credential. Existing battle narration and custom classification behavior are unchanged. Build 113 adds the private subscriber-library and generated-pack implementation described in [Subscriber-generated custom fighters](SUBSCRIBER_CUSTOM_FIGHTERS.md). Live provider generation remains unavailable and unverified; this does not change build 112's historical local-only behavior.
+Build 112 reflects the owner's earlier choice of custom artwork without recurring image-generation charges. It creates a retro avatar on the device from bundled artwork. It does not call an image provider, send a name to an additional service, or require an image API credential. Existing battle narration and custom classification behavior are unchanged. Build 113 adds the private subscriber-library and generated-pack implementation described in [Subscriber-generated custom fighters](SUBSCRIBER_CUSTOM_FIGHTERS.md). The Sandbox provider backend was activated at 23:23:48 UTC for the authorized one-request pilot, but no live sheet has been accepted; this does not change build 112's historical local-only behavior. See [activation evidence](evidence/custom-fighter-activation-113.json).
 
 ## Build 113 private-pack integration
 
@@ -8,7 +8,7 @@ Build 112 reflects the owner's earlier choice of custom artwork without recurrin
 
 Generated packs are private account data and have four fixed pose cells. Downloads are bounded, authenticated, hash/manifest validated and atomically installed before the fighter enters the local roster. Cache invalidation follows library revision. Expired creation eligibility does not erase the downloaded pack; explicit sign-out hides the selected owner's library. Local erase and remote account deletion are distinct, and explicit tombstones/library epochs handle server-confirmed removals.
 
-The 113 tests used synthetic packs made from existing bundled poses and simulated subscriber/API answers. They passed the scoped native/backend/upgrade checks and reviewed screenshots in the release ledger. No live image-provider credential, paid quality pilot, real Apple sign-in or subscription-linked generation has been qualified. The separate API creation allowance is 3 successful creations per UTC month during the purchaser-only Sandbox beta; existing typed-name local avatars still need no image API.
+The 113 tests used synthetic packs made from existing bundled poses and simulated subscriber/API answers. They passed the scoped native/backend/upgrade checks and reviewed screenshots in the release ledger. The later activation supplied the credential and passed model-list/moderation preflights; the first paid quality/cost result, real Apple sign-in and subscription-linked generation remain unverified. The separate API creation allowance is 3 successful creations per UTC month during the purchaser-only Sandbox beta; existing typed-name local avatars still need no image API.
 
 ## Appearance contract
 
