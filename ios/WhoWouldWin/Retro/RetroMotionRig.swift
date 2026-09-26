@@ -146,7 +146,7 @@ struct RetroMotionRig {
             case .bird:
                 // The wing's outer edge rotates around the shoulder, not the face.
                 let wings = (1 - front * 0.85) * smooth((y - 0.25) / 0.60)
-                dy = wings * (gait * 0.100 + windup * 0.060 - strike * 0.080)
+                dy = wings * (gait * (1 - windup * 0.85) * 0.100 + windup * 0.090 - strike * 0.100)
                 dx = wings * (windup * 0.030 - strike * 0.045)
                 dx += front * upper * (strike * 0.045 - recoil * 0.065)
                 dy += feet * strike * 0.065
