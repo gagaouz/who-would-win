@@ -1,6 +1,18 @@
 # 2.0 implementation status — September 26, 2026
 
-**Build 112: Animal vs Animal 2.0 (112) is available in internal TestFlight. At 2026-09-26 20:19:50 UTC, Apple reported VALID, INTERNAL_ONLY and IN_BETA_TESTING; the exact candidate is present in the existing self group and its What to Test notes were read back.** See the [current release record](RELEASE_2.0_112.md) and [sanitized Apple evidence](evidence/testflight-2.0-112.json). [Build 110](RELEASE_2.0_110.md) and [build 111](RELEASE_2.0_111.md) preserve their historical release evidence.
+**Current build 113:** Animal vs Animal 2.0 (113) is available in internal TestFlight. At 2026-09-26 22:05:23 UTC, Apple reported VALID, INTERNAL_ONLY and IN_BETA_TESTING; the exact candidate is present in the existing self group and its English testing notes were read back. See the [build 113 release record](RELEASE_2.0_113.md) and [sanitized evidence](evidence/testflight-2.0-113.json).
+
+Frozen `3ae7a43f` passed **97 accepted native executions** (73 unit + 14 phone UI + 10 repeated tablet UI), **80 fresh backend tests**, and **two fresh strict synthetic 1.1.7 → 113 upgrade cases**. Forty-five selected phone/tablet still captures were accepted. The earlier tablet timing failure and unchanged full rerun are retained in the release record.
+
+**Live artwork generation remains unavailable because the isolated beta service has no configured provider key; no paid quality/cost pilot has run.** My Fighters account/library, consent, saved-request recovery and downloaded-pack reuse are implemented. Test artwork and subscription/API responses were synthetic. Real Sign in with Apple, subscription association, account restoration/deletion and physical-device acceptance remain pending.
+
+Sign in with Apple is enabled for the canonical bundle, and the signed archive/profile were checked. The private service uses separate routes/custom tables on the existing PostgreSQL connection; ordinary battle traffic keeps its established endpoint. The subscriber allowance is 3 successful creations per UTC month in the purchaser-only Sandbox beta; Production creation stays off. Existing local custom avatars and their gameplay rules remain available.
+
+Archive/export/upload passed. The local IPA hash, retained warnings and 22:03 original-checkout isolation are recorded in the release ledger. Builds 110–112 below remain historical evidence; their old backend-identity carry-forward does not apply to the new 113 backend.
+
+## Historical build 112 checkpoint
+
+**Build 112: Animal vs Animal 2.0 (112) is available in internal TestFlight. At 2026-09-26 20:19:50 UTC, Apple reported VALID, INTERNAL_ONLY and IN_BETA_TESTING; the exact candidate is present in the existing self group and its What to Test notes were read back.** See the [build 112 release record](RELEASE_2.0_112.md) and [sanitized Apple evidence](evidence/testflight-2.0-112.json). [Build 110](RELEASE_2.0_110.md) and [build 111](RELEASE_2.0_111.md) preserve their historical release evidence.
 
 - The entire native app remains retro, with the sky/mint/ivory interface and compact rounded controls introduced in build 111.
 - All **143 catalog creatures and 12 custom bases have four individually drawn poses**: idle, anticipation, attack and reaction. Each uses the original lion's native action-cycle contract; this does not claim separate walk, flight or multi-frame animation clips. Forty referenced atlases validate completely, including 35 raw PNG resources.

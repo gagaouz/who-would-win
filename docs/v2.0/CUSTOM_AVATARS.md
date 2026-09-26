@@ -1,6 +1,14 @@
-# Local custom avatars
+# Local custom avatars and private downloaded artwork
 
-Build 112 reflects the owner's earlier choice of custom artwork without recurring image-generation charges. It creates a retro avatar on the device from bundled artwork. It does not call an image provider, send a name to an additional service, or require an image API credential. Existing battle narration and custom classification behavior are unchanged. The owner has since proposed subscriber-funded generated artwork with four original poses and durable storage; that next feature is specified in [Subscriber-generated custom fighters](SUBSCRIBER_CUSTOM_FIGHTERS.md) and is not implemented in build 112.
+Build 112 reflects the owner's earlier choice of custom artwork without recurring image-generation charges. It creates a retro avatar on the device from bundled artwork. It does not call an image provider, send a name to an additional service, or require an image API credential. Existing battle narration and custom classification behavior are unchanged. Build 113 adds the private subscriber-library and generated-pack implementation described in [Subscriber-generated custom fighters](SUBSCRIBER_CUSTOM_FIGHTERS.md). Live provider generation remains unavailable and unverified; this does not change build 112's historical local-only behavior.
+
+## Build 113 private-pack integration
+
+[Build 113](RELEASE_2.0_113.md) is available in internal TestFlight from frozen `3ae7a43f`. A saved fighter can carry an optional immutable appearance reference while keeping its stable identity/name. The shared renderer resolves a verified installed owner pack first and retains bundled local fallback when art is unavailable. Older saved animals/tournaments decode without the optional field. A newly installed pack changes presentation, not battle outcomes or the existing local creation rules.
+
+Generated packs are private account data and have four fixed pose cells. Downloads are bounded, authenticated, hash/manifest validated and atomically installed before the fighter enters the local roster. Cache invalidation follows library revision. Expired creation eligibility does not erase the downloaded pack; explicit sign-out hides the selected owner's library. Local erase and remote account deletion are distinct, and explicit tombstones/library epochs handle server-confirmed removals.
+
+The 113 tests used synthetic packs made from existing bundled poses and simulated subscriber/API answers. They passed the scoped native/backend/upgrade checks and reviewed screenshots in the release ledger. No live image-provider credential, paid quality pilot, real Apple sign-in or subscription-linked generation has been qualified. The separate API creation allowance is 3 successful creations per UTC month during the purchaser-only Sandbox beta; existing typed-name local avatars still need no image API.
 
 ## Appearance contract
 
@@ -21,7 +29,7 @@ New raw pages use uncached bundle loading with a 32 MiB retained decoded-atlas L
 
 Acceptance checks cover recognized names, unfamiliar names, punctuation, Unicode normalization, long names, distinct identities sharing a name, cache recreation without network, two-custom battles, custom versus catalog, all share renderers, and saved 1.1.7 custom entrants. Native validation evidence is recorded in the implementation and release ledgers; this specification alone does not mark those checks passed.
 
-The abandoned paid-service prototype was removed from the release branch before any live image API calls or deployment. Backend source and dependencies remain unchanged from the 1.1.7 baseline.
+For historical build 112, the earlier paid-service prototype was removed before live image API calls or deployment, and its backend tree matched 1.1.7. Build 113 intentionally adds a separate custom-only service, private custom tables and tests; do not apply that old unchanged-backend claim to the new subscriber feature. The deployment shares the existing PostgreSQL connection, not a separately verified database.
 
 ## Build 112 motion and compatibility evidence
 
