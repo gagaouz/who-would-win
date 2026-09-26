@@ -4,17 +4,19 @@ import UIKit
 
 final class RetroAssetTests: XCTestCase {
     @MainActor
-    func testExpandedActionRosterHasFourDifferentBundledPoses() throws {
+    func testEntireCatalogHasFourDifferentAuthoredBundledPoses() throws {
         let store = RetroAssetStore.shared
-        let ids = ["lion", "gorilla", "tiger", "grizzly_bear", "wolf", "elephant",
-                   "great_white_shark", "orca", "bald_eagle", "cobra", "dragon", "t_rex",
-                   "triceratops", "velociraptor", "crocodile", "rhinoceros", "tarantula", "giant_squid"]
-        for id in ids {
-            let sprite = try XCTUnwrap(store.manifest?.sprites[id])
-            let animal = try XCTUnwrap(Animals.all.first { $0.id == id })
-            XCTAssertEqual(Set(sprite.frames.keys), Set(RetroPose.allCases.map(\.rawValue)), id)
-            let frames = try RetroPose.allCases.map { try XCTUnwrap(store.image(for: animal, pose: $0)?.pngData()) }
-            XCTAssertEqual(Set(frames).count, 4, "\(id) must have four genuinely different images, not idle aliases.")
+        XCTAssertEqual(Animals.all.count, 143)
+        for animal in Animals.all {
+            try autoreleasepool {
+                let sprite = try XCTUnwrap(store.manifest?.sprites[animal.id])
+                XCTAssertEqual(Set(sprite.frames.keys), Set(RetroPose.allCases.map(\.rawValue)), animal.id)
+                XCTAssertTrue(RetroMotionProfile.hasCompleteAuthoredPoses(sprite), "Missing or aliased authored frames: \(animal.id)")
+                let frames = try RetroPose.allCases.map { try XCTUnwrap(store.image(for: animal, pose: $0)?.pngData()) }
+                XCTAssertEqual(Set(frames).count, 4, "\(animal.id) must have four different rendered images, not duplicated art or idle aliases.")
+                XCTAssertTrue(RetroMotionProfile.resolve(for: animal, manifest: store.manifest).authoredPoses,
+                              "Shipped creatures must play their authored family without procedural deformation.")
+            }
         }
     }
 
@@ -27,12 +29,10 @@ final class RetroAssetTests: XCTestCase {
                        "Every shipped catalog creature needs approved bundled sprite art")
         for (animalID, sprite) in manifest.sprites {
             let animal = try XCTUnwrap(Animals.all.first { $0.id == animalID }, "Unknown stable ID: \(animalID)")
-            let sheet = try XCTUnwrap(UIImage(named: sprite.asset)?.cgImage, "Missing sheet: \(sprite.asset)")
+            let sheet = try XCTUnwrap(store.atlasImage(named: sprite.asset), "Missing sheet: \(sprite.asset)")
             for pose in RetroPose.allCases {
-                // Anatomy rigs can animate one approved pose. Missing optional
-                // pose art must resolve to that sprite's own idle frame.
-                let frame = try XCTUnwrap(sprite.frames[pose.rawValue] ?? sprite.frames[RetroPose.idle.rawValue],
-                                         "\(animalID) has neither \(pose.rawValue) nor idle")
+                let frame = try XCTUnwrap(sprite.frames[pose.rawValue],
+                                         "\(animalID) is missing mandatory authored pose \(pose.rawValue)")
                 XCTAssertEqual(frame.count, 4)
                 guard frame.count == 4 else { continue }
                 XCTAssertGreaterThan(frame[2], 0)
@@ -48,6 +48,145 @@ final class RetroAssetTests: XCTestCase {
         }
     }
 
+    @MainActor
+    func testAtlasLRUEvictsTheLeastRecentlyUsedDecodedSheetWithinItsBudget() throws {
+        let sheet = try XCTUnwrap(diagnosticAtlas().cgImage)
+        let cost = sheet.bytesPerRow * sheet.height
+        var loads: [String: Int] = [:]
+        let cache = RetroAtlasCache(costLimit: cost * 2) { name in
+            loads[name, default: 0] += 1
+            return sheet
+        }
+        _ = cache.image(named: "A"); _ = cache.image(named: "B")
+        _ = cache.image(named: "A") // A is now newest, not the eviction candidate.
+        _ = cache.image(named: "C")
+        XCTAssertEqual(cache.cachedNames, Set(["A", "C"]))
+        XCTAssertEqual(cache.residentCost, cost * 2)
+        XCTAssertEqual(loads["A"], 1)
+        _ = cache.image(named: "B")
+        XCTAssertEqual(loads["B"], 2)
+        XCTAssertEqual(cache.cachedNames, Set(["B", "C"]))
+        cache.removeAll()
+        XCTAssertEqual(cache.residentCost, 0); XCTAssertTrue(cache.cachedNames.isEmpty)
+
+        var oversizedLoads = 0
+        let tooSmall = RetroAtlasCache(costLimit: cost - 1) { _ in oversizedLoads += 1; return sheet }
+        XCTAssertNotNil(tooSmall.image(named: "oversized"))
+        XCTAssertNotNil(tooSmall.image(named: "oversized"))
+        XCTAssertEqual(oversizedLoads, 2)
+        XCTAssertEqual(tooSmall.residentCost, 0, "A usable oversized sheet must not silently break the retained-byte budget.")
+    }
+
+    @MainActor
+    func testRawAtlasPrecedesLegacyCatalogAndCorruptionIsNotHidden() throws {
+        let original = diagnosticAtlas()
+        let source = try XCTUnwrap(original.cgImage)
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let url = directory.appendingPathComponent("diagnostic.png")
+        try XCTUnwrap(original.pngData()).write(to: url)
+        var legacyLoads = 0
+        let decoded = try XCTUnwrap(RetroAtlasCache.load(named: "diagnostic", rawURL: { _ in url }, legacy: { _ in legacyLoads += 1; return source }))
+        XCTAssertEqual(canonicalPixels(decoded), canonicalPixels(source), "Uncached ImageIO decoding must preserve pixel orientation, colors and alpha.")
+        XCTAssertEqual(legacyLoads, 0)
+        try Data("invalid PNG".utf8).write(to: url)
+        XCTAssertNil(RetroAtlasCache.load(named: "diagnostic", rawURL: { _ in url }, legacy: { _ in legacyLoads += 1; return source }))
+        XCTAssertEqual(legacyLoads, 0, "A corrupt packaged raw sheet must fail validation rather than hide behind stale art.")
+        XCTAssertNotNil(RetroAtlasCache.load(named: "legacy", rawURL: { _ in nil }, legacy: { _ in legacyLoads += 1; return source }))
+        XCTAssertEqual(legacyLoads, 1)
+    }
+
+    @MainActor
+    func testDetachedCropsKeepExactPixelsAndOwnOnlyTheirSmallBuffer() throws {
+        let atlas = try XCTUnwrap(diagnosticAtlas().cgImage)
+        let rect = CGRect(x: 3, y: 1, width: 9, height: 6)
+        let expected = try XCTUnwrap(atlas.cropping(to: rect))
+        let detached = try XCTUnwrap(RetroAtlasCache.detachedCopy(of: atlas, crop: rect))
+        XCTAssertEqual(detached.width, 9); XCTAssertEqual(detached.height, 6)
+        XCTAssertEqual(detached.bytesPerRow, detached.width * 4)
+        let data = try XCTUnwrap(detached.dataProvider?.data)
+        XCTAssertEqual(CFDataGetLength(data), detached.width * detached.height * 4,
+                       "A displayed crop must not retain its parent atlas pixel buffer.")
+        XCTAssertEqual(canonicalPixels(detached), canonicalPixels(expected), "Asymmetric colors and transparent pixels catch flipped, rescaled or damaged crops.")
+    }
+
+    @MainActor
+    func testClearingBothCachesReloadsPosesWithoutChangingRetainedImages() throws {
+        let source = try XCTUnwrap(diagnosticAtlas().cgImage)
+        let frames = Dictionary(uniqueKeysWithValues: RetroPose.allCases.enumerated().map { index, pose in
+            (pose.rawValue, [index * 4, 0, 4, 8])
+        })
+        let sprite = RetroSpriteManifest.Sprite(asset: "injected", archetype: "biped", frames: frames)
+        let manifest = RetroSpriteManifest(version: 1, styleVersion: RetroAssetStore.styleVersion, sprites: ["diagnostic": sprite], customBases: nil)
+        var loads = 0
+        let store = RetroAssetStore(manifest: manifest, atlasLoader: { _ in loads += 1; return source })
+        let animal = Animal(id: "diagnostic", name: "Diagnostic", emoji: "", category: .land, pixelColor: "#769BBA", size: 3)
+        let images = try RetroPose.allCases.map { try XCTUnwrap(store.image(for: animal, pose: $0)) }
+        let pixels = try images.map { canonicalPixels(try XCTUnwrap($0.cgImage)) }
+        XCTAssertEqual(loads, 1, "Four crops from one atlas should decode that atlas once.")
+        XCTAssertGreaterThan(store.cachedAtlasCost, 0)
+        let revision = store.revision
+        store.clearMemoryCache()
+        XCTAssertEqual(store.cachedAtlasCost, 0)
+        XCTAssertEqual(store.revision, revision + 1)
+        for (index, pose) in RetroPose.allCases.enumerated() {
+            let reloaded = try XCTUnwrap(store.image(for: animal, pose: pose)?.cgImage)
+            XCTAssertEqual(pixels[index], canonicalPixels(reloaded))
+            XCTAssertEqual(pixels[index], canonicalPixels(try XCTUnwrap(images[index].cgImage)),
+                           "Already displayed images must survive both cache eviction and parent erase.")
+        }
+        XCTAssertEqual(loads, 2)
+    }
+
+    @MainActor
+    func testMemoryWarningDropsCacheOwnershipWithoutTriggeringArtworkReload() async throws {
+        let source = try XCTUnwrap(diagnosticAtlas().cgImage)
+        let sprite = RetroSpriteManifest.Sprite(asset: "injected", archetype: "biped", frames: ["idle": [0, 0, 4, 8]])
+        let manifest = RetroSpriteManifest(version: 1, styleVersion: RetroAssetStore.styleVersion, sprites: ["diagnostic": sprite], customBases: nil)
+        var loads = 0
+        let store = RetroAssetStore(manifest: manifest, atlasLoader: { _ in loads += 1; return source })
+        let animal = Animal(id: "diagnostic", name: "Diagnostic", emoji: "", category: .land, pixelColor: "#769BBA", size: 3)
+        let retained = try XCTUnwrap(store.image(for: animal))
+        let pixels = try XCTUnwrap(retained.pngData())
+        let revision = store.revision
+        NotificationCenter.default.post(name: UIApplication.didReceiveMemoryWarningNotification, object: nil)
+        // The notification's main-actor purge is asynchronous; allow that one
+        // queued turn to run without driving the scene or requesting new images.
+        try await Task.sleep(nanoseconds: 20_000_000)
+        XCTAssertEqual(store.cachedAtlasCost, 0)
+        XCTAssertEqual(store.revision, revision, "Memory pressure must not request scene texture regeneration.")
+        XCTAssertEqual(loads, 1)
+        XCTAssertEqual(retained.pngData(), pixels)
+        XCTAssertEqual(store.image(for: animal)?.pngData(), pixels)
+        XCTAssertEqual(loads, 2, "The next explicit request reloads the local sheet.")
+    }
+
+    @MainActor
+    private func diagnosticAtlas() -> UIImage {
+        let format = UIGraphicsImageRendererFormat(); format.scale = 1
+        return UIGraphicsImageRenderer(size: CGSize(width: 16, height: 8), format: format).image { renderer in
+            renderer.cgContext.setAllowsAntialiasing(false)
+            for (index, color) in [UIColor.red, .green, .blue, .yellow].enumerated() {
+                color.setFill(); renderer.fill(CGRect(x: index * 4, y: 0, width: 4, height: 8))
+            }
+            renderer.cgContext.clear(CGRect(x: 4, y: 2, width: 3, height: 3))
+            UIColor.magenta.withAlphaComponent(0.5).setFill()
+            renderer.fill(CGRect(x: 11, y: 1, width: 2, height: 2))
+        }
+    }
+
+    private func canonicalPixels(_ image: CGImage) -> Data? {
+        guard let context = CGContext(data: nil, width: image.width, height: image.height,
+            bitsPerComponent: 8, bytesPerRow: image.width * 4,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue) else { return nil }
+        context.setBlendMode(.copy)
+        context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+        guard let bytes = context.data else { return nil }
+        return Data(bytes: bytes, count: image.width * image.height * 4)
+    }
+
     func testCustomArtCacheNormalizesIdentityWithoutCombiningDifferentCreatures() {
         XCTAssertEqual(RetroAssetStore.customCacheKey(for: "  MOSSBACK\n  Dragon  "),
                        RetroAssetStore.customCacheKey(for: "mossback dragon"))
@@ -59,18 +198,23 @@ final class RetroAssetTests: XCTestCase {
     }
 
     @MainActor
-    func testAllTwelveLocalBasesAreBundledAndInBounds() throws {
-        let bases = try XCTUnwrap(RetroAssetStore.shared.manifest?.customBases)
+    func testAllTwelveLocalBasesHaveCompleteAuthoredFramesInBounds() throws {
+        let store = RetroAssetStore.shared
+        let bases = try XCTUnwrap(store.manifest?.customBases)
         XCTAssertEqual(Set(bases.keys), Set(RetroCustomRecipe.baseIDs))
         for (id, sprite) in bases {
-            let frame = try XCTUnwrap(sprite.frames["idle"], id)
-            let sheet = try XCTUnwrap(UIImage(named: sprite.asset)?.cgImage, id)
-            XCTAssertEqual(frame.count, 4)
-            guard frame.count == 4 else { continue }
-            XCTAssertGreaterThan(frame[2], 0); XCTAssertGreaterThan(frame[3], 0)
-            XCTAssertGreaterThanOrEqual(frame[0], 0); XCTAssertGreaterThanOrEqual(frame[1], 0)
-            XCTAssertLessThanOrEqual(frame[0] + frame[2], sheet.width)
-            XCTAssertLessThanOrEqual(frame[1] + frame[3], sheet.height)
+            XCTAssertEqual(Set(sprite.frames.keys), Set(RetroPose.allCases.map(\.rawValue)), id)
+            XCTAssertTrue(RetroMotionProfile.hasCompleteAuthoredPoses(sprite), id)
+            let sheet = try XCTUnwrap(store.atlasImage(named: sprite.asset), id)
+            for pose in RetroPose.allCases {
+                let frame = try XCTUnwrap(sprite.frames[pose.rawValue], "\(id): \(pose.rawValue)")
+                XCTAssertEqual(frame.count, 4)
+                guard frame.count == 4 else { continue }
+                XCTAssertGreaterThan(frame[2], 0); XCTAssertGreaterThan(frame[3], 0)
+                XCTAssertGreaterThanOrEqual(frame[0], 0); XCTAssertGreaterThanOrEqual(frame[1], 0)
+                XCTAssertLessThanOrEqual(frame[0] + frame[2], sheet.width)
+                XCTAssertLessThanOrEqual(frame[1] + frame[3], sheet.height)
+            }
         }
     }
 
@@ -156,13 +300,23 @@ final class RetroAssetTests: XCTestCase {
     }
 
     @MainActor
-    func testSinglePoseCustomBasesFallBackWithoutChangingAppearance() throws {
+    func testAllLocalCustomBasesKeepFourAuthoredPosesAfterRecolorAndCacheClear() throws {
         let store = RetroAssetStore.shared
-        let animal = custom("Wizard")
-        let idle = try XCTUnwrap(store.image(for: animal)?.pngData())
-        for pose in RetroPose.allCases {
-            XCTAssertEqual(idle, store.image(for: animal, pose: pose)?.pngData(),
-                           "The runtime anatomy rig supplies motion when a base has one authored pose.")
+        for id in RetroCustomRecipe.baseIDs {
+            try autoreleasepool {
+                let animal = custom("Blue " + id, id: "custom_authored_" + id)
+                XCTAssertEqual(RetroCustomRecipe.make(name: animal.name).source, .base(id))
+                let images = try RetroPose.allCases.map { try XCTUnwrap(store.image(for: animal, pose: $0)) }
+                let pixels = try images.map { try XCTUnwrap($0.pngData()) }
+                XCTAssertEqual(Set(pixels).count, 4, "Custom base \(id) must retain four different authored poses after recoloring.")
+                XCTAssertTrue(images.allSatisfy { $0.size == CGSize(width: 128, height: 128) })
+                XCTAssertTrue(RetroMotionProfile.resolve(for: animal, manifest: store.manifest).authoredPoses)
+                store.clearMemoryCache()
+                for (index, pose) in RetroPose.allCases.enumerated() {
+                    XCTAssertEqual(pixels[index], store.image(for: animal, pose: pose)?.pngData(), id)
+                }
+                XCTAssertEqual(animal.id, "custom_authored_" + id)
+            }
         }
     }
 

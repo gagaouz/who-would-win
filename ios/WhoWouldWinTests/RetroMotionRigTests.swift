@@ -79,6 +79,30 @@ final class RetroMotionRigTests: XCTestCase {
         }
     }
 
+    func testAuthoredDetectionRejectsMissingMalformedAndAliasedPoseFamilies() {
+        let poses = RetroPose.allCases.map(\.rawValue)
+        let validFrames = Dictionary(uniqueKeysWithValues: poses.enumerated().map { index, pose in
+            (pose, [index * 100, 0, 80, 90])
+        })
+        func sprite(_ frames: [String: [Int]]) -> RetroSpriteManifest.Sprite {
+            RetroSpriteManifest.Sprite(asset: "diagnostic_only", archetype: "biped", frames: frames)
+        }
+        XCTAssertTrue(RetroMotionProfile.hasCompleteAuthoredPoses(sprite(validFrames)))
+        XCTAssertFalse(RetroMotionProfile.hasCompleteAuthoredPoses(nil))
+        for pose in poses {
+            var missing = validFrames; missing.removeValue(forKey: pose)
+            XCTAssertFalse(RetroMotionProfile.hasCompleteAuthoredPoses(sprite(missing)), pose)
+            for invalid in [[0, 0, 80], [-1, 0, 80, 90], [0, 0, 0, 90], [0, 0, 80, -1]] {
+                var malformed = validFrames; malformed[pose] = invalid
+                XCTAssertFalse(RetroMotionProfile.hasCompleteAuthoredPoses(sprite(malformed)), pose)
+            }
+        }
+        var aliased = validFrames
+        aliased["attack"] = aliased["anticipation"]
+        aliased["reaction"] = aliased["anticipation"]
+        XCTAssertFalse(RetroMotionProfile.hasCompleteAuthoredPoses(sprite(aliased)), "A second frame reused three times is not four authored poses.")
+    }
+
     @MainActor
     func testAllCatalogAndCustomSourcesResolveToTheirActualAnatomy() {
         let manifest = RetroAssetStore.shared.manifest!
@@ -89,8 +113,7 @@ final class RetroMotionRigTests: XCTestCase {
             let sprite = manifest.sprites[animal.id]!
             let expected = RetroMotionProfile(sourceID: animal.id, archetype: sprite.archetype)
             XCTAssertEqual(profile.anatomy, expected.anatomy)
-            let idle = sprite.frames["idle"]!
-            XCTAssertEqual(profile.authoredPoses, ["anticipation", "attack", "reaction"].allSatisfy { sprite.frames[$0] != nil && sprite.frames[$0] != idle })
+            XCTAssertTrue(profile.authoredPoses, "Every shipped catalog source must use its complete authored pose family: \(animal.id)")
         }
         XCTAssertEqual(RetroMotionProfile.resolve(for: custom("Blue Lion"), manifest: manifest).authoredPoses, true)
         XCTAssertEqual(RetroMotionProfile.resolve(for: custom("Ice Octopus"), manifest: manifest).anatomy, .tentacle)
@@ -98,6 +121,7 @@ final class RetroMotionRigTests: XCTestCase {
             let animal = custom(source)
             let profile = RetroMotionProfile.resolve(for: animal, manifest: manifest)
             XCTAssertEqual(profile.sourceID, source)
+            XCTAssertTrue(profile.authoredPoses, "Every local custom base needs authored poses: \(source)")
             XCTAssertEqual(profile.anatomy, RetroMotionProfile(sourceID: source, archetype: manifest.customBases![source]!.archetype).anatomy)
         }
         XCTAssertFalse(RetroMotionProfile(sourceID: "chicken", archetype: "biped").airborne)
@@ -107,14 +131,17 @@ final class RetroMotionRigTests: XCTestCase {
     @MainActor
     func testProductionSceneAppliesInternalMotionAndClearsItForReducedMotion() {
         let view = SKView(frame: .zero)
-        let cheetah = Animals.all.first { $0.id == "cheetah" }!
-        let scene = RetroBattleScene(sessionID: UUID(), teamA: [cheetah], teamB: [custom("Slime")], environment: .grassland)
+        // Exercise the defensive missing-art path with artificial inputs. Never
+        // weaken a real catalog/base family just to keep a fallback test alive.
+        let missingA = Animal(id: "diagnostic_missing_a", name: "Missing A", emoji: "", category: .land, pixelColor: "#769BBA", size: 3)
+        let missingB = Animal(id: "diagnostic_missing_b", name: "Missing B", emoji: "", category: .land, pixelColor: "#769BBA", size: 3)
+        let scene = RetroBattleScene(sessionID: UUID(), teamA: [missingA], teamB: [missingB], environment: .grassland)
         scene.didMove(to: view)
         scene.accept(.draw)
         scene.renderDiagnostic(elapsed: 0.25)
         let nodes = scene.children.flatMap { $0.children }.compactMap { $0 as? SKSpriteNode }
         let meshes = nodes.compactMap { $0.warpGeometry as? SKWarpGeometryGrid }
-        XCTAssertEqual(meshes.count, 2, "Both single-frame participants must receive internal articulation.")
+        XCTAssertEqual(meshes.count, 2, "Artificial missing-art participants still get a safe fallback; shipped art is validated separately.")
         XCTAssertTrue(meshes.allSatisfy { $0.vertexCount == RetroMotionRig.identity.count })
         scene.reduceMotion = true
         scene.renderDiagnostic(elapsed: 0.3)

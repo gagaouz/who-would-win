@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Register reviewed four-pose atlas cells without modifying raster pixels.
 
-Metadata is an array of {key, path, ids}, with one creature per row and
+Metadata is an array of {key, path, ids, section?, storage?}, with one creature per row and
 idle/anticipation/attack/reaction in four columns. Measured connected alpha
 bounds accommodate nonuniform generated spacing without altering pixels.
+The section defaults to sprites; customBases uses the same pose contract.
+Storage defaults to asset-catalog; bundle stores raw PNGs for bounded loading.
 """
 import argparse
 import hashlib
@@ -26,7 +28,15 @@ def main():
     manifest_path = ROOT / 'ios/WhoWouldWin/Retro/RetroSpriteManifest.json'
     manifest = json.loads(manifest_path.read_text())
     prepared = []
+    seen = set()
     for job in json.loads(args.metadata.read_text()):
+        section = job.get('section', 'sprites')
+        assert section in ('sprites', 'customBases'), section
+        assert job.get('storage', 'asset-catalog') in ('asset-catalog', 'bundle'), job
+        assert 1 <= len(job['ids']) <= 4, 'Use one to four creature rows per atlas'
+        for aid in job['ids']:
+            assert (section, aid) not in seen, ('duplicate import', section, aid)
+            seen.add((section, aid))
         image = Image.open(job['path'])
         assert image.mode == 'RGBA', 'Real generated transparency is required'
         labels, count = ndimage.label(np.array(image)[:, :, 3] > 100)
@@ -44,7 +54,7 @@ def main():
             ordered.extend(sorted(components[row * 4:row * 4 + 4], key=lambda part: part[1][0]))
         entries = {}
         for row, aid in enumerate(job['ids']):
-            assert aid in manifest['sprites'], aid
+            assert aid in manifest[section], (section, aid)
             frames = {}
             for col, pose in enumerate(POSES):
                 label, (left, top, right, bottom) = ordered[row * 4 + col]
@@ -54,19 +64,26 @@ def main():
                            if value not in (0, label) and areas[value] > 1000]
                 assert not foreign, (aid, pose, 'neighboring creature pixels in crop', foreign)
                 frames[pose] = [left - 1, top - 1, right - left + 2, bottom - top + 2]
-            entries[aid] = {**manifest['sprites'][aid], 'asset': 'retro_' + job['key'], 'frames': frames}
+            entries[aid] = {**manifest[section][aid], 'asset': 'retro_' + job['key'], 'frames': frames}
         prepared.append((job, entries))
     # Validate every input before changing the checked-in manifest.
     for job, entries in prepared:
-        folder = ROOT / 'ios/WhoWouldWin/Assets.xcassets' / ('retro_' + job['key'] + '.imageset')
-        folder.mkdir(exist_ok=True)
-        shutil.copyfile(job['path'], folder / 'sprites.png')
-        (folder / 'Contents.json').write_text(json.dumps({
-            'images': [{'filename': 'sprites.png', 'idiom': 'universal'}],
-            'info': {'author': 'xcode', 'version': 1}}, indent=2) + '\n')
-        manifest['sprites'].update(entries)
-        print(json.dumps({'asset': job['key'], 'creatures': list(entries), 'poses': list(POSES),
-                          'sha256': hashlib.sha256((folder / 'sprites.png').read_bytes()).hexdigest()}))
+        if job.get('storage') == 'bundle':
+            folder = ROOT / 'ios/WhoWouldWin/Resources/RetroAtlases'
+            folder.mkdir(parents=True, exist_ok=True)
+            target = folder / ('retro_' + job['key'] + '.png')
+        else:
+            folder = ROOT / 'ios/WhoWouldWin/Assets.xcassets' / ('retro_' + job['key'] + '.imageset')
+            folder.mkdir(exist_ok=True)
+            target = folder / 'sprites.png'
+            (folder / 'Contents.json').write_text(json.dumps({
+                'images': [{'filename': 'sprites.png', 'idiom': 'universal'}],
+                'info': {'author': 'xcode', 'version': 1}}, indent=2) + '\n')
+        shutil.copyfile(job['path'], target)
+        section = job.get('section', 'sprites')
+        manifest[section].update(entries)
+        print(json.dumps({'asset': job['key'], 'section': section, 'creatures': list(entries), 'poses': list(POSES),
+                          'sha256': hashlib.sha256(target.read_bytes()).hexdigest()}))
     manifest_path.write_text(json.dumps(manifest, indent=2) + '\n')
 
 

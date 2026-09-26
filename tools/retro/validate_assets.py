@@ -2,6 +2,7 @@
 """Validate source rectangles and catalog coverage; never rewrites artwork."""
 import argparse
 import itertools
+import hashlib
 import json
 from pathlib import Path
 from PIL import Image
@@ -25,18 +26,22 @@ if args.require_complete:
 assets = ROOT / 'ios/WhoWouldWin/Assets.xcassets'
 opened = {}
 rectangles = {}
+authored_by_section = {'sprites': [], 'customBases': []}
 for aid, entry in {**sprites, **{'custom:' + key: value for key, value in custom_bases.items()}}.items():
     assert entry['archetype'] in {'quadruped', 'primate', 'flyer', 'swimmer', 'serpentine', 'arthropod', 'biped'}, aid
     assert 'idle' in entry['frames'], f'{aid}: missing ready sprite'
-    folder = assets / (entry['asset'] + '.imageset')
-    metadata = json.loads((folder / 'Contents.json').read_text())
-    source = folder / next(i['filename'] for i in metadata['images'] if 'filename' in i)
+    source = ROOT / 'ios/WhoWouldWin/Resources/RetroAtlases' / (entry['asset'] + '.png')
+    if not source.exists():
+        folder = assets / (entry['asset'] + '.imageset')
+        metadata = json.loads((folder / 'Contents.json').read_text())
+        source = folder / next(i['filename'] for i in metadata['images'] if 'filename' in i)
     if source not in opened:
         im = Image.open(source)
         assert im.mode == 'RGBA', f'{source}: needs real transparency'
         assert im.width <= 4096 and im.height <= 4096, source
         opened[source] = im
     im = opened[source]
+    pose_pixels = []
     for pose, rect in entry['frames'].items():
         assert pose in {'idle', 'anticipation', 'attack', 'reaction'}, (aid, pose)
         assert len(rect) == 4 and all(type(n) is int for n in rect), (aid, pose)
@@ -46,7 +51,14 @@ for aid, entry in {**sprites, **{'custom:' + key: value for key, value in custom
         counts = alpha.histogram()
         assert sum(counts[128:]) > w*h*.03, f'{aid}/{pose}: blank crop'
         assert sum(counts[:16]) > w*h*.02, f'{aid}/{pose}: lacks transparent padding'
+        trimmed = im.crop((x, y, x+w, y+h))
+        trimmed = trimmed.crop(trimmed.getchannel('A').getbbox())
+        pose_pixels.append((trimmed.size, hashlib.sha256(trimmed.tobytes()).hexdigest()))
         rectangles.setdefault(source, []).append((f'{aid}/{pose}', rect))
+    if set(entry['frames']) == {'idle', 'anticipation', 'attack', 'reaction'} and len(set(pose_pixels)) == 4:
+        authored_by_section['customBases' if aid.startswith('custom:') else 'sprites'].append(aid)
+    elif args.require_complete:
+        raise AssertionError(f'{aid}: all four distinct authored poses are required')
 for source, entries in rectangles.items():
     alpha = opened[source].getchannel('A')
     for (name_a, a), (name_b, b) in itertools.combinations(entries, 2):
@@ -61,10 +73,8 @@ icon = Image.open(icon_folder / icon_metadata['images'][0]['filename'])
 assert icon.size == (1024, 1024), 'App icon must be 1024 square'
 assert icon.mode == 'RGB' or (icon.mode == 'RGBA' and icon.getchannel('A').getextrema() == (255, 255)), 'App icon must be opaque'
 missing = sorted(known - set(sprites))
-authored = [aid for aid, sprite in sprites.items()
-            if len({tuple(sprite['frames'].get(pose, sprite['frames']['idle']))
-                    for pose in ('idle', 'anticipation', 'attack', 'reaction')}) == 4]
 print(json.dumps({'catalog': len(known), 'covered': len(sprites), 'customBases': len(custom_bases),
-                  'atlases': len(opened), 'authoredPoseSets': len(authored), 'missing': missing}, indent=2))
+                  'atlases': len(opened), 'authoredPoseSets': len(authored_by_section['sprites']),
+                  'authoredCustomPoseSets': len(authored_by_section['customBases']), 'missing': missing}, indent=2))
 if args.require_complete and missing:
     raise SystemExit('Release blocked: incomplete retro artwork')

@@ -46,14 +46,18 @@ struct RetroMotionProfile: Equatable {
         } else {
             id = animal.id; sprite = manifest?.sprites[id]
         }
-        let idle = sprite?.frames[RetroPose.idle.rawValue]
-        // A new atlas is picked up automatically, including named custom variants.
-        // Missing/idle aliases do not count as authored motion.
-        let authored = [RetroPose.anticipation, .attack, .reaction].allSatisfy { pose in
-            guard let frame = sprite?.frames[pose.rawValue], let idle else { return false }
-            return frame != idle
-        }
-        return Self(sourceID: id, archetype: sprite?.archetype ?? "quadruped", authoredPoses: authored)
+        return Self(sourceID: id, archetype: sprite?.archetype ?? "quadruped", authoredPoses: hasCompleteAuthoredPoses(sprite))
+    }
+
+    /// All four semantic poses need their own valid rectangle. Three action keys
+    /// pointing at one non-idle frame must not masquerade as a complete family.
+    /// The asset tests additionally verify bounds and actual decoded pixel content.
+    static func hasCompleteAuthoredPoses(_ sprite: RetroSpriteManifest.Sprite?) -> Bool {
+        guard let sprite else { return false }
+        let frames = RetroPose.allCases.compactMap { sprite.frames[$0.rawValue] }
+        guard frames.count == RetroPose.allCases.count,
+              frames.allSatisfy({ $0.count == 4 && $0[0] >= 0 && $0[1] >= 0 && $0[2] > 0 && $0[3] > 0 }) else { return false }
+        return Set(frames).count == RetroPose.allCases.count
     }
 }
 

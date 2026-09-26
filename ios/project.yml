@@ -43,6 +43,10 @@ targets:
         excludes:
           - "**/.DS_Store"
           - "CarPlay/**"
+          - "Resources/RetroAtlases/**"
+      - path: WhoWouldWin/Resources/RetroAtlases
+        type: folder
+        buildPhase: resources
     resources:
       - path: WhoWouldWin/Assets.xcassets
       - path: WhoWouldWin/Fonts

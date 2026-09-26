@@ -273,14 +273,32 @@
       }
     },
     "scorpion": {
-      "asset": "retro_anatomy",
+      "asset": "retro_motion_all_28_core_mix",
       "archetype": "arthropod",
       "frames": {
         "idle": [
-          1103,
-          440,
-          329,
-          250
+          62,
+          136,
+          220,
+          163
+        ],
+        "anticipation": [
+          389,
+          154,
+          214,
+          149
+        ],
+        "attack": [
+          683,
+          135,
+          248,
+          175
+        ],
+        "reaction": [
+          1046,
+          124,
+          164,
+          177
         ]
       }
     },
@@ -345,26 +363,62 @@
       }
     },
     "pet_rabbit": {
-      "asset": "retro_anatomy",
+      "asset": "retro_motion_all_28_core_mix",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          797,
-          759,
-          236,
-          278
+          66,
+          418,
+          158,
+          189
+        ],
+        "anticipation": [
+          400,
+          480,
+          172,
+          127
+        ],
+        "attack": [
+          698,
+          429,
+          205,
+          176
+        ],
+        "reaction": [
+          1045,
+          461,
+          159,
+          146
         ]
       }
     },
     "horse": {
-      "asset": "retro_anatomy",
+      "asset": "retro_motion_all_28_core_mix",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          1085,
-          723,
-          347,
-          314
+          38,
+          685,
+          236,
+          208
+        ],
+        "anticipation": [
+          334,
+          716,
+          273,
+          176
+        ],
+        "attack": [
+          652,
+          658,
+          283,
+          237
+        ],
+        "reaction": [
+          1013,
+          668,
+          219,
+          227
         ]
       }
     },
@@ -399,26 +453,62 @@
       }
     },
     "hippopotamus": {
-      "asset": "retro_land",
+      "asset": "retro_motion_all_01_land_a",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          404,
-          131,
-          315,
-          205
+          86,
+          168,
+          170,
+          106
+        ],
+        "anticipation": [
+          402,
+          180,
+          176,
+          94
+        ],
+        "attack": [
+          694,
+          168,
+          197,
+          107
+        ],
+        "reaction": [
+          1030,
+          142,
+          136,
+          132
         ]
       }
     },
     "cheetah": {
-      "asset": "retro_land",
+      "asset": "retro_motion_all_01_land_a",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          739,
-          149,
-          314,
-          186
+          85,
+          453,
+          166,
+          121
+        ],
+        "anticipation": [
+          401,
+          471,
+          177,
+          103
+        ],
+        "attack": [
+          706,
+          444,
+          199,
+          119
+        ],
+        "reaction": [
+          1034,
+          440,
+          144,
+          135
         ]
       }
     },
@@ -453,86 +543,212 @@
       }
     },
     "komodo_dragon": {
-      "asset": "retro_land",
+      "asset": "retro_motion_all_01_land_a",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          34,
-          517,
-          367,
-          188
+          79,
+          738,
+          173,
+          107
+        ],
+        "anticipation": [
+          396,
+          747,
+          184,
+          98
+        ],
+        "attack": [
+          695,
+          744,
+          190,
+          101
+        ],
+        "reaction": [
+          1030,
+          729,
+          153,
+          117
         ]
       }
     },
     "wolverine": {
-      "asset": "retro_land",
+      "asset": "retro_motion_all_01_land_a",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          416,
-          523,
-          309,
-          174
+          86,
+          1036,
+          172,
+          102
+        ],
+        "anticipation": [
+          397,
+          1043,
+          171,
+          96
+        ],
+        "attack": [
+          692,
+          1028,
+          206,
+          110
+        ],
+        "reaction": [
+          1027,
+          1000,
+          145,
+          139
         ]
       }
     },
     "honey_badger": {
-      "asset": "retro_land",
+      "asset": "retro_motion_all_02_land_b",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          755,
-          538,
-          302,
-          161
+          61,
+          185,
+          196,
+          105
+        ],
+        "anticipation": [
+          394,
+          195,
+          200,
+          95
+        ],
+        "attack": [
+          690,
+          181,
+          216,
+          109
+        ],
+        "reaction": [
+          1028,
+          164,
+          175,
+          126
         ]
       }
     },
     "giraffe": {
-      "asset": "retro_land",
+      "asset": "retro_motion_all_02_land_b",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          1112,
-          350,
-          302,
-          361
+          55,
+          355,
+          203,
+          281
+        ],
+        "anticipation": [
+          361,
+          457,
+          272,
+          180
+        ],
+        "attack": [
+          682,
+          376,
+          290,
+          261
+        ],
+        "reaction": [
+          1020,
+          346,
+          200,
+          290
         ]
       }
     },
     "zebra": {
-      "asset": "retro_land",
+      "asset": "retro_motion_all_02_land_b",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          39,
-          740,
-          327,
-          279
+          42,
+          722,
+          219,
+          191
+        ],
+        "anticipation": [
+          368,
+          784,
+          235,
+          130
+        ],
+        "attack": [
+          680,
+          739,
+          239,
+          174
+        ],
+        "reaction": [
+          1023,
+          720,
+          179,
+          195
         ]
       }
     },
     "moose": {
-      "asset": "retro_land",
+      "asset": "retro_motion_all_02_land_b",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          390,
-          713,
-          344,
-          307
+          57,
+          974,
+          210,
+          218
+        ],
+        "anticipation": [
+          382,
+          1015,
+          235,
+          175
+        ],
+        "attack": [
+          689,
+          968,
+          236,
+          222
+        ],
+        "reaction": [
+          1020,
+          968,
+          184,
+          224
         ]
       }
     },
     "boar": {
-      "asset": "retro_land",
+      "asset": "retro_motion_all_28_core_mix",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          745,
-          788,
-          321,
-          228
+          55,
+          1022,
+          231,
+          163
+        ],
+        "anticipation": [
+          374,
+          1042,
+          224,
+          143
+        ],
+        "attack": [
+          672,
+          1023,
+          260,
+          160
+        ],
+        "reaction": [
+          1014,
+          995,
+          197,
+          189
         ]
       }
     },
@@ -627,950 +843,2372 @@
       }
     },
     "piranha": {
-      "asset": "retro_sea",
+      "asset": "retro_motion_all_03_sea_a",
       "archetype": "swimmer",
       "frames": {
         "idle": [
-          777,
-          162,
-          251,
-          205
+          79,
+          169,
+          181,
+          146
+        ],
+        "anticipation": [
+          397,
+          182,
+          180,
+          133
+        ],
+        "attack": [
+          701,
+          174,
+          218,
+          137
+        ],
+        "reaction": [
+          1032,
+          169,
+          165,
+          145
         ]
       }
     },
     "octopus": {
-      "asset": "retro_sea",
-      "archetype": "swimmer",
-      "frames": {
-        "idle": [
-          1104,
-          130,
-          316,
-          259
-        ]
-      }
-    },
-    "barracuda": {
-      "asset": "retro_sea",
-      "archetype": "swimmer",
-      "frames": {
-        "idle": [
-          22,
-          498,
-          339,
-          155
-        ]
-      }
-    },
-    "electric_eel": {
-      "asset": "retro_sea",
-      "archetype": "serpentine",
-      "frames": {
-        "idle": [
-          385,
-          484,
-          337,
-          180
-        ]
-      }
-    },
-    "hammerhead_shark": {
-      "asset": "retro_sea",
-      "archetype": "swimmer",
-      "frames": {
-        "idle": [
-          742,
-          444,
-          350,
-          231
-        ]
-      }
-    },
-    "mantis_shrimp": {
-      "asset": "retro_sea",
-      "archetype": "arthropod",
-      "frames": {
-        "idle": [
-          1113,
-          467,
-          312,
-          217
-        ]
-      }
-    },
-    "blue_ringed_octopus": {
-      "asset": "retro_sea",
-      "archetype": "swimmer",
-      "frames": {
-        "idle": [
-          49,
-          763,
-          295,
-          244
-        ]
-      }
-    },
-    "swordfish": {
-      "asset": "retro_clean_d",
+      "asset": "retro_motion_all_03_sea_a",
       "archetype": "swimmer",
       "frames": {
         "idle": [
           58,
-          853,
-          625,
-          253
+          453,
+          230,
+          185
+        ],
+        "anticipation": [
+          395,
+          463,
+          183,
+          173
+        ],
+        "attack": [
+          675,
+          456,
+          310,
+          186
+        ],
+        "reaction": [
+          1038,
+          445,
+          181,
+          180
+        ]
+      }
+    },
+    "barracuda": {
+      "asset": "retro_motion_all_03_sea_a",
+      "archetype": "swimmer",
+      "frames": {
+        "idle": [
+          34,
+          784,
+          265,
+          107
+        ],
+        "anticipation": [
+          401,
+          758,
+          192,
+          139
+        ],
+        "attack": [
+          677,
+          780,
+          293,
+          107
+        ],
+        "reaction": [
+          1034,
+          748,
+          189,
+          140
+        ]
+      }
+    },
+    "electric_eel": {
+      "asset": "retro_motion_all_03_sea_a",
+      "archetype": "serpentine",
+      "frames": {
+        "idle": [
+          53,
+          1046,
+          246,
+          130
+        ],
+        "anticipation": [
+          395,
+          1026,
+          170,
+          155
+        ],
+        "attack": [
+          673,
+          1047,
+          312,
+          125
+        ],
+        "reaction": [
+          1043,
+          1017,
+          150,
+          164
+        ]
+      }
+    },
+    "hammerhead_shark": {
+      "asset": "retro_motion_all_04_sea_b",
+      "archetype": "swimmer",
+      "frames": {
+        "idle": [
+          39,
+          200,
+          272,
+          163
+        ],
+        "anticipation": [
+          386,
+          172,
+          220,
+          204
+        ],
+        "attack": [
+          669,
+          180,
+          303,
+          207
+        ],
+        "reaction": [
+          1031,
+          188,
+          180,
+          184
+        ]
+      }
+    },
+    "mantis_shrimp": {
+      "asset": "retro_motion_all_04_sea_b",
+      "archetype": "arthropod",
+      "frames": {
+        "idle": [
+          46,
+          509,
+          220,
+          136
+        ],
+        "anticipation": [
+          371,
+          534,
+          242,
+          111
+        ],
+        "attack": [
+          657,
+          519,
+          304,
+          126
+        ],
+        "reaction": [
+          1006,
+          484,
+          199,
+          161
+        ]
+      }
+    },
+    "blue_ringed_octopus": {
+      "asset": "retro_motion_all_04_sea_b",
+      "archetype": "swimmer",
+      "frames": {
+        "idle": [
+          50,
+          776,
+          222,
+          155
+        ],
+        "anticipation": [
+          392,
+          786,
+          175,
+          148
+        ],
+        "attack": [
+          672,
+          789,
+          300,
+          143
+        ],
+        "reaction": [
+          1041,
+          764,
+          161,
+          171
+        ]
+      }
+    },
+    "swordfish": {
+      "asset": "retro_motion_all_30_clean_d",
+      "archetype": "swimmer",
+      "frames": {
+        "idle": [
+          55,
+          178,
+          323,
+          132
+        ],
+        "anticipation": [
+          464,
+          176,
+          233,
+          173
+        ],
+        "attack": [
+          768,
+          186,
+          364,
+          137
+        ],
+        "reaction": [
+          1223,
+          161,
+          188,
+          188
         ]
       }
     },
     "coelacanth": {
-      "asset": "retro_sea",
+      "asset": "retro_motion_all_04_sea_b",
       "archetype": "swimmer",
       "frames": {
         "idle": [
-          739,
-          769,
-          347,
-          213
+          39,
+          1031,
+          260,
+          148
+        ],
+        "anticipation": [
+          386,
+          1024,
+          217,
+          166
+        ],
+        "attack": [
+          671,
+          1039,
+          269,
+          148
+        ],
+        "reaction": [
+          1020,
+          1031,
+          199,
+          155
         ]
       }
     },
     "crow": {
-      "asset": "retro_sea",
+      "asset": "retro_motion_all_29_mythic_crow",
       "archetype": "flyer",
       "frames": {
         "idle": [
-          1107,
-          756,
-          312,
-          242
-        ]
-      }
-    },
-    "peregrine_falcon": {
-      "asset": "retro_air_bugs",
-      "archetype": "flyer",
-      "frames": {
-        "idle": [
-          55,
-          78,
-          302,
-          314
-        ]
-      }
-    },
-    "harpy_eagle": {
-      "asset": "retro_air_bugs",
-      "archetype": "flyer",
-      "frames": {
-        "idle": [
-          411,
-          74,
-          314,
-          345
-        ]
-      }
-    },
-    "barn_owl": {
-      "asset": "retro_air_bugs",
-      "archetype": "flyer",
-      "frames": {
-        "idle": [
-          775,
-          97,
-          297,
-          313
-        ]
-      }
-    },
-    "hornet": {
-      "asset": "retro_air_bugs",
-      "archetype": "flyer",
-      "frames": {
-        "idle": [
-          1155,
+          75,
+          113,
+          187,
+          173
+        ],
+        "anticipation": [
+          383,
+          167,
+          195,
+          118
+        ],
+        "attack": [
+          689,
           124,
-          265,
-          266
-        ]
-      }
-    },
-    "dragonfly": {
-      "asset": "retro_air_bugs",
-      "archetype": "flyer",
-      "frames": {
-        "idle": [
-          44,
-          466,
-          301,
-          240
-        ]
-      }
-    },
-    "albatross": {
-      "asset": "retro_air_bugs",
-      "archetype": "flyer",
-      "frames": {
-        "idle": [
-          380,
-          477,
-          349,
-          258
-        ]
-      }
-    },
-    "pelican": {
-      "asset": "retro_air_bugs",
-      "archetype": "flyer",
-      "frames": {
-        "idle": [
-          768,
-          455,
-          330,
-          267
-        ]
-      }
-    },
-    "army_ant": {
-      "asset": "retro_air_bugs",
-      "archetype": "arthropod",
-      "frames": {
-        "idle": [
-          1133,
-          552,
-          293,
-          165
-        ]
-      }
-    },
-    "bombardier_beetle": {
-      "asset": "retro_air_bugs",
-      "archetype": "arthropod",
-      "frames": {
-        "idle": [
-          27,
-          813,
-          362,
-          208
-        ]
-      }
-    },
-    "bullet_ant": {
-      "asset": "retro_air_bugs",
-      "archetype": "arthropod",
-      "frames": {
-        "idle": [
-          403,
-          839,
-          322,
-          186
-        ]
-      }
-    },
-    "praying_mantis": {
-      "asset": "retro_air_bugs",
-      "archetype": "arthropod",
-      "frames": {
-        "idle": [
-          749,
-          756,
-          325,
-          279
-        ]
-      }
-    },
-    "fire_ant": {
-      "asset": "retro_air_bugs",
-      "archetype": "arthropod",
-      "frames": {
-        "idle": [
-          1136,
-          844,
-          290,
-          172
-        ]
-      }
-    },
-    "great_dane": {
-      "asset": "retro_dogs",
-      "archetype": "quadruped",
-      "frames": {
-        "idle": [
-          16,
-          26,
-          329,
-          387
-        ]
-      }
-    },
-    "german_shepherd": {
-      "asset": "retro_dogs",
-      "archetype": "quadruped",
-      "frames": {
-        "idle": [
-          355,
-          78,
-          349,
-          335
-        ]
-      }
-    },
-    "golden_retriever": {
-      "asset": "retro_dogs",
-      "archetype": "quadruped",
-      "frames": {
-        "idle": [
-          716,
-          120,
-          360,
-          293
-        ]
-      }
-    },
-    "labrador": {
-      "asset": "retro_dogs",
-      "archetype": "quadruped",
-      "frames": {
-        "idle": [
-          1105,
-          142,
-          322,
-          271
-        ]
-      }
-    },
-    "husky": {
-      "asset": "retro_dogs",
-      "archetype": "quadruped",
-      "frames": {
-        "idle": [
-          27,
-          447,
-          317,
-          327
-        ]
-      }
-    },
-    "bulldog": {
-      "asset": "retro_dogs",
-      "archetype": "quadruped",
-      "frames": {
-        "idle": [
-          368,
-          520,
-          317,
-          251
-        ]
-      }
-    },
-    "beagle": {
-      "asset": "retro_dogs",
-      "archetype": "quadruped",
-      "frames": {
-        "idle": [
-          742,
-          534,
-          314,
-          245
-        ]
-      }
-    },
-    "poodle": {
-      "asset": "retro_dogs",
-      "archetype": "quadruped",
-      "frames": {
-        "idle": [
-          1118,
-          455,
-          294,
-          324
-        ]
-      }
-    },
-    "corgi": {
-      "asset": "retro_dogs",
-      "archetype": "quadruped",
-      "frames": {
-        "idle": [
-          31,
-          802,
-          316,
-          253
-        ]
-      }
-    },
-    "pug": {
-      "asset": "retro_dogs",
-      "archetype": "quadruped",
-      "frames": {
-        "idle": [
-          402,
-          825,
-          271,
-          232
-        ]
-      }
-    },
-    "dachshund": {
-      "asset": "retro_dogs",
-      "archetype": "quadruped",
-      "frames": {
-        "idle": [
-          738,
-          849,
-          354,
-          205
-        ]
-      }
-    },
-    "chihuahua": {
-      "asset": "retro_dogs",
-      "archetype": "quadruped",
-      "frames": {
-        "idle": [
-          1183,
-          832,
-          219,
-          226
-        ]
-      }
-    },
-    "tabby_cat": {
-      "asset": "retro_small_pets",
-      "archetype": "quadruped",
-      "frames": {
-        "idle": [
-          45,
-          127,
-          296,
-          280
-        ]
-      }
-    },
-    "persian_cat": {
-      "asset": "retro_small_pets",
-      "archetype": "quadruped",
-      "frames": {
-        "idle": [
-          378,
-          131,
-          332,
-          277
-        ]
-      }
-    },
-    "maine_coon": {
-      "asset": "retro_small_pets",
-      "archetype": "quadruped",
-      "frames": {
-        "idle": [
-          739,
-          57,
-          338,
-          355
-        ]
-      }
-    },
-    "parakeet": {
-      "asset": "retro_small_pets",
-      "archetype": "flyer",
-      "frames": {
-        "idle": [
-          1112,
-          179,
-          288,
-          229
-        ]
-      }
-    },
-    "cockatiel": {
-      "asset": "retro_small_pets",
-      "archetype": "flyer",
-      "frames": {
-        "idle": [
-          32,
-          437,
-          322,
-          314
-        ]
-      }
-    },
-    "canary": {
-      "asset": "retro_small_pets",
-      "archetype": "flyer",
-      "frames": {
-        "idle": [
-          409,
-          520,
-          265,
-          228
-        ]
-      }
-    },
-    "hamster": {
-      "asset": "retro_small_pets",
-      "archetype": "quadruped",
-      "frames": {
-        "idle": [
-          778,
-          521,
-          221,
-          230
-        ]
-      }
-    },
-    "gerbil": {
-      "asset": "retro_small_pets",
-      "archetype": "quadruped",
-      "frames": {
-        "idle": [
-          1094,
-          540,
-          332,
+          224,
+          169
+        ],
+        "reaction": [
+          1020,
+          83,
+          182,
           206
         ]
       }
     },
-    "guinea_pig": {
-      "asset": "retro_small_pets",
-      "archetype": "quadruped",
+    "peregrine_falcon": {
+      "asset": "retro_motion_all_05_air_bugs_a",
+      "archetype": "flyer",
       "frames": {
         "idle": [
-          40,
-          818,
-          298,
-          198
-        ]
-      }
-    },
-    "goldfish": {
-      "asset": "retro_small_pets",
-      "archetype": "swimmer",
-      "frames": {
-        "idle": [
-          390,
-          793,
-          307,
-          231
-        ]
-      }
-    },
-    "betta_fish": {
-      "asset": "retro_small_pets",
-      "archetype": "swimmer",
-      "frames": {
-        "idle": [
-          739,
-          774,
-          310,
-          259
-        ]
-      }
-    },
-    "leopard_gecko": {
-      "asset": "retro_small_pets",
-      "archetype": "quadruped",
-      "frames": {
-        "idle": [
-          1082,
-          836,
-          341,
-          186
-        ]
-      }
-    },
-    "cow": {
-      "asset": "retro_farm_a",
-      "archetype": "quadruped",
-      "frames": {
-        "idle": [
-          13,
-          93,
-          367,
-          287
-        ]
-      }
-    },
-    "bull": {
-      "asset": "retro_farm_a",
-      "archetype": "quadruped",
-      "frames": {
-        "idle": [
-          389,
-          130,
-          359,
-          250
-        ]
-      }
-    },
-    "ox": {
-      "asset": "retro_farm_a",
-      "archetype": "quadruped",
-      "frames": {
-        "idle": [
-          754,
-          117,
-          356,
-          263
-        ]
-      }
-    },
-    "pig": {
-      "asset": "retro_farm_a",
-      "archetype": "quadruped",
-      "frames": {
-        "idle": [
-          1138,
-          171,
-          293,
-          209
-        ]
-      }
-    },
-    "piglet": {
-      "asset": "retro_farm_a",
-      "archetype": "quadruped",
-      "frames": {
-        "idle": [
+          54,
+          100,
+          211,
+          212
+        ],
+        "anticipation": [
+          379,
+          185,
+          206,
+          128
+        ],
+        "attack": [
+          677,
+          164,
+          231,
+          155
+        ],
+        "reaction": [
+          1019,
           92,
-          519,
+          183,
+          222
+        ]
+      }
+    },
+    "harpy_eagle": {
+      "asset": "retro_motion_all_05_air_bugs_a",
+      "archetype": "flyer",
+      "frames": {
+        "idle": [
+          46,
+          401,
+          230,
+          230
+        ],
+        "anticipation": [
+          376,
+          476,
+          221,
+          155
+        ],
+        "attack": [
+          674,
+          426,
+          250,
+          201
+        ],
+        "reaction": [
+          1019,
+          401,
+          196,
+          224
+        ]
+      }
+    },
+    "barn_owl": {
+      "asset": "retro_motion_all_05_air_bugs_a",
+      "archetype": "flyer",
+      "frames": {
+        "idle": [
+          73,
+          712,
+          199,
+          218
+        ],
+        "anticipation": [
+          364,
+          792,
+          222,
+          134
+        ],
+        "attack": [
+          674,
+          758,
+          242,
+          176
+        ],
+        "reaction": [
+          1020,
+          704,
+          187,
+          220
+        ]
+      }
+    },
+    "hornet": {
+      "asset": "retro_motion_all_05_air_bugs_a",
+      "archetype": "flyer",
+      "frames": {
+        "idle": [
+          76,
+          1005,
+          190,
+          186
+        ],
+        "anticipation": [
+          380,
+          1037,
+          212,
+          155
+        ],
+        "attack": [
+          689,
+          1041,
+          207,
+          144
+        ],
+        "reaction": [
+          1022,
+          998,
+          189,
+          187
+        ]
+      }
+    },
+    "dragonfly": {
+      "asset": "retro_motion_all_06_air_bugs_b",
+      "archetype": "flyer",
+      "frames": {
+        "idle": [
+          63,
+          145,
+          203,
+          159
+        ],
+        "anticipation": [
+          384,
+          198,
+          199,
+          110
+        ],
+        "attack": [
+          694,
+          193,
+          222,
+          114
+        ],
+        "reaction": [
+          1040,
+          123,
+          160,
+          195
+        ]
+      }
+    },
+    "albatross": {
+      "asset": "retro_motion_all_06_air_bugs_b",
+      "archetype": "flyer",
+      "frames": {
+        "idle": [
+          55,
+          438,
+          245,
+          174
+        ],
+        "anticipation": [
+          365,
+          511,
+          234,
+          112
+        ],
+        "attack": [
+          676,
+          487,
+          287,
+          139
+        ],
+        "reaction": [
+          1024,
+          430,
+          225,
+          196
+        ]
+      }
+    },
+    "pelican": {
+      "asset": "retro_motion_all_06_air_bugs_b",
+      "archetype": "flyer",
+      "frames": {
+        "idle": [
+          61,
+          721,
+          244,
+          190
+        ],
+        "anticipation": [
+          360,
+          793,
+          263,
+          123
+        ],
+        "attack": [
+          687,
+          741,
+          288,
+          161
+        ],
+        "reaction": [
+          1012,
+          719,
+          199,
+          197
+        ]
+      }
+    },
+    "army_ant": {
+      "asset": "retro_motion_all_06_air_bugs_b",
+      "archetype": "arthropod",
+      "frames": {
+        "idle": [
+          62,
+          1040,
+          225,
+          124
+        ],
+        "anticipation": [
+          382,
+          1055,
+          216,
+          110
+        ],
+        "attack": [
+          671,
+          1028,
+          260,
+          136
+        ],
+        "reaction": [
+          1011,
+          1030,
+          211,
+          135
+        ]
+      }
+    },
+    "bombardier_beetle": {
+      "asset": "retro_motion_all_07_air_bugs_c",
+      "archetype": "arthropod",
+      "frames": {
+        "idle": [
+          65,
+          159,
+          212,
+          121
+        ],
+        "anticipation": [
+          401,
+          190,
+          201,
+          92
+        ],
+        "attack": [
+          683,
+          171,
+          236,
+          112
+        ],
+        "reaction": [
+          1037,
+          142,
+          168,
+          141
+        ]
+      }
+    },
+    "bullet_ant": {
+      "asset": "retro_motion_all_07_air_bugs_c",
+      "archetype": "arthropod",
+      "frames": {
+        "idle": [
+          51,
+          459,
+          226,
+          136
+        ],
+        "anticipation": [
+          399,
+          501,
+          219,
+          94
+        ],
+        "attack": [
+          679,
+          476,
+          243,
+          119
+        ],
+        "reaction": [
+          1011,
+          427,
+          207,
+          170
+        ]
+      }
+    },
+    "praying_mantis": {
+      "asset": "retro_motion_all_07_air_bugs_c",
+      "archetype": "arthropod",
+      "frames": {
+        "idle": [
+          54,
+          733,
+          218,
+          192
+        ],
+        "anticipation": [
+          371,
+          787,
+          214,
+          137
+        ],
+        "attack": [
+          671,
+          743,
+          305,
+          182
+        ],
+        "reaction": [
+          1025,
+          715,
+          178,
+          210
+        ]
+      }
+    },
+    "fire_ant": {
+      "asset": "retro_motion_all_07_air_bugs_c",
+      "archetype": "arthropod",
+      "frames": {
+        "idle": [
+          85,
+          1053,
+          192,
+          118
+        ],
+        "anticipation": [
+          409,
+          1083,
+          190,
+          88
+        ],
+        "attack": [
+          692,
+          1060,
+          228,
+          113
+        ],
+        "reaction": [
+          1036,
+          1032,
+          158,
+          143
+        ]
+      }
+    },
+    "great_dane": {
+      "asset": "retro_motion_all_08_dogs_a",
+      "archetype": "quadruped",
+      "frames": {
+        "idle": [
+          36,
+          83,
+          218,
+          239
+        ],
+        "anticipation": [
+          354,
+          167,
+          240,
+          153
+        ],
+        "attack": [
+          680,
+          104,
+          262,
+          213
+        ],
+        "reaction": [
+          1031,
+          95,
+          192,
+          225
+        ]
+      }
+    },
+    "german_shepherd": {
+      "asset": "retro_motion_all_08_dogs_a",
+      "archetype": "quadruped",
+      "frames": {
+        "idle": [
+          22,
+          400,
+          228,
+          216
+        ],
+        "anticipation": [
+          350,
+          451,
+          253,
+          164
+        ],
+        "attack": [
+          689,
+          422,
+          253,
+          175
+        ],
+        "reaction": [
+          1028,
+          397,
+          205,
+          218
+        ]
+      }
+    },
+    "golden_retriever": {
+      "asset": "retro_motion_all_08_dogs_a",
+      "archetype": "quadruped",
+      "frames": {
+        "idle": [
+          33,
+          715,
+          233,
+          188
+        ],
+        "anticipation": [
+          346,
+          750,
+          249,
+          150
+        ],
+        "attack": [
+          681,
+          727,
+          259,
+          153
+        ],
+        "reaction": [
+          1021,
+          705,
+          212,
+          195
+        ]
+      }
+    },
+    "labrador": {
+      "asset": "retro_motion_all_08_dogs_a",
+      "archetype": "quadruped",
+      "frames": {
+        "idle": [
+          35,
+          1010,
+          229,
+          187
+        ],
+        "anticipation": [
+          350,
+          1062,
+          253,
+          136
+        ],
+        "attack": [
+          684,
+          1023,
+          260,
+          164
+        ],
+        "reaction": [
+          1030,
+          995,
+          197,
+          202
+        ]
+      }
+    },
+    "husky": {
+      "asset": "retro_motion_all_09_dogs_b",
+      "archetype": "quadruped",
+      "frames": {
+        "idle": [
+          68,
+          146,
+          189,
+          186
+        ],
+        "anticipation": [
+          396,
+          182,
+          192,
+          150
+        ],
+        "attack": [
+          670,
+          163,
+          253,
+          164
+        ],
+        "reaction": [
+          1027,
+          127,
+          180,
+          205
+        ]
+      }
+    },
+    "bulldog": {
+      "asset": "retro_motion_all_09_dogs_b",
+      "archetype": "quadruped",
+      "frames": {
+        "idle": [
+          44,
+          454,
+          216,
+          167
+        ],
+        "anticipation": [
+          377,
+          484,
+          218,
+          134
+        ],
+        "attack": [
+          673,
+          458,
+          264,
+          156
+        ],
+        "reaction": [
+          1013,
+          443,
+          206,
+          182
+        ]
+      }
+    },
+    "beagle": {
+      "asset": "retro_motion_all_09_dogs_b",
+      "archetype": "quadruped",
+      "frames": {
+        "idle": [
+          50,
+          731,
+          216,
+          169
+        ],
+        "anticipation": [
+          377,
+          731,
+          215,
+          165
+        ],
+        "attack": [
+          676,
+          731,
+          248,
+          155
+        ],
+        "reaction": [
+          1015,
+          713,
+          189,
+          185
+        ]
+      }
+    },
+    "poodle": {
+      "asset": "retro_motion_all_09_dogs_b",
+      "archetype": "quadruped",
+      "frames": {
+        "idle": [
+          58,
+          997,
+          199,
+          213
+        ],
+        "anticipation": [
+          379,
+          1046,
+          209,
+          160
+        ],
+        "attack": [
+          676,
+          1005,
+          262,
+          198
+        ],
+        "reaction": [
+          1006,
+          983,
           204,
+          227
+        ]
+      }
+    },
+    "corgi": {
+      "asset": "retro_motion_all_10_dogs_c",
+      "archetype": "quadruped",
+      "frames": {
+        "idle": [
+          55,
+          162,
+          193,
+          173
+        ],
+        "anticipation": [
+          388,
+          201,
+          191,
+          132
+        ],
+        "attack": [
+          690,
+          167,
+          226,
+          162
+        ],
+        "reaction": [
+          1021,
+          186,
+          173,
+          149
+        ]
+      }
+    },
+    "pug": {
+      "asset": "retro_motion_all_10_dogs_c",
+      "archetype": "quadruped",
+      "frames": {
+        "idle": [
+          56,
+          479,
+          187,
+          164
+        ],
+        "anticipation": [
+          391,
+          517,
+          188,
+          125
+        ],
+        "attack": [
+          693,
+          491,
+          214,
+          144
+        ],
+        "reaction": [
+          1040,
+          468,
+          165,
+          174
+        ]
+      }
+    },
+    "dachshund": {
+      "asset": "retro_motion_all_10_dogs_c",
+      "archetype": "quadruped",
+      "frames": {
+        "idle": [
+          50,
+          803,
+          223,
+          129
+        ],
+        "anticipation": [
+          373,
+          825,
+          229,
+          107
+        ],
+        "attack": [
+          693,
+          799,
+          241,
+          128
+        ],
+        "reaction": [
+          1030,
+          773,
+          178,
+          160
+        ]
+      }
+    },
+    "chihuahua": {
+      "asset": "retro_motion_all_10_dogs_c",
+      "archetype": "quadruped",
+      "frames": {
+        "idle": [
+          64,
+          1022,
+          176,
+          181
+        ],
+        "anticipation": [
+          403,
+          1059,
+          179,
+          142
+        ],
+        "attack": [
+          705,
+          1031,
+          203,
+          157
+        ],
+        "reaction": [
+          1054,
+          1038,
+          144,
+          165
+        ]
+      }
+    },
+    "tabby_cat": {
+      "asset": "retro_motion_all_11_small_pets_a",
+      "archetype": "quadruped",
+      "frames": {
+        "idle": [
+          69,
+          168,
+          187,
+          162
+        ],
+        "anticipation": [
+          380,
+          178,
+          199,
+          152
+        ],
+        "attack": [
+          681,
+          184,
+          262,
+          127
+        ],
+        "reaction": [
+          1018,
+          157,
+          198,
+          173
+        ]
+      }
+    },
+    "persian_cat": {
+      "asset": "retro_motion_all_11_small_pets_a",
+      "archetype": "quadruped",
+      "frames": {
+        "idle": [
+          46,
+          427,
+          234,
+          195
+        ],
+        "anticipation": [
+          358,
+          446,
+          238,
+          175
+        ],
+        "attack": [
+          680,
+          416,
+          270,
+          191
+        ],
+        "reaction": [
+          1011,
+          416,
+          207,
+          205
+        ]
+      }
+    },
+    "maine_coon": {
+      "asset": "retro_motion_all_11_small_pets_a",
+      "archetype": "quadruped",
+      "frames": {
+        "idle": [
+          38,
+          711,
+          237,
+          211
+        ],
+        "anticipation": [
+          360,
+          732,
+          248,
+          189
+        ],
+        "attack": [
+          650,
+          720,
+          346,
+          182
+        ],
+        "reaction": [
+          1018,
+          687,
+          204,
+          233
+        ]
+      }
+    },
+    "parakeet": {
+      "asset": "retro_motion_all_11_small_pets_a",
+      "archetype": "flyer",
+      "frames": {
+        "idle": [
+          60,
+          995,
+          191,
+          194
+        ],
+        "anticipation": [
+          375,
+          1069,
+          186,
+          122
+        ],
+        "attack": [
+          687,
+          1043,
+          247,
+          133
+        ],
+        "reaction": [
+          1043,
+          984,
+          156,
+          222
+        ]
+      }
+    },
+    "cockatiel": {
+      "asset": "retro_motion_all_12_small_pets_b",
+      "archetype": "flyer",
+      "frames": {
+        "idle": [
+          72,
+          177,
+          198,
+          219
+        ],
+        "anticipation": [
+          375,
+          240,
+          237,
+          160
+        ],
+        "attack": [
+          684,
+          229,
+          257,
+          164
+        ],
+        "reaction": [
+          1027,
+          181,
+          179,
+          221
+        ]
+      }
+    },
+    "canary": {
+      "asset": "retro_motion_all_12_small_pets_b",
+      "archetype": "flyer",
+      "frames": {
+        "idle": [
+          67,
+          491,
+          188,
+          197
+        ],
+        "anticipation": [
+          388,
+          583,
+          220,
+          113
+        ],
+        "attack": [
+          715,
+          544,
+          215,
+          139
+        ],
+        "reaction": [
+          1044,
+          486,
+          176,
+          203
+        ]
+      }
+    },
+    "hamster": {
+      "asset": "retro_motion_all_12_small_pets_b",
+      "archetype": "quadruped",
+      "frames": {
+        "idle": [
+          76,
+          805,
+          182,
+          135
+        ],
+        "anticipation": [
+          395,
+          827,
+          199,
+          113
+        ],
+        "attack": [
+          697,
+          802,
+          238,
+          134
+        ],
+        "reaction": [
+          1047,
+          767,
+          147,
+          175
+        ]
+      }
+    },
+    "gerbil": {
+      "asset": "retro_motion_all_12_small_pets_b",
+      "archetype": "quadruped",
+      "frames": {
+        "idle": [
+          62,
+          1056,
+          200,
+          150
+        ],
+        "anticipation": [
+          378,
+          1084,
+          223,
+          123
+        ],
+        "attack": [
+          657,
+          1081,
+          293,
+          122
+        ],
+        "reaction": [
+          1028,
+          1043,
+          169,
           163
         ]
       }
     },
-    "sheep": {
-      "asset": "retro_farm_a",
+    "guinea_pig": {
+      "asset": "retro_motion_all_13_small_pets_c",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          409,
-          432,
-          303,
-          252
+          75,
+          179,
+          184,
+          127
+        ],
+        "anticipation": [
+          387,
+          203,
+          200,
+          103
+        ],
+        "attack": [
+          671,
+          180,
+          221,
+          124
+        ],
+        "reaction": [
+          1030,
+          147,
+          145,
+          159
+        ]
+      }
+    },
+    "goldfish": {
+      "asset": "retro_motion_all_13_small_pets_c",
+      "archetype": "swimmer",
+      "frames": {
+        "idle": [
+          66,
+          453,
+          194,
+          144
+        ],
+        "anticipation": [
+          407,
+          458,
+          171,
+          146
+        ],
+        "attack": [
+          675,
+          456,
+          217,
+          137
+        ],
+        "reaction": [
+          1025,
+          457,
+          151,
+          149
+        ]
+      }
+    },
+    "betta_fish": {
+      "asset": "retro_motion_all_13_small_pets_c",
+      "archetype": "swimmer",
+      "frames": {
+        "idle": [
+          64,
+          731,
+          214,
+          166
+        ],
+        "anticipation": [
+          405,
+          740,
+          181,
+          156
+        ],
+        "attack": [
+          647,
+          757,
+          282,
+          118
+        ],
+        "reaction": [
+          1040,
+          732,
+          153,
+          164
+        ]
+      }
+    },
+    "leopard_gecko": {
+      "asset": "retro_motion_all_13_small_pets_c",
+      "archetype": "quadruped",
+      "frames": {
+        "idle": [
+          63,
+          1045,
+          215,
+          119
+        ],
+        "anticipation": [
+          377,
+          1056,
+          222,
+          111
+        ],
+        "attack": [
+          671,
+          1042,
+          222,
+          119
+        ],
+        "reaction": [
+          993,
+          1015,
+          196,
+          151
+        ]
+      }
+    },
+    "cow": {
+      "asset": "retro_motion_all_14_farm_a_a",
+      "archetype": "quadruped",
+      "frames": {
+        "idle": [
+          36,
+          133,
+          235,
+          181
+        ],
+        "anticipation": [
+          363,
+          186,
+          232,
+          128
+        ],
+        "attack": [
+          661,
+          151,
+          268,
+          154
+        ],
+        "reaction": [
+          1002,
+          105,
+          213,
+          207
+        ]
+      }
+    },
+    "bull": {
+      "asset": "retro_motion_all_14_farm_a_a",
+      "archetype": "quadruped",
+      "frames": {
+        "idle": [
+          46,
+          460,
+          249,
+          168
+        ],
+        "anticipation": [
+          362,
+          483,
+          245,
+          145
+        ],
+        "attack": [
+          666,
+          456,
+          275,
+          173
+        ],
+        "reaction": [
+          1033,
+          438,
+          197,
+          189
+        ]
+      }
+    },
+    "ox": {
+      "asset": "retro_motion_all_14_farm_a_a",
+      "archetype": "quadruped",
+      "frames": {
+        "idle": [
+          36,
+          769,
+          255,
+          166
+        ],
+        "anticipation": [
+          362,
+          782,
+          257,
+          153
+        ],
+        "attack": [
+          680,
+          767,
+          264,
+          164
+        ],
+        "reaction": [
+          1022,
+          743,
+          202,
+          192
+        ]
+      }
+    },
+    "pig": {
+      "asset": "retro_motion_all_14_farm_a_a",
+      "archetype": "quadruped",
+      "frames": {
+        "idle": [
+          73,
+          1058,
+          189,
+          144
+        ],
+        "anticipation": [
+          394,
+          1077,
+          199,
+          125
+        ],
+        "attack": [
+          678,
+          1055,
+          248,
+          137
+        ],
+        "reaction": [
+          1013,
+          1029,
+          204,
+          174
+        ]
+      }
+    },
+    "piglet": {
+      "asset": "retro_motion_all_15_farm_a_b",
+      "archetype": "quadruped",
+      "frames": {
+        "idle": [
+          84,
+          190,
+          154,
+          126
+        ],
+        "anticipation": [
+          400,
+          222,
+          174,
+          94
+        ],
+        "attack": [
+          711,
+          195,
+          188,
+          121
+        ],
+        "reaction": [
+          1051,
+          158,
+          139,
+          158
+        ]
+      }
+    },
+    "sheep": {
+      "asset": "retro_motion_all_15_farm_a_b",
+      "archetype": "quadruped",
+      "frames": {
+        "idle": [
+          70,
+          468,
+          195,
+          175
+        ],
+        "anticipation": [
+          385,
+          506,
+          212,
+          138
+        ],
+        "attack": [
+          687,
+          480,
+          227,
+          154
+        ],
+        "reaction": [
+          1035,
+          456,
+          165,
+          189
         ]
       }
     },
     "lamb": {
-      "asset": "retro_farm_a",
+      "asset": "retro_motion_all_15_farm_a_b",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          797,
-          474,
-          232,
-          208
+          85,
+          791,
+          148,
+          142
+        ],
+        "anticipation": [
+          410,
+          820,
+          155,
+          116
+        ],
+        "attack": [
+          694,
+          786,
+          205,
+          138
+        ],
+        "reaction": [
+          1059,
+          768,
+          125,
+          168
         ]
       }
     },
     "ram": {
-      "asset": "retro_farm_a",
+      "asset": "retro_motion_all_15_farm_a_b",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          1102,
-          412,
-          317,
-          270
+          59,
+          1040,
+          210,
+          170
+        ],
+        "anticipation": [
+          382,
+          1069,
+          211,
+          140
+        ],
+        "attack": [
+          686,
+          1045,
+          231,
+          154
+        ],
+        "reaction": [
+          1031,
+          1027,
+          172,
+          184
         ]
       }
     },
     "goat": {
-      "asset": "retro_farm_a",
+      "asset": "retro_motion_all_16_farm_a_c",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          46,
-          744,
-          306,
-          301
+          70,
+          142,
+          187,
+          175
+        ],
+        "anticipation": [
+          398,
+          180,
+          192,
+          138
+        ],
+        "attack": [
+          696,
+          152,
+          220,
+          165
+        ],
+        "reaction": [
+          1061,
+          122,
+          144,
+          197
         ]
       }
     },
     "donkey": {
-      "asset": "retro_farm_a",
+      "asset": "retro_motion_all_16_farm_a_c",
       "archetype": "quadruped",
       "frames": {
         "idle": [
+          45,
+          415,
+          207,
+          224
+        ],
+        "anticipation": [
           378,
-          700,
-          334,
-          345
+          474,
+          235,
+          166
+        ],
+        "attack": [
+          698,
+          446,
+          237,
+          193
+        ],
+        "reaction": [
+          1040,
+          406,
+          174,
+          238
         ]
       }
     },
     "mule": {
-      "asset": "retro_farm_a",
-      "archetype": "quadruped",
-      "frames": {
-        "idle": [
-          740,
-          698,
-          352,
-          347
-        ]
-      }
-    },
-    "llama": {
-      "asset": "retro_farm_a",
-      "archetype": "quadruped",
-      "frames": {
-        "idle": [
-          1148,
-          697,
-          265,
-          348
-        ]
-      }
-    },
-    "alpaca": {
-      "asset": "retro_farm_b",
+      "asset": "retro_motion_all_16_farm_a_c",
       "archetype": "quadruped",
       "frames": {
         "idle": [
           46,
-          41,
-          284,
-          338
+          715,
+          227,
+          227
+        ],
+        "anticipation": [
+          364,
+          778,
+          237,
+          162
+        ],
+        "attack": [
+          684,
+          747,
+          256,
+          189
+        ],
+        "reaction": [
+          1040,
+          707,
+          175,
+          233
+        ]
+      }
+    },
+    "llama": {
+      "asset": "retro_motion_all_16_farm_a_c",
+      "archetype": "quadruped",
+      "frames": {
+        "idle": [
+          75,
+          989,
+          177,
+          223
+        ],
+        "anticipation": [
+          405,
+          1033,
+          200,
+          179
+        ],
+        "attack": [
+          689,
+          997,
+          230,
+          215
+        ],
+        "reaction": [
+          1046,
+          989,
+          159,
+          223
+        ]
+      }
+    },
+    "alpaca": {
+      "asset": "retro_motion_all_17_farm_b_a",
+      "archetype": "quadruped",
+      "frames": {
+        "idle": [
+          65,
+          96,
+          195,
+          218
+        ],
+        "anticipation": [
+          384,
+          173,
+          214,
+          142
+        ],
+        "attack": [
+          685,
+          92,
+          224,
+          220
+        ],
+        "reaction": [
+          1041,
+          95,
+          171,
+          220
         ]
       }
     },
     "chicken": {
-      "asset": "retro_farm_b",
+      "asset": "retro_motion_all_17_farm_b_a",
       "archetype": "biped",
       "frames": {
         "idle": [
-          447,
-          123,
-          249,
-          259
+          59,
+          438,
+          179,
+          186
+        ],
+        "anticipation": [
+          405,
+          464,
+          188,
+          158
+        ],
+        "attack": [
+          712,
+          459,
+          220,
+          160
+        ],
+        "reaction": [
+          1050,
+          422,
+          156,
+          202
         ]
       }
     },
     "rooster": {
-      "asset": "retro_farm_b",
+      "asset": "retro_motion_all_17_farm_b_a",
       "archetype": "biped",
       "frames": {
         "idle": [
-          753,
-          68,
-          306,
-          316
+          45,
+          698,
+          215,
+          218
+        ],
+        "anticipation": [
+          372,
+          730,
+          232,
+          184
+        ],
+        "attack": [
+          686,
+          726,
+          260,
+          189
+        ],
+        "reaction": [
+          1024,
+          691,
+          189,
+          224
         ]
       }
     },
     "duck": {
-      "asset": "retro_farm_b",
+      "asset": "retro_motion_all_17_farm_b_a",
       "archetype": "biped",
       "frames": {
         "idle": [
-          1135,
-          128,
-          279,
-          256
+          62,
+          1014,
+          197,
+          178
+        ],
+        "anticipation": [
+          376,
+          1053,
+          231,
+          138
+        ],
+        "attack": [
+          692,
+          1005,
+          237,
+          187
+        ],
+        "reaction": [
+          1041,
+          998,
+          158,
+          193
         ]
       }
     },
     "goose": {
-      "asset": "retro_farm_b",
+      "asset": "retro_motion_all_18_farm_b_b",
       "archetype": "biped",
       "frames": {
         "idle": [
-          39,
-          404,
-          299,
-          314
+          56,
+          143,
+          177,
+          203
+        ],
+        "anticipation": [
+          384,
+          182,
+          184,
+          164
+        ],
+        "attack": [
+          672,
+          194,
+          259,
+          152
+        ],
+        "reaction": [
+          1027,
+          125,
+          163,
+          222
         ]
       }
     },
     "turkey": {
-      "asset": "retro_farm_b",
+      "asset": "retro_motion_all_18_farm_b_b",
       "archetype": "biped",
       "frames": {
         "idle": [
-          381,
-          418,
-          315,
-          301
+          45,
+          452,
+          215,
+          219
+        ],
+        "anticipation": [
+          378,
+          482,
+          221,
+          187
+        ],
+        "attack": [
+          694,
+          472,
+          255,
+          195
+        ],
+        "reaction": [
+          1016,
+          438,
+          192,
+          233
         ]
       }
     },
     "border_collie": {
-      "asset": "retro_farm_b",
+      "asset": "retro_motion_all_18_farm_b_b",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          726,
-          453,
-          342,
-          262
+          33,
+          770,
+          231,
+          180
+        ],
+        "anticipation": [
+          352,
+          829,
+          248,
+          121
+        ],
+        "attack": [
+          685,
+          779,
+          254,
+          168
+        ],
+        "reaction": [
+          1019,
+          723,
+          202,
+          230
         ]
       }
     },
     "centipede": {
-      "asset": "retro_farm_b",
+      "asset": "retro_motion_all_18_farm_b_b",
       "archetype": "arthropod",
       "frames": {
         "idle": [
-          1098,
-          531,
-          330,
-          186
+          39,
+          1064,
+          236,
+          124
+        ],
+        "anticipation": [
+          385,
+          1077,
+          197,
+          113
+        ],
+        "attack": [
+          675,
+          1048,
+          267,
+          141
+        ],
+        "reaction": [
+          1020,
+          1029,
+          208,
+          160
         ]
       }
     },
     "wasp": {
-      "asset": "retro_farm_b",
+      "asset": "retro_motion_all_19_farm_b_c",
       "archetype": "flyer",
       "frames": {
         "idle": [
-          33,
-          759,
-          321,
-          277
+          76,
+          140,
+          200,
+          183
+        ],
+        "anticipation": [
+          383,
+          199,
+          212,
+          124
+        ],
+        "attack": [
+          698,
+          172,
+          219,
+          151
+        ],
+        "reaction": [
+          1050,
+          122,
+          153,
+          201
         ]
       }
     },
     "stag_beetle": {
-      "asset": "retro_farm_b",
+      "asset": "retro_motion_all_19_farm_b_c",
       "archetype": "arthropod",
       "frames": {
         "idle": [
-          364,
-          758,
-          346,
-          284
+          60,
+          436,
+          227,
+          177
+        ],
+        "anticipation": [
+          370,
+          489,
+          241,
+          124
+        ],
+        "attack": [
+          678,
+          453,
+          248,
+          160
+        ],
+        "reaction": [
+          1021,
+          419,
+          189,
+          194
         ]
       }
     },
     "unicorn": {
-      "asset": "retro_farm_b",
+      "asset": "retro_motion_all_19_farm_b_c",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          711,
-          719,
-          346,
-          326
+          39,
+          699,
+          233,
+          215
+        ],
+        "anticipation": [
+          365,
+          768,
+          254,
+          144
+        ],
+        "attack": [
+          662,
+          695,
+          247,
+          206
+        ],
+        "reaction": [
+          1011,
+          686,
+          206,
+          228
         ]
       }
     },
     "griffin": {
-      "asset": "retro_farm_b",
+      "asset": "retro_motion_all_19_farm_b_c",
       "archetype": "flyer",
       "frames": {
         "idle": [
-          1074,
-          738,
-          343,
-          307
+          50,
+          983,
+          221,
+          208
+        ],
+        "anticipation": [
+          367,
+          1045,
+          235,
+          146
+        ],
+        "attack": [
+          657,
+          1007,
+          272,
+          176
+        ],
+        "reaction": [
+          994,
+          968,
+          225,
+          223
         ]
       }
     },
     "kraken": {
-      "asset": "retro_fantasy",
+      "asset": "retro_motion_all_20_fantasy_a",
       "archetype": "swimmer",
       "frames": {
         "idle": [
-          16,
-          55,
-          373,
-          326
+          67,
+          149,
+          215,
+          198
+        ],
+        "anticipation": [
+          393,
+          164,
+          192,
+          180
+        ],
+        "attack": [
+          656,
+          147,
+          333,
+          200
+        ],
+        "reaction": [
+          1036,
+          157,
+          178,
+          184
         ]
       }
     },
     "minotaur": {
-      "asset": "retro_fantasy",
+      "asset": "retro_motion_all_20_fantasy_a",
       "archetype": "biped",
       "frames": {
         "idle": [
-          397,
-          50,
-          303,
-          332
+          57,
+          414,
+          199,
+          214
+        ],
+        "anticipation": [
+          389,
+          458,
+          200,
+          170
+        ],
+        "attack": [
+          680,
+          436,
+          271,
+          192
+        ],
+        "reaction": [
+          1032,
+          436,
+          182,
+          194
         ]
       }
     },
     "werewolf": {
-      "asset": "retro_fantasy",
+      "asset": "retro_motion_all_20_fantasy_a",
       "archetype": "biped",
       "frames": {
         "idle": [
-          731,
-          75,
-          307,
-          307
+          66,
+          718,
+          193,
+          198
+        ],
+        "anticipation": [
+          382,
+          748,
+          200,
+          168
+        ],
+        "attack": [
+          684,
+          724,
+          267,
+          192
+        ],
+        "reaction": [
+          1022,
+          703,
+          188,
+          213
         ]
       }
     },
     "hydra": {
-      "asset": "retro_fantasy",
+      "asset": "retro_motion_all_20_fantasy_a",
       "archetype": "serpentine",
       "frames": {
         "idle": [
-          1065,
-          55,
-          370,
-          321
+          39,
+          975,
+          261,
+          217
+        ],
+        "anticipation": [
+          350,
+          1006,
+          249,
+          186
+        ],
+        "attack": [
+          648,
+          1010,
+          318,
+          182
+        ],
+        "reaction": [
+          976,
+          966,
+          232,
+          227
         ]
       }
     },
     "phoenix": {
-      "asset": "retro_fantasy",
+      "asset": "retro_motion_all_21_fantasy_b",
       "archetype": "flyer",
       "frames": {
         "idle": [
-          15,
-          397,
-          353,
-          338
+          45,
+          143,
+          211,
+          228
+        ],
+        "anticipation": [
+          362,
+          231,
+          230,
+          141
+        ],
+        "attack": [
+          679,
+          188,
+          261,
+          183
+        ],
+        "reaction": [
+          1015,
+          122,
+          186,
+          249
         ]
       }
     },
     "kitsune": {
-      "asset": "retro_fantasy",
+      "asset": "retro_motion_all_21_fantasy_b",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          369,
-          442,
-          353,
-          287
+          34,
+          480,
+          223,
+          203
+        ],
+        "anticipation": [
+          367,
+          532,
+          239,
+          152
+        ],
+        "attack": [
+          670,
+          507,
+          288,
+          173
+        ],
+        "reaction": [
+          1017,
+          468,
+          205,
+          216
         ]
       }
     },
     "basilisk": {
-      "asset": "retro_fantasy",
+      "asset": "retro_motion_all_21_fantasy_b",
       "archetype": "serpentine",
       "frames": {
         "idle": [
-          731,
-          464,
-          338,
-          268
+          45,
+          774,
+          215,
+          182
+        ],
+        "anticipation": [
+          377,
+          820,
+          199,
+          136
+        ],
+        "attack": [
+          675,
+          801,
+          275,
+          155
+        ],
+        "reaction": [
+          1026,
+          748,
+          193,
+          209
         ]
       }
     },
     "cerberus": {
-      "asset": "retro_fantasy",
+      "asset": "retro_motion_all_21_fantasy_b",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          1086,
-          446,
-          345,
-          285
+          45,
+          1017,
+          236,
+          178
+        ],
+        "anticipation": [
+          358,
+          1068,
+          246,
+          128
+        ],
+        "attack": [
+          669,
+          1018,
+          279,
+          163
+        ],
+        "reaction": [
+          1003,
+          1009,
+          229,
+          187
         ]
       }
     },
     "leviathan": {
-      "asset": "retro_clean_b",
+      "asset": "retro_motion_all_31_sea_mammoth",
       "archetype": "serpentine",
       "frames": {
         "idle": [
-          70,
-          749,
-          528,
-          403
+          55,
+          116,
+          284,
+          224
+        ],
+        "anticipation": [
+          439,
+          156,
+          230,
+          186
+        ],
+        "attack": [
+          772,
+          138,
+          376,
+          203
+        ],
+        "reaction": [
+          1183,
+          120,
+          227,
+          215
         ]
       }
     },
@@ -1635,555 +3273,1383 @@
       }
     },
     "spinosaurus": {
-      "asset": "retro_clean_c",
+      "asset": "retro_motion_all_32_prehistoric_mix",
       "archetype": "biped",
       "frames": {
         "idle": [
-          617,
-          165,
-          618,
-          408
+          42,
+          134,
+          326,
+          227
+        ],
+        "anticipation": [
+          404,
+          173,
+          321,
+          188
+        ],
+        "attack": [
+          759,
+          140,
+          341,
+          222
+        ],
+        "reaction": [
+          1160,
+          132,
+          253,
+          229
         ]
       }
     },
     "megalodon": {
-      "asset": "retro_clean_c",
+      "asset": "retro_motion_all_31_sea_mammoth",
       "archetype": "swimmer",
       "frames": {
         "idle": [
-          58,
-          743,
-          589,
-          380
+          33,
+          470,
+          333,
+          211
+        ],
+        "anticipation": [
+          435,
+          473,
+          262,
+          209
+        ],
+        "attack": [
+          741,
+          469,
+          390,
+          207
+        ],
+        "reaction": [
+          1177,
+          470,
+          240,
+          212
         ]
       }
     },
     "woolly_mammoth": {
-      "asset": "retro_clean_c",
+      "asset": "retro_motion_all_31_sea_mammoth",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          646,
-          709,
-          582,
-          446
+          39,
+          801,
+          309,
+          227
+        ],
+        "anticipation": [
+          401,
+          835,
+          314,
+          193
+        ],
+        "attack": [
+          769,
+          799,
+          351,
+          229
+        ],
+        "reaction": [
+          1163,
+          753,
+          255,
+          276
         ]
       }
     },
     "saber_tooth_tiger": {
-      "asset": "retro_prehistoric",
+      "asset": "retro_motion_all_22_prehistoric_a",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          747,
-          156,
-          326,
-          208
+          59,
+          170,
+          206,
+          132
+        ],
+        "anticipation": [
+          390,
+          193,
+          201,
+          109
+        ],
+        "attack": [
+          689,
+          168,
+          240,
+          134
+        ],
+        "reaction": [
+          1026,
+          136,
+          166,
+          166
         ]
       }
     },
     "ankylosaurus": {
-      "asset": "retro_prehistoric",
+      "asset": "retro_motion_all_22_prehistoric_a",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          1087,
-          165,
-          348,
-          199
+          66,
+          446,
+          223,
+          158
+        ],
+        "anticipation": [
+          382,
+          466,
+          211,
+          140
+        ],
+        "attack": [
+          689,
+          430,
+          238,
+          176
+        ],
+        "reaction": [
+          1021,
+          462,
+          186,
+          141
         ]
       }
     },
     "pteranodon": {
-      "asset": "retro_prehistoric",
+      "asset": "retro_motion_all_22_prehistoric_a",
       "archetype": "flyer",
       "frames": {
         "idle": [
-          32,
-          398,
-          379,
-          305
+          48,
+          710,
+          243,
+          182
+        ],
+        "anticipation": [
+          389,
+          747,
+          227,
+          167
+        ],
+        "attack": [
+          652,
+          741,
+          310,
+          142
+        ],
+        "reaction": [
+          1024,
+          715,
+          216,
+          185
         ]
       }
     },
     "pterodactyl": {
-      "asset": "retro_prehistoric",
+      "asset": "retro_motion_all_22_prehistoric_a",
       "archetype": "flyer",
       "frames": {
         "idle": [
-          412,
-          432,
-          310,
-          270
+          77,
+          1022,
+          197,
+          148
+        ],
+        "anticipation": [
+          393,
+          1049,
+          212,
+          136
+        ],
+        "attack": [
+          689,
+          1041,
+          224,
+          118
+        ],
+        "reaction": [
+          1026,
+          1015,
+          191,
+          155
         ]
       }
     },
     "dire_wolf": {
-      "asset": "retro_prehistoric",
+      "asset": "retro_motion_all_23_prehistoric_b",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          732,
-          455,
-          340,
-          252
+          40,
+          171,
+          217,
+          144
+        ],
+        "anticipation": [
+          376,
+          201,
+          221,
+          115
+        ],
+        "attack": [
+          686,
+          183,
+          232,
+          133
+        ],
+        "reaction": [
+          1029,
+          135,
+          192,
+          183
         ]
       }
     },
     "therizinosaurus": {
-      "asset": "retro_prehistoric",
+      "asset": "retro_motion_all_23_prehistoric_b",
       "archetype": "biped",
       "frames": {
         "idle": [
-          1086,
-          389,
-          349,
-          319
+          33,
+          413,
+          234,
+          234
+        ],
+        "anticipation": [
+          356,
+          463,
+          270,
+          185
+        ],
+        "attack": [
+          671,
+          415,
+          309,
+          233
+        ],
+        "reaction": [
+          1022,
+          405,
+          204,
+          243
         ]
       }
     },
     "dodo": {
-      "asset": "retro_prehistoric",
+      "asset": "retro_motion_all_23_prehistoric_b",
       "archetype": "biped",
       "frames": {
         "idle": [
-          34,
-          744,
-          283,
-          297
+          68,
+          742,
+          178,
+          188
+        ],
+        "anticipation": [
+          382,
+          780,
+          219,
+          147
+        ],
+        "attack": [
+          708,
+          777,
+          232,
+          154
+        ],
+        "reaction": [
+          1051,
+          731,
+          143,
+          199
         ]
       }
     },
     "thunderbird": {
-      "asset": "retro_prehistoric",
+      "asset": "retro_motion_all_23_prehistoric_b",
       "archetype": "flyer",
       "frames": {
         "idle": [
-          376,
-          737,
-          325,
-          303
+          42,
+          1003,
+          214,
+          201
+        ],
+        "anticipation": [
+          380,
+          1053,
+          212,
+          144
+        ],
+        "attack": [
+          665,
+          1028,
+          258,
+          161
+        ],
+        "reaction": [
+          1018,
+          989,
+          203,
+          221
         ]
       }
     },
     "manticore": {
-      "asset": "retro_prehistoric",
+      "asset": "retro_motion_all_32_prehistoric_mix",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          733,
-          732,
+          58,
+          470,
+          235,
+          236
+        ],
+        "anticipation": [
+          421,
+          503,
+          257,
+          203
+        ],
+        "attack": [
+          735,
+          470,
           335,
-          304
+          228
+        ],
+        "reaction": [
+          1151,
+          496,
+          264,
+          210
         ]
       }
     },
     "sphinx": {
-      "asset": "retro_prehistoric",
+      "asset": "retro_motion_all_32_prehistoric_mix",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          1094,
-          740,
-          321,
-          298
+          56,
+          808,
+          225,
+          204
+        ],
+        "anticipation": [
+          406,
+          835,
+          275,
+          177
+        ],
+        "attack": [
+          775,
+          818,
+          311,
+          189
+        ],
+        "reaction": [
+          1174,
+          781,
+          225,
+          229
         ]
       }
     },
     "chimera": {
-      "asset": "retro_mythic",
+      "asset": "retro_motion_all_24_mythic_a",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          29,
-          109,
-          397,
-          328
+          55,
+          136,
+          215,
+          188
+        ],
+        "anticipation": [
+          378,
+          170,
+          231,
+          154
+        ],
+        "attack": [
+          681,
+          147,
+          240,
+          177
+        ],
+        "reaction": [
+          1016,
+          117,
+          194,
+          207
         ]
       }
     },
     "wyvern": {
-      "asset": "retro_mythic",
+      "asset": "retro_motion_all_24_mythic_a",
       "archetype": "flyer",
       "frames": {
         "idle": [
-          440,
-          96,
-          405,
-          343
+          47,
+          423,
+          235,
+          197
+        ],
+        "anticipation": [
+          371,
+          484,
+          241,
+          134
+        ],
+        "attack": [
+          672,
+          426,
+          294,
+          180
+        ],
+        "reaction": [
+          1010,
+          400,
+          213,
+          218
         ]
       }
     },
     "kirin": {
-      "asset": "retro_mythic",
+      "asset": "retro_motion_all_24_mythic_a",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          860,
-          57,
-          372,
-          382
+          38,
+          684,
+          245,
+          226
+        ],
+        "anticipation": [
+          361,
+          725,
+          252,
+          185
+        ],
+        "attack": [
+          669,
+          678,
+          281,
+          232
+        ],
+        "reaction": [
+          1014,
+          665,
+          203,
+          245
         ]
       }
     },
     "roc": {
-      "asset": "retro_mythic",
+      "asset": "retro_motion_all_24_mythic_a",
       "archetype": "flyer",
       "frames": {
         "idle": [
-          13,
-          457,
-          435,
-          369
+          28,
+          962,
+          261,
+          219
+        ],
+        "anticipation": [
+          350,
+          1022,
+          262,
+          159
+        ],
+        "attack": [
+          646,
+          968,
+          297,
+          204
+        ],
+        "reaction": [
+          984,
+          937,
+          246,
+          239
         ]
       }
     },
     "jackalope": {
-      "asset": "retro_mythic",
+      "asset": "retro_motion_all_29_mythic_crow",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          500,
-          474,
-          272,
-          333
+          78,
+          399,
+          169,
+          218
+        ],
+        "anticipation": [
+          397,
+          452,
+          186,
+          163
+        ],
+        "attack": [
+          684,
+          408,
+          237,
+          207
+        ],
+        "reaction": [
+          1044,
+          384,
+          149,
+          233
         ]
       }
     },
     "baku": {
-      "asset": "retro_mythic",
+      "asset": "retro_motion_all_29_mythic_crow",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          822,
-          508,
-          420,
-          302
+          43,
+          720,
+          275,
+          191
+        ],
+        "anticipation": [
+          362,
+          745,
+          245,
+          164
+        ],
+        "attack": [
+          660,
+          737,
+          306,
+          174
+        ],
+        "reaction": [
+          1017,
+          709,
+          199,
+          209
         ]
       }
     },
     "nue": {
-      "asset": "retro_mythic",
+      "asset": "retro_motion_all_29_mythic_crow",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          41,
-          868,
-          367,
-          336
+          65,
+          1006,
+          208,
+          212
+        ],
+        "anticipation": [
+          363,
+          1006,
+          223,
+          212
+        ],
+        "attack": [
+          674,
+          1017,
+          304,
+          204
+        ],
+        "reaction": [
+          1025,
+          1003,
+          203,
+          217
         ]
       }
     },
     "ammit": {
-      "asset": "retro_clean_d",
+      "asset": "retro_motion_all_30_clean_d",
       "archetype": "quadruped",
       "frames": {
         "idle": [
-          53,
-          269,
-          579,
-          376
+          48,
+          469,
+          302,
+          204
+        ],
+        "anticipation": [
+          397,
+          503,
+          320,
+          170
+        ],
+        "attack": [
+          767,
+          483,
+          330,
+          183
+        ],
+        "reaction": [
+          1181,
+          455,
+          233,
+          218
         ]
       }
     },
     "peryton": {
-      "asset": "retro_clean_d",
+      "asset": "retro_motion_all_30_clean_d",
       "archetype": "flyer",
       "frames": {
         "idle": [
-          750,
-          119,
-          466,
-          522
+          54,
+          766,
+          248,
+          264
+        ],
+        "anticipation": [
+          415,
+          809,
+          274,
+          225
+        ],
+        "attack": [
+          777,
+          800,
+          314,
+          216
+        ],
+        "reaction": [
+          1199,
+          760,
+          217,
+          271
         ]
       }
     },
     "zeus": {
-      "asset": "retro_olympus",
+      "asset": "retro_motion_all_25_olympus_a",
       "archetype": "biped",
       "frames": {
         "idle": [
-          46,
-          42,
-          303,
-          338
+          78,
+          143,
+          171,
+          188
+        ],
+        "anticipation": [
+          389,
+          162,
+          193,
+          169
+        ],
+        "attack": [
+          704,
+          147,
+          231,
+          184
+        ],
+        "reaction": [
+          1017,
+          136,
+          187,
+          195
         ]
       }
     },
     "poseidon": {
-      "asset": "retro_olympus",
+      "asset": "retro_motion_all_25_olympus_a",
       "archetype": "biped",
       "frames": {
         "idle": [
-          399,
-          15,
-          310,
-          367
+          66,
+          401,
+          186,
+          238
+        ],
+        "anticipation": [
+          373,
+          423,
+          232,
+          215
+        ],
+        "attack": [
+          683,
+          452,
+          315,
+          186
+        ],
+        "reaction": [
+          1026,
+          390,
+          187,
+          248
         ]
       }
     },
     "hades": {
-      "asset": "retro_olympus",
+      "asset": "retro_motion_all_25_olympus_a",
       "archetype": "biped",
       "frames": {
         "idle": [
-          764,
-          47,
-          290,
-          334
+          46,
+          709,
+          196,
+          211
+        ],
+        "anticipation": [
+          372,
+          730,
+          210,
+          192
+        ],
+        "attack": [
+          678,
+          728,
+          240,
+          192
+        ],
+        "reaction": [
+          1020,
+          725,
+          197,
+          195
         ]
       }
     },
     "ares": {
-      "asset": "retro_olympus",
+      "asset": "retro_motion_all_25_olympus_a",
       "archetype": "biped",
       "frames": {
         "idle": [
-          1117,
-          30,
-          320,
-          353
+          45,
+          983,
+          221,
+          214
+        ],
+        "anticipation": [
+          381,
+          1003,
+          207,
+          194
+        ],
+        "attack": [
+          679,
+          989,
+          262,
+          208
+        ],
+        "reaction": [
+          1029,
+          989,
+          195,
+          208
         ]
       }
     },
     "athena": {
-      "asset": "retro_olympus",
+      "asset": "retro_motion_all_26_olympus_b",
       "archetype": "biped",
       "frames": {
         "idle": [
-          54,
-          388,
-          254,
-          346
+          79,
+          127,
+          177,
+          240
+        ],
+        "anticipation": [
+          384,
+          147,
+          200,
+          220
+        ],
+        "attack": [
+          678,
+          131,
+          249,
+          236
+        ],
+        "reaction": [
+          1005,
+          129,
+          183,
+          238
         ]
       }
     },
     "apollo": {
-      "asset": "retro_olympus",
+      "asset": "retro_motion_all_26_olympus_b",
       "archetype": "biped",
       "frames": {
         "idle": [
-          429,
-          396,
-          243,
-          340
+          81,
+          436,
+          159,
+          232
+        ],
+        "anticipation": [
+          388,
+          456,
+          193,
+          212
+        ],
+        "attack": [
+          695,
+          436,
+          220,
+          232
+        ],
+        "reaction": [
+          1016,
+          454,
+          171,
+          214
         ]
       }
     },
     "artemis": {
-      "asset": "retro_olympus",
+      "asset": "retro_motion_all_26_olympus_b",
       "archetype": "biped",
       "frames": {
         "idle": [
-          799,
-          400,
-          234,
-          336
+          83,
+          720,
+          161,
+          233
+        ],
+        "anticipation": [
+          391,
+          740,
+          195,
+          213
+        ],
+        "attack": [
+          694,
+          727,
+          217,
+          226
+        ],
+        "reaction": [
+          1006,
+          742,
+          182,
+          211
         ]
       }
     },
     "hermes": {
-      "asset": "retro_olympus",
+      "asset": "retro_motion_all_26_olympus_b",
       "archetype": "biped",
       "frames": {
         "idle": [
-          1137,
-          404,
-          287,
-          331
+          78,
+          1001,
+          165,
+          222
+        ],
+        "anticipation": [
+          394,
+          1028,
+          179,
+          195
+        ],
+        "attack": [
+          697,
+          1010,
+          224,
+          213
+        ],
+        "reaction": [
+          1028,
+          1005,
+          160,
+          218
         ]
       }
     },
     "hephaestus": {
-      "asset": "retro_olympus",
+      "asset": "retro_motion_all_27_olympus_c",
       "archetype": "biped",
       "frames": {
         "idle": [
-          37,
-          752,
-          304,
-          319
+          69,
+          153,
+          205,
+          217
+        ],
+        "anticipation": [
+          401,
+          159,
+          213,
+          211
+        ],
+        "attack": [
+          683,
+          159,
+          265,
+          212
+        ],
+        "reaction": [
+          1033,
+          138,
+          188,
+          232
         ]
       }
     },
     "hercules": {
-      "asset": "retro_olympus",
+      "asset": "retro_motion_all_27_olympus_c",
       "archetype": "biped",
       "frames": {
         "idle": [
+          50,
+          428,
+          212,
+          242
+        ],
+        "anticipation": [
           383,
-          738,
-          301,
-          334
+          473,
+          221,
+          197
+        ],
+        "attack": [
+          685,
+          428,
+          274,
+          242
+        ],
+        "reaction": [
+          1029,
+          443,
+          191,
+          227
         ]
       }
     },
     "medusa": {
-      "asset": "retro_olympus",
+      "asset": "retro_motion_all_27_olympus_c",
       "archetype": "biped",
       "frames": {
         "idle": [
-          783,
-          745,
-          264,
-          326
+          79,
+          712,
+          176,
+          248
+        ],
+        "anticipation": [
+          388,
+          737,
+          201,
+          223
+        ],
+        "attack": [
+          689,
+          715,
+          232,
+          245
+        ],
+        "reaction": [
+          1043,
+          722,
+          177,
+          238
         ]
       }
     },
     "kronos": {
-      "asset": "retro_olympus",
+      "asset": "retro_motion_all_27_olympus_c",
       "archetype": "biped",
       "frames": {
         "idle": [
-          1124,
-          749,
-          299,
-          322
+          47,
+          980,
+          212,
+          231
+        ],
+        "anticipation": [
+          369,
+          1001,
+          203,
+          209
+        ],
+        "attack": [
+          671,
+          1002,
+          263,
+          208
+        ],
+        "reaction": [
+          1017,
+          990,
+          204,
+          220
         ]
       }
     }
   },
   "customBases": {
     "robot": {
-      "asset": "retro_custom_a",
+      "asset": "retro_motion_all_33_custom_a",
       "frames": {
         "idle": [
-          134,
-          112,
-          388,
-          526
+          72,
+          94,
+          177,
+          237
+        ],
+        "anticipation": [
+          360,
+          121,
+          192,
+          210
+        ],
+        "attack": [
+          683,
+          102,
+          231,
+          229
+        ],
+        "reaction": [
+          1038,
+          102,
+          155,
+          229
         ]
       },
       "archetype": "biped"
     },
     "knight": {
-      "asset": "retro_custom_a",
+      "asset": "retro_motion_all_33_custom_a",
       "frames": {
         "idle": [
-          764,
-          111,
-          406,
-          534
+          76,
+          399,
+          190,
+          242
+        ],
+        "anticipation": [
+          383,
+          421,
+          196,
+          220
+        ],
+        "attack": [
+          674,
+          410,
+          247,
+          231
+        ],
+        "reaction": [
+          1028,
+          414,
+          190,
+          227
         ]
       },
       "archetype": "biped"
     },
     "wizard": {
-      "asset": "retro_custom_a",
+      "asset": "retro_motion_all_33_custom_a",
       "frames": {
         "idle": [
-          148,
-          693,
-          432,
-          514
+          72,
+          715,
+          202,
+          231
+        ],
+        "anticipation": [
+          377,
+          734,
+          207,
+          211
+        ],
+        "attack": [
+          668,
+          723,
+          250,
+          222
+        ],
+        "reaction": [
+          1011,
+          728,
+          198,
+          217
         ]
       },
       "archetype": "biped"
     },
     "superhero": {
-      "asset": "retro_custom_a",
+      "asset": "retro_motion_all_33_custom_a",
       "frames": {
         "idle": [
-          691,
-          710,
-          503,
-          497
+          39,
+          1003,
+          214,
+          211
+        ],
+        "anticipation": [
+          359,
+          1032,
+          187,
+          182
+        ],
+        "attack": [
+          660,
+          1013,
+          248,
+          201
+        ],
+        "reaction": [
+          1025,
+          1023,
+          195,
+          191
         ]
       },
       "archetype": "biped"
     },
     "slime": {
-      "asset": "retro_custom_b",
+      "asset": "retro_motion_all_34_custom_b",
       "frames": {
         "idle": [
-          132,
-          239,
-          399,
-          334
+          79,
+          169,
+          178,
+          148
+        ],
+        "anticipation": [
+          378,
+          207,
+          209,
+          111
+        ],
+        "attack": [
+          684,
+          169,
+          230,
+          147
+        ],
+        "reaction": [
+          1036,
+          179,
+          160,
+          139
         ]
       },
       "archetype": "biped"
     },
     "mushroom": {
-      "asset": "retro_custom_b",
+      "asset": "retro_motion_all_34_custom_b",
       "frames": {
         "idle": [
-          761,
-          129,
-          372,
-          464
+          83,
+          409,
+          167,
+          209
+        ],
+        "anticipation": [
+          413,
+          443,
+          178,
+          175
+        ],
+        "attack": [
+          714,
+          407,
+          200,
+          211
+        ],
+        "reaction": [
+          1026,
+          416,
+          191,
+          202
         ]
       },
       "archetype": "biped"
     },
     "tree": {
-      "asset": "retro_custom_b",
+      "asset": "retro_motion_all_34_custom_b",
       "frames": {
         "idle": [
-          127,
-          665,
-          462,
-          532
+          59,
+          666,
+          222,
+          248
+        ],
+        "anticipation": [
+          383,
+          692,
+          221,
+          221
+        ],
+        "attack": [
+          701,
+          661,
+          259,
+          251
+        ],
+        "reaction": [
+          992,
+          674,
+          239,
+          239
         ]
       },
       "archetype": "biped"
     },
     "alien": {
-      "asset": "retro_custom_b",
+      "asset": "retro_motion_all_34_custom_b",
       "frames": {
         "idle": [
-          819,
-          716,
-          285,
-          478
+          89,
+          972,
+          149,
+          234
+        ],
+        "anticipation": [
+          396,
+          1008,
+          167,
+          198
+        ],
+        "attack": [
+          718,
+          989,
+          196,
+          216
+        ],
+        "reaction": [
+          1060,
+          982,
+          156,
+          223
         ]
       },
       "archetype": "biped"
     },
     "wingedcat": {
-      "asset": "retro_custom_c",
+      "asset": "retro_motion_all_35_custom_c",
       "frames": {
         "idle": [
-          66,
-          102,
-          512,
-          494
+          37,
+          112,
+          219,
+          214
+        ],
+        "anticipation": [
+          348,
+          190,
+          250,
+          136
+        ],
+        "attack": [
+          648,
+          117,
+          302,
+          190
+        ],
+        "reaction": [
+          1017,
+          97,
+          173,
+          228
         ]
       },
       "archetype": "flyer"
     },
     "rockgolem": {
-      "asset": "retro_custom_c",
+      "asset": "retro_motion_all_35_custom_c",
       "frames": {
         "idle": [
-          699,
-          154,
-          513,
-          460
+          37,
+          420,
+          236,
+          216
+        ],
+        "anticipation": [
+          349,
+          455,
+          243,
+          181
+        ],
+        "attack": [
+          683,
+          437,
+          306,
+          199
+        ],
+        "reaction": [
+          1028,
+          425,
+          204,
+          211
         ]
       },
       "archetype": "biped"
     },
     "seaserpent": {
-      "asset": "retro_custom_c",
+      "asset": "retro_motion_all_35_custom_c",
       "frames": {
         "idle": [
-          71,
-          715,
-          539,
-          473
+          41,
+          704,
+          227,
+          220
+        ],
+        "anticipation": [
+          376,
+          726,
+          215,
+          199
+        ],
+        "attack": [
+          649,
+          737,
+          349,
+          181
+        ],
+        "reaction": [
+          1021,
+          703,
+          204,
+          222
         ]
       },
       "archetype": "serpentine"
     },
     "ghost": {
-      "asset": "retro_custom_c",
+      "asset": "retro_motion_all_35_custom_c",
       "frames": {
         "idle": [
-          790,
-          744,
-          386,
-          417
+          73,
+          998,
+          183,
+          199
+        ],
+        "anticipation": [
+          399,
+          1043,
+          182,
+          156
+        ],
+        "attack": [
+          684,
+          1017,
+          278,
+          165
+        ],
+        "reaction": [
+          1057,
+          997,
+          144,
+          200
         ]
       },
       "archetype": "flyer"

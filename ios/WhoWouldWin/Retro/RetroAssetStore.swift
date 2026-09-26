@@ -1,5 +1,6 @@
 import SwiftUI
 import CryptoKit
+import ImageIO
 
 // Semantic poses may share an authored idle frame; the native motion rig supplies movement.
 enum RetroPose: String, CaseIterable { case idle, anticipation, attack, reaction }
@@ -124,8 +125,88 @@ struct RetroCustomRecipe: Equatable {
     }
 }
 
+/// Deterministic decoded-atlas ownership. Unlike UIImage(named:), raw bundle
+/// PNGs have no shared UIKit cache. Displayed crops are copied out of these images
+/// before retention, so an evicted atlas cannot be pinned by a small portrait.
+@MainActor
+final class RetroAtlasCache {
+    private struct Entry {
+        let image: CGImage
+        let cost: Int
+        var access: UInt64
+    }
+    private var entries: [String: Entry] = [:]
+    private var clock: UInt64 = 0
+    private let loader: (String) -> CGImage?
+    let costLimit: Int
+    private(set) var residentCost = 0
+    var cachedNames: Set<String> { Set(entries.keys) }
+
+    init(costLimit: Int = 32 * 1024 * 1024, loader: @escaping (String) -> CGImage?) {
+        self.costLimit = max(0, costLimit)
+        self.loader = loader
+    }
+
+    func image(named name: String) -> CGImage? {
+        clock &+= 1
+        if var entry = entries[name] {
+            entry.access = clock; entries[name] = entry
+            return entry.image
+        }
+        guard let image = loader(name) else { return nil }
+        let cost = image.bytesPerRow * image.height
+        // An oversized optional sheet can still produce a detached crop, but it
+        // is never retained beyond the call or allowed to exceed the cache budget.
+        guard cost > 0, cost <= costLimit else { return image }
+        while residentCost + cost > costLimit,
+              let oldest = entries.min(by: { $0.value.access < $1.value.access }) {
+            residentCost -= oldest.value.cost
+            entries.removeValue(forKey: oldest.key)
+        }
+        entries[name] = Entry(image: image, cost: cost, access: clock)
+        residentCost += cost
+        return image
+    }
+
+    func removeAll() { entries.removeAll(); residentCost = 0; clock = 0 }
+
+    /// A URL resolver is injectable so tests exercise the actual ImageIO loader,
+    /// including precedence over the legacy catalog and missing-file behavior.
+    static func load(named name: String, rawURL: (String) -> URL?, legacy: (String) -> CGImage?) -> CGImage? {
+        if let url = rawURL(name) {
+            let options = [kCGImageSourceShouldCache: false,
+                           kCGImageSourceShouldAllowFloat: false] as CFDictionary
+            guard let source = CGImageSourceCreateWithURL(url as CFURL, options),
+                  let image = CGImageSourceCreateImageAtIndex(source, 0, options) else { return nil }
+            // Materialize RGBA once, outside ImageIO's implicit decoded caches.
+            return detachedCopy(of: image)
+        }
+        // Kept only for the existing asset-catalog packs during migration.
+        return legacy(name)
+    }
+
+    static func detachedCopy(of source: CGImage, crop: CGRect? = nil) -> CGImage? {
+        let image: CGImage
+        if let crop {
+            guard CGRect(x: 0, y: 0, width: source.width, height: source.height).contains(crop),
+                  let region = source.cropping(to: crop) else { return nil }
+            image = region
+        } else { image = source }
+        // Bundle artwork is 8-bit pixel art. An explicit tightly packed RGBA
+        // buffer gives the cache honest costs and prevents parent-atlas retention.
+        guard let context = CGContext(data: nil, width: image.width, height: image.height,
+            bitsPerComponent: 8, bytesPerRow: image.width * 4,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue) else { return nil }
+        context.interpolationQuality = .none
+        context.setBlendMode(.copy)
+        context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+        return context.makeImage()
+    }
+}
+
 /// Every catalog and custom image is local. No description leaves the device,
-/// and no network/disk task can hold up a battle or survive a cache clear.
+/// and no asynchronous task can hold up a battle or survive a cache clear.
 @MainActor
 final class RetroAssetStore: ObservableObject {
     static let shared = RetroAssetStore()
@@ -133,14 +214,46 @@ final class RetroAssetStore: ObservableObject {
     @Published private(set) var revision = 0
     let manifest: RetroSpriteManifest?
     private let images = NSCache<NSString, UIImage>()
+    private let atlases: RetroAtlasCache
+    private var memoryWarningObserver: NSObjectProtocol?
 
-    private init() {
-        images.totalCostLimit = 32 * 1024 * 1024
-        images.countLimit = 220
-        manifest = Bundle.main.url(forResource: "RetroSpriteManifest", withExtension: "json")
+    private convenience init() {
+        let manifest = Bundle.main.url(forResource: "RetroSpriteManifest", withExtension: "json")
             .flatMap { try? Data(contentsOf: $0) }
             .flatMap { try? JSONDecoder().decode(RetroSpriteManifest.self, from: $0) }
+        self.init(manifest: manifest)
     }
+
+    /// The injected loader is used by cache/lifecycle tests; production resolves
+    /// raw folder resources first and the original asset catalog second.
+    init(manifest: RetroSpriteManifest?, atlasCostLimit: Int = 32 * 1024 * 1024,
+         atlasLoader: ((String) -> CGImage?)? = nil) {
+        self.manifest = manifest
+        atlases = RetroAtlasCache(costLimit: atlasCostLimit, loader: atlasLoader ?? { name in
+            RetroAtlasCache.load(named: name, rawURL: {
+                Bundle.main.url(forResource: $0, withExtension: "png", subdirectory: "RetroAtlases")
+            }, legacy: { UIImage(named: $0)?.cgImage })
+        })
+        images.totalCostLimit = 32 * 1024 * 1024
+        images.countLimit = 220
+        memoryWarningObserver = NotificationCenter.default.addObserver(
+            forName: UIApplication.didReceiveMemoryWarningNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                // Existing views keep their detached images. Do not publish an
+                // art revision here and immediately recreate all scene textures.
+                self?.images.removeAllObjects()
+                self?.atlases.removeAll()
+            }
+        }
+    }
+
+    deinit {
+        if let memoryWarningObserver { NotificationCenter.default.removeObserver(memoryWarningObserver) }
+    }
+
+    func atlasImage(named name: String) -> CGImage? { atlases.image(named: name) }
+    var cachedAtlasCost: Int { atlases.residentCost }
 
     nonisolated static func customCacheKey(for name: String) -> String {
         SHA256.hash(data: Data(("retro-local-v1|" + RetroCustomRecipe.normalize(name)).utf8))
@@ -176,10 +289,10 @@ final class RetroAssetStore: ObservableObject {
     private func cropped(_ sprite: RetroSpriteManifest.Sprite?, pose: RetroPose) -> UIImage? {
         guard let sprite, let values = sprite.frames[pose.rawValue] ?? sprite.frames[RetroPose.idle.rawValue],
               values.count == 4, values.allSatisfy({ $0 >= 0 }), values[2] > 0, values[3] > 0,
-              let sheet = UIImage(named: sprite.asset)?.cgImage else { return nil }
+              let sheet = atlasImage(named: sprite.asset) else { return nil }
         let rect = CGRect(x: values[0], y: values[1], width: values[2], height: values[3])
         guard CGRect(x: 0, y: 0, width: sheet.width, height: sheet.height).contains(rect),
-              let cropped = sheet.cropping(to: rect) else { return nil }
+              let cropped = RetroAtlasCache.detachedCopy(of: sheet, crop: rect) else { return nil }
         return UIImage(cgImage: cropped)
     }
 
@@ -207,7 +320,11 @@ final class RetroAssetStore: ObservableObject {
     func prepare(_ animal: Animal, retry: Bool = false) async { _ = image(for: animal) }
 
     /// Parent erase flow can synchronously discard the bounded memory cache.
-    func clearMemoryCache() { images.removeAllObjects(); revision &+= 1 }
+    func clearMemoryCache() {
+        images.removeAllObjects()
+        atlases.removeAll()
+        revision &+= 1
+    }
 }
 
 /// Nearest-neighbor native rendering, with light palette changes that retain

@@ -1,0 +1,22 @@
+[
+  {
+    "key": "motion_all_01_land_a",
+    "section": "sprites",
+    "storage": "bundle",
+    "ids": [
+      "hippopotamus",
+      "cheetah",
+      "komodo_dragon",
+      "wolverine"
+    ],
+    "referenceAssets": [
+      "retro_core",
+      "retro_land"
+    ],
+    "prompt": "Use case: stylized-concept. Asset type: transparent production animation sprite atlas for Animal vs Animal. Create a NEW 4-row by 4-column sprite sheet of exactly SIXTEEN isolated full-body sprites. Reference image 1 shows the approved lion/gorilla animation quality and pixel-art style; reference image 2 shows the exact four requested animal identities and palettes. Only these four animals appear, one per row, ALL FACING RIGHT. Row 1: stout purple-brown HIPPOPOTAMUS with pink muzzle; ready on four feet, crouched windup head low, forward open-jaw lunge and front-leg step, then braced recoil with muzzle raised. Row 2: golden CHEETAH with black spots, pale muzzle/belly and dark tear marks; ready, low stalking crouch, long forward running pounce with forelegs out, then braced recoil with shoulders back. Row 3: brown KOMODO DRAGON with gold throat, long lizard body/tail and clawed feet; ready, low compressed windup, open-jaw forward snap with stepping front legs, then head-back recoil. Row 4: stocky dark brown WOLVERINE with broad golden flank stripe and pale brows; ready, crouching windup, raised-forepaw forward swipe, then braced backward reaction. Four columns are READY, WIND-UP, ATTACK, HIT REACTION. These must be genuinely different drawn limb/head/tail poses, not duplicates shifted or stretched. Match the source animal identity and its color markings consistently through all four poses. Keep body scale consistent in each row. Detailed charming 16/32-bit game pixel art, dark plum stepped outlines, warm clean pixel shading, expressive child-friendly faces. Square 2048x2048 actual transparent RGBA PNG. STRICT EVEN 4x4 grid, each FULL silhouette occupies at most 68 percent of its cell's width AND height; generous empty alpha gutters on every side, no bounding-box overlap between any two sprites. Never crop tails/ears/paws. Each silhouette and extremity connected; no separate effects/debris. No labels/text/grid/ground/shadows/checkerboard, no extra characters. Use the lion action quality; all four distinct poses must be easy to read at small size.",
+    "path": "/Users/home/.codex/generated_images/01a0dd21-0691-7ed2-a383-f4bc8b73cad3/exec-5f3f7dda-e596-4d14-b34d-70a30b82552e.png",
+    "rejectedInitialPath": "/Users/home/.codex/generated_images/01a0dd21-0691-7ed2-a383-f4bc8b73cad3/exec-5a210060-ce6d-4a13-814c-0a815658e35a.png",
+    "layoutCorrectionPrompt": "Edit this exact transparent animation sheet. Preserve ALL sixteen sprites, their four rows, exact animal identities, palettes, right-facing direction, and their distinctive four poses. Make only this layout correction: each sprite must be SIGNIFICANTLY SMALLER, approximately 65% of its current size, in the exact same cell center. The purpose is much larger transparent gutters for game sprite cropping. The 4 columns and 4 rows stay in their current order. Every one of the sixteen character bounding rectangles must be entirely separated from every other rectangle by AT LEAST 70 pixels on this approximately1254 square sheet. This includes long tails and outstretched claws. Minimum70px completely empty alpha gap between neighboring silhouette BOUNDING BOXES, not just between visible skin. The hippo remainsrow1, cheetahrow2, komodorow3, wolverinerow4. Keep each row's body scale consistent between poses. No missing sprites, no redrawing into other animals, no extra effects or details. Actual transparent alpha PNG. Retain crisp pixel-art detail. No background, labels, grid, shadows or checkerboard. Large clean empty transparent gutters are the priority.",
+    "rejectionReason": "Foreign neighboring pixels overlapped an attack crop"
+  }
+]

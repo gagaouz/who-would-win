@@ -28,6 +28,7 @@
 		1DEC09ADC3F5BF78A062131C /* GrownUpZoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A3D0E4C0E68656414310E57 /* GrownUpZoneView.swift */; };
 		1E38ECD9D9BCB5AF7AD342CC /* RetroTestFixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E1697BA11D042BD1AE97316 /* RetroTestFixtures.swift */; };
 		2648C3E0F0021166BD261B9F /* RetroMotionRig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DCF77709D6A769247643DCD /* RetroMotionRig.swift */; };
+		27B67EF8FF95C776265286B9 /* RetroAtlases in Resources */ = {isa = PBXBuildFile; fileRef = 7D50FAF714B1D9B9C79FA477 /* RetroAtlases */; };
 		2853D491587ACCADB09883F8 /* RetroAssetStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE10C0E201FCE77649E60AE /* RetroAssetStore.swift */; };
 		2AA1C981742ABFF0F3FEDE42 /* RetroAssetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEB63ED8CF17AB5BE777BA82 /* RetroAssetTests.swift */; };
 		2B60ADE6C43D692BEE926BAA /* KidsCoinShopSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA51E39CE6F71550794C76C6 /* KidsCoinShopSheet.swift */; };
@@ -200,6 +201,7 @@
 		75B724AC8DB2196C8B54CF8C /* HowToPlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HowToPlayView.swift; sourceTree = "<group>"; };
 		77BDC18C0E579266056B7F5F /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
 		79EF313885DAC312CBB73B59 /* RatingsPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RatingsPrompt.swift; sourceTree = "<group>"; };
+		7D50FAF714B1D9B9C79FA477 /* RetroAtlases */ = {isa = PBXFileReference; lastKnownFileType = folder; name = RetroAtlases; path = WhoWouldWin/Resources/RetroAtlases; sourceTree = SOURCE_ROOT; };
 		7DF9E58829492F9ACE83B4ED /* Tournament.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tournament.swift; sourceTree = "<group>"; };
 		82FA69876315EBFFA80A7AD8 /* CoinBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinBadge.swift; sourceTree = "<group>"; };
 		842778B47843E2C9245EEA4C /* StickerCollection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickerCollection.swift; sourceTree = "<group>"; };
@@ -509,6 +511,7 @@
 				4705A831ACDD08FDFC0CBFA9 /* Data */,
 				B58D566427EDC88E2E69E621 /* Fonts */,
 				6AE2635BF27FFFEC2BEDE8CA /* Models */,
+				EE27A178E687DC67ADABB73F /* Resources */,
 				B912CD8858FE06E2B7F88973 /* Retro */,
 				E3F49B029C446A296F64B575 /* Services */,
 				E8A2635CD8A3CDFFCEBFF40A /* Sounds */,
@@ -564,6 +567,14 @@
 				97EA4F7671340D534594DF04 /* win.wav */,
 			);
 			path = Sounds;
+			sourceTree = "<group>";
+		};
+		EE27A178E687DC67ADABB73F /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				7D50FAF714B1D9B9C79FA477 /* RetroAtlases */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -687,6 +698,7 @@
 				F1D23DAA8B62748754B940B0 /* Nunito.ttf in Resources */,
 				D17BEB9DFA2C3A2281789C43 /* PressStart2P-Regular.ttf in Resources */,
 				F35774044862272377169A71 /* PrivacyInfo.xcprivacy in Resources */,
+				27B67EF8FF95C776265286B9 /* RetroAtlases in Resources */,
 				3F0695352D6486F4433A3722 /* RetroSpriteManifest.json in Resources */,
 				D438ABDC7DCB6696861B3A26 /* badge.wav in Resources */,
 				3D819B5B25E010E78FDE8165 /* charge.wav in Resources */,
