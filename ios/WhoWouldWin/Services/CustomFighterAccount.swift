@@ -40,7 +40,6 @@ final class CustomFighterAccount: NSObject, ObservableObject {
         configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
         return URLSession(configuration: configuration, delegate: redirectGuard, delegateQueue: nil)
     }()
-    private let keychainService = (Bundle.main.bundleIdentifier ?? "com.whowouldin.WhoWouldWin") + ".fighter-account"
 
     private override init() {
         super.init()
@@ -239,9 +238,38 @@ final class CustomFighterAccount: NSObject, ObservableObject {
     private func sendEmpty(_ path: String, method: String, bearer: String) async throws {
         _ = try await sendData(path, method: method, body: nil, bearer: bearer)
     }
+    /// Every account operation belongs to the same private library service as
+    /// artwork requests. The battle API can be a separate deployment.
+    struct BackendConfiguration {
+        let battleBaseURL: String
+        let customFighterBaseURL: String
+
+        nonisolated static var current: BackendConfiguration {
+            BackendConfiguration(battleBaseURL: AppConfig.backendBaseURL,
+                                 customFighterBaseURL: AppConfig.customFighterBaseURL)
+        }
+    }
+
+    nonisolated static func authenticationURL(for path: String, configuration: BackendConfiguration = .current) -> URL? {
+        guard ["challenge", "apple", "signout", "account"].contains(path),
+              let base = URL(string: configuration.customFighterBaseURL), base.scheme == "https", base.host?.isEmpty == false,
+              base.user == nil, base.password == nil, base.query == nil, base.fragment == nil else { return nil }
+        return base.appendingPathComponent("api/custom-fighters/auth").appendingPathComponent(path)
+    }
+
+    /// A session is valid only for the library deployment that issued it. Do
+    /// not import credentials from the old battle-service Keychain namespace.
+    nonisolated static func sessionKeychainQuery(
+        bundleIdentifier: String = Bundle.main.bundleIdentifier ?? "com.whowouldin.WhoWouldWin",
+        configuration: BackendConfiguration = .current
+    ) -> [String: Any] {
+        [kSecClass as String: kSecClassGenericPassword,
+         kSecAttrService as String: bundleIdentifier + ".fighter-account",
+         kSecAttrAccount as String: configuration.customFighterBaseURL.trimmingCharacters(in: CharacterSet(charactersIn: "/"))]
+    }
+
     private func sendData(_ path: String, method: String, body: [String: String]?, bearer: String?) async throws -> Data {
-        guard AppConfig.externalServicesEnabled, ["challenge", "apple", "signout", "account"].contains(path),
-              let url = URL(string: AppConfig.backendBaseURL + "/api/custom-fighters/auth/" + path), url.scheme == "https" else {
+        guard AppConfig.externalServicesEnabled, let url = Self.authenticationURL(for: path) else {
             throw AccountError.unavailable
         }
         var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 30)
@@ -268,8 +296,7 @@ final class CustomFighterAccount: NSObject, ObservableObject {
         return data
     }
     private func keychainQuery() -> [String: Any] {
-        [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: keychainService,
-         kSecAttrAccount as String: AppConfig.backendBaseURL]
+        Self.sessionKeychainQuery()
     }
     private func readSessionData() -> Data? {
         var query = keychainQuery(); query[kSecReturnData as String] = true; query[kSecMatchLimit as String] = kSecMatchLimitOne
