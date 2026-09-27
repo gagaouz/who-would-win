@@ -10,4 +10,4 @@ A long-story preview also exposed an existing cleanup bug: removing emoji collap
 
 Dedicated isolated fixtures exercise three-paragraph solo, team and tournament stories plus longer animal facts. The existing screenshot test verifies full text, paragraph breaks, scrolling and reachable ending controls. A targeted AX3 pass uses the native preferred text size and verifies the value received by SwiftUI. These are simulator checks, not owner-device or live-account verification.
 
-Build 117 is allocated for internal TestFlight. Final visual review and availability will be recorded after verification. No storage migration, backend deployment, paid artwork request or subscription change is part of this update.
+Build 117 is available in internal TestFlight, verified September 27, 2026. The [release report](TESTFLIGHT_117_REPORT.md) records the final iPhone/iPad and larger-text reviews, signed upload and Apple availability. No storage migration, backend deployment, paid artwork request or subscription change is part of this update.
