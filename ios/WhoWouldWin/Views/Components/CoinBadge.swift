@@ -160,8 +160,8 @@ struct CoinsHubSheet: View {
 
                                 if coinStore.canAfford(pack.cost) {
                                     Text("✅ You can afford this pack! Open a pack to spend your coins.")
-                                        .font(Kids.nunito(12, weight: .medium))
-                                        .foregroundColor(gold.opacity(0.7))
+                                        .readingText(.callout)
+                                        .foregroundColor(Kids.inkSoft)
                                         .multilineTextAlignment(.center)
                                 } else {
                                     let battlesLeft = max(0, pack.cost - coinStore.balance)

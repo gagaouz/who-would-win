@@ -34,7 +34,7 @@ struct RoundResultsView: View {
                         }
                         if lines.isEmpty {
                             Text(settings.wageringEnabled ? "No wagers this round." : "Winners advance to the next round.")
-                                .font(Kids.nunito(12, weight: .bold))
+                                .readingText(.callout)
                                 .foregroundColor(Kids.inkSoft)
                                 .padding(.vertical, 12)
                                 .frame(maxWidth: .infinity)

@@ -352,7 +352,178 @@ final class RetroScreenUITests: XCTestCase {
     }
 
     func testCreatureAndCollectionScreens() {
-        for screen in ["ui-picker", "ui-arena", "ui-book", "ui-facts"] { capture(screen) }
+        if ProcessInfo.processInfo.environment["AVA_READING_ONLY"] != "1" {
+            for screen in ["ui-picker", "ui-arena", "ui-book", "ui-facts"] { capture(screen) }
+        }
+        for screen in ["ui-reading-solo", "ui-reading-team", "ui-reading-tournament", "ui-reading-facts"] {
+            captureReadingFixture(screen)
+        }
+        if ProcessInfo.processInfo.environment["AVA_READING_AX3"] == "1" {
+            captureLargeTextSupportFixtures()
+        }
+    }
+
+    /// Exercise the real scroll views with paragraphs, independently of the short
+    /// battle-success answer used by lifecycle tests. A focused invocation can set
+    /// AVA_READING_ONLY=1 and AVA_READING_AX3=1 in the test runner's environment.
+    private func captureReadingFixture(_ screen: String) {
+        let largeText = ProcessInfo.processInfo.environment["AVA_READING_AX3"] == "1"
+        launchReadingFixture(screen, largeText: largeText)
+        let suffix = largeText ? "-ax3" : "-default"
+        if screen == "ui-reading-facts" {
+            let fact = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@",
+                "It folds its wings and drops")).firstMatch
+            XCTAssertTrue(fact.waitForExistence(timeout: 10))
+            XCTAssertTrue(fact.label.hasSuffix("right out of the air."))
+            captureReadingText(fact, name: screen + suffix + "-fact")
+        } else {
+            let story = app.staticTexts["battle.narration"]
+            XCTAssertTrue(story.waitForExistence(timeout: 35))
+            let team = screen == "ui-reading-team"
+            XCTAssertTrue(story.label.hasPrefix(team ? "The two teams gathered" : "The lion stepped"))
+            XCTAssertTrue(story.label.hasSuffix(team ? "the most of its teamwork." : "decided this imaginary match."))
+            XCTAssertEqual(story.label.components(separatedBy: "\n\n").count, 3,
+                           "All three paragraphs must remain available to accessibility")
+            XCTAssertEqual(story.label.count, team ? 1_269 : 1_273,
+                           "The accessibility label must retain the complete long fixture, including paragraph breaks")
+            Thread.sleep(forTimeInterval: 0.8) // Let the existing result entrance settle.
+            captureReadingText(story, name: screen + suffix + "-story")
+            if screen == "ui-reading-solo" {
+                let why = app.staticTexts["battle.info.WHY?"]
+                XCTAssertTrue(why.exists)
+                XCTAssertTrue(why.label.hasSuffix("always wins in nature."))
+                captureReadingText(why, name: screen + suffix + "-why")
+            }
+            if screen != "ui-reading-tournament" {
+                let fact = app.staticTexts["battle.info.FUN FACT"]
+                XCTAssertTrue(fact.exists)
+                XCTAssertTrue(fact.label.hasSuffix("caring for its young."))
+                captureReadingText(fact, name: screen + suffix + "-fact")
+            }
+        }
+
+        let endAction: XCUIElement
+        switch screen {
+        case "ui-reading-solo": endAction = app.buttons["battle.rematch"]
+        case "ui-reading-team":
+            endAction = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "BATTLE AGAIN")).firstMatch
+        case "ui-reading-tournament":
+            endAction = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "NEXT MATCH-UP")).firstMatch
+        default:
+            endAction = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Read it to me!")).firstMatch
+        }
+        XCTAssertTrue(endAction.exists)
+        for _ in 0..<30 where !endAction.isHittable { readingSwipeUp() }
+        XCTAssertTrue(endAction.isHittable, "The real action after the complete prose must remain reachable")
+        captureReadingImage(screen + suffix + "-end-action")
+        app.terminate()
+    }
+
+    private func launchReadingFixture(_ screen: String, largeText: Bool) {
+        app.launchArguments = ["--uitesting", "--reset-test-data",
+                               "-UIPreferredContentSizeCategoryName",
+                               largeText ? "UICTContentSizeCategoryAccessibilityXL" : "UICTContentSizeCategoryL"]
+        app.launchEnvironment = ["AVA_UI_TESTING": "1", "AVA_BLOCK_EXTERNAL_SERVICES": "1",
+                                 "AVA_FIXTURE_SCENARIO": "reading-long", "AVA_FIXTURE_SCREEN": screen,
+                                 "AVA_READING_AX3": largeText ? "1" : "0"]
+        app.launch()
+        XCTAssertTrue(app.descendants(matching: .any)["fixture.screen.\(screen)"].waitForExistence(timeout: 10))
+        let category = app.staticTexts["fixture.reading.contentSize"]
+        XCTAssertTrue(category.waitForExistence(timeout: 10))
+        XCTAssertEqual(category.value as? String, largeText ? "accessibility3" : "large",
+                       "The native preferred content size must reach SwiftUI; do not fake a scaled screenshot")
+    }
+
+    private func captureLargeTextSupportFixtures() {
+        launchReadingFixture("ui-help", largeText: true)
+        let body = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "Choose any two animals")).firstMatch
+        XCTAssertTrue(body.waitForExistence(timeout: 10))
+        XCTAssertTrue(body.label.lowercased().hasSuffix("any creature you can dream up."))
+        let page = app.scrollViews.containing(NSPredicate(format: "label == %@", body.label)).firstMatch
+        XCTAssertTrue(page.exists, "Use the real help-page scroll viewport, excluding its persistent NEXT footer")
+        captureReadingText(body, name: "ui-help-ax3-body", viewport: page.frame)
+        let next = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "NEXT")).firstMatch
+        XCTAssertTrue(next.isHittable)
+        captureReadingImage("ui-help-ax3-next-action")
+        next.tap()
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "Battle in the jungle")).firstMatch.waitForExistence(timeout: 5))
+        app.terminate()
+
+        launchReadingFixture("ui-pin", largeText: true)
+        let subtitle = app.staticTexts["Pick a 4-digit PIN that's hard for your kid to guess."]
+        XCTAssertTrue(subtitle.waitForExistence(timeout: 10))
+        captureReadingText(subtitle, name: "ui-pin-ax3-subtitle")
+        let cancel = app.buttons["Cancel"]
+        let zero = app.buttons["0"]
+        for _ in 0..<20 {
+            if cancel.isHittable && zero.isHittable { break }
+            let before = cancel.frame
+            readingSwipeUp()
+            if abs(cancel.frame.minY - before.minY) < 1 { break }
+        }
+        XCTAssertTrue(cancel.isHittable, "Cancel must remain reachable after the large PIN explanation")
+        XCTAssertTrue(zero.isHittable, "The bottom keypad row must remain reachable")
+        captureReadingImage("ui-pin-ax3-bottom-controls")
+        app.terminate()
+    }
+
+    private func readingSwipeUp(in viewport: CGRect? = nil) {
+        readingDrag((viewport ?? app.frame).height * 0.20, in: viewport)
+    }
+
+    private func readingDrag(_ distance: CGFloat, in viewport: CGRect? = nil) {
+        // Hold at the end of a slow drag so release does not fling the first or
+        // final lines out of view. Nested pages use their own scrollable bounds.
+        let frame = viewport ?? app.frame
+        let origin = app.coordinate(withNormalizedOffset: .zero)
+        let startY = frame.minY + frame.height * (distance >= 0 ? 0.72 : 0.40)
+        let endY = min(frame.maxY - 24, max(frame.minY + 24, startY - distance))
+        let start = origin.withOffset(CGVector(dx: frame.midX - app.frame.minX, dy: startY - app.frame.minY))
+        let end = origin.withOffset(CGVector(dx: frame.midX - app.frame.minX, dy: endY - app.frame.minY))
+        start.press(forDuration: 0.05, thenDragTo: end, withVelocity: .slow, thenHoldForDuration: 0.20)
+    }
+
+    private func captureReadingText(_ element: XCUIElement, name: String, viewport: CGRect? = nil) {
+        let frame = viewport ?? app.frame
+        let top = frame.minY + frame.height * 0.30
+        // Full-screen cards retain 80pt below the final line. Nested help-page
+        // scrolling uses its actual clipped viewport, above the separate footer.
+        let bottom = frame.maxY - (viewport == nil ? 80 : 2)
+        let visibleTop = frame.minY + (viewport == nil ? (app.frame.width > 600 ? 40 : 80) : 2)
+        for _ in 0..<30 {
+            let before = element.frame
+            if before.minY <= top || before.maxY <= bottom { break }
+            readingDrag(min(frame.height * 0.18, max(30, before.minY - top)), in: viewport)
+            if abs(element.frame.minY - before.minY) < 1 { break }
+        }
+        for _ in 0..<8 {
+            let before = element.frame
+            if before.minY >= visibleTop { break }
+            readingDrag(-min(frame.height * 0.18, visibleTop + 16 - before.minY), in: viewport)
+            if abs(element.frame.minY - before.minY) < 1 { break }
+        }
+        XCTAssertGreaterThanOrEqual(element.frame.minY, visibleTop,
+                                    "The start capture must show the first line below the visible top inset")
+        XCTAssertLessThan(element.frame.minY, bottom)
+        XCTAssertGreaterThan(element.frame.maxY, visibleTop)
+        captureReadingImage(name + "-start")
+        for _ in 0..<30 {
+            let before = element.frame
+            if before.maxY <= bottom { break }
+            readingDrag(min(frame.height * 0.18, max(30, before.maxY - bottom)), in: viewport)
+            if abs(element.frame.minY - before.minY) < 1 { break }
+        }
+        XCTAssertLessThanOrEqual(element.frame.maxY, bottom + 2)
+        XCTAssertGreaterThan(element.frame.maxY, visibleTop,
+                             "The final lines must still be on screen, not scrolled past")
+        captureReadingImage(name + "-end")
+    }
+
+    private func captureReadingImage(_ name: String) {
+        let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
     }
 
     func testSettingsCommerceAndParentScreens() {

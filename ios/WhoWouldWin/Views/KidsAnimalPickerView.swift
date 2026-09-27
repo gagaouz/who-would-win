@@ -68,9 +68,8 @@ struct KidsAnimalPickerView: View {
                         HStack(spacing: 5) {
                             RetroSymbol("🎤", size: isIPad ? 14 : 11)
                             Text(err)
-                                .font(Kids.nunito(isIPad ? 13 : 11, weight: .bold))
+                                .readingText(.callout)
                                 .foregroundColor(Kids.ink)
-                                .fixedSize(horizontal: false, vertical: true)
                         }
                         .padding(.horizontal, isIPad ? 20 : 14)
                         .padding(.top, 6)
@@ -247,7 +246,7 @@ struct KidsAnimalPickerView: View {
         HStack(spacing: isIPad ? 7 : 5) {
             RetroSymbol("✨", size: isIPad ? 17 : 13)
             Text("Try 'Penguin', 'Hamster', or even your pet's name!")
-                .font(Kids.nunito(isIPad ? 14 : 11, weight: .bold))
+                .readingText(.callout)
                 .foregroundColor(Kids.ink)
         }
         .padding(.horizontal, isIPad ? 16 : 12).padding(.vertical, isIPad ? 6 : 4)
@@ -417,7 +416,7 @@ struct KidsAnimalPickerView: View {
                 .font(Kids.fredoka(isIPad ? 22 : 16, weight: .bold))
                 .foregroundColor(Kids.ink)
             Text("Try typing any creature name to battle with it!")
-                .font(Kids.nunito(isIPad ? 15 : 12, weight: .bold))
+                .readingText(.callout)
                 .foregroundColor(Kids.inkSoft)
                 .multilineTextAlignment(.center)
         }
@@ -433,7 +432,7 @@ struct KidsAnimalPickerView: View {
                     .font(Kids.fredoka(isIPad ? 18 : 14, weight: .bold))
                     .foregroundColor(Kids.ink)
                 Text("Unlock the pack to use \(a.name)")
-                    .font(Kids.nunito(isIPad ? 14 : 11, weight: .bold))
+                    .readingText(.callout)
                     .foregroundColor(Kids.inkSoft)
             }
             Spacer()
@@ -479,7 +478,7 @@ struct KidsAnimalPickerView: View {
             }
 
             Text("We'll give your fighter a retro avatar, made on your device.")
-                .font(Kids.nunito(isIPad ? 14 : 12, weight: .semibold))
+                .readingText(.callout)
                 .foregroundColor(Kids.inkSoft)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -574,7 +573,7 @@ struct KidsAnimalPickerView: View {
                 HStack {
                     RetroSymbol("🦉", size: isIPad ? 24 : 18)
                     Text("Tap 2 buddies to start your match-up!")
-                        .font(Kids.fredoka(isIPad ? 17 : 13, weight: .bold))
+                        .readingText(.callout)
                         .foregroundColor(Kids.ink)
                 }
                 .padding(.horizontal, isIPad ? 20 : 14).padding(.vertical, isIPad ? 12 : 9)

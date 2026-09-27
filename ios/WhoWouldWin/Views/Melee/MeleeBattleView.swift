@@ -341,6 +341,7 @@ private struct ResultContent: View {
                 .padding(.bottom, 40)
             }
         }
+            .clipped()
         .arcadeMotionViewport(active: !showShareSheet)
         .sheet(isPresented: $showShareSheet) {
             if let img = shareImage {
@@ -377,13 +378,12 @@ private struct ResultContent: View {
                 .background(RetroPanelShape().fill(titleColor).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
             Text(body)
                 .accessibilityIdentifier(title == "BATTLE STORY" ? "battle.narration" : "battle.info.\(title)")
-                .font(Kids.nunito(13, weight: .bold))
-                .lineSpacing(4)
+                .readingText()
                 .foregroundColor(Kids.ink)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: 640, alignment: .leading)
         .background(
             RetroPanelShape(cornerRadius: 20, style: .continuous)
                 .fill(Kids.panel)

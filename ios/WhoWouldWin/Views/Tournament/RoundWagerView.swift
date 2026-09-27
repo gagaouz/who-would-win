@@ -145,7 +145,7 @@ struct RoundWagerView: View {
                         .tracking(1)
                         .foregroundColor(Kids.ink)
                     Text(quickMode ? "Instant results — no animation" : "Full animated battles")
-                        .font(Kids.nunito(isIPad ? 13 : 10, weight: .bold))
+                        .readingText(.callout)
                         .foregroundColor(Kids.inkSoft)
                 }
                 Spacer()
@@ -174,7 +174,7 @@ struct RoundWagerView: View {
                         .tracking(0.5)
                         .foregroundColor(Kids.ink)
                     Text("Watch a quick ad to earn 75 coins — or buy a coin pack.")
-                        .font(Kids.nunito(isIPad ? 15 : 11, weight: .bold))
+                        .readingText(.callout)
                         .foregroundColor(Kids.inkSoft)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -233,7 +233,7 @@ struct RoundWagerView: View {
 
             if !coinStore.canWatchAdForCoins {
                 Text("Daily ad limit reached — come back tomorrow.")
-                    .font(Kids.nunito(isIPad ? 13 : 10, weight: .bold))
+                    .readingText(.callout)
                     .foregroundColor(Kids.inkSoft)
                     .multilineTextAlignment(.center)
             } else if adsLeft > 0 {
@@ -589,7 +589,7 @@ private struct MatchupWagerSheet: View {
                     }
                 }
                 Text("Minimum wager only — earn more coins to bet higher.")
-                    .font(Kids.nunito(isIPad ? 13 : 10, weight: .bold))
+                    .readingText(.callout)
                     .foregroundColor(Kids.inkSoft)
                     .multilineTextAlignment(.center)
                 HStack(spacing: isIPad ? 6 : 4) {
@@ -672,7 +672,7 @@ private struct GrandChampionSwapSheet: View {
                         .padding(.top, isIPad ? 26 : 18)
 
                     Text("New multiplier: \(String(format: "%.2f", newMultiplier))× — wager stays the same")
-                        .font(Kids.nunito(isIPad ? 16 : 12, weight: .bold))
+                        .readingText(.callout)
                         .foregroundColor(Kids.ink)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, isIPad ? 32 : 24)

@@ -252,10 +252,9 @@ struct KidsShareCard: View {
                 .padding(.horizontal, 8).padding(.vertical, 3)
                 .background(RetroPanelShape().fill(Kids.pink).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1)))
             Text("\u{201C}\(excerpt)\u{201D}")
-                .font(Kids.nunito(11, weight: .bold))
+                .readingText(.callout)
                 .foregroundColor(Kids.ink)
                 .multilineTextAlignment(.leading)
-                .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(.horizontal, 12).padding(.vertical, 10)
@@ -275,10 +274,9 @@ struct KidsShareCard: View {
                 .padding(.horizontal, 8).padding(.vertical, 3)
                 .background(RetroPanelShape().fill(Kids.sun).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1)))
             Text(result.funFact.withoutEmoji)
-                .font(Kids.nunito(11, weight: .bold))
+                .readingText(.callout)
                 .foregroundColor(Kids.ink)
                 .multilineTextAlignment(.leading)
-                .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(.horizontal, 12).padding(.vertical, 10)

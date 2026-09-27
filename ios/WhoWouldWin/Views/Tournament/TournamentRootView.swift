@@ -238,105 +238,107 @@ struct TournamentRootView: View {
         ZStack {
             SkyBG()
 
-            VStack(spacing: isIPad ? 22 : 16) {
-                RetroSymbol("⏰", size: isIPad ? 96 : 64).padding(.top, isIPad ? 42 : 28)
+            ScrollView {
+                VStack(spacing: isIPad ? 22 : 16) {
+                    RetroSymbol("⏰", size: isIPad ? 96 : 64).padding(.top, isIPad ? 42 : 28)
 
-                StickerWord(text: "DAILY LIMIT", fill: Kids.sun, fontSize: isIPad ? 32 : 22, tilt: -2)
+                    StickerWord(text: "DAILY LIMIT", fill: Kids.sun, fontSize: isIPad ? 32 : 22, tilt: -2)
 
-                Text("You've played your \(limit) free tournaments today.\nCome back tomorrow — or unlock one more now.")
-                    .font(Kids.nunito(isIPad ? 17 : 13, weight: .bold))
-                    .foregroundColor(Kids.ink)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, isIPad ? 36 : 24)
-
-                HStack(spacing: isIPad ? 9 : 6) {
-                    Text("BALANCE")
-                        .font(Kids.fredoka(isIPad ? 13 : 10, weight: .bold))
-                        .tracking(1.5)
-                        .foregroundColor(Kids.inkSoft)
-                    Text(balance.abbreviatedKidsCount)
-                        .font(Kids.fredoka(isIPad ? 18 : 14, weight: .bold))
+                    Text("You've played your \(limit) free tournaments today.\nCome back tomorrow — or unlock one more now.")
+                        .readingText(.callout)
                         .foregroundColor(Kids.ink)
-                        .lineLimit(1)
-                    KidsGoldCoin(size: isIPad ? 18 : 14)
-                }
-                .padding(.horizontal, isIPad ? 20 : 14).padding(.vertical, isIPad ? 10 : 7)
-                .background(RetroPanelShape().fill(Kids.panel).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, isIPad ? 36 : 24)
 
-                VStack(spacing: isIPad ? 14 : 10) {
-                    Button {
-                        guard let pending = pendingStart else { return }
-                        showDailyCapSheet = false
-                        _ = manager.startNew(
-                            size: pending.size,
-                            selectionMode: pending.mode,
-                            manualPicks: pending.manualPicks,
-                            payWithCoinsIfOverLimit: true
-                        )
-                        pendingStart = nil
-                    } label: {
-                        HStack(spacing: isIPad ? 9 : 6) {
-                            RetroSymbol("⚡", size: isIPad ? 22 : 16)
-                            Text("UNLOCK FOR \(cost)")
-                                .font(Kids.fredoka(isIPad ? 18 : 14, weight: .bold))
-                                .foregroundColor(Kids.ink)
-                            KidsGoldCoin(size: isIPad ? 18 : 14)
-                        }
-                        .frame(maxWidth: .infinity, minHeight: isIPad ? 64 : 50)
-                        .background(
-                            RetroPanelShape(cornerRadius: 16, style: .continuous)
-                                .fill(Kids.sun)
-                                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).fill(Kids.sheen))
-                                .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
-                        )
-                        .compositingGroup().shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 3)
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(!canAfford)
-                    .opacity(canAfford ? 1.0 : 0.55)
-
-                    if !canAfford {
-                        Text("Need \(cost - balance) more coins — earn more by playing battles.")
-                            .font(Kids.fredoka(11, weight: .bold))
-                            .foregroundColor(Kids.pinkDeep)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 16)
-                        BuyCoinsButton().padding(.horizontal, 4)
-                    } else if canAfford && (balance - cost) < CoinStore.shared.tournamentMatchupWagerFloor {
-                        HStack(spacing: 6) {
-                            RetroSymbol("⚠️", size: 13)
-                            Text("You'll only have \(balance - cost) coin\(balance - cost == 1 ? "" : "s") left — not enough to wager. You can still play, but you can earn coins by watching an ad during the tournament.")
-                                .font(Kids.nunito(11, weight: .bold))
-                                .foregroundColor(Kids.ink)
-                        }
-                        .padding(.horizontal, 12).padding(.vertical, 8)
-                        .background(
-                            RetroPanelShape(cornerRadius: 12, style: .continuous)
-                                .fill(Kids.sun.opacity(0.3))
-                                .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.sun, lineWidth: 1.5))
-                        )
-                        .padding(.horizontal, 4)
-                    }
-
-                    Button {
-                        showDailyCapSheet = false
-                        pendingStart = nil
-                        dismiss()
-                    } label: {
-                        Text("Back to home")
-                            .font(Kids.fredoka(isIPad ? 17 : 13, weight: .bold))
+                    HStack(spacing: isIPad ? 9 : 6) {
+                        Text("BALANCE")
+                            .font(Kids.fredoka(isIPad ? 13 : 10, weight: .bold))
+                            .tracking(1.5)
                             .foregroundColor(Kids.inkSoft)
-                            .padding(.vertical, isIPad ? 14 : 10)
-                            .underline()
+                        Text(balance.abbreviatedKidsCount)
+                            .font(Kids.fredoka(isIPad ? 18 : 14, weight: .bold))
+                            .foregroundColor(Kids.ink)
+                            .lineLimit(1)
+                        KidsGoldCoin(size: isIPad ? 18 : 14)
                     }
-                    .buttonStyle(.plain)
-                }
-                .padding(.horizontal, isIPad ? 34 : 22)
-                .frame(maxWidth: isIPad ? 600 : .infinity)
+                    .padding(.horizontal, isIPad ? 20 : 14).padding(.vertical, isIPad ? 10 : 7)
+                    .background(RetroPanelShape().fill(Kids.panel).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
 
-                Spacer()
+                    VStack(spacing: isIPad ? 14 : 10) {
+                        Button {
+                            guard let pending = pendingStart else { return }
+                            showDailyCapSheet = false
+                            _ = manager.startNew(
+                                size: pending.size,
+                                selectionMode: pending.mode,
+                                manualPicks: pending.manualPicks,
+                                payWithCoinsIfOverLimit: true
+                            )
+                            pendingStart = nil
+                        } label: {
+                            HStack(spacing: isIPad ? 9 : 6) {
+                                RetroSymbol("⚡", size: isIPad ? 22 : 16)
+                                Text("UNLOCK FOR \(cost)")
+                                    .font(Kids.fredoka(isIPad ? 18 : 14, weight: .bold))
+                                    .foregroundColor(Kids.ink)
+                                KidsGoldCoin(size: isIPad ? 18 : 14)
+                            }
+                            .frame(maxWidth: .infinity, minHeight: isIPad ? 64 : 50)
+                            .background(
+                                RetroPanelShape(cornerRadius: 16, style: .continuous)
+                                    .fill(Kids.sun)
+                                    .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).fill(Kids.sheen))
+                                    .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
+                            )
+                            .compositingGroup().shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 3)
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(!canAfford)
+                        .opacity(canAfford ? 1.0 : 0.55)
+
+                        if !canAfford {
+                            Text("Need \(cost - balance) more coins — earn more by playing battles.")
+                                .readingText(.callout)
+                                .foregroundColor(Kids.pinkDeep)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 16)
+                            BuyCoinsButton().padding(.horizontal, 4)
+                        } else if canAfford && (balance - cost) < CoinStore.shared.tournamentMatchupWagerFloor {
+                            HStack(spacing: 6) {
+                                RetroSymbol("⚠️", size: 13)
+                                Text("You'll only have \(balance - cost) coin\(balance - cost == 1 ? "" : "s") left — not enough to wager. You can still play, but you can earn coins by watching an ad during the tournament.")
+                                    .readingText(.callout)
+                                    .foregroundColor(Kids.ink)
+                            }
+                            .padding(.horizontal, 12).padding(.vertical, 8)
+                            .background(
+                                RetroPanelShape(cornerRadius: 12, style: .continuous)
+                                    .fill(Kids.sun.opacity(0.3))
+                                    .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.sun, lineWidth: 1.5))
+                            )
+                            .padding(.horizontal, 4)
+                        }
+
+                        Button {
+                            showDailyCapSheet = false
+                            pendingStart = nil
+                            dismiss()
+                        } label: {
+                            Text("Back to home")
+                                .font(Kids.fredoka(isIPad ? 17 : 13, weight: .bold))
+                                .foregroundColor(Kids.inkSoft)
+                                .padding(.vertical, isIPad ? 14 : 10)
+                                .underline()
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.horizontal, isIPad ? 34 : 22)
+                    .frame(maxWidth: isIPad ? 600 : .infinity)
+
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.bottom, 24)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .presentationDetents(isIPad ? [.large] : [.medium, .large])
         .presentationDragIndicator(.visible)

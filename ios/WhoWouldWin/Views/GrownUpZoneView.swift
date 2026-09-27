@@ -57,8 +57,7 @@ struct GrownUpZoneView: View {
             RetroSymbol(emoji, size: 16).frame(width: 22)
             VStack(alignment: .leading, spacing: 1) {
                 Text(label).font(Kids.fredoka(12, weight: .bold)).foregroundColor(Kids.ink)
-                Text(value).font(Kids.nunito(11, weight: .bold)).foregroundColor(Kids.inkSoft)
-                    .fixedSize(horizontal: false, vertical: true)
+                Text(value).readingText(.callout).foregroundColor(Kids.inkSoft)
             }
             Spacer()
         }
@@ -99,7 +98,7 @@ struct GrownUpZoneView: View {
                     .buttonStyle(.plain)
 
                     if let msg = restoreMessage {
-                        Text(msg).font(Kids.nunito(12, weight: .bold)).foregroundColor(Kids.inkSoft)
+                        Text(msg).readingText().foregroundColor(Kids.inkSoft)
                             .multilineTextAlignment(.center)
                     }
 
@@ -119,7 +118,7 @@ struct GrownUpZoneView: View {
                     }
                     .buttonStyle(.plain)
                     Text("Removes game progress from this device and iCloud, downloaded artwork and local fighter sign-in. Purchases can be restored. Your private online fighter library can be deleted in My Fighters → Account.")
-                        .font(Kids.nunito(10, weight: .bold))
+                        .readingText()
                         .foregroundColor(Kids.inkSoft)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 12)
@@ -185,9 +184,8 @@ struct GrownUpZoneView: View {
                         .font(Kids.fredoka(15, weight: .bold))
                         .foregroundColor(Kids.ink)
                     Text(wageringSubtitle)
-                        .font(Kids.nunito(11, weight: .bold))
+                        .readingText(.callout)
                         .foregroundColor(Kids.inkSoft)
-                        .lineLimit(2)
                 }
                 Spacer()
                 wageringStatusPill
@@ -309,7 +307,7 @@ struct GrownUpZoneView: View {
                     Text("Daily Play Reminder")
                         .font(Kids.fredoka(15, weight: .bold)).foregroundColor(Kids.ink)
                     Text("One gentle reminder a day (around 5pm)")
-                        .font(Kids.nunito(11, weight: .bold)).foregroundColor(Kids.inkSoft)
+                        .readingText(.callout).foregroundColor(Kids.inkSoft)
                 }
             }
             .tint(Kids.grass)
@@ -317,7 +315,7 @@ struct GrownUpZoneView: View {
 
             if reminderDeniedNote {
                 Text("Notifications are off for this app. Turn them on in iOS Settings → Notifications to use reminders.")
-                    .font(Kids.nunito(11, weight: .bold))
+                    .readingText()
                     .foregroundColor(Kids.pinkDeep)
             }
         }
@@ -350,8 +348,7 @@ struct GrownUpZoneView: View {
     private func safetyRow(_ text: String) -> some View {
         HStack(alignment: .top, spacing: 8) {
             Text("✓").font(Kids.fredoka(13, weight: .bold)).foregroundColor(Kids.grassDeep)
-            Text(text).font(Kids.nunito(12, weight: .bold)).foregroundColor(Kids.ink)
-                .fixedSize(horizontal: false, vertical: true)
+            Text(text).readingText(.callout).foregroundColor(Kids.ink)
         }
     }
 

@@ -67,11 +67,11 @@ struct PaywallView: View {
                     }
                     .padding(.horizontal, 24)
                     if let msg = statusMessage {
-                        Text(msg).font(Kids.nunito(12, weight: .bold)).foregroundColor(Kids.ink)
+                        Text(msg).readingText().foregroundColor(Kids.ink)
                             .multilineTextAlignment(.center).padding(.horizontal, 24)
                     }
                     Text("One-time purchase · yours forever")
-                        .font(Kids.nunito(11, weight: .bold)).foregroundColor(Kids.inkSoft)
+                        .readingText(.callout).foregroundColor(Kids.inkSoft)
 
                     // Alternative: Premium (with free trial when configured).
                     if let prem = premiumAnnual {
@@ -80,7 +80,7 @@ struct PaywallView: View {
                                 Text(store.introOfferLabel(for: prem) ?? "Go Premium")
                                     .font(Kids.fredoka(15, weight: .bold)).foregroundColor(Kids.ink)
                                 Text("then \(prem.displayPrice)/year · everything + 2× coins")
-                                    .font(Kids.nunito(10, weight: .bold)).foregroundColor(Kids.inkSoft)
+                                    .readingText(.callout).foregroundColor(Kids.inkSoft)
                             }
                             .frame(maxWidth: .infinity).padding(.vertical, 11)
                             .background(RetroPanelShape().fill(Kids.panel).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
@@ -97,7 +97,7 @@ struct PaywallView: View {
                     .padding(.top, 4)
 
                     Text("Purchases are approved by a grown-up. Restore anytime in Settings.")
-                        .font(Kids.nunito(9, weight: .bold)).foregroundColor(Kids.inkSoft.opacity(0.8))
+                        .readingText(.callout).foregroundColor(Kids.inkSoft)
                         .multilineTextAlignment(.center).padding(.horizontal, 30)
 
                     Color.clear.frame(height: 24)
@@ -114,8 +114,7 @@ struct PaywallView: View {
     private func benefit(_ emoji: String, _ text: String) -> some View {
         HStack(spacing: 10) {
             RetroSymbol(emoji, size: 18).frame(width: 24)
-            Text(text).font(Kids.nunito(13, weight: .bold)).foregroundColor(Kids.ink)
-                .fixedSize(horizontal: false, vertical: true)
+            Text(text).readingText(.callout).foregroundColor(Kids.ink)
             Spacer()
         }
     }

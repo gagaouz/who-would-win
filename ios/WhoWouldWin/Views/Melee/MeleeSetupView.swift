@@ -204,7 +204,7 @@ struct MeleeSetupView: View {
 
             if roster.isEmpty {
                 Text("Tap fighters below to add")
-                    .font(Kids.nunito(isIPad ? 13 : 11, weight: .bold))
+                    .readingText(.callout)
                     .foregroundColor(Kids.inkSoft)
                     .padding(.vertical, 6)
             } else {

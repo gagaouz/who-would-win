@@ -274,7 +274,7 @@ struct KidsSettingsView: View {
                 RetroSymbol(emoji, size: isIPad ? 24 : 20)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(label).font(Kids.fredoka(isIPad ? 16 : 14, weight: .bold)).foregroundColor(Kids.ink)
-                    Text(caption).font(Kids.nunito(isIPad ? 13 : 11, weight: .bold)).foregroundColor(Kids.inkSoft)
+                    Text(caption).readingText(.callout).foregroundColor(Kids.inkSoft)
                 }
                 Spacer()
                 Text("›").font(Kids.fredoka(isIPad ? 24 : 20, weight: .bold)).foregroundColor(Kids.inkSoft)
@@ -476,9 +476,8 @@ struct KidsShopView: View {
                         .font(Kids.fredoka(isIPad ? 19 : 16, weight: .bold))
                         .foregroundColor(Kids.ink)
                     Text("Earn by playing · Spend to unlock")
-                        .font(Kids.nunito(isIPad ? 13 : 11, weight: .bold))
+                        .readingText(.callout)
                         .foregroundColor(Kids.inkSoft)
-                        .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer()
                 HStack(spacing: 4) {
@@ -513,7 +512,7 @@ struct KidsShopView: View {
                 }
             }
             Text("Coins are added instantly and never expire.")
-                .font(Kids.nunito(isIPad ? 12 : 10, weight: .bold))
+                .readingText(.callout)
                 .foregroundColor(Kids.inkSoft)
                 .frame(maxWidth: .infinity)
                 .multilineTextAlignment(.center)
@@ -564,9 +563,8 @@ struct KidsShopView: View {
                             .foregroundColor(Kids.ink)
                             .fixedSize(horizontal: false, vertical: true)
                         Text("Every pack + Melee + Arenas + No Ads")
-                            .font(Kids.nunito(isIPad ? 13 : 11, weight: .bold))
+                            .readingText(.callout)
                             .foregroundColor(Kids.inkSoft)
-                            .fixedSize(horizontal: false, vertical: true)
                     }
                     Spacer()
                     Text("BEST VALUE")
@@ -621,9 +619,8 @@ struct KidsShopView: View {
                         .font(Kids.fredoka(isIPad ? 18 : 15, weight: .bold))
                         .foregroundColor(Kids.ink)
                     Text(subtitle)
-                        .font(Kids.nunito(isIPad ? 13 : 11, weight: .bold))
+                        .readingText(.callout)
                         .foregroundColor(Kids.inkSoft)
-                        .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer()
                 if unlocked {
@@ -667,7 +664,7 @@ struct KidsShopView: View {
                         .font(Kids.fredoka(isIPad ? 18 : 15, weight: .bold))
                         .foregroundColor(Kids.ink)
                     Text(settings.adsRemoved ? "Thanks for your support!" : "One-time purchase — no more ads ever")
-                        .font(Kids.nunito(isIPad ? 13 : 11, weight: .bold))
+                        .readingText(.callout)
                         .foregroundColor(Kids.inkSoft)
                 }
                 Spacer()
@@ -719,7 +716,7 @@ struct KidsShopView: View {
                         .font(Kids.fredoka(isIPad ? 18 : 15, weight: .bold))
                         .foregroundColor(Kids.ink)
                     Text(settings.isSubscribed ? "All features unlocked" : "Every pack + no ads + 2× coins")
-                        .font(Kids.nunito(isIPad ? 13 : 11, weight: .bold))
+                        .readingText(.callout)
                         .foregroundColor(Kids.inkSoft)
                 }
                 Spacer()
@@ -795,7 +792,7 @@ struct KidsShopView: View {
     private func premiumFeature(_ text: String) -> some View {
         HStack(spacing: 6) {
             Text("✓").font(Kids.fredoka(isIPad ? 14 : 12, weight: .bold)).foregroundColor(Kids.grassDeep)
-            Text(text).font(Kids.nunito(isIPad ? 14 : 12, weight: .bold)).foregroundColor(Kids.ink)
+            Text(text).readingText(.callout).foregroundColor(Kids.ink)
         }
     }
 
@@ -857,7 +854,7 @@ struct KidsShopView: View {
             .foregroundColor(Kids.grapeDeep)
 
             Text("All purchases are processed by Apple.\nSubscriptions renew automatically unless cancelled.")
-                .font(Kids.nunito(isIPad ? 12 : 10, weight: .bold))
+                .readingText()
                 .foregroundColor(Kids.inkSoft)
                 .multilineTextAlignment(.center)
         }
@@ -900,9 +897,8 @@ struct KidsNavRow: View {
                     .font(Kids.fredoka(isIPad ? 18 : 15, weight: .bold))
                     .foregroundColor(Kids.ink)
                 Text(subtitle)
-                    .font(Kids.nunito(isIPad ? 13 : 11, weight: .bold))
+                    .readingText(.callout)
                     .foregroundColor(Kids.inkSoft)
-                    .fixedSize(horizontal: false, vertical: true)
             }
             Spacer()
             Image(systemName: lock ? "lock.fill" : "chevron.right")

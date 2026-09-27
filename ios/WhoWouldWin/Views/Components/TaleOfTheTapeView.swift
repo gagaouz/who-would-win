@@ -76,10 +76,9 @@ struct TaleOfTheTapeView: View {
 
     private func tile(_ value: String, tint: Color) -> some View {
         Text(value)
-            .font(Kids.nunito(12, weight: .bold))
+            .readingText(.callout)
             .foregroundColor(Kids.ink)
             .multilineTextAlignment(.center)
-            .lineLimit(2).minimumScaleFactor(0.8)
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, minHeight: 38)
             .padding(.horizontal, 6).padding(.vertical, 6)

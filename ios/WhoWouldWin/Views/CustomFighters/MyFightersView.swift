@@ -37,7 +37,7 @@ struct MyFightersView: View {
                             .accessibilityIdentifier("myFighters.close")
                     }
                     Text("Keep your own creatures ready for the arena.")
-                        .font(Kids.nunito(15)).foregroundColor(Kids.inkSoft)
+                        .readingText(.callout).foregroundColor(Kids.inkSoft)
                     #if DEBUG
                     if service.isUITestFixture {
                         Text("TEST artwork requests: \(service.fixtureCreateCount)")
@@ -48,7 +48,7 @@ struct MyFightersView: View {
                     accountCard
                     creationCard
                     if let message = service.message {
-                        Text(message).font(Kids.nunito(14, weight: .bold)).foregroundColor(Kids.ink)
+                        Text(message).readingText().foregroundColor(Kids.ink)
                             .padding(14).frame(maxWidth: .infinity, alignment: .leading)
                             .background(Kids.sun.opacity(0.28), in: RetroPanelShape(cornerRadius: 14))
                             .accessibilityIdentifier("myFighters.message")
@@ -59,7 +59,7 @@ struct MyFightersView: View {
                             .disabled(service.isCreating)
                             .accessibilityIdentifier("myFighters.resume")
                         Text("This checks the same request; it does not spend a second credit.")
-                            .font(Kids.nunito(12)).foregroundColor(Kids.inkSoft)
+                            .readingText(.callout).foregroundColor(Kids.inkSoft)
                     }
                     if !service.jobs.isEmpty { jobsSection }
                     HStack {
@@ -77,7 +77,7 @@ struct MyFightersView: View {
                     }
                     if library.fighters.isEmpty && downloadable.isEmpty {
                         Text(account.isSignedIn ? "No saved artwork yet. Your existing typed-name creatures still work in the fighter picker." : "Sign in with a grown-up to restore saved artwork or create a new fighter. Existing typed-name creatures still work in the picker.")
-                            .font(Kids.nunito(15)).foregroundColor(Kids.inkSoft)
+                            .readingText().foregroundColor(Kids.inkSoft)
                             .padding(16).frame(maxWidth: .infinity, alignment: .leading)
                             .background(Kids.panel, in: RetroPanelShape(cornerRadius: 16))
                             .accessibilityIdentifier("myFighters.empty")
@@ -85,7 +85,7 @@ struct MyFightersView: View {
                     ForEach(library.fighters) { fighter in installedRow(fighter) }
                     ForEach(downloadable) { remote in downloadRow(remote) }
                     Text("Downloaded fighters stay playable offline and after Premium ends. Creating artwork has a separate monthly allowance; existing local custom-creature benefits are unchanged.")
-                        .font(Kids.nunito(12)).foregroundColor(Kids.inkSoft)
+                        .readingText(.callout).foregroundColor(Kids.inkSoft)
                     Color.clear.frame(height: 12)
                 }
                 .padding(20).frame(maxWidth: 680).frame(maxWidth: .infinity)
@@ -124,7 +124,7 @@ struct MyFightersView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(account.isSignedIn ? "Fighter account" : "Sign in with a grown-up").font(Kids.fredoka(18))
                     Text(account.isSignedIn ? "Manage sign-in and saved artwork" : "Restore your library on this device")
-                        .font(Kids.nunito(13)).foregroundColor(Kids.inkSoft)
+                        .readingText(.callout).foregroundColor(Kids.inkSoft)
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
@@ -138,14 +138,14 @@ struct MyFightersView: View {
             Text("CREATE A FIGHTER").font(Kids.fredoka(19)).foregroundColor(Kids.ink)
             if let allowance = service.status?.allowance, service.status?.activeSubscription == true {
                 Text("\(allowance.remaining) of \(allowance.limit) artwork credits available this month")
-                    .font(Kids.nunito(14, weight: .bold)).foregroundColor(Kids.grassDeep)
+                    .readingText(.callout).foregroundColor(Kids.grassDeep)
                 if allowance.reserved > 0 {
                     Text("\(allowance.reserved) credit reserved while artwork is being checked.")
-                        .font(Kids.nunito(12)).foregroundColor(Kids.inkSoft)
+                        .readingText(.callout).foregroundColor(Kids.inkSoft)
                 }
             } else {
                 Text("Premium includes up to \(service.status?.monthlyAllowance ?? 3) new artwork creations per month during the beta.")
-                    .font(Kids.nunito(14)).foregroundColor(Kids.inkSoft)
+                    .readingText(.callout).foregroundColor(Kids.inkSoft)
             }
             TextField("Creature name, e.g. Moon Dragon", text: $name)
                 .font(Kids.nunito(16)).foregroundColor(Kids.ink)
@@ -154,7 +154,7 @@ struct MyFightersView: View {
                 .padding(12).background(Kids.panel, in: RetroPanelShape(cornerRadius: 10))
                 .accessibilityIdentifier("myFighters.name")
             Text("1–24 characters. Typing does not send a request.")
-                .font(Kids.nunito(12)).foregroundColor(Kids.inkSoft)
+                .readingText(.callout).foregroundColor(Kids.inkSoft)
             KidButton(title: service.isCreating ? "SENDING REQUEST…" : "CREATE ARTWORK", icon: "✨", color: service.canCreate && nameIsValid ? Kids.grass : Kids.panel, size: .md) {
                 nameFocused = false
                 gate { showProviderConfirmation = true }
@@ -163,14 +163,14 @@ struct MyFightersView: View {
             .accessibilityIdentifier("myFighters.create")
             if service.status?.enabled == false || service.status?.configured == false {
                 Text("New artwork is temporarily unavailable. You can still use saved fighters.")
-                    .font(Kids.nunito(13, weight: .bold)).foregroundColor(Kids.inkSoft)
+                    .readingText().foregroundColor(Kids.inkSoft)
             } else if account.isSignedIn && service.status?.activeSubscription == false {
                 Button("View Premium options") { showShop = true }
                     .font(Kids.nunito(14, weight: .bold)).foregroundColor(Kids.grassDeep).frame(minHeight: 44)
                     .accessibilityIdentifier("myFighters.premium")
             }
             Text("A grown-up confirms before the name is sent to OpenAI. You can close this screen while a request finishes.")
-                .font(Kids.nunito(12)).foregroundColor(Kids.inkSoft)
+                .readingText(.callout).foregroundColor(Kids.inkSoft)
         }.padding(16).background(Kids.mintMist, in: RetroPanelShape(cornerRadius: 16))
     }
 
@@ -183,9 +183,9 @@ struct MyFightersView: View {
                     else { Image(systemName: job.state == "ready" ? "checkmark.circle.fill" : "info.circle").foregroundColor(Kids.grassDeep) }
                     VStack(alignment: .leading, spacing: 3) {
                         Text(job.name.isEmpty ? "Artwork request" : job.name).font(Kids.nunito(15, weight: .bold))
-                        Text(job.label).font(Kids.nunito(13)).foregroundColor(Kids.inkSoft)
+                        Text(job.label).readingText(.callout).foregroundColor(Kids.inkSoft)
                         if !job.isActive, let code = job.errorCode {
-                            Text(CustomFighterRequestFailure(code: code).localizedDescription).font(Kids.nunito(12)).foregroundColor(Kids.inkSoft)
+                            Text(CustomFighterRequestFailure(code: code).localizedDescription).readingText().foregroundColor(Kids.inkSoft)
                         }
                     }
                     Spacer(minLength: 0)
@@ -202,7 +202,7 @@ struct MyFightersView: View {
                     RetroCreatureArtwork(animal: fighter.animal, size: 72)
                     VStack(alignment: .leading, spacing: 4) {
                         Text(fighter.name).font(Kids.fredoka(19)).foregroundColor(Kids.ink)
-                        Text("Saved on this device · view all four poses").font(Kids.nunito(12)).foregroundColor(Kids.inkSoft)
+                        Text("Saved on this device · view all four poses").readingText(.callout).foregroundColor(Kids.inkSoft)
                     }
                     Spacer(minLength: 0)
                     Image(systemName: "chevron.right").foregroundColor(Kids.inkSoft)
@@ -223,7 +223,7 @@ struct MyFightersView: View {
             Image(systemName: "arrow.down.circle").font(.system(size: 27)).foregroundColor(Kids.grassDeep)
             VStack(alignment: .leading, spacing: 4) {
                 Text(remote.name).font(Kids.fredoka(18)).foregroundColor(Kids.ink)
-                Text("In your account · download to use offline").font(Kids.nunito(12)).foregroundColor(Kids.inkSoft)
+                Text("In your account · download to use offline").readingText(.callout).foregroundColor(Kids.inkSoft)
             }
             Spacer(minLength: 0)
             if service.downloadingIDs.contains(remote.id) { ProgressView() }
@@ -280,7 +280,7 @@ private struct CustomFighterDetailView: View {
                     }.accessibilityIdentifier("myFighters.fourPoses")
                     if canSelect { KidButton(title: "USE FIGHTER", icon: "▶", color: Kids.grass, size: .md) { dismiss(); onSelect() } }
                     Text("Saved artwork can be used without an active subscription. The artwork does not change battle strength or rewards.")
-                        .font(Kids.nunito(14)).foregroundColor(Kids.inkSoft)
+                        .readingText().foregroundColor(Kids.inkSoft)
                     Button("Report artwork") { gate { showReport = true } }
                         .foregroundColor(Kids.grassDeep).frame(minHeight: 44)
                     Button("Delete fighter", role: .destructive) { gate { showDelete = true } }.frame(minHeight: 44)

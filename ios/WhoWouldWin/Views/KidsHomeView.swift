@@ -503,9 +503,8 @@ struct KidsHomeView: View {
                     .foregroundColor(Kids.ink)
                     .lineLimit(1).minimumScaleFactor(0.8)
                 Text(fact?.coolFact ?? "")
-                    .font(Kids.nunito(13, weight: .semibold))
+                    .readingText(.callout)
                     .foregroundColor(Kids.inkSoft)
-                    .fixedSize(horizontal: false, vertical: true)
             }
             Spacer(minLength: 0)
         }

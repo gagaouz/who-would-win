@@ -341,7 +341,7 @@ private struct ResultPanel: View {
                     Text("Offline result").font(Kids.nunito(12, weight: .bold))
                         .accessibilityIdentifier("battle.offlineIndicator")
                 }
-                // Compact narration card
+                // Full-size reading card; grows to fit the complete story.
                 VStack(alignment: .leading, spacing: 6) {
                     Text("BATTLE STORY")
                         .font(Kids.fredoka(isIPad ? 13 : 10, weight: .bold))
@@ -350,13 +350,12 @@ private struct ResultPanel: View {
                         .background(RetroPanelShape().fill(Kids.pink).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1)))
                     Text(result.narration.withoutEmoji)
                         .accessibilityIdentifier("battle.narration")
-                        .font(Kids.nunito(isIPad ? 16 : 12, weight: .bold))
-                        .lineSpacing(4)
+                        .readingText()
                         .foregroundColor(Kids.ink)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                .padding(12)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(16)
+                .frame(maxWidth: 640, alignment: .leading)
                 .background(
                     RetroPanelShape(cornerRadius: 18, style: .continuous)
                         .fill(Kids.panel)
@@ -377,6 +376,7 @@ private struct ResultPanel: View {
                 .opacity(appeared ? 1 : 0)
             }
         }
+        .clipped()
         .onAppear {
             if UIAccessibility.isReduceMotionEnabled { appeared = true }
             else { withAnimation(.spring(response: 0.55, dampingFraction: 0.55).delay(0.1)) { appeared = true } }

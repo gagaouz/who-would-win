@@ -45,49 +45,51 @@ struct ParentalPINSheet: View {
         ZStack {
             SkyBG()
 
-            VStack(spacing: isIPad ? 24 : 18) {
-                RetroSymbol("🔒", size: isIPad ? 96 : 64)
-                    .padding(.top, isIPad ? 50 : 32)
-                    .scaleEffect(appeared ? 1 : 0.6)
+            ScrollView {
+                VStack(spacing: isIPad ? 24 : 18) {
+                    RetroSymbol("🔒", size: isIPad ? 96 : 64)
+                        .padding(.top, isIPad ? 50 : 32)
+                        .scaleEffect(appeared ? 1 : 0.6)
 
-                StickerWord(text: titleText, fill: Kids.sun, fontSize: isIPad ? 32 : 24, tilt: -2)
+                    StickerWord(text: titleText, fill: Kids.sun, fontSize: isIPad ? 32 : 24, tilt: -2)
 
-                Text(subtitleText)
-                    .font(Kids.nunito(isIPad ? 17 : 13, weight: .bold))
-                    .foregroundColor(Kids.ink)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, isIPad ? 40 : 28)
+                    Text(subtitleText)
+                        .readingText()
+                        .foregroundColor(Kids.ink)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, isIPad ? 40 : 28)
 
-                pinDots
-                    .offset(x: shake)
+                    pinDots
+                        .offset(x: shake)
 
-                if let err = error {
-                    Text(err)
-                        .font(Kids.fredoka(isIPad ? 14 : 12, weight: .bold))
-                        .foregroundColor(Kids.pinkDeep)
-                        .transition(.opacity)
+                    if let err = error {
+                        Text(err)
+                            .readingText(.callout)
+                            .foregroundColor(Kids.pinkDeep)
+                            .transition(.opacity)
+                    }
+
+                    keypad
+                        .padding(.top, isIPad ? 12 : 6)
+
+                    Button(action: {
+                        HapticsService.shared.tap()
+                        onCancel()
+                    }) {
+                        Text("Cancel")
+                            .font(Kids.fredoka(isIPad ? 17 : 14, weight: .bold))
+                            .foregroundColor(Kids.inkSoft)
+                            .underline()
+                            .padding(.vertical, 10)
+                    }
+                    .buttonStyle(.plain)
                 }
-
-                keypad
-                    .padding(.top, isIPad ? 12 : 6)
-
-                Button(action: {
-                    HapticsService.shared.tap()
-                    onCancel()
-                }) {
-                    Text("Cancel")
-                        .font(Kids.fredoka(isIPad ? 17 : 14, weight: .bold))
-                        .foregroundColor(Kids.inkSoft)
-                        .underline()
-                        .padding(.vertical, 10)
-                }
-                .buttonStyle(.plain)
-
-                Spacer(minLength: 0)
+                .frame(maxWidth: isIPad ? 600 : .infinity)
+                .scaleEffect(appeared ? 1 : 0.95)
+                .opacity(appeared ? 1 : 0)
+                .frame(maxWidth: .infinity)
+                .padding(.bottom, 24)
             }
-            .frame(maxWidth: isIPad ? 600 : .infinity)
-            .scaleEffect(appeared ? 1 : 0.95)
-            .opacity(appeared ? 1 : 0)
         }
         .onAppear {
             withAnimation(.spring(response: 0.55, dampingFraction: 0.7)) { appeared = true }

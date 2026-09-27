@@ -14,11 +14,11 @@ struct CustomFighterAccountView: View {
                     Text("Your fighters, saved")
                         .font(Kids.fredoka(28, weight: .bold)).foregroundColor(Kids.ink)
                     Text("Connect a private library to save your creations and restore them on your other devices. Your existing game works without signing in.")
-                        .font(Kids.nunito(16, weight: .semibold)).foregroundColor(Kids.inkSoft)
+                        .readingText().foregroundColor(Kids.inkSoft)
                     if account.isSignedIn {
                         Label("Library connected", systemImage: "checkmark.circle.fill").foregroundColor(Kids.grassDeep)
                         Text("Saved artwork stays available when Premium expires. Premium is required to create new artwork.")
-                            .font(Kids.nunito(15, weight: .semibold))
+                            .readingText()
                         Button("Sign out") { Task { await account.signOut() } }
                             .buttonStyle(.bordered).disabled(account.isWorking)
                         Button("Delete fighter library", role: .destructive) { confirmingDelete = true }
@@ -26,12 +26,12 @@ struct CustomFighterAccountView: View {
                     } else {
                         if account.accountID != nil {
                             Text("Your downloaded fighters are still on this device. Sign in again to restore, create or delete online artwork.")
-                                .font(Kids.nunito(15, weight: .semibold))
+                                .readingText()
                             Button("Sign out on this device") { Task { await account.signOut() } }
                                 .buttonStyle(.bordered).disabled(account.isWorking)
                         }
                         Text("Sign in with Apple links your library. We don't request your name or email. Creating artwork sends your entered idea to OpenAI; approved artwork is stored privately on our server until you delete it.")
-                            .font(Kids.nunito(15, weight: .semibold))
+                            .readingText()
                         Button {
                             Task { await account.beginSignIn(); if account.isSignedIn { onSignedIn?(); dismiss() } }
                         } label: {
@@ -49,7 +49,7 @@ struct CustomFighterAccountView: View {
                         Link("Fighter library privacy", destination: privacyURL)
                             .font(Kids.nunito(15, weight: .bold)).foregroundColor(Kids.grassDeep)
                     }
-                    if let error = account.errorMessage { Text(error).font(Kids.nunito(14, weight: .semibold)).foregroundColor(.red).accessibilityIdentifier("customFighters.accountError") }
+                    if let error = account.errorMessage { Text(error).readingText().foregroundColor(Kids.pinkDeep).accessibilityIdentifier("customFighters.accountError") }
                 }.font(Kids.nunito(16)).padding(24)
             }
             .background(Kids.cream).navigationTitle("Fighter library").navigationBarTitleDisplayMode(.inline)

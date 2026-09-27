@@ -79,28 +79,32 @@ struct HowToPlayView: View {
 
     @ViewBuilder
     private func stepCard(_ s: Step) -> some View {
-        VStack(spacing: isIPad ? 22 : 16) {
-            Spacer()
-            ZStack {
-                RetroPanelShape().fill(s.color)
-                    .overlay(RetroPanelShape().fill(Kids.sheen))
-                    .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
-                    .frame(width: isIPad ? 180 : 140, height: isIPad ? 180 : 140)
-                    .compositingGroup().shadow(color: Kids.shadow.opacity(0.12), radius: 4, x: 0, y: 6)
-                RetroSymbol(s.emoji, size: isIPad ? 92 : 72)
+        GeometryReader { geometry in
+            ScrollView {
+                VStack(spacing: isIPad ? 22 : 16) {
+                    Spacer()
+                    ZStack {
+                        RetroPanelShape().fill(s.color)
+                            .overlay(RetroPanelShape().fill(Kids.sheen))
+                            .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
+                            .frame(width: isIPad ? 180 : 140, height: isIPad ? 180 : 140)
+                            .compositingGroup().shadow(color: Kids.shadow.opacity(0.12), radius: 4, x: 0, y: 6)
+                        RetroSymbol(s.emoji, size: isIPad ? 92 : 72)
+                    }
+                    Text(s.title)
+                        .font(Kids.fredoka(isIPad ? 26 : 21, weight: .bold))
+                        .foregroundColor(Kids.ink)
+                        .multilineTextAlignment(.center)
+                    Text(s.body)
+                        .readingText()
+                        .foregroundColor(Kids.inkSoft)
+                        .multilineTextAlignment(.leading)
+                        .padding(.horizontal, isIPad ? 30 : 26)
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: geometry.size.height)
             }
-            Text(s.title)
-                .font(Kids.fredoka(isIPad ? 26 : 21, weight: .bold))
-                .foregroundColor(Kids.ink)
-                .multilineTextAlignment(.center)
-            Text(s.body)
-                .font(Kids.nunito(isIPad ? 17 : 14, weight: .bold))
-                .foregroundColor(Kids.inkSoft)
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.horizontal, isIPad ? 30 : 26)
-            Spacer()
         }
-        .frame(maxWidth: .infinity)
     }
 }

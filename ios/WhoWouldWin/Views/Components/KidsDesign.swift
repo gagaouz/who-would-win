@@ -190,6 +190,24 @@ extension View {
     func inkShadow(y: CGFloat = 3, opacity: Double = 0.12, soft: Bool = true) -> some View {
         modifier(Kids.InkShadow(y: y, opacity: opacity, soft: soft))
     }
+
+    /// Paragraphs use full-size, scalable book lettering. Pixel type remains
+    /// reserved for headings and short arcade labels.
+    func readingText(_ style: Font.TextStyle = .body) -> some View {
+        modifier(ReadingTextStyle(style: style))
+    }
+}
+
+private struct ReadingTextStyle: ViewModifier {
+    let style: Font.TextStyle
+    @ScaledMetric(relativeTo: .body) private var spacing: CGFloat = 5
+
+    func body(content: Content) -> some View {
+        content
+            .font(.system(style, design: .serif, weight: .regular))
+            .lineSpacing(spacing)
+            .fixedSize(horizontal: false, vertical: true)
+    }
 }
 
 // Color(hex:) is defined elsewhere (Theme.swift) — reuse it.
@@ -997,6 +1015,7 @@ struct RetroArenaThumbnail: View {
 @MainActor
 struct RetroUIFixtureHost: View {
     let screen: String
+    @Environment(\.dynamicTypeSize) private var fixtureTextSize
     @State private var arena: BattleEnvironment = .grassland
     @State private var effects = true
     @State private var presented = true
@@ -1005,7 +1024,8 @@ struct RetroUIFixtureHost: View {
     static func supports(_ screen: String) -> Bool {
         ["ui-home-navigation", "ui-picker", "ui-arena", "ui-book", "ui-facts", "ui-settings", "ui-shop", "ui-coins",
          "ui-parent", "ui-pin", "ui-grownups", "ui-help", "ui-tournament", "ui-bracket",
-         "ui-wager", "ui-champion", "ui-share-duel", "ui-share-team", "ui-share-tournament", "ui-share-custom"].contains(screen)
+         "ui-wager", "ui-champion", "ui-share-duel", "ui-share-team", "ui-share-tournament", "ui-share-custom",
+         "ui-reading-solo", "ui-reading-team", "ui-reading-tournament", "ui-reading-facts"].contains(screen)
     }
 
     init(screen: String) {
@@ -1038,6 +1058,16 @@ struct RetroUIFixtureHost: View {
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("fixture.screen.\(screen)")
+        .overlay(alignment: .bottomTrailing) {
+            if screen.hasPrefix("ui-reading-") || ProcessInfo.processInfo.environment["AVA_READING_AX3"] == "1" {
+                Text("TEXT: \(String(describing: fixtureTextSize))")
+                    .font(.system(size: 9, design: .monospaced))
+                    .foregroundColor(.white).padding(3).background(.black)
+                    .accessibilityIdentifier("fixture.reading.contentSize")
+                    .accessibilityValue(String(describing: fixtureTextSize))
+                    .allowsHitTesting(false)
+            }
+        }
     }
 
     @ViewBuilder
@@ -1051,6 +1081,18 @@ struct RetroUIFixtureHost: View {
                               isPresented: $presented, onStart: {})
         case "ui-book": KidsStickerBookView()
         case "ui-facts": AnimalFactsSheet(animal: Animals.lion)
+        case "ui-reading-facts": AnimalFactsSheet(animal: Animals.peregrine_falcon)
+        case "ui-reading-solo":
+            KidsBattleView(fighter1: Animals.lion, fighter2: Animals.gorilla,
+                           environment: .grassland, arenaEffectsEnabled: true)
+        case "ui-reading-team":
+            MeleeBattleView(teamA: [Animals.lion, Animals.gorilla, Animals.tiger, Animals.wolf],
+                            teamB: [Animals.elephant, Animals.great_white_shark, Animals.bald_eagle, Animals.t_rex])
+        case "ui-reading-tournament":
+            KidsTournamentBattleView(fighter1: Animals.lion, fighter2: Animals.gorilla,
+                                     environment: .grassland, arenaEffectsEnabled: true,
+                                     quickMode: false, tournamentContext: "Quarter-final (round 1 of 3, match 2/4).",
+                                     onComplete: { _ in })
         case "ui-settings": KidsSettingsView()
         case "ui-shop": KidsShopView()
         case "ui-coins": KidsCoinShopSheet(isPresented: $presented)

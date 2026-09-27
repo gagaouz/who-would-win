@@ -34,7 +34,7 @@ struct KidsPreBattleView: View {
                             .foregroundColor(Kids.ink)
                             .padding(.top, 10)
                         Text("The place changes who has the edge")
-                            .font(Kids.nunito(12, weight: .bold))
+                            .readingText(.callout)
                             .foregroundColor(Kids.inkSoft)
 
                         // Matchup row
@@ -73,7 +73,7 @@ struct KidsPreBattleView: View {
                                     .font(Kids.fredoka(15, weight: .bold))
                                     .foregroundColor(Kids.ink)
                                 Text("Rain, sparkles, wind & more!")
-                                    .font(Kids.nunito(11, weight: .bold))
+                                    .readingText(.callout)
                                     .foregroundColor(Kids.inkSoft)
                             }
                             Spacer()

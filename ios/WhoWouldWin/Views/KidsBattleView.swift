@@ -807,7 +807,7 @@ private struct ResultContent: View {
                         HStack(spacing: 6) {
                             RetroSymbol("🚫", size: 13)
                             Text("Grown-ups: you can remove ads forever")
-                                .font(Kids.nunito(11, weight: .bold))
+                                .readingText(.callout)
                                 .foregroundColor(Kids.inkSoft)
                                 .underline()
                         }
@@ -822,6 +822,7 @@ private struct ResultContent: View {
             }
             .padding(.top, 4)
         }
+        .clipped()
     }
 
     // MARK: - Result chips (your-pick · how-close · win record)
@@ -893,13 +894,12 @@ private struct ResultContent: View {
                 .background(RetroPanelShape().fill(tagColor).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
             Text(text)
                 .accessibilityIdentifier(tag == "BATTLE STORY" ? "battle.narration" : "battle.info.\(tag)")
-                .font(Kids.nunito(13, weight: .bold))
-                .lineSpacing(4)
+                .readingText()
                 .foregroundColor(Kids.ink)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: 640, alignment: .leading)
         .background(
             RetroPanelShape(cornerRadius: 20, style: .continuous)
                 .fill(Kids.panel)
@@ -1151,7 +1151,9 @@ extension String {
             return true
         }
         return String(String.UnicodeScalarView(kept))
-            .replacingOccurrences(of: "\\s{2,}", with: " ", options: .regularExpression)
+            // Collapse gaps left by removed emoji without flattening story
+            // paragraphs into one difficult-to-read block.
+            .replacingOccurrences(of: "[^\\S\\r\\n]{2,}", with: " ", options: .regularExpression)
             .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }

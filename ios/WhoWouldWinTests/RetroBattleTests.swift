@@ -3,6 +3,14 @@ import SpriteKit
 @testable import WhoWouldWin
 
 final class RetroBattleTests: XCTestCase {
+    func testStoryCleanupPreservesParagraphsAndStillRejectsEmojiOnlyAnswers() {
+        let story = "  Lion 🦁   waited.\n\nGorilla 🦍\t\tmoved.\r\n\r\nBoth went home.  "
+        XCTAssertEqual(story.withoutEmoji,
+                       "Lion waited.\n\nGorilla moved.\r\n\r\nBoth went home.")
+        XCTAssertTrue("\n🦁   🦍\n\n".withoutEmoji.isEmpty,
+                      "Emoji-only narration must still trigger the existing fallback.")
+    }
+
     func testFirstAcceptedResultSurvivesALateCloudAnswer() {
         var state = RetroBattleLifecycle<String>()
         let id = state.begin()!

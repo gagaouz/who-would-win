@@ -60,7 +60,7 @@ struct ParentGateSheet: View {
                                 .scaleEffect(appeared ? 1 : 0.3)
 
                             Text("Ask a parent to answer this question!")
-                                .font(Kids.nunito(isIPad ? 16 : 13, weight: .bold))
+                                .readingText(.callout)
                                 .foregroundColor(Kids.inkSoft)
                                 .multilineTextAlignment(.center)
 
@@ -79,7 +79,7 @@ struct ParentGateSheet: View {
 
                             if missed {
                                 Text("Oops — not quite! Here's a new one.")
-                                    .font(Kids.nunito(isIPad ? 14 : 12, weight: .heavy))
+                                    .readingText(.callout)
                                     .foregroundColor(Kids.pinkDeep)
                                     .transition(.scale.combined(with: .opacity))
                             }

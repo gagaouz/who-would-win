@@ -128,7 +128,7 @@ struct KidsHallOfFameView: View {
         } else if entries.isEmpty {
             ScrollView {
                 Text("Not enough battles in this category yet — play more!")
-                    .font(Kids.nunito(isIPad ? 15 : 12, weight: .bold))
+                    .readingText(.callout)
                     .foregroundColor(Kids.inkSoft)
                     .multilineTextAlignment(.center)
                     .padding(.top, 60)
@@ -159,7 +159,7 @@ struct KidsHallOfFameView: View {
             RetroSymbol("🏆", size: isIPad ? 96 : 76)
             StickerWord(text: "NO BATTLES YET", fill: Kids.sun, fontSize: isIPad ? 22 : 18, tilt: -2)
             Text("Play some battles, then come back to see\nwho's leading the pack!")
-                .font(Kids.nunito(isIPad ? 16 : 12, weight: .bold))
+                .readingText()
                 .foregroundColor(Kids.ink)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 30)
@@ -311,8 +311,8 @@ struct KidsHallOfFameView: View {
                     // diagnosing flaky-network or cancellation issues without
                     // alarming the user.
                     Text(err)
-                        .font(Kids.nunito(isIPad ? 10 : 8, weight: .regular))
-                        .foregroundColor(Kids.inkSoft.opacity(0.6))
+                        .readingText(.callout)
+                        .foregroundColor(Kids.inkSoft)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 20)
                 }

@@ -1,12 +1,12 @@
 {
   "version": "2.0",
-  "build": "116",
-  "ascVerifiedAt": "2026-09-27T10:52:45.930381+00:00",
-  "evidence": "docs/v2.0/evidence/asc-allocation-2026-09-27T105245Z.json",
+  "build": "117",
+  "ascVerifiedAt": "2026-09-27T11:57:06.349418+00:00",
+  "evidence": "docs/v2.0/evidence/asc-allocation-2026-09-27T115706Z.json",
   "distributionScope": "internal-testflight",
   "allocatedBranch": "develop/2.0",
-  "highestUploadedBuildAtCheck": 115,
+  "highestUploadedBuildAtCheck": 116,
   "maintenanceSourceBuild": "109",
-  "nextUnallocatedBuildAtCheck": 117,
-  "note": "Build116 allocated for restrained ambient creature motion, winner glints and control feedback. Recheck ASC before upload; internal TestFlight only."
+  "nextUnallocatedBuildAtCheck": 118,
+  "note": "Build117 allocated for readable serif body text with scalable line spacing and wrapping. Recheck ASC before upload; internal TestFlight only."
 }

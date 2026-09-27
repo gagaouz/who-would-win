@@ -147,7 +147,7 @@ struct KidsCoinShopSheet: View {
                             showParentGate = true
                         }
                         Text("Coins are added instantly and never expire.")
-                            .font(Kids.nunito(10, weight: .bold))
+                            .readingText(.callout)
                             .foregroundColor(Kids.inkSoft)
                             .multilineTextAlignment(.center)
                             .padding(.top, 2)
@@ -188,13 +188,13 @@ struct KidsCoinShopSheet: View {
                                 showParentGate = true
                             }
                             Text("Every creature pack + Melee + Arenas + No Ads, forever.")
-                                .font(Kids.nunito(10, weight: .bold))
+                                .readingText(.callout)
                                 .foregroundColor(Kids.inkSoft)
                                 .multilineTextAlignment(.center)
                                 .padding(.top, 2)
                             Text("Premium families already have every pack, no ads, and 2× coins — see Settings.")
-                                .font(Kids.nunito(9, weight: .bold))
-                                .foregroundColor(Kids.inkSoft.opacity(0.8))
+                                .readingText(.callout)
+                                .foregroundColor(Kids.inkSoft)
                                 .multilineTextAlignment(.center)
                         }
                         .padding(14)
@@ -273,7 +273,7 @@ struct KidsCoinShopSheet: View {
                     .font(Kids.fredoka(13, weight: .bold))
                     .foregroundColor(Kids.ink)
                 if let s = sublabel {
-                    Text(s).font(Kids.nunito(10, weight: .bold)).foregroundColor(Kids.inkSoft)
+                    Text(s).readingText(.callout).foregroundColor(Kids.inkSoft)
                 }
             }
             Spacer()

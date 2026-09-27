@@ -58,7 +58,7 @@ struct GrandChampionWagerView: View {
             VStack(spacing: isIPad ? 6 : 4) {
                 StickerWord(text: "GRAND CHAMPION", fill: Kids.sun, fontSize: isIPad ? 28 : 20, tilt: -2)
                 Text("Pick the winner — 5.0× payout")
-                    .font(Kids.nunito(isIPad ? 15 : 11, weight: .bold))
+                    .readingText(.callout)
                     .foregroundColor(Kids.ink)
             }
             Spacer()
@@ -75,7 +75,7 @@ struct GrandChampionWagerView: View {
                     .foregroundColor(Kids.ink)
             }
             Text("Pick once. You can buy-out later for a smaller multiplier.")
-                .font(Kids.nunito(isIPad ? 15 : 11, weight: .bold))
+                .readingText(.callout)
                 .foregroundColor(Kids.inkSoft)
                 .multilineTextAlignment(.center)
         }
@@ -149,7 +149,7 @@ struct GrandChampionWagerView: View {
                     }
                 }
                 Text("Earn more coins to unlock variable wagers")
-                    .font(Kids.nunito(isIPad ? 13 : 10, weight: .bold))
+                    .readingText(.callout)
                     .foregroundColor(Kids.inkSoft)
             }
             .padding(isIPad ? 20 : 14)
@@ -159,7 +159,7 @@ struct GrandChampionWagerView: View {
         } else {
             VStack(spacing: isIPad ? 14 : 10) {
                 Text("You need at least \(minWager) coins to place a Grand Champion wager.")
-                    .font(Kids.fredoka(isIPad ? 16 : 12, weight: .bold))
+                    .readingText(.callout)
                     .foregroundColor(Kids.inkSoft)
                     .multilineTextAlignment(.center)
                     .padding(.vertical, isIPad ? 12 : 8)

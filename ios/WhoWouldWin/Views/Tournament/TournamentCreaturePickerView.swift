@@ -337,7 +337,7 @@ struct TournamentCreaturePickerView: View {
             }
 
             Text("We'll give your fighter a retro avatar, made on your device.")
-                .font(Kids.nunito(12, weight: .semibold))
+                .readingText(.callout)
                 .foregroundColor(Kids.inkSoft)
                 .frame(maxWidth: .infinity, alignment: .leading)
 

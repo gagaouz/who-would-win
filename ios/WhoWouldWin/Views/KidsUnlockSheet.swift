@@ -92,7 +92,7 @@ struct KidsUnlockSheet: View {
                             .scaleEffect(appeared ? 1 : 0.3)
 
                         Text(config.blurb)
-                            .font(Kids.nunito(isIPad ? 16 : 13, weight: .bold))
+                            .readingText()
                             .foregroundColor(Kids.ink)
                             .multilineTextAlignment(.center)
                             .opacity(appeared ? 1 : 0)
@@ -142,7 +142,7 @@ struct KidsUnlockSheet: View {
                         HStack(spacing: 6) {
                             RetroSymbol("👑", size: 15)
                             Text("Also included with Premium")
-                                .font(Kids.nunito(isIPad ? 13 : 11, weight: .bold))
+                                .readingText(.callout)
                                 .foregroundColor(Kids.inkSoft)
                         }
 
@@ -255,7 +255,7 @@ struct KidsUnlockSheet: View {
             let remaining = max(0, config.battleThreshold - config.battlesPlayed)
             if remaining > 0 {
                 Text("\(remaining) more battle\(remaining == 1 ? "" : "s") to go!")
-                    .font(Kids.nunito(isIPad ? 13 : 11, weight: .bold))
+                    .readingText(.callout)
                     .foregroundColor(Kids.inkSoft)
             } else {
                 Text("✓ You unlocked it for FREE!")

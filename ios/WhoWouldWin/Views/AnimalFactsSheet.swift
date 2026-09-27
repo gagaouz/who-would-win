@@ -58,10 +58,8 @@ struct AnimalFactsSheet: View {
                                 .padding(.horizontal, 10).padding(.vertical, 4)
                                 .background(RetroPanelShape().fill(Kids.grass).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
                             Text(f.coolFact)
-                                .font(Kids.nunito(14, weight: .bold))
-                                .lineSpacing(4)
+                                .readingText()
                                 .foregroundColor(Kids.ink)
-                                .fixedSize(horizontal: false, vertical: true)
                         }
                         .padding(14)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -95,7 +93,7 @@ struct AnimalFactsSheet: View {
                         .padding(.top, 4)
                     } else {
                         Text("Facts for this creature are coming soon!")
-                            .font(Kids.nunito(14, weight: .bold))
+                            .readingText(.callout)
                             .foregroundColor(Kids.inkSoft)
                             .padding(.top, 20)
                     }
@@ -103,6 +101,7 @@ struct AnimalFactsSheet: View {
                     Color.clear.frame(height: 30)
                 }
             }
+            .clipped()
         }
         .arcadeMotionViewport()
         .onDisappear { speech.stopSpeaking() }
@@ -117,9 +116,8 @@ struct AnimalFactsSheet: View {
                     .font(Kids.fredoka(10, weight: .bold))
                     .foregroundColor(Kids.inkSoft)
                 Text(value)
-                    .font(Kids.nunito(13, weight: .bold))
+                    .readingText(.callout)
                     .foregroundColor(Kids.ink)
-                    .fixedSize(horizontal: false, vertical: true)
             }
             Spacer()
         }

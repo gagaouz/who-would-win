@@ -1,0 +1,7 @@
+Animal vs Animal 2.0 (117)
+
+Stories and other longer text now use full-size, readable serif lettering with more line spacing. Pixel headings and arcade controls retain their retro look. Battle stories preserve paragraph breaks; solo, team and tournament reading cards wrap without shrinking, with a comfortable width on iPad.
+
+The same reading treatment covers facts, help, settings, purchase explanations, fighter-library messages and shared story cards. Help and parent PIN screens can scroll when larger text needs more room.
+
+Please read a longer battle story, try larger text in Accessibility, and scroll to the actions below it. Check facts, help, the fighter library, parent controls and sharing. Install over your current build and verify saved progress, Sandbox purchase/restore and custom saved fighters. Physical-device readability and real account checks still need your testing.

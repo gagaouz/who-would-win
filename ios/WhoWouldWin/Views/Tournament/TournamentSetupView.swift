@@ -86,7 +86,7 @@ struct TournamentSetupView: View {
                 .rotationEffect(.degrees(-2))
 
             Text("Pick your bracket and start the hype!")
-                .font(Kids.nunito(isIPad ? 17 : 13, weight: .bold))
+                .readingText(.callout)
                 .foregroundColor(Kids.ink)
                 .padding(.top, isIPad ? 6 : 4)
         }
@@ -224,7 +224,7 @@ private struct ModeRow: View {
                         .foregroundColor(Kids.ink)
                         .fixedSize(horizontal: false, vertical: true)
                     Text(subtitle)
-                        .font(Kids.nunito(isIPad ? 14 : 11, weight: .bold))
+                        .readingText(.callout)
                         .foregroundColor(Kids.inkSoft)
                         .fixedSize(horizontal: false, vertical: true)
                 }
