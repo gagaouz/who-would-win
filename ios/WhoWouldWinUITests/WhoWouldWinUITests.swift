@@ -178,6 +178,11 @@ final class HomeMatchupUITests: XCTestCase {
         let selected = app.buttons.matching(NSPredicate(format: "label == %@ AND value == %@", "Lion", "Selected")).firstMatch
         XCTAssertTrue(selected.waitForExistence(timeout: 5), "The normal roster selection must remain functional")
         capture("home_matchup_picker_selected")
+        let remove = app.buttons["Remove Lion"]
+        XCTAssertTrue(remove.isHittable)
+        remove.tap()
+        XCTAssertTrue(selected.waitForNonExistence(timeout: 5), "Removing a selected fighter must clear its roster selection")
+        capture("home_matchup_picker_cleared")
     }
 }
 

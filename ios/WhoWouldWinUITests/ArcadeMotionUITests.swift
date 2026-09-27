@@ -110,5 +110,16 @@ final class ArcadeMotionUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["TOURNAMENT CHAMPION"].exists)
         capture("ambient_champion_later")
         app.terminate()
+
+        // A deliberate hold makes the raised button's pressed and released
+        // states observable in passive native video, while testing its action.
+        launch("ui-home-navigation")
+        let picker = app.buttons["home.pickFighters"]
+        reveal(picker)
+        capture("ambient_before_held_press")
+        picker.press(forDuration: 1.2)
+        XCTAssertTrue(app.textFields["Search or create ANY creature..."].waitForExistence(timeout: 10))
+        capture("ambient_after_held_press")
+        app.terminate()
     }
 }

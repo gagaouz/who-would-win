@@ -4,6 +4,7 @@ Owner direction: add subtle life to winners and selected design elements, with o
 
 - Home features gently staggered creature breaths, with long resting intervals. Only the selected carousel page animates. The existing animated logo uses the same visibility/lifecycle clock.
 - Solo winners, team MVPs and tournament champions make a 2-point lift with a small lean and receive a single fading pixel glint, separated in time. Facts show a gentle idle breath. Text, frames, rosters and collection grids remain still.
+- The selected-fighter remove icon now contrasts with its dark background and names the fighter for VoiceOver; selection/clear behavior is checked through the real picker.
 - Raised buttons settle over 100ms. Toggle feedback is shortened; coin rewards scale to 1.06 rather than 1.18. Confetti remains a finite one-shot, with cancellable delayed work. The sticker-book entrance is softened.
 - Ambient clocks run at most 12 Hz and require an active scene, uncovered screen, visible element and more than half the artwork inside the screen viewport. Reduce Motion disables the new ambient transforms. Exported cards use static defaults. No added sound, haptics, network requests or reward triggers.
 

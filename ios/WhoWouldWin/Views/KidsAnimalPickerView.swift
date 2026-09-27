@@ -632,12 +632,13 @@ private struct KidsFighterSlot: View {
                 ZStack(alignment: .topTrailing) {
                     AnimalBubble(animal: a, size: bubbleSize, tint: tint, tilt: 0)
                     Button(action: onClear) {
-                        Text("✕")
-                            .font(Kids.fredoka(isIPad ? 16 : 13, weight: .bold))
-                            .foregroundColor(Kids.ink)
+                        Image(systemName: "xmark")
+                            .font(.system(size: isIPad ? 13 : 10, weight: .black))
+                            .foregroundColor(Kids.panel)
                             .frame(width: isIPad ? 28 : 22, height: isIPad ? 28 : 22)
                             .background(RetroPanelShape().fill(Kids.ink))
                     }
+                    .accessibilityLabel("Remove \(a.name)")
                     .offset(x: isIPad ? 6 : 4, y: isIPad ? -6 : -4)
                 }
                 Text(a.name.uppercased())
