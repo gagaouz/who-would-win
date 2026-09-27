@@ -1017,6 +1017,7 @@ struct RetroArenaThumbnail: View {
 struct RetroUIFixtureHost: View {
     let screen: String
     @Environment(\.dynamicTypeSize) private var fixtureTextSize
+    @ObservedObject private var fixtureCoins = CoinStore.shared
     @State private var arena: BattleEnvironment = .grassland
     @State private var effects = true
     @State private var presented = true
@@ -1026,7 +1027,9 @@ struct RetroUIFixtureHost: View {
         ["ui-home-navigation", "ui-picker", "ui-arena", "ui-book", "ui-facts", "ui-settings", "ui-shop", "ui-coins",
          "ui-parent", "ui-pin", "ui-grownups", "ui-help", "ui-tournament", "ui-bracket",
          "ui-wager", "ui-champion", "ui-share-duel", "ui-share-team", "ui-share-tournament", "ui-share-custom",
-         "ui-reading-solo", "ui-reading-team", "ui-reading-tournament", "ui-reading-facts"].contains(screen)
+         "ui-reading-solo", "ui-reading-team", "ui-reading-tournament", "ui-reading-facts",
+         "ui-leo-solo", "ui-leo-team", "ui-leo-team-mvp", "ui-leo-tournament", "ui-leo-champion",
+         "ui-leo-losing", "ui-leo-team-losing", "ui-leo-ordinary"].contains(screen)
     }
 
     init(screen: String) {
@@ -1047,6 +1050,12 @@ struct RetroUIFixtureHost: View {
         if screen == "ui-wager" || screen == "ui-champion" {
             TournamentManager.shared.activeTournament = Self.tournament(completed: screen == "ui-champion")
         }
+        if screen.hasPrefix("ui-leo-") {
+            StickerCollection.shared.collect(Animals.great_dane)
+        }
+        if screen == "ui-leo-champion" {
+            TournamentManager.shared.activeTournament = Self.tournament(completed: true, champion: Animals.great_dane)
+        }
     }
 
     var body: some View {
@@ -1066,6 +1075,13 @@ struct RetroUIFixtureHost: View {
                     .foregroundColor(.white).padding(3).background(.black)
                     .accessibilityIdentifier("fixture.reading.contentSize")
                     .accessibilityValue(String(describing: fixtureTextSize))
+                    .allowsHitTesting(false)
+            } else if screen.hasPrefix("ui-leo-") {
+                Text("COINS: \(fixtureCoins.balance)")
+                    .font(.system(size: 9, design: .monospaced))
+                    .foregroundColor(.white).padding(3).background(.black)
+                    .accessibilityIdentifier("fixture.leo.coinBalance")
+                    .accessibilityValue(String(fixtureCoins.balance))
                     .allowsHitTesting(false)
             }
         }
@@ -1094,6 +1110,30 @@ struct RetroUIFixtureHost: View {
                                      environment: .grassland, arenaEffectsEnabled: true,
                                      quickMode: false, tournamentContext: "Quarter-final (round 1 of 3, match 2/4).",
                                      onComplete: { _ in })
+        case "ui-leo-solo":
+            KidsBattleView(fighter1: Animals.great_dane, fighter2: Animals.gorilla,
+                           environment: .grassland, arenaEffectsEnabled: true)
+        case "ui-leo-losing":
+            KidsBattleView(fighter1: Animals.lion, fighter2: Animals.great_dane,
+                           environment: .grassland, arenaEffectsEnabled: true)
+        case "ui-leo-ordinary":
+            KidsBattleView(fighter1: Animals.lion, fighter2: Animals.gorilla,
+                           environment: .grassland, arenaEffectsEnabled: true)
+        case "ui-leo-team", "ui-leo-team-mvp":
+            MeleeBattleView(teamA: [Animals.great_dane, Animals.lion, Animals.gorilla, Animals.wolf],
+                            teamB: [Animals.elephant, Animals.great_white_shark, Animals.bald_eagle, Animals.t_rex])
+        case "ui-leo-team-losing":
+            MeleeBattleView(teamA: [Animals.lion, Animals.gorilla, Animals.tiger, Animals.wolf],
+                            teamB: [Animals.great_dane, Animals.elephant, Animals.bald_eagle, Animals.t_rex])
+        case "ui-leo-tournament":
+            KidsTournamentBattleView(fighter1: Animals.great_dane, fighter2: Animals.gorilla,
+                                     environment: .grassland, arenaEffectsEnabled: true,
+                                     quickMode: false, tournamentContext: "Quarter-final (round 1 of 3, match 2/4).",
+                                     onComplete: { _ in })
+        case "ui-leo-champion":
+            if let tournament = TournamentManager.shared.activeTournament {
+                TournamentCompleteView(tournament: tournament, onPlayAgain: {}, onExit: {})
+            }
         case "ui-settings": KidsSettingsView()
         case "ui-shop": KidsShopView()
         case "ui-coins": KidsCoinShopSheet(isPresented: $presented)
@@ -1136,8 +1176,13 @@ struct RetroUIFixtureHost: View {
                      why: "Strong paws and quick footwork helped the lion hold its ground.")
     }
 
-    private static func tournament(completed: Bool = false) -> Tournament {
-        let pool = Array(Animals.all.prefix(16))
+    private static func tournament(completed: Bool = false, champion: Animal? = nil) -> Tournament {
+        let pool: [Animal]
+        if let champion {
+            pool = [champion] + Array(Animals.all.filter { $0.id != champion.id }.prefix(15))
+        } else {
+            pool = Array(Animals.all.prefix(16))
+        }
         var round = stride(from: 0, to: pool.count, by: 2).map { index in
             Matchup(id: UUID(), fighter1: pool[index], fighter2: pool[index + 1], environment: .grassland,
                     wager: nil, result: completed ? result(pool[index]) : nil)

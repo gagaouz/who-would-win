@@ -41,6 +41,7 @@
 		343F90299F8A5833458CFE88 /* CustomFighterLibraryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57D63CE44B66EEE210AE8BA0 /* CustomFighterLibraryStore.swift */; };
 		35334D228618F999E5B452E4 /* RetroAnimatedLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABEF28B119C677C30AD7CB5 /* RetroAnimatedLogo.swift */; };
 		383B48E15780EBB442879E62 /* AnimalPickerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA55931F58BC53049F17E6A2 /* AnimalPickerViewModel.swift */; };
+		383D13921A506310F5D13098 /* LeoVictoryTributeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAE573A917559433839355AF /* LeoVictoryTributeTests.swift */; };
 		3BDE7BAFD4DDFD88A3726E62 /* CoinBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82FA69876315EBFFA80A7AD8 /* CoinBadge.swift */; };
 		3D819B5B25E010E78FDE8165 /* charge.wav in Resources */ = {isa = PBXBuildFile; fileRef = DA92F6056F5482C747E734AE /* charge.wav */; };
 		3DD7A32C7062B163326A6D4D /* NarrationLabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D9856C80F072357F87346A /* NarrationLabView.swift */; };
@@ -87,6 +88,7 @@
 		9109A6D3C17607655C57D021 /* GoogleUserMessagingPlatform in Frameworks */ = {isa = PBXBuildFile; productRef = 1A53CEEC5B7F0CAA8B2352F6 /* GoogleUserMessagingPlatform */; };
 		92540E2A828F67870AAD1F2E /* AnimalFacts.swift in Sources */ = {isa = PBXBuildFile; fileRef = E217826B99F130BF8062700D /* AnimalFacts.swift */; };
 		95A3995DDB724B2974062CCB /* RatingsPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79EF313885DAC312CBB73B59 /* RatingsPrompt.swift */; };
+		96E100D505208C1C5E1322BC /* LeoVictoryTribute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C9647879EB141D3F9C36270 /* LeoVictoryTribute.swift */; };
 		99963300CCB903630678E45B /* CustomFighterUITestFixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3FEFAF63EF700B19C768F87 /* CustomFighterUITestFixtures.swift */; };
 		9C55C25CB11F55F24396558A /* TournamentRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1FBF5F2C5203BDB333825A /* TournamentRootView.swift */; };
 		A157F1511EACCFC605472651 /* TournamentBracketDiagram.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C81B7F34E89779DD29FD916 /* TournamentBracketDiagram.swift */; };
@@ -221,6 +223,7 @@
 		69F296118CE324CCF3F86DF9 /* KidsShareCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidsShareCard.swift; sourceTree = "<group>"; };
 		6A1EE6F9DB7A5A82C2598134 /* Bungee-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Bungee-Regular.ttf"; sourceTree = "<group>"; };
 		6B2C4A1FBABA2967BD97C369 /* Melee.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Melee.swift; sourceTree = "<group>"; };
+		6C9647879EB141D3F9C36270 /* LeoVictoryTribute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeoVictoryTribute.swift; sourceTree = "<group>"; };
 		6EA6C0C4ADBA108A1D00022C /* ParentGateSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParentGateSheet.swift; sourceTree = "<group>"; };
 		6FAFE2EE8E5C3D163E78FBE6 /* KidsBattleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidsBattleView.swift; sourceTree = "<group>"; };
 		6FDCCDD0731E27BD7FC70E9C /* RetroButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroButton.swift; sourceTree = "<group>"; };
@@ -280,6 +283,7 @@
 		D1B7EECAD3E7659CD866B696 /* RetroMotionRigTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroMotionRigTests.swift; sourceTree = "<group>"; };
 		D4D9856C80F072357F87346A /* NarrationLabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NarrationLabView.swift; sourceTree = "<group>"; };
 		DA92F6056F5482C747E734AE /* charge.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = charge.wav; sourceTree = "<group>"; };
+		DAE573A917559433839355AF /* LeoVictoryTributeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeoVictoryTributeTests.swift; sourceTree = "<group>"; };
 		DDAC5A52A3792082117A817E /* ParentalPIN.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParentalPIN.swift; sourceTree = "<group>"; };
 		DDB75DD799881363191158C0 /* KidsAnimalPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidsAnimalPickerView.swift; sourceTree = "<group>"; };
 		DE89C6FF8D68CFEAA6A138D6 /* AnimalImageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimalImageService.swift; sourceTree = "<group>"; };
@@ -375,6 +379,7 @@
 				453EC1DD698BFB5130450D71 /* CustomFighterAccountTests.swift */,
 				8BE0E98C4BA246CF35515C61 /* CustomFighterLibraryTests.swift */,
 				2062A4166604CA69BBF7A44F /* CustomFighterServiceTests.swift */,
+				DAE573A917559433839355AF /* LeoVictoryTributeTests.swift */,
 				BEB63ED8CF17AB5BE777BA82 /* RetroAssetTests.swift */,
 				61F5766B9D255BC4B33D0606 /* RetroBattleTests.swift */,
 				D1B7EECAD3E7659CD866B696 /* RetroMotionRigTests.swift */,
@@ -390,6 +395,7 @@
 				12CF19201B46E6369B66E3B7 /* BadgeToast.swift */,
 				82FA69876315EBFFA80A7AD8 /* CoinBadge.swift */,
 				E5CF747BEC37EED1BA4F0C79 /* KidsDesign.swift */,
+				6C9647879EB141D3F9C36270 /* LeoVictoryTribute.swift */,
 				6EA6C0C4ADBA108A1D00022C /* ParentGateSheet.swift */,
 				BABEF28B119C677C30AD7CB5 /* RetroAnimatedLogo.swift */,
 				6FDCCDD0731E27BD7FC70E9C /* RetroButton.swift */,
@@ -818,6 +824,7 @@
 				2DE2017BA2124FA614FB14BF /* CustomFighterAccountTests.swift in Sources */,
 				5BB47A5A9C5ADBBCA3530B90 /* CustomFighterLibraryTests.swift in Sources */,
 				6D5BB55AC0A3EBCED936271B /* CustomFighterServiceTests.swift in Sources */,
+				383D13921A506310F5D13098 /* LeoVictoryTributeTests.swift in Sources */,
 				2AA1C981742ABFF0F3FEDE42 /* RetroAssetTests.swift in Sources */,
 				3DD8DF65431CAB53952B2F8B /* RetroBattleTests.swift in Sources */,
 				B8E072FC410F27193A87B50A /* RetroMotionRigTests.swift in Sources */,
@@ -880,6 +887,7 @@
 				E786D1DB7895CEBF5C23AA72 /* KidsTournamentBattleView.swift in Sources */,
 				C77016E4DAA2DD170A32A81D /* KidsUnlockSheet.swift in Sources */,
 				BC30D01130A09D4479A5C386 /* LeaderboardService.swift in Sources */,
+				96E100D505208C1C5E1322BC /* LeoVictoryTribute.swift in Sources */,
 				1502E777EF9C8AFF79652703 /* Melee.swift in Sources */,
 				FF3043EF2A65679224406EFB /* MeleeBattleView.swift in Sources */,
 				EB5FFF3542C97E2AF8C197D6 /* MeleeFallbackStory.swift in Sources */,

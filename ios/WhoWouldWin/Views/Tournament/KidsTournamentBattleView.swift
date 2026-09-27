@@ -67,6 +67,7 @@ struct KidsTournamentBattleView: View {
                                 onComplete(result)
                             }
                         )
+                        .id(viewModel.presentationID)
                         .accessibilityIdentifier("battle.result")
                         .transition(.opacity)
                         .onAppear {
@@ -330,7 +331,7 @@ private struct ResultPanel: View {
                         .rotationEffect(.degrees(appeared ? -2 : -20))
                         .scaleEffect(appeared ? 1 : 0.3)
 
-                    FighterPortrait(animal: w, size: isIPad ? 170 : 130, ringColor: Kids.peach)
+                    FighterPortrait(animal: w, size: isIPad ? 170 : 130, ringColor: Kids.peach, celebratesVictory: true)
                         .scaleEffect(appeared ? 1 : 0.4)
                 } else {
                     StickerWord(text: "IT'S A TIE!", fill: Kids.sky, fontSize: isIPad ? 42 : 30, tilt: -2)
@@ -377,6 +378,7 @@ private struct ResultPanel: View {
             }
         }
         .clipped()
+        .arcadeMotionViewport()
         .onAppear {
             if UIAccessibility.isReduceMotionEnabled { appeared = true }
             else { withAnimation(.spring(response: 0.55, dampingFraction: 0.55).delay(0.1)) { appeared = true } }

@@ -22,6 +22,7 @@ struct MeleeBattleView: View {
             if let result = viewModel.result, viewModel.animationComplete {
                 ResultContent(result: result, teamA: teamA, teamB: teamB, isIPad: isIPad,
                               onAgain: { dismiss() }, onClose: { dismiss() })
+                    .id(viewModel.presentationID)
                     .accessibilityIdentifier("battle.result")
                     .transition(.opacity)
                     .onAppear {
@@ -249,7 +250,7 @@ private struct ResultContent: View {
                 // MVP portrait
                 if let mvp = mvpAnimal {
                     VStack(spacing: 6) {
-                        FighterPortrait(animal: mvp, size: isIPad ? 170 : 130, ringColor: Kids.sun, mood: .winner)
+                        FighterPortrait(animal: mvp, size: isIPad ? 170 : 130, ringColor: Kids.sun, mood: .winner, celebratesVictory: true)
                             .scaleEffect(appeared ? 1 : 0.4)
                         Text("MVP · \(mvp.name.uppercased())")
                             .font(Kids.fredoka(isIPad ? 16 : 13, weight: .bold))
@@ -260,12 +261,13 @@ private struct ResultContent: View {
                 }
 
                 // Winning team roster (smaller portraits)
-                HStack(spacing: isIPad ? 10 : 6) {
+                HStack(alignment: .bottom, spacing: isIPad ? 10 : 6) {
                     ForEach(winningTeam) { animal in
                         VStack(spacing: 4) {
                             FighterPortrait(animal: animal,
                                             size: isIPad ? 70 : 54,
-                                            ringColor: Kids.peach)
+                                            ringColor: Kids.peach,
+                                            celebratesVictory: animal.id != mvpAnimal?.id)
                             Text(animal.name)
                                 .font(Kids.fredoka(isIPad ? 11 : 9, weight: .bold))
                                 .foregroundColor(Kids.ink)

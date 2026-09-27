@@ -677,7 +677,8 @@ private struct ResultContent: View {
                         .scaleEffect(appeared ? 1 : 0.3)
 
                     // Catalog and custom creatures share the cached sprite artwork.
-                    FighterPortrait(animal: w, size: 150, ringColor: Kids.peach, mood: .winner)
+                    FighterPortrait(animal: w, size: 150, ringColor: Kids.peach, mood: .winner, celebratesVictory: true)
+                        .id(battleID)
                         .scaleEffect(appeared ? 1 : 0.4)
 
                     // Outcome summary — one tidy row of pills (your pick · how
@@ -1111,21 +1112,28 @@ struct FighterPortrait: View {
     var size: CGFloat = 150
     var ringColor: Color = Kids.peach
     var mood: ArcadeCreatureMood? = nil
+    var celebratesVictory = false
 
     var body: some View {
         Group {
-            if let mood {
-                LivingCreatureArtwork(animal: animal, size: size - 22, mood: mood)
+            if celebratesVictory && LeoTributePlayback.isLeonidas(animal) {
+                LeoVictoryTribute(animal: animal, size: size, ringColor: ringColor)
             } else {
-                RetroCreatureArtwork(animal: animal, size: size - 22)
+                Group {
+                    if let mood {
+                        LivingCreatureArtwork(animal: animal, size: size - 22, mood: mood)
+                    } else {
+                        RetroCreatureArtwork(animal: animal, size: size - 22)
+                    }
+                }
+                .frame(width: size, height: size)
+                .background(RetroPanelShape().fill(ringColor.opacity(0.24)))
+                .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
+                .compositingGroup()
+                .shadow(color: Kids.shadow.opacity(0.11), radius: 4, x: 0, y: 5)
+                .accessibilityLabel(animal.name)
             }
         }
-            .frame(width: size, height: size)
-            .background(RetroPanelShape().fill(ringColor.opacity(0.24)))
-            .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
-            .compositingGroup()
-            .shadow(color: Kids.shadow.opacity(0.11), radius: 4, x: 0, y: 5)
-            .accessibilityLabel(animal.name)
     }
 }
 

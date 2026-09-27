@@ -3,6 +3,8 @@ import Foundation
 
 /// Only invoked after the explicit UI-test flag. Resolver unit tests remain real.
 enum RetroTestFixtures {
+    static let leoNarration = "Leonidas bounded into the sunny clearing and found the open path. The Great Dane finished this friendly imaginary contest with a happy wag."
+
     /// Deliberately longer than ordinary narration. Separate from battle-success,
     /// whose exact short answer is used by the battle lifecycle tests.
     static let readingStory = """
@@ -26,6 +28,12 @@ enum RetroTestFixtures {
 
     static func battle(_ fighter1: Animal, _ fighter2: Animal) throws -> BattleResult {
         if AppConfig.fixtureScenario == "offline" { throw BattleError.networkUnavailable }
+        if AppConfig.fixtureScenario == "leo-tribute" {
+            return BattleResult(winner: fighter1.id,
+                narration: fighter1.id == Animals.great_dane.id ? leoNarration : "The lion won this local tribute eligibility fixture.",
+                funFact: "Great Danes are gentle companions despite their impressive size.",
+                winnerHealthPercent: 72, loserHealthPercent: 18)
+        }
         if AppConfig.fixtureScenario == "reading-long" {
             return BattleResult(winner: fighter1.id, narration: readingStory,
                 funFact: readingFact, winnerHealthPercent: 72, loserHealthPercent: 18,
@@ -41,6 +49,15 @@ enum RetroTestFixtures {
     static func melee(_ teamA: [Animal], _ teamB: [Animal]) throws -> MeleeResult {
         if AppConfig.fixtureScenario == "offline" { throw BattleError.networkUnavailable }
         guard let mvp = teamA.first else { throw BattleError.serverError }
+        if AppConfig.fixtureScenario == "leo-tribute" {
+            // The first roster portrait sits at the left edge; Leo must remain
+            // eligible there even when another teammate receives the MVP badge.
+            return MeleeResult(winningTeam: .A, narration: "The winning team found the open path together. The lion earned the star-player badge in this local fixture.",
+                funFact: "Great Danes are gentle companions despite their impressive size.",
+                mvp: AppConfig.fixtureScreen == "ui-leo-team-mvp" ? Animals.great_dane.id
+                    : teamA.first(where: { $0.id == Animals.lion.id })?.id ?? mvp.id,
+                teamAHealth: 72, teamBHealth: 18)
+        }
         if AppConfig.fixtureScenario == "reading-long" {
             return MeleeResult(winningTeam: .A, narration: readingTeamStory,
                 funFact: readingFact, mvp: mvp.id, teamAHealth: 72, teamBHealth: 18)

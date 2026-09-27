@@ -60,7 +60,8 @@ struct TournamentCompleteView: View {
                                     .scaleEffect(appeared ? 1 : 0.3)
                             }
 
-                            FighterPortrait(animal: c, size: isIPad ? 220 : 150, ringColor: Kids.peach, mood: .winner)
+                            FighterPortrait(animal: c, size: isIPad ? 220 : 150, ringColor: Kids.peach, mood: .winner, celebratesVictory: true)
+                                .id(tournament.id)
                                 .scaleEffect(appeared ? 1 : 0.4)
                         } else {
                             Text("Final not decided")

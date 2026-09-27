@@ -8,7 +8,7 @@ private struct ArcadeViewportKey: EnvironmentKey {
 private struct ArcadeMotionEnabledKey: EnvironmentKey {
     static let defaultValue = false
 }
-private extension EnvironmentValues {
+extension EnvironmentValues {
     var arcadeViewport: CGRect {
         get { self[ArcadeViewportKey.self] }
         set { self[ArcadeViewportKey.self] = newValue }

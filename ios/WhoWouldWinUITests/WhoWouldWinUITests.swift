@@ -64,6 +64,229 @@ final class WhoWouldWinUITests: XCTestCase {
     }
 }
 
+/// The memorial is local presentation state on an eligible winning portrait.
+/// These fixtures use the real result screens and reward settlement paths.
+final class LeoTributeUITests: XCTestCase {
+    private let app = XCUIApplication()
+    private var tribute: XCUIElement { app.buttons["leo.tribute.button"] }
+    private var diagnostic: XCUIElement {
+        app.descendants(matching: .any).matching(identifier: "leo.tribute.motion").firstMatch
+    }
+    private var coinBalance: XCUIElement { app.staticTexts["fixture.leo.coinBalance"] }
+    private var expectsReducedMotion: Bool {
+        ProcessInfo.processInfo.environment["AVA_LEO_REDUCE_MOTION_EXPECTED"] == "1"
+    }
+
+    override func setUpWithError() throws { continueAfterFailure = false }
+
+    private func launch(_ screen: String) {
+        app.launchArguments = ["--uitesting", "--reset-test-data"]
+        app.launchEnvironment = ["AVA_UI_TESTING": "1", "AVA_BLOCK_EXTERNAL_SERVICES": "1",
+                                 "AVA_FIXTURE_SCENARIO": "leo-tribute", "AVA_FIXTURE_SCREEN": screen]
+        app.launch()
+        XCTAssertTrue(app.staticTexts["uitest.fixtureMode"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.descendants(matching: .any)["fixture.screen.\(screen)"].waitForExistence(timeout: 10))
+    }
+
+    private func capture(_ name: String) {
+        let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = (expectsReducedMotion ? "leo_reduced_" : "leo_") + name
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
+    private func reveal(_ element: XCUIElement) {
+        for _ in 0..<10 where !element.isHittable { app.swipeUp() }
+        XCTAssertTrue(element.isHittable)
+    }
+
+    private func motionState() throws -> [String: String] {
+        XCTAssertTrue(diagnostic.waitForExistence(timeout: 5))
+        let value = try XCTUnwrap(diagnostic.value as? String)
+        let pairs = value.split(separator: ";").map { $0.split(separator: "=", maxSplits: 1).map(String.init) }
+        XCTAssertTrue(pairs.allSatisfy { $0.count == 2 }, "The diagnostic must expose actual component state")
+        return Dictionary(uniqueKeysWithValues: pairs.filter { $0.count == 2 }.map { ($0[0], $0[1]) })
+    }
+
+    private func assertNativeMotionSetting() throws {
+        // The separate QA runner changes the simulator's real accessibility
+        // setting. This checks SwiftUI's actual value, with no environment override.
+        XCTAssertEqual(try motionState()["reduced"], expectsReducedMotion ? "true" : "false")
+    }
+
+    private func waitForSettledMotion() {
+        let settled = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "value CONTAINS %@", "running=false"), object: diagnostic)
+        XCTAssertEqual(XCTWaiter.wait(for: [settled], timeout: 6), .completed,
+                       "The tribute must stop its finite animation")
+    }
+
+    private func assertSpeechBubbleAbovePortrait(_ message: String) {
+        let messages = app.staticTexts.matching(identifier: "leo.tribute.message")
+        XCTAssertTrue(messages.firstMatch.waitForExistence(timeout: 5))
+        XCTAssertEqual(messages.count, 1, "Hidden sizing placeholders must not duplicate the spoken message")
+        let bubble = messages.firstMatch
+        XCTAssertEqual(bubble.label, message)
+        let frame = bubble.frame
+        let viewport = app.frame
+        XCTAssertGreaterThan(frame.width, 0)
+        XCTAssertGreaterThan(frame.height, 0)
+        XCTAssertGreaterThanOrEqual(frame.minX, viewport.minX - 1)
+        XCTAssertLessThanOrEqual(frame.maxX, viewport.maxX + 1)
+        XCTAssertGreaterThanOrEqual(frame.minY, viewport.minY - 1)
+        XCTAssertLessThanOrEqual(frame.maxY, viewport.maxY + 1)
+        XCTAssertLessThanOrEqual(frame.maxY, tribute.frame.minY + 1,
+                                "The speech bubble must sit above Leo rather than cover his portrait or roster neighbors")
+    }
+
+    private func balance() throws -> Int {
+        XCTAssertTrue(coinBalance.waitForExistence(timeout: 5))
+        return try XCTUnwrap(Int(try XCTUnwrap(coinBalance.value as? String)))
+    }
+
+    private func waitForEligibleWinner() throws {
+        XCTAssertTrue(tribute.waitForExistence(timeout: 30))
+        reveal(tribute)
+        XCTAssertEqual(app.buttons.matching(identifier: "leo.tribute.button").count, 1)
+        XCTAssertEqual(tribute.label, "Celebrate with Leonidas")
+        XCTAssertEqual(tribute.value as? String, "Great Dane victory")
+        try assertNativeMotionSetting()
+        XCTAssertEqual(try motionState()["taps"], "0")
+        // Normal settlement runs once on result entry, before the balance snapshot.
+        Thread.sleep(forTimeInterval: 0.8)
+    }
+
+    func testSoloTributeIsLocalAndResetsOnRematch() throws {
+        launch("ui-leo-solo")
+        try waitForEligibleWinner()
+        let before = try balance()
+        capture("solo_rest")
+
+        tribute.tap()
+        XCTAssertEqual(tribute.value as? String, "Good boy, Leo!")
+        assertSpeechBubbleAbovePortrait("Good boy, Leo!")
+        XCTAssertEqual(try motionState()["taps"], "1")
+        if expectsReducedMotion { XCTAssertEqual(try motionState()["running"], "false") }
+        capture("solo_happy_early")
+        Thread.sleep(forTimeInterval: 0.4)
+        capture("solo_happy_later")
+        waitForSettledMotion()
+        capture("solo_happy_settled")
+        XCTAssertEqual(try balance(), before, "Petting Leo must not award battle coins again")
+
+        tribute.tap()
+        XCTAssertEqual(tribute.value as? String, "Good boy, Leo!")
+        XCTAssertEqual(try motionState()["taps"], "2")
+        tribute.tap()
+        XCTAssertEqual(tribute.value as? String, "Goodnight, handsome.")
+        assertSpeechBubbleAbovePortrait("Goodnight, handsome.")
+        XCTAssertEqual(try motionState()["taps"], "3")
+        if expectsReducedMotion { XCTAssertEqual(try motionState()["running"], "false") }
+        capture("solo_goodnight_early")
+        waitForSettledMotion()
+        capture("solo_goodnight_settled")
+        tribute.tap()
+        XCTAssertEqual(tribute.value as? String, "Goodnight, handsome.")
+        XCTAssertEqual(try motionState()["taps"], "3", "Later taps must not restart the tribute sequence")
+        XCTAssertEqual(try motionState()["running"], "false")
+        XCTAssertEqual(try balance(), before)
+
+        let rematch = app.buttons["battle.rematch"]
+        reveal(rematch)
+        rematch.tap()
+        XCTAssertTrue(app.buttons["battle.cheer1"].waitForExistence(timeout: 10))
+        XCTAssertFalse(tribute.exists, "The tribute belongs to the result, not the active battle")
+        try waitForEligibleWinner()
+        capture("solo_rematch_reset")
+        tribute.tap()
+        XCTAssertEqual(tribute.value as? String, "Good boy, Leo!")
+        XCTAssertEqual(try motionState()["taps"], "1")
+
+        // Exercise actual scrolling and a real modal. XCTest may wait for the
+        // short clip to finish before issuing gestures; these checks establish
+        // inactive/return behavior, not an unseen mid-frame cancellation.
+        let afterRematch = try balance()
+        let newArena = app.buttons["battle.newArena"]
+        reveal(newArena)
+        for _ in 0..<4 where tribute.isHittable { app.swipeUp() }
+        let scrolledState = try motionState()
+        XCTAssertEqual(scrolledState["running"], "false")
+        capture(scrolledState["active"] == "false" ? "solo_scrolled_offscreen" : "solo_scrolled_still_visible")
+        let scrollObservation = XCTAttachment(string: "Portrait frame: \(tribute.frame); app frame: \(app.frame); component state: \(scrolledState). A still-visible portrait on a tall viewport is excluded from offscreen evidence.")
+        scrollObservation.name = "leo_scroll_observation"
+        scrollObservation.lifetime = .keepAlways
+        add(scrollObservation)
+        reveal(newArena)
+        newArena.tap()
+        let arenaTitle = app.staticTexts["PICK YOUR ARENA!"]
+        XCTAssertTrue(arenaTitle.waitForExistence(timeout: 5))
+        capture("solo_arena_covered")
+        let dragStart = app.coordinate(withNormalizedOffset: .zero)
+            .withOffset(CGVector(dx: app.frame.midX, dy: arenaTitle.frame.minY - 10))
+        let dragEnd = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.95))
+        dragStart.press(forDuration: 0.1, thenDragTo: dragEnd)
+        XCTAssertTrue(arenaTitle.waitForNonExistence(timeout: 5))
+        for _ in 0..<10 where !tribute.isHittable { app.swipeDown() }
+        XCTAssertTrue(tribute.isHittable)
+        XCTAssertEqual(tribute.value as? String, "Good boy, Leo!")
+        XCTAssertEqual(try motionState()["running"], "false", "Returning from a sheet must not replay the clip")
+        XCTAssertEqual(try motionState()["taps"], "1")
+        XCTAssertEqual(try balance(), afterRematch)
+        capture("solo_arena_returned")
+
+        tribute.tap()
+        XCUIDevice.shared.press(.home)
+        Thread.sleep(forTimeInterval: 2)
+        app.activate()
+        XCTAssertTrue(tribute.waitForExistence(timeout: 10))
+        XCTAssertTrue(tribute.isHittable)
+        try assertNativeMotionSetting()
+        XCTAssertEqual(tribute.value as? String, "Good boy, Leo!")
+        XCTAssertEqual(try motionState()["taps"], "2")
+        XCTAssertEqual(try motionState()["running"], "false", "Returning from the background must not replay the clip")
+        XCTAssertEqual(try balance(), afterRematch)
+        capture("solo_background_returned")
+        app.terminate()
+    }
+
+    func testWinningContextsAndIneligibleFighters() throws {
+        for context in ["team", "team-mvp", "tournament", "champion"] {
+            launch("ui-leo-\(context)")
+            try waitForEligibleWinner()
+            let before = try balance()
+            if context == "team" {
+                XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "MVP · LION")).firstMatch.exists,
+                              "The Great Dane must be eligible as a winning teammate without being MVP")
+            } else if context == "team-mvp" {
+                XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "MVP · GREAT DANE")).firstMatch.exists,
+                              "An MVP Great Dane must get one tribute, without a duplicate in the roster")
+            }
+            tribute.tap()
+            XCTAssertEqual(tribute.value as? String, "Good boy, Leo!")
+            assertSpeechBubbleAbovePortrait("Good boy, Leo!")
+            capture("\(context)_goodboy")
+            tribute.tap()
+            tribute.tap()
+            XCTAssertEqual(tribute.value as? String, "Goodnight, handsome.")
+            assertSpeechBubbleAbovePortrait("Goodnight, handsome.")
+            waitForSettledMotion()
+            capture("\(context)_goodnight")
+            XCTAssertEqual(try balance(), before, "Tribute interactions must not settle this result again")
+            app.terminate()
+        }
+
+        for context in ["losing", "team-losing", "ordinary"] {
+            launch("ui-leo-\(context)")
+            XCTAssertTrue(app.staticTexts["battle.narration"].waitForExistence(timeout: 30))
+            Thread.sleep(forTimeInterval: 0.8)
+            XCTAssertFalse(tribute.exists, "Losing Great Danes and other species must not get an interactive tribute")
+            XCTAssertFalse(app.staticTexts["leo.tribute.message"].exists)
+            capture("\(context)_ineligible")
+            app.terminate()
+        }
+    }
+}
+
 /// Exercises the real home carousel and navigation with local battle responses.
 /// Matchups may be random; assertions follow the displayed names rather than a seed.
 final class HomeMatchupUITests: XCTestCase {

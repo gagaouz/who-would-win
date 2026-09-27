@@ -1,0 +1,1277 @@
+{
+  "checkedAt": "2026-09-27T17:13:40.666982+00:00",
+  "readOnly": true,
+  "authenticationMaterialIncluded": false,
+  "app": {
+    "name": "Animal vs Animal",
+    "bundleId": "com.whowouldin.WhoWouldWin",
+    "id": "6761319389"
+  },
+  "builds": [
+    {
+      "id": "07f6c1b9-1ae5-417f-8ab5-6d5d3bbfb6f8",
+      "marketingVersion": "2.0",
+      "version": "117",
+      "uploadedDate": "2026-09-27T06:15:38-07:00",
+      "processingState": "VALID",
+      "expired": false,
+      "expirationDate": "2026-12-26T05:15:38-08:00"
+    },
+    {
+      "id": "fdf1d2a3-6e74-4d62-90f5-71dff1a5b881",
+      "marketingVersion": "2.0",
+      "version": "116",
+      "uploadedDate": "2026-09-27T04:51:34-07:00",
+      "processingState": "VALID",
+      "expired": false,
+      "expirationDate": "2026-12-26T03:51:34-08:00"
+    },
+    {
+      "id": "32381f30-cf55-49f8-aed1-bfd8c06bc96e",
+      "marketingVersion": "2.0",
+      "version": "115",
+      "uploadedDate": "2026-09-27T03:19:45-07:00",
+      "processingState": "VALID",
+      "expired": false,
+      "expirationDate": "2026-12-26T02:19:45-08:00"
+    },
+    {
+      "id": "e8661d5a-ac0c-4cd7-9109-8d82473414de",
+      "marketingVersion": "2.0",
+      "version": "114",
+      "uploadedDate": "2026-09-26T17:13:14-07:00",
+      "processingState": "VALID",
+      "expired": false,
+      "expirationDate": "2026-12-25T16:13:14-08:00"
+    },
+    {
+      "id": "e396210b-2dbb-4012-981b-519432c5c62a",
+      "marketingVersion": "2.0",
+      "version": "113",
+      "uploadedDate": "2026-09-26T15:03:09-07:00",
+      "processingState": "VALID",
+      "expired": false,
+      "expirationDate": "2026-12-25T14:03:09-08:00"
+    },
+    {
+      "id": "525fad06-a69d-45a2-a9d1-daab53807677",
+      "marketingVersion": "2.0",
+      "version": "112",
+      "uploadedDate": "2026-09-26T13:16:55-07:00",
+      "processingState": "VALID",
+      "expired": false,
+      "expirationDate": "2026-12-25T12:16:55-08:00"
+    },
+    {
+      "id": "cf90c71c-871a-42d1-9b47-6c781f8638cf",
+      "marketingVersion": "2.0",
+      "version": "111",
+      "uploadedDate": "2026-09-26T10:30:39-07:00",
+      "processingState": "VALID",
+      "expired": false,
+      "expirationDate": "2026-12-25T09:30:39-08:00"
+    },
+    {
+      "id": "45e26632-f537-4f2b-bf55-897742c476c1",
+      "marketingVersion": "2.0",
+      "version": "110",
+      "uploadedDate": "2026-09-26T09:33:09-07:00",
+      "processingState": "VALID",
+      "expired": false,
+      "expirationDate": "2026-12-25T08:33:09-08:00"
+    },
+    {
+      "id": "00af52a0-e2d5-42fe-9591-d465bea19f22",
+      "marketingVersion": "1.1.7",
+      "version": "109",
+      "uploadedDate": "2026-09-23T09:03:42-07:00",
+      "processingState": "VALID",
+      "expired": false,
+      "expirationDate": "2026-12-22T08:03:42-08:00"
+    },
+    {
+      "id": "d0804f6a-0f43-46a4-8ffa-d47a5432856f",
+      "marketingVersion": "1.1.6",
+      "version": "108",
+      "uploadedDate": "2026-09-08T13:12:17-07:00",
+      "processingState": "VALID",
+      "expired": false,
+      "expirationDate": "2026-12-07T12:12:17-08:00"
+    },
+    {
+      "id": "089f82e9-21dd-4ce4-b7de-64470d009dc4",
+      "marketingVersion": "1.1.6",
+      "version": "107",
+      "uploadedDate": "2026-09-08T12:50:11-07:00",
+      "processingState": "VALID",
+      "expired": false,
+      "expirationDate": "2026-12-07T11:50:11-08:00"
+    },
+    {
+      "id": "133c1142-06b0-4043-98a1-c5750a910200",
+      "marketingVersion": "1.1.6",
+      "version": "106",
+      "uploadedDate": "2026-07-03T18:29:20-07:00",
+      "processingState": "VALID",
+      "expired": false,
+      "expirationDate": "2026-10-01T18:29:20-07:00"
+    },
+    {
+      "id": "a0f60a76-33a6-4374-a718-69edd42abc64",
+      "marketingVersion": "1.1.6",
+      "version": "105",
+      "uploadedDate": "2026-07-02T13:31:56-07:00",
+      "processingState": "VALID",
+      "expired": false,
+      "expirationDate": "2026-09-30T13:31:56-07:00"
+    },
+    {
+      "id": "1a9c0258-52de-4ad0-8b5e-55afa323fda8",
+      "marketingVersion": "1.1.6",
+      "version": "104",
+      "uploadedDate": "2026-06-15T20:57:30-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-09-13T20:57:30-07:00"
+    },
+    {
+      "id": "63976c2e-c07f-4d60-9066-9174bae31786",
+      "marketingVersion": "1.1.6",
+      "version": "103",
+      "uploadedDate": "2026-06-15T20:40:19-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-09-13T20:40:19-07:00"
+    },
+    {
+      "id": "68deecb0-6d7f-40e0-ba3e-0b29bc9e9c2a",
+      "marketingVersion": "1.1.6",
+      "version": "102",
+      "uploadedDate": "2026-06-15T20:13:05-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-09-13T20:13:05-07:00"
+    },
+    {
+      "id": "8634c9cc-c94a-41d2-8e75-8a5a8db50d9b",
+      "marketingVersion": "1.1.6",
+      "version": "101",
+      "uploadedDate": "2026-06-15T19:42:10-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-09-13T19:42:10-07:00"
+    },
+    {
+      "id": "ed61dbac-4aab-4ed5-ac26-20e8f6ccdfd9",
+      "marketingVersion": "1.1.6",
+      "version": "100",
+      "uploadedDate": "2026-06-15T19:13:34-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-09-13T19:13:34-07:00"
+    },
+    {
+      "id": "5d00c8b3-d9df-4c29-941c-f95719333369",
+      "marketingVersion": "1.1.6",
+      "version": "99",
+      "uploadedDate": "2026-06-15T18:54:01-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-09-13T18:54:01-07:00"
+    },
+    {
+      "id": "0395999c-b3a7-4bdb-bdfe-415b712da988",
+      "marketingVersion": "1.1.6",
+      "version": "98",
+      "uploadedDate": "2026-06-15T18:36:10-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-09-13T18:36:10-07:00"
+    },
+    {
+      "id": "02b3076c-eab0-41af-a5c3-62261d87e229",
+      "marketingVersion": "1.1.6",
+      "version": "97",
+      "uploadedDate": "2026-06-15T14:36:59-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-09-13T14:36:59-07:00"
+    },
+    {
+      "id": "df47b5ae-7409-4a52-a050-ccda31fee25a",
+      "marketingVersion": "1.1.6",
+      "version": "96",
+      "uploadedDate": "2026-06-15T01:41:36-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-09-13T01:41:36-07:00"
+    },
+    {
+      "id": "901d3834-61a3-45d0-8029-59fa96754e97",
+      "marketingVersion": "1.1.6",
+      "version": "95",
+      "uploadedDate": "2026-06-15T01:20:37-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-09-13T01:20:37-07:00"
+    },
+    {
+      "id": "0046ac6e-c1db-4fd5-ae29-baa855a91dc8",
+      "marketingVersion": "1.1.5",
+      "version": "94",
+      "uploadedDate": "2026-06-14T14:54:38-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-09-12T14:54:38-07:00"
+    },
+    {
+      "id": "e5313e5c-f67c-43b3-9c99-da188c0f23dd",
+      "marketingVersion": "1.1.5",
+      "version": "93",
+      "uploadedDate": "2026-06-14T14:48:27-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-09-12T14:48:27-07:00"
+    },
+    {
+      "id": "693f1bf6-20e3-4d22-a358-bca921ff0d5a",
+      "marketingVersion": "1.1.5",
+      "version": "92",
+      "uploadedDate": "2026-06-14T14:36:15-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-09-12T14:36:15-07:00"
+    },
+    {
+      "id": "2ea02fa9-5f2e-431e-9d27-4390b3daa312",
+      "marketingVersion": "1.1.4",
+      "version": "91",
+      "uploadedDate": "2026-06-12T05:44:10-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-09-10T05:44:10-07:00"
+    },
+    {
+      "id": "8e903253-9f0c-4a09-8e54-78f7d2dcdae4",
+      "marketingVersion": "1.1.3",
+      "version": "90",
+      "uploadedDate": "2026-06-10T02:41:45-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-09-08T02:41:45-07:00"
+    },
+    {
+      "id": "a5c46b24-3e74-4e28-84d6-d7738d47e078",
+      "marketingVersion": "1.1.3",
+      "version": "89",
+      "uploadedDate": "2026-06-09T20:34:42-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-09-07T20:34:42-07:00"
+    },
+    {
+      "id": "c21be531-af2e-4e05-96e7-01a197b36121",
+      "marketingVersion": "1.1.2",
+      "version": "88",
+      "uploadedDate": "2026-05-18T10:42:57-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-08-16T10:42:57-07:00"
+    },
+    {
+      "id": "2cf0b3b7-b5d1-40d4-a784-dab587c31308",
+      "marketingVersion": "1.1.2",
+      "version": "87",
+      "uploadedDate": "2026-05-18T10:39:16-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-08-16T10:39:16-07:00"
+    },
+    {
+      "id": "3e7a7570-2d0f-4f79-ab41-e152e3e2b353",
+      "marketingVersion": "1.1.2",
+      "version": "86",
+      "uploadedDate": "2026-05-18T10:11:49-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-08-16T10:11:49-07:00"
+    },
+    {
+      "id": "821e3d5c-c715-4437-a16b-46d19a6fdc3b",
+      "marketingVersion": "1.1.2",
+      "version": "85",
+      "uploadedDate": "2026-05-18T08:00:56-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-08-16T08:00:56-07:00"
+    },
+    {
+      "id": "a997791d-9e07-4b2c-b7f2-218313f3cc16",
+      "marketingVersion": "1.1.2",
+      "version": "84",
+      "uploadedDate": "2026-05-18T06:51:02-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-08-16T06:51:02-07:00"
+    },
+    {
+      "id": "b852d6c1-215a-4b4e-93c1-d41adb4e4990",
+      "marketingVersion": "1.1.2",
+      "version": "83",
+      "uploadedDate": "2026-05-18T05:26:10-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-08-16T05:26:10-07:00"
+    },
+    {
+      "id": "ba4a536b-ef89-403a-8b0d-b3c9509698d7",
+      "marketingVersion": "1.1.1",
+      "version": "82",
+      "uploadedDate": "2026-05-14T20:56:00-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-08-12T20:56:00-07:00"
+    },
+    {
+      "id": "f193becc-685e-4603-b47b-c354e949fed2",
+      "marketingVersion": "1.1.1",
+      "version": "81",
+      "uploadedDate": "2026-05-14T20:23:50-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-08-12T20:23:50-07:00"
+    },
+    {
+      "id": "8f8e2a04-beab-4736-bad2-4a1af44acc8a",
+      "marketingVersion": "1.1.1",
+      "version": "80",
+      "uploadedDate": "2026-05-14T18:03:33-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-08-12T18:03:33-07:00"
+    },
+    {
+      "id": "1ea09045-9189-4629-bf8c-568cd6829224",
+      "marketingVersion": "1.1.0",
+      "version": "81",
+      "uploadedDate": "2026-05-14T09:25:11-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-08-12T09:25:11-07:00"
+    },
+    {
+      "id": "eed8eb68-6cab-4db9-a303-d4a2bc1c052d",
+      "marketingVersion": "1.1.0",
+      "version": "80",
+      "uploadedDate": "2026-05-12T17:57:32-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-08-10T17:57:32-07:00"
+    },
+    {
+      "id": "fdf38c53-5625-478b-9d11-736e313616a5",
+      "marketingVersion": "1.1.0",
+      "version": "79",
+      "uploadedDate": "2026-05-12T14:46:04-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-08-10T14:46:04-07:00"
+    },
+    {
+      "id": "6d5c361f-ccb2-4419-be7d-ad39be14f124",
+      "marketingVersion": "1.1.0",
+      "version": "77",
+      "uploadedDate": "2026-05-12T14:03:06-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-08-10T14:03:06-07:00"
+    },
+    {
+      "id": "20ca6817-1bf6-422a-8b03-6b43a07160de",
+      "marketingVersion": "1.1.0",
+      "version": "76",
+      "uploadedDate": "2026-05-12T08:41:55-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-08-10T08:41:55-07:00"
+    },
+    {
+      "id": "dd1113a9-948e-4295-b7e9-9877e3944623",
+      "marketingVersion": "1.0.9",
+      "version": "67",
+      "uploadedDate": "2026-04-19T11:51:28-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-18T11:51:28-07:00"
+    },
+    {
+      "id": "bf63a504-3c9f-4bdf-8ced-c5327160b219",
+      "marketingVersion": "1.0.9",
+      "version": "66",
+      "uploadedDate": "2026-04-18T11:33:14-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-17T11:33:14-07:00"
+    },
+    {
+      "id": "9346902b-926d-40e3-9eb1-609b8f3978be",
+      "marketingVersion": "1.0.9",
+      "version": "65",
+      "uploadedDate": "2026-04-18T09:54:34-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-17T09:54:34-07:00"
+    },
+    {
+      "id": "7113fe44-26bf-4549-b28e-778441ce9ddb",
+      "marketingVersion": "1.0.9",
+      "version": "64",
+      "uploadedDate": "2026-04-18T07:08:57-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-17T07:08:57-07:00"
+    },
+    {
+      "id": "b92e7b3a-715f-4495-aa2d-8b672364c532",
+      "marketingVersion": "1.0.8",
+      "version": "63",
+      "uploadedDate": "2026-04-16T08:27:56-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-15T08:27:56-07:00"
+    },
+    {
+      "id": "6b37019b-968c-4e5c-b644-0d9f1d341712",
+      "marketingVersion": "1.0.8",
+      "version": "62",
+      "uploadedDate": "2026-04-16T06:25:31-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-15T06:25:31-07:00"
+    },
+    {
+      "id": "4fdf6976-60f2-454b-9db6-be61621b31d7",
+      "marketingVersion": "1.0.8",
+      "version": "61",
+      "uploadedDate": "2026-04-15T19:41:11-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-14T19:41:11-07:00"
+    },
+    {
+      "id": "e1f2bb28-3a76-49bb-82f3-9028d894c41a",
+      "marketingVersion": "1.0.7",
+      "version": "60",
+      "uploadedDate": "2026-04-15T18:46:01-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-14T18:46:01-07:00"
+    },
+    {
+      "id": "346aa571-7d30-4a09-8c91-f51ed588c551",
+      "marketingVersion": "1.0.6",
+      "version": "59",
+      "uploadedDate": "2026-04-15T14:14:36-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-14T14:14:36-07:00"
+    },
+    {
+      "id": "913fd581-f5ee-48c0-a742-e3cb9b9b0d4e",
+      "marketingVersion": "1.0.5",
+      "version": "58",
+      "uploadedDate": "2026-04-15T11:18:37-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-14T11:18:37-07:00"
+    },
+    {
+      "id": "5fc86f85-7c56-4b94-94eb-aebac39df7bc",
+      "marketingVersion": "1.0.4",
+      "version": "57",
+      "uploadedDate": "2026-04-15T10:08:37-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-14T10:08:37-07:00"
+    },
+    {
+      "id": "19476d60-03d8-459b-86d9-f3fbea2d6502",
+      "marketingVersion": "1.0.4",
+      "version": "56",
+      "uploadedDate": "2026-04-15T09:17:44-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-14T09:17:44-07:00"
+    },
+    {
+      "id": "732c0818-7fa3-426a-b254-e6c7a85c7fcb",
+      "marketingVersion": "1.0.4",
+      "version": "55",
+      "uploadedDate": "2026-04-15T08:22:32-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-14T08:22:32-07:00"
+    },
+    {
+      "id": "a27fc513-0f48-4c03-821e-79460016b275",
+      "marketingVersion": "1.0.4",
+      "version": "54",
+      "uploadedDate": "2026-04-15T07:27:15-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-14T07:27:15-07:00"
+    },
+    {
+      "id": "3b530f44-d394-4511-ba9e-7bdbd517e9fb",
+      "marketingVersion": "1.0.4",
+      "version": "53",
+      "uploadedDate": "2026-04-15T05:27:19-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-14T05:27:19-07:00"
+    },
+    {
+      "id": "e4cea343-1c79-450d-af95-9e1f796e665d",
+      "marketingVersion": "1.0.4",
+      "version": "52",
+      "uploadedDate": "2026-04-14T20:10:22-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-13T20:10:22-07:00"
+    },
+    {
+      "id": "f987efd1-d1ec-42c9-95b3-a129fc1b246b",
+      "marketingVersion": "1.0.4",
+      "version": "51",
+      "uploadedDate": "2026-04-14T19:49:55-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-13T19:49:55-07:00"
+    },
+    {
+      "id": "f4733008-9085-4ee1-b6d6-ef5c827a33c8",
+      "marketingVersion": "1.0.4",
+      "version": "50",
+      "uploadedDate": "2026-04-14T19:35:11-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-13T19:35:11-07:00"
+    },
+    {
+      "id": "15c1091f-c813-45f7-934b-0eb3b993eba7",
+      "marketingVersion": "1.0.4",
+      "version": "49",
+      "uploadedDate": "2026-04-14T19:13:19-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-13T19:13:19-07:00"
+    },
+    {
+      "id": "83fc3f96-b670-4d2b-8b50-2b8b3cdfe30d",
+      "marketingVersion": "1.0.2",
+      "version": "74",
+      "uploadedDate": "2026-04-14T10:54:23-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-13T10:54:23-07:00"
+    },
+    {
+      "id": "c6a8db54-5a8d-4d94-a361-bd5d61d7f013",
+      "marketingVersion": "1.0.2",
+      "version": "70",
+      "uploadedDate": "2026-04-13T17:23:38-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-12T17:23:38-07:00"
+    },
+    {
+      "id": "46b299bc-02b6-4079-bf7b-867b66f669b7",
+      "marketingVersion": "1.0.2",
+      "version": "69",
+      "uploadedDate": "2026-04-13T16:55:57-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-12T16:55:57-07:00"
+    },
+    {
+      "id": "e254e553-b52a-4aba-9c8c-2af22ffbc630",
+      "marketingVersion": "1.0.2",
+      "version": "68",
+      "uploadedDate": "2026-04-13T16:45:18-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-12T16:45:18-07:00"
+    },
+    {
+      "id": "d15902b0-a88d-4d7f-af5f-09bbc15cff98",
+      "marketingVersion": "1.0.2",
+      "version": "67",
+      "uploadedDate": "2026-04-13T16:40:46-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-12T16:40:46-07:00"
+    },
+    {
+      "id": "f7a4e16e-4155-4aa6-aa72-b86979991ebe",
+      "marketingVersion": "1.0.2",
+      "version": "66",
+      "uploadedDate": "2026-04-13T16:18:28-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-12T16:18:28-07:00"
+    },
+    {
+      "id": "20ba18ec-0959-426d-9191-aaa85097fc27",
+      "marketingVersion": "1.0.2",
+      "version": "65",
+      "uploadedDate": "2026-04-13T16:14:31-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-12T16:14:31-07:00"
+    },
+    {
+      "id": "eb38fdf5-a3a3-407c-b794-688275c7c025",
+      "marketingVersion": "1.0.2",
+      "version": "64",
+      "uploadedDate": "2026-04-13T16:09:23-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-12T16:09:23-07:00"
+    },
+    {
+      "id": "459eca95-2b19-4452-b043-4463fa12a336",
+      "marketingVersion": "1.0.2",
+      "version": "63",
+      "uploadedDate": "2026-04-13T16:06:40-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-12T16:06:40-07:00"
+    },
+    {
+      "id": "4a435703-2c2b-485f-b59b-4cc777cb1289",
+      "marketingVersion": "1.0.2",
+      "version": "62",
+      "uploadedDate": "2026-04-13T15:07:27-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-12T15:07:27-07:00"
+    },
+    {
+      "id": "04ae67be-374e-480f-891b-c9d1b539da12",
+      "marketingVersion": "1.0.2",
+      "version": "61",
+      "uploadedDate": "2026-04-13T15:04:19-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-12T15:04:19-07:00"
+    },
+    {
+      "id": "cadcc298-92e0-4a64-93f4-d6bd67ca4058",
+      "marketingVersion": "1.0.2",
+      "version": "60",
+      "uploadedDate": "2026-04-13T14:44:23-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-12T14:44:23-07:00"
+    },
+    {
+      "id": "2eb0dac4-c05d-4450-ad51-152ac4210e82",
+      "marketingVersion": "1.0.2",
+      "version": "57",
+      "uploadedDate": "2026-04-13T14:21:59-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-12T14:21:59-07:00"
+    },
+    {
+      "id": "8f61c686-fe38-4506-98bd-6b66c48cae49",
+      "marketingVersion": "1.0.2",
+      "version": "56",
+      "uploadedDate": "2026-04-13T14:01:46-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-12T14:01:46-07:00"
+    },
+    {
+      "id": "4d56f84f-b2b9-4f4c-9203-e7505b7fb66d",
+      "marketingVersion": "1.0.2",
+      "version": "55",
+      "uploadedDate": "2026-04-13T13:23:27-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-12T13:23:27-07:00"
+    },
+    {
+      "id": "34817867-d9f0-43d1-82a0-dbeca65b9f59",
+      "marketingVersion": "1.0.2",
+      "version": "54",
+      "uploadedDate": "2026-04-13T13:15:16-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-12T13:15:16-07:00"
+    },
+    {
+      "id": "07c21882-e93a-4668-9bfc-c35437d45c41",
+      "marketingVersion": "1.0.2",
+      "version": "53",
+      "uploadedDate": "2026-04-13T12:57:20-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-12T12:57:20-07:00"
+    },
+    {
+      "id": "f643bc55-b160-4cea-86c0-c6accc6fdde0",
+      "marketingVersion": "1.0.2",
+      "version": "52",
+      "uploadedDate": "2026-04-13T12:02:32-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-12T12:02:32-07:00"
+    },
+    {
+      "id": "3b52c630-0d42-476d-b3bf-74cf891063de",
+      "marketingVersion": "1.0.2",
+      "version": "51",
+      "uploadedDate": "2026-04-13T11:13:34-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-12T11:13:34-07:00"
+    },
+    {
+      "id": "4dfad2c1-0af9-43c0-8588-db788cf9ad08",
+      "marketingVersion": "1.0.2",
+      "version": "50",
+      "uploadedDate": "2026-04-13T10:50:49-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-12T10:50:49-07:00"
+    },
+    {
+      "id": "a7ec3713-3ead-4e9c-a801-fbdfd026ec5d",
+      "marketingVersion": "1.0.2",
+      "version": "49",
+      "uploadedDate": "2026-04-13T10:08:55-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-12T10:08:55-07:00"
+    },
+    {
+      "id": "4d19307d-362a-4788-9da9-660d4a2133a3",
+      "marketingVersion": "1.0.2",
+      "version": "48",
+      "uploadedDate": "2026-04-13T08:07:47-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-12T08:07:47-07:00"
+    },
+    {
+      "id": "d3bd1425-eef8-4f6f-9f37-e782a3f17fb5",
+      "marketingVersion": "1.0.1",
+      "version": "47",
+      "uploadedDate": "2026-04-10T17:15:29-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-09T17:15:29-07:00"
+    },
+    {
+      "id": "06831529-2676-4928-97e5-b9667360582f",
+      "marketingVersion": "1.0",
+      "version": "46",
+      "uploadedDate": "2026-04-09T15:16:36-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-08T15:16:36-07:00"
+    },
+    {
+      "id": "e56582d2-f130-4297-8654-60ed4068bf34",
+      "marketingVersion": "1.0",
+      "version": "45",
+      "uploadedDate": "2026-04-09T12:34:36-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-08T12:34:36-07:00"
+    },
+    {
+      "id": "84235200-daf9-4213-8d1d-d5bfb3477622",
+      "marketingVersion": "1.0",
+      "version": "44",
+      "uploadedDate": "2026-04-09T11:50:46-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-08T11:50:46-07:00"
+    },
+    {
+      "id": "3767ec1d-05ec-40a6-a104-6956718936ee",
+      "marketingVersion": "1.0",
+      "version": "43",
+      "uploadedDate": "2026-04-09T11:45:47-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-08T11:45:47-07:00"
+    },
+    {
+      "id": "02aae9cd-b1f0-49a7-814c-b890cddba40c",
+      "marketingVersion": "1.0",
+      "version": "42",
+      "uploadedDate": "2026-04-09T08:55:49-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-08T08:55:49-07:00"
+    },
+    {
+      "id": "7fecd3b4-dcdc-45ba-ba04-f507570fa361",
+      "marketingVersion": "1.0",
+      "version": "41",
+      "uploadedDate": "2026-04-09T08:02:29-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-08T08:02:29-07:00"
+    },
+    {
+      "id": "e918217e-ceb1-4df8-b852-3b16d8cbc1b5",
+      "marketingVersion": "1.0",
+      "version": "40",
+      "uploadedDate": "2026-04-09T07:18:42-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-08T07:18:42-07:00"
+    },
+    {
+      "id": "f0622a51-560c-468a-bdc5-ef284fa03f7a",
+      "marketingVersion": "1.0",
+      "version": "39",
+      "uploadedDate": "2026-04-09T07:09:24-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-08T07:09:24-07:00"
+    },
+    {
+      "id": "c380f7e0-ea8d-43ee-a9d5-02d41d402f5a",
+      "marketingVersion": "1.0",
+      "version": "38",
+      "uploadedDate": "2026-04-07T07:06:49-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-07-06T07:06:49-07:00"
+    },
+    {
+      "id": "dedf68ef-6215-4a8b-a721-2cae7d3b42ba",
+      "marketingVersion": "1.0",
+      "version": "37",
+      "uploadedDate": "2026-04-01T20:32:45-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-30T20:32:45-07:00"
+    },
+    {
+      "id": "e6f049a4-b766-40bc-b428-cee7b065c9a3",
+      "marketingVersion": "1.0",
+      "version": "36",
+      "uploadedDate": "2026-04-01T20:12:28-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-30T20:12:28-07:00"
+    },
+    {
+      "id": "7f89c052-e657-4f82-ac3f-ddaffd46f566",
+      "marketingVersion": "1.0",
+      "version": "35",
+      "uploadedDate": "2026-04-01T20:00:22-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-30T20:00:22-07:00"
+    },
+    {
+      "id": "187f455a-0bc1-4ab3-9520-bacb62c3e106",
+      "marketingVersion": "1.0",
+      "version": "34",
+      "uploadedDate": "2026-04-01T19:50:01-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-30T19:50:01-07:00"
+    },
+    {
+      "id": "db4742c2-6645-4213-8631-68cfd7e005b6",
+      "marketingVersion": "1.0",
+      "version": "33",
+      "uploadedDate": "2026-04-01T18:21:14-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-30T18:21:14-07:00"
+    },
+    {
+      "id": "6c48793e-0064-4a62-bc91-f5cc396cd7b4",
+      "marketingVersion": "1.0",
+      "version": "32",
+      "uploadedDate": "2026-04-01T05:21:25-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-30T05:21:25-07:00"
+    },
+    {
+      "id": "8b68a4ba-68b4-410a-8b67-4dd529fc775e",
+      "marketingVersion": "1.0",
+      "version": "31",
+      "uploadedDate": "2026-03-31T18:17:19-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-29T18:17:19-07:00"
+    },
+    {
+      "id": "0091e5b8-99d3-4191-809d-d0167f24e71f",
+      "marketingVersion": "1.0",
+      "version": "30",
+      "uploadedDate": "2026-03-31T17:09:40-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-03-31T20:15:13-07:00"
+    },
+    {
+      "id": "950af5c0-0d59-45e9-b3d9-932710916044",
+      "marketingVersion": "1.0",
+      "version": "29",
+      "uploadedDate": "2026-03-31T16:58:20-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-29T16:58:20-07:00"
+    },
+    {
+      "id": "215479a6-3b89-4691-8f2f-d9dffb964f94",
+      "marketingVersion": "1.0",
+      "version": "28",
+      "uploadedDate": "2026-03-31T16:54:45-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-29T16:54:45-07:00"
+    },
+    {
+      "id": "b4ef9ff6-18db-449b-9863-9791ad2ec8db",
+      "marketingVersion": "1.0",
+      "version": "27",
+      "uploadedDate": "2026-03-31T16:35:43-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-29T16:35:43-07:00"
+    },
+    {
+      "id": "b8f51ec9-af35-4ee0-9d81-821ddba7f8fd",
+      "marketingVersion": "1.0",
+      "version": "26",
+      "uploadedDate": "2026-03-31T16:14:49-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-29T16:14:49-07:00"
+    },
+    {
+      "id": "f23c5a0c-38f1-4d1a-b530-736fd571e7c3",
+      "marketingVersion": "1.0",
+      "version": "25",
+      "uploadedDate": "2026-03-31T15:59:36-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-29T15:59:36-07:00"
+    },
+    {
+      "id": "0f197971-bc51-4476-a4f3-d8c660c3a482",
+      "marketingVersion": "1.0",
+      "version": "24",
+      "uploadedDate": "2026-03-31T11:02:13-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-29T11:02:13-07:00"
+    },
+    {
+      "id": "348df6fc-cd9f-460d-971a-34880f6b0594",
+      "marketingVersion": "1.0",
+      "version": "23",
+      "uploadedDate": "2026-03-30T21:23:02-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-28T21:23:02-07:00"
+    },
+    {
+      "id": "fe1dd05b-2212-4998-a916-01b7dd55f059",
+      "marketingVersion": "1.0",
+      "version": "22",
+      "uploadedDate": "2026-03-30T19:21:43-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-28T19:21:43-07:00"
+    },
+    {
+      "id": "99ee3d9c-36ba-4045-9cc3-0f73b020ecfa",
+      "marketingVersion": "1.0",
+      "version": "21",
+      "uploadedDate": "2026-03-30T12:43:55-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-28T12:43:55-07:00"
+    },
+    {
+      "id": "3490e870-c6de-4796-b148-b64946d18e2f",
+      "marketingVersion": "1.0",
+      "version": "20",
+      "uploadedDate": "2026-03-30T12:05:46-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-28T12:05:46-07:00"
+    },
+    {
+      "id": "5a6951ca-d68f-422c-9269-9ddfe2ff3644",
+      "marketingVersion": "1.0",
+      "version": "19",
+      "uploadedDate": "2026-03-30T10:50:10-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-28T10:50:10-07:00"
+    },
+    {
+      "id": "a068c9c4-c873-4de2-8a41-1571708b708b",
+      "marketingVersion": "1.0",
+      "version": "18",
+      "uploadedDate": "2026-03-30T10:47:55-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-28T10:47:55-07:00"
+    },
+    {
+      "id": "9a3e5b00-9197-4869-9fa0-bd3c2a3c3b0c",
+      "marketingVersion": "1.0",
+      "version": "17",
+      "uploadedDate": "2026-03-30T10:07:14-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-28T10:07:14-07:00"
+    },
+    {
+      "id": "e380aa44-b6bf-4467-a2c0-bbe3ef5c50e0",
+      "marketingVersion": "1.0",
+      "version": "16",
+      "uploadedDate": "2026-03-30T08:47:44-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-28T08:47:44-07:00"
+    },
+    {
+      "id": "7361e954-d265-406c-9b22-4532751744b6",
+      "marketingVersion": "1.0",
+      "version": "15",
+      "uploadedDate": "2026-03-30T07:40:44-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-28T07:40:44-07:00"
+    },
+    {
+      "id": "7373582f-f6ef-43d3-ab6b-829794188324",
+      "marketingVersion": "1.0",
+      "version": "14",
+      "uploadedDate": "2026-03-30T07:15:33-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-28T07:15:33-07:00"
+    },
+    {
+      "id": "ef99d14d-d58e-4513-93e3-210a7cbfb9bf",
+      "marketingVersion": "1.0",
+      "version": "13",
+      "uploadedDate": "2026-03-30T07:01:13-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-28T07:01:13-07:00"
+    },
+    {
+      "id": "74fb5581-8d6b-4e89-aefc-2d20980fe8f2",
+      "marketingVersion": "1.0",
+      "version": "12",
+      "uploadedDate": "2026-03-30T06:53:41-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-28T06:53:41-07:00"
+    },
+    {
+      "id": "5e649582-3dae-4fd7-8015-059f2e6e1ad2",
+      "marketingVersion": "1.0",
+      "version": "11",
+      "uploadedDate": "2026-03-29T20:14:00-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-27T20:14:00-07:00"
+    },
+    {
+      "id": "08d50391-3026-4478-a11c-6f4c95b24de8",
+      "marketingVersion": "1.0",
+      "version": "10",
+      "uploadedDate": "2026-03-29T16:02:50-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-27T16:02:50-07:00"
+    },
+    {
+      "id": "790ed25a-161c-4a4c-8ef8-b1ef7f66b941",
+      "marketingVersion": "1.0",
+      "version": "8",
+      "uploadedDate": "2026-03-29T15:31:10-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-27T15:31:10-07:00"
+    },
+    {
+      "id": "bfb1266c-a0e7-4286-a10f-b871cd2bbb4a",
+      "marketingVersion": "1.0",
+      "version": "7",
+      "uploadedDate": "2026-03-29T13:55:10-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-27T13:55:10-07:00"
+    },
+    {
+      "id": "b56ced2f-edee-4b60-8b10-ca150018aa79",
+      "marketingVersion": "1.0",
+      "version": "6",
+      "uploadedDate": "2026-03-29T13:25:39-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-27T13:25:39-07:00"
+    },
+    {
+      "id": "ca3670a1-055f-438d-9cae-c0bc050f6eb4",
+      "marketingVersion": "1.0",
+      "version": "5",
+      "uploadedDate": "2026-03-29T10:22:06-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-27T10:22:06-07:00"
+    },
+    {
+      "id": "5a719200-0560-4266-b37c-d20520bbdeda",
+      "marketingVersion": "1.0",
+      "version": "4",
+      "uploadedDate": "2026-03-29T10:01:02-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-27T10:01:02-07:00"
+    },
+    {
+      "id": "54dfbefb-5e9b-40c4-a99b-9ab64abfa1a9",
+      "marketingVersion": "1.0",
+      "version": "3",
+      "uploadedDate": "2026-03-29T09:03:47-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-27T09:03:47-07:00"
+    },
+    {
+      "id": "5461fd5d-54cc-4683-9d2d-05568b9a5c4c",
+      "marketingVersion": "1.0",
+      "version": "2",
+      "uploadedDate": "2026-03-29T05:49:58-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-27T05:49:58-07:00"
+    },
+    {
+      "id": "326061d5-29a2-4c72-891d-599399cc59ab",
+      "marketingVersion": "1.0",
+      "version": "1",
+      "uploadedDate": "2026-03-28T23:40:02-07:00",
+      "processingState": "VALID",
+      "expired": true,
+      "expirationDate": "2026-06-26T23:40:02-07:00"
+    }
+  ],
+  "buildHistoryComplete": true,
+  "buildLookupHTTPStatus": 200,
+  "appStoreVersions": [
+    {
+      "versionString": "1.1.7",
+      "appStoreState": "READY_FOR_SALE",
+      "platform": "IOS"
+    },
+    {
+      "versionString": "1.1.6",
+      "appStoreState": "READY_FOR_SALE",
+      "platform": "IOS"
+    },
+    {
+      "versionString": "1.1.4",
+      "appStoreState": "READY_FOR_SALE",
+      "platform": "IOS"
+    },
+    {
+      "versionString": "1.1.3",
+      "appStoreState": "READY_FOR_SALE",
+      "platform": "IOS"
+    },
+    {
+      "versionString": "1.1.2",
+      "appStoreState": "READY_FOR_SALE",
+      "platform": "IOS"
+    },
+    {
+      "versionString": "1.1.1",
+      "appStoreState": "READY_FOR_SALE",
+      "platform": "IOS"
+    },
+    {
+      "versionString": "1.1.0",
+      "appStoreState": "READY_FOR_SALE",
+      "platform": "IOS"
+    },
+    {
+      "versionString": "1.0.9",
+      "appStoreState": "READY_FOR_SALE",
+      "platform": "IOS"
+    },
+    {
+      "versionString": "1.0.8",
+      "appStoreState": "READY_FOR_SALE",
+      "platform": "IOS"
+    },
+    {
+      "versionString": "1.0.6",
+      "appStoreState": "READY_FOR_SALE",
+      "platform": "IOS"
+    },
+    {
+      "versionString": "1.0.5",
+      "appStoreState": "READY_FOR_SALE",
+      "platform": "IOS"
+    },
+    {
+      "versionString": "1.0.1",
+      "appStoreState": "READY_FOR_SALE",
+      "platform": "IOS"
+    },
+    {
+      "versionString": "1.0",
+      "appStoreState": "READY_FOR_SALE",
+      "platform": "IOS"
+    }
+  ],
+  "groups": [
+    {
+      "id": "bbe48189-3ad0-4d20-bd77-9adb1120eb75",
+      "name": "self",
+      "isInternalGroup": true,
+      "hasAccessToAllBuilds": true,
+      "publicLinkEnabled": null,
+      "testerCount": 1,
+      "testerLookupHTTPStatus": 200
+    },
+    {
+      "id": "79d09199-ecab-43af-8863-7540d7c0de95",
+      "name": "Maria",
+      "isInternalGroup": false,
+      "hasAccessToAllBuilds": null,
+      "publicLinkEnabled": true,
+      "testerCount": 3,
+      "testerLookupHTTPStatus": 200
+    }
+  ],
+  "groupLookupHTTPStatus": 200,
+  "unknowns": [
+    "Owner's exact membership and installation access were not individually inspected",
+    "No developer membership or agreements acceptance check",
+    "No new build upload, assignment, review request, or tester invitation"
+  ]
+}
