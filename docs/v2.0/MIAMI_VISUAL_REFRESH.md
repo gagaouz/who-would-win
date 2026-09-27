@@ -7,7 +7,7 @@ Implemented on develop/2.0:
 - Five randomly selected, unlocked catalog matchups per home session. Native horizontal paging, previous/next controls, visible page state, and a button that starts exactly the displayed pair. The normal picker is now labelled “Pick Your Fighters”; Surprise Me and every existing navigation route remain available.
 - A compact two-line animated pixel logo with independent gentle rocking and pulse, paused when hidden, inactive, or Reduce Motion is enabled.
 - Sunset pink, turquoise, gold and plum tokens; cut-corner cards/buttons and hard raised shadows; a sunset skyline and grid on the featured stage. App-owned surfaces share the palette, while system sheets keep their native behavior.
-- Bundled Press Start 2P replaces proportional text in shared helpers, explicit text styles, forms, library, settings, commerce, facts, stories, and exports. SF Symbols remain icons. Dynamic Type and paragraph spacing are retained; sticker labels wrap instead of shrinking and tournament exports use wider matchup cards.
+- Bundled Press Start 2P replaces proportional text in shared helpers, explicit text styles, forms, library, settings, commerce, facts, stories, and exports. SF Symbols remain icons. Dynamic Type and paragraph spacing are retained; sticker and team-share labels wrap instead of shrinking, and tournament exports use wider matchup cards.
 
 This changes presentation and adds an entry to the existing battle route. Battle results, rewards, saved data, custom artwork service, subscriptions, product identifiers, entitlement checks and server configuration are unchanged. The protected 1.1.7 checkout and deployment remain separate.
 

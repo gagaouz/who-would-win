@@ -167,7 +167,7 @@ struct MeleeShareCard: View {
             }
 
             // Roster portraits
-            HStack(spacing: 6) {
+            HStack(alignment: .top, spacing: 6) {
                 ForEach(Array(team.enumerated()), id: \.offset) { (idx, animal) in
                     let img = idx < images.count ? images[idx] : nil
                     rosterPortrait(animal: animal, customImage: img, accent: tint)
@@ -198,9 +198,13 @@ struct MeleeShareCard: View {
             Text(animal.name.uppercased())
                 .font(Kids.fredoka(8, weight: .bold))
                 .foregroundColor(Kids.ink)
-                .lineLimit(1).minimumScaleFactor(0.5)
-                .frame(maxWidth: portraitSize + 6)
+                .multilineTextAlignment(.center)
+                .lineSpacing(2)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(width: 76, alignment: .top)
+                .frame(minHeight: 32, alignment: .top)
         }
+        .frame(width: 76, alignment: .top)
     }
 
     private func healthBar(pct: Int, accent: Color) -> some View {
