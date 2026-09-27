@@ -279,3 +279,70 @@ test('isolated artwork service has no legacy routes or legacy database tables',a
     assert.ok(names.every(name=>name.startsWith('custom_fighter_')),names.join(','));
   }finally{child.kill('SIGTERM');await new Promise(resolve=>child.once('exit',resolve));}
 });
+
+const { successfulPublicationCostBound } = require('../dist/customFighters/cost');
+const completeUsage = () => [
+  {operation:'image',inputTokens:100,outputTokens:800,estimatedMicrodollars:20000},
+  {operation:'review',inputTokens:1000,outputTokens:100,estimatedMicrodollars:500},
+];
+async function publicationFixture(usage=completeUsage()) {
+  const {job}=await enqueue(); const claim=await store.claim();
+  assert.equal(await store.markDispatched(claim),true);assert.equal(await store.markValidating(claim),true);
+  for (const item of usage) await store.usage(claim,item);
+  const pack=await validateAndPackSheet(image,randomUUID());
+  return {job,claim,pack};
+}
+async function budgetState() {return (await pool.query("SELECT reserved_microdollars,actual_microdollars FROM custom_fighter_budgets WHERE scope='beta-lifetime-v1'")).rows[0];}
+test('successful publication cost requires exactly two complete distinct operations and conservative uncapped math',()=>{
+  assert.equal(successfulPublicationCostBound(completeUsage()),100000);
+  assert.equal(successfulPublicationCostBound([{...completeUsage()[0],estimatedMicrodollars:80000},completeUsage()[1]]),180000);
+  assert.equal(successfulPublicationCostBound([{...completeUsage()[0],inputTokens:0,outputTokens:60000,estimatedMicrodollars:0},completeUsage()[1]]),3620000);
+  for(const invalid of [undefined,{},[],[completeUsage()[0]],[...completeUsage(),completeUsage()[0]],
+    [completeUsage()[0],completeUsage()[0]],[completeUsage()[0],{...completeUsage()[1],operation:'unknown'}],
+    [completeUsage()[0],{...completeUsage()[1],inputTokens:undefined}],
+    [completeUsage()[0],{...completeUsage()[1],estimatedMicrodollars:undefined}],
+    [completeUsage()[0],{...completeUsage()[1],outputTokens:-1}],
+    [completeUsage()[0],{...completeUsage()[1],inputTokens:Infinity}],
+    [completeUsage()[0],{...completeUsage()[1],estimatedMicrodollars:Number.MAX_SAFE_INTEGER}],
+    [completeUsage()[0],{...completeUsage()[1],outputTokens:0.5}]]) assert.equal(successfulPublicationCostBound(invalid),null);
+});
+test('successful complete publication atomically settles once without changing usage history or double rewards',async()=>{
+ const {job,claim,pack}=await publicationFixture();const before=await budgetState();
+ const results=await Promise.all(Array.from({length:6},()=>store.publish(claim,pack.original,pack.runtime,pack.manifest)));
+ assert.equal(results.filter(Boolean).length,1);
+ const after=await budgetState();assert.equal(Number(after.reserved_microdollars),100000);assert.equal(after.actual_microdollars,before.actual_microdollars);
+ const row=(await pool.query('SELECT budget_reserved,usage,state FROM custom_fighter_jobs WHERE id=$1',[job.id])).rows[0];
+ assert.equal(Number(row.budget_reserved),100000);assert.deepEqual(row.usage,completeUsage());assert.equal(row.state,'ready');
+ assert.equal((await store.allowance(owner,proof())).used,1);assert.equal((await store.list(owner)).fighters.length,1);
+});
+test('successful publication retains full hold for missing or duplicate usage',async()=>{
+ for(const usage of [[completeUsage()[0]],[...completeUsage(),completeUsage()[0]]]){
+  const {job,claim,pack}=await publicationFixture(usage);const before=await budgetState();
+  assert.equal(await store.publish(claim,pack.original,pack.runtime,pack.manifest),true);
+  const after=await budgetState();assert.deepEqual(after,before);
+  assert.equal(Number((await pool.query('SELECT budget_reserved FROM custom_fighter_jobs WHERE id=$1',[job.id])).rows[0].budget_reserved),1000000);
+ }
+});
+test('successful known expensive publication increases exposure above initial reservation',async()=>{
+ const {job,claim,pack}=await publicationFixture([{...completeUsage()[0],inputTokens:0,outputTokens:60000,estimatedMicrodollars:0},completeUsage()[1]]);
+ const before=await budgetState();assert.equal(await store.publish(claim,pack.original,pack.runtime,pack.manifest),true);
+ const after=await budgetState();assert.equal(Number(after.reserved_microdollars),3620000);assert.equal(after.actual_microdollars,before.actual_microdollars);
+ assert.equal(Number((await pool.query('SELECT budget_reserved FROM custom_fighter_jobs WHERE id=$1',[job.id])).rows[0].budget_reserved),3620000);
+});
+test('settled successful exposure preserves prior holds and bounds concurrent new budget admission',async()=>{
+ const {claim,pack}=await publicationFixture();
+ await pool.query('UPDATE custom_fighter_budgets SET reserved_microdollars=4800000'); // 3.8M prior unresolved/operator holds plus this1M.
+ assert.equal(await store.publish(claim,pack.original,pack.runtime,pack.manifest),true);
+ assert.equal(Number((await budgetState()).reserved_microdollars),3900000);
+ const owners=await Promise.all(Array.from({length:8},()=>newOwner()));
+ const admitted=await Promise.allSettled(owners.map(id=>enqueue(id)));
+ assert.equal(admitted.filter(x=>x.status==='fulfilled').length,1);
+ assert.ok(admitted.filter(x=>x.status==='rejected').every(x=>x.reason.code==='budget_exhausted'));
+ assert.equal(Number((await budgetState()).reserved_microdollars),4900000);
+});
+test('failure with complete usage keeps full reservation and never runs successful settlement',async()=>{
+ const {job,claim}=await publicationFixture();const before=await budgetState();
+ await store.fail(claim,'rejected','quality_rejected',{stage:'artwork_review'});
+ assert.deepEqual(await budgetState(),before);
+ assert.equal(Number((await pool.query('SELECT budget_reserved FROM custom_fighter_jobs WHERE id=$1',[job.id])).rows[0].budget_reserved),1000000);
+});

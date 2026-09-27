@@ -1,6 +1,7 @@
 import { randomUUID, createHmac } from 'crypto';
 import { Pool, PoolClient } from 'pg';
 import { getDbPool } from '../services/database';
+import { successfulPublicationCostBound } from './cost';
 import { allowedEnvironment, budgetMicrodollars, IMAGE_MODEL, JOB_RESERVATION_MICRODOLLARS, LEASE_MS, MAX_LIBRARY_SIZE, MAX_PNG_BYTES, monthlyAllowance, REVIEW_MODEL } from './config';
 import { Allowance, ClaimedJob, FailureDiagnostic, Fighter, FighterError, FighterJob, FighterManifest, JobState, ProviderUsage, SubscriptionProof } from './types';
 
@@ -8,7 +9,7 @@ interface JobRow {
   id: string; owner_id: string; name: string | null; name_digest: string; state: JobState; asset_id: string | null;
   environment: 'Sandbox' | 'Production'; period_key: string; error_code: string | null;
   created_at: Date; updated_at: Date; worker_token: string | null; expires_at: Date;
-  dispatched_at: Date | null; quota_reserved: boolean; budget_reserved: string;
+  dispatched_at: Date | null; quota_reserved: boolean; budget_reserved: string; usage: unknown;
 }
 interface AssetRow { id: string; name: string; created_at: Date; manifest: FighterManifest; runtime_png?: Buffer }
 const iso = (value: Date | string): string => new Date(value).toISOString();
@@ -284,8 +285,18 @@ export class PostgresFighterStore implements FighterStore {
         [manifest.assetID, row.owner_id, row.name, JSON.stringify(manifest), original, runtime,
           JSON.stringify({ jobID: job.id, promptVersion: 'custom-art-v2', normalizerVersion: 'complete-poses-v2', imageModel: IMAGE_MODEL, reviewModel: REVIEW_MODEL,
             quality: 'medium', generationModeration: 'auto', acceptedModeration: true, acceptedSemanticReview: true, consentVersion: 'custom-art-v1' })]);
+      // Publication proves both paid stages completed. Missing/duplicate/bad usage retains the full hold.
+      // The shared ledger lock also serializes admission; actual_microdollars is historical and never reduced.
+      let retainedBudget = row.budget_reserved;
+      const oldBudget = Number(row.budget_reserved);
+      const settled = row.dispatched_at && row.error_code === null ? successfulPublicationCostBound(row.usage) : null;
+      if (settled !== null && Number.isSafeInteger(oldBudget) && oldBudget >= 0) {
+        const adjusted = await db.query("UPDATE custom_fighter_budgets SET reserved_microdollars=reserved_microdollars+$1 WHERE scope='beta-lifetime-v1' AND reserved_microdollars >= $2 AND reserved_microdollars+$1>=0 RETURNING scope", [settled - oldBudget, oldBudget]);
+        if (adjusted.rows.length !== 1) throw new Error('Custom artwork budget invariant failed');
+        retainedBudget = String(settled); // May increase beyond the original reservation; never cap known exposure.
+      }
       await db.query('UPDATE custom_fighter_quotas SET reserved=GREATEST(0,reserved-1),used=used+1 WHERE owner_id=$1 AND environment=$2 AND period_key=$3', [row.owner_id, row.environment, row.period_key]);
-      await db.query("UPDATE custom_fighter_jobs SET state='ready',asset_id=$2,quota_reserved=FALSE,worker_token=NULL,lease_until=NULL,updated_at=NOW() WHERE id=$1", [job.id, manifest.assetID]);
+      await db.query("UPDATE custom_fighter_jobs SET state='ready',asset_id=$2,quota_reserved=FALSE,budget_reserved=$3,worker_token=NULL,lease_until=NULL,updated_at=NOW() WHERE id=$1", [job.id, manifest.assetID, retainedBudget]);
       return true;
     }, job.ownerId);
   }
