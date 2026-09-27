@@ -222,11 +222,14 @@ private struct ModeRow: View {
                     Text(title)
                         .font(Kids.fredoka(isIPad ? 18 : 14, weight: .bold))
                         .foregroundColor(Kids.ink)
+                        .fixedSize(horizontal: false, vertical: true)
                     Text(subtitle)
                         .font(Kids.nunito(isIPad ? 14 : 11, weight: .bold))
                         .foregroundColor(Kids.inkSoft)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-                Spacer()
+                .multilineTextAlignment(.leading)
+                Spacer(minLength: 0)
                 ZStack {
                     RetroPanelShape()
                         .fill(isSelected ? Kids.grass : Kids.panel)

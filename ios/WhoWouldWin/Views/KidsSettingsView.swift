@@ -478,6 +478,7 @@ struct KidsShopView: View {
                     Text("Earn by playing · Spend to unlock")
                         .font(Kids.nunito(isIPad ? 13 : 11, weight: .bold))
                         .foregroundColor(Kids.inkSoft)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer()
                 HStack(spacing: 4) {
@@ -561,10 +562,11 @@ struct KidsShopView: View {
                         Text("Everything Bundle")
                             .font(Kids.fredoka(isIPad ? 18 : 15, weight: .bold))
                             .foregroundColor(Kids.ink)
+                            .fixedSize(horizontal: false, vertical: true)
                         Text("Every pack + Melee + Arenas + No Ads")
                             .font(Kids.nunito(isIPad ? 13 : 11, weight: .bold))
                             .foregroundColor(Kids.inkSoft)
-                            .lineLimit(1).minimumScaleFactor(0.8)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     Spacer()
                     Text("BEST VALUE")
@@ -621,7 +623,7 @@ struct KidsShopView: View {
                     Text(subtitle)
                         .font(Kids.nunito(isIPad ? 13 : 11, weight: .bold))
                         .foregroundColor(Kids.inkSoft)
-                        .lineLimit(1).minimumScaleFactor(0.8)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer()
                 if unlocked {

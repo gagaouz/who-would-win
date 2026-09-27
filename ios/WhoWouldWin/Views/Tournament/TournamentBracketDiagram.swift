@@ -91,7 +91,7 @@ struct TournamentBracketDiagram: View {
         }
         .padding(.vertical, isIPad ? 10 : 6)
         .padding(.horizontal, isIPad ? 12 : 8)
-        .frame(width: isIPad ? 188 : 128)
+        .frame(width: isIPad ? 232 : 180)
         .background(
             RetroPanelShape(cornerRadius: isIPad ? 16 : 12, style: .continuous)
                 .fill(Kids.panel)
@@ -107,8 +107,8 @@ struct TournamentBracketDiagram: View {
             Text(animal.name)
                 .font(Kids.fredoka(isIPad ? 13 : 10, weight: .bold))
                 .foregroundColor(isLoser ? Kids.inkSoft : Kids.ink)
-                .lineLimit(1)
-                .minimumScaleFactor(0.65)
+                .fixedSize(horizontal: false, vertical: true)
+                .multilineTextAlignment(.leading)
                 .strikethrough(isLoser)
             Spacer(minLength: 0)
             if isWinner {
@@ -131,7 +131,7 @@ struct TournamentBracketDiagram: View {
         }
         .padding(.vertical, isIPad ? 10 : 6)
         .padding(.horizontal, isIPad ? 12 : 8)
-        .frame(width: isIPad ? 188 : 128)
+        .frame(width: isIPad ? 232 : 180)
         .background(
             RetroPanelShape(cornerRadius: 12, style: .continuous)
                 .fill(Kids.panel)
