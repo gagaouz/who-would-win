@@ -1,0 +1,147 @@
+{
+  "verifiedAt": "2026-09-27T01:46:34.921Z",
+  "runtimeSource": "72aeef18f117572068a1c71f6adeea5c9b48e687",
+  "nativeBuild": "2.0 (114)",
+  "nativeChanged": false,
+  "deployment": {
+    "id": "6c2e308f-7ae7-4033-b786-db33741bfab4",
+    "status": "SUCCESS",
+    "createdAt": "2026-09-27T01:42:45.881Z"
+  },
+  "tests": {
+    "passed": 145,
+    "failed": 0,
+    "skipped": 0
+  },
+  "liveBeforeReconciliation": {
+    "time": "2026-09-27T01:44:44.361Z",
+    "httpStatus": 200,
+    "body": {
+      "enabled": false,
+      "configured": true,
+      "monthlyAllowance": 3,
+      "requiresSubscription": true,
+      "featureEnabled": true,
+      "creationAvailable": false,
+      "unavailabilityCode": "budget_exhausted",
+      "availabilityMessage": "New artwork is temporarily paused. Your artwork credits are unchanged, and saved fighters still work."
+    }
+  },
+  "liveAfterReconciliation": {
+    "time": "2026-09-27T01:44:55.404Z",
+    "httpStatus": 200,
+    "body": {
+      "enabled": true,
+      "configured": true,
+      "monthlyAllowance": 3,
+      "requiresSubscription": true,
+      "featureEnabled": true,
+      "creationAvailable": true
+    }
+  },
+  "finalEndpoints": [
+    {
+      "path": "/health",
+      "status": 200
+    },
+    {
+      "path": "/api/custom-fighters/status",
+      "status": 200,
+      "body": {
+        "enabled": true,
+        "configured": true,
+        "monthlyAllowance": 3,
+        "requiresSubscription": true,
+        "featureEnabled": true,
+        "creationAvailable": true
+      }
+    },
+    {
+      "path": "/api/custom-fighters/privacy",
+      "status": 200
+    },
+    {
+      "path": "/api/custom-fighters",
+      "status": 401
+    }
+  ],
+  "costReconciliation": {
+    "auditID": "3db35488-1e79-4367-97c8-ebc17d4b80fc",
+    "appliedAt": "2026-09-27T01:44:46.888Z",
+    "sourceSHA256": "11449565cafe7bfe0bd594674d922fb7f8d04b5fa7ab26c58b7de904d7905ce7",
+    "reportedMicrodollars": 221872,
+    "reportedCostAllowanceMicrodollars": 460000,
+    "knownHoldsRetainedMicrodollars": 1000000,
+    "pooledUnknownReserveMicrodollars": 1000000,
+    "beforeReservedMicrodollars": 5000000,
+    "afterReservedMicrodollars": 2000000,
+    "historicalEstimatesUnchangedMicrodollars": 225639,
+    "billingFinal": false,
+    "refusalsClassifiedFree": false,
+    "capIncreased": false,
+    "idempotencyReplay": "alreadyApplied true; no mutation"
+  },
+  "devilPilot": {
+    "runID": "b74c468c-69dd-43f9-90a9-91d54efb8039",
+    "state": "accepted",
+    "completedAt": "2026-09-27T01:45:50.388Z",
+    "paidOperations": [
+      "image",
+      "review"
+    ],
+    "sourceDigest": "5017ffbb93c09f3ba494997adae95e75fc928ac9ff38d2b577b9c59219ac8b70",
+    "runtimeSHA256": "6d4a09e359410a8c9cd019ff29d6b418e1d895e5d6a753a184e17748fdb0fa82",
+    "poses": [
+      "idle",
+      "anticipation",
+      "attack",
+      "reaction"
+    ],
+    "archetype": "quadruped",
+    "originalAndPoseModerationPassed": true,
+    "semanticReviewPassed": true,
+    "visualInspectionPassed": true,
+    "budgetReservedMicrodollars": 100000,
+    "customerCreditUsed": false,
+    "libraryPublished": false,
+    "physicalDevicePlaybackVerified": false
+  },
+  "finalBudget": {
+    "scope": "beta-lifetime-v1",
+    "reserved_microdollars": "2100000",
+    "actual_microdollars": "255288"
+  },
+  "customerAllowance": {
+    "limit": 3,
+    "used": 1,
+    "reserved": 0,
+    "remaining": 2
+  },
+  "savedAssets": [
+    {
+      "name": "Trump",
+      "originalBytes": 1313178,
+      "runtimeBytes": 937716,
+      "deleted": false,
+      "quarantined": false
+    }
+  ],
+  "providerCostDashboardFollowup": {
+    "observedAt": "2026-09-27T01:46:40Z",
+    "displayedUSD": "0.22",
+    "requests": 13,
+    "includesNewPilot": false,
+    "note": "Post-pilot refresh had not yet reflected the additional two paid operations; new pilot retains its independently metered conservative hold."
+  },
+  "remainingLimitation": "Moon Knight input screening passed, but provider output refusal remains unresolved. No automatic retry or approved Moon Knight asset.",
+  "maintenance": {
+    "branch": "release/1.1.7",
+    "head": "107bf7327f1c82e85282101e2294fb6f9ded3639",
+    "porcelainSHA256": "a1fc5ca45e11abac1dc6133a62e4c61fe1ab9bfa859463ba7d82e8b1494ca42d"
+  },
+  "legacyDeploymentUnchanged": {
+    "id": "dfefd10c-edaf-4391-812d-27418c99c182",
+    "status": "SUCCESS",
+    "createdAt": "2026-09-24T02:13:10.546Z"
+  }
+}

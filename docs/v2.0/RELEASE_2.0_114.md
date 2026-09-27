@@ -1,5 +1,7 @@
 # Animal vs Animal 2.0 (114) — Fighter account sign-in fix
 
+**September 27 availability follow-up:** The two remaining customer credits were intact; four conservative refusal holds had paused the shared beta budget. The server now reports actual creation availability, settles fully metered failures, and retains bounded private provider diagnostics. Audited provisional cost reconciliation restored creation on build 114 without raising the $5 application limit. See the [availability fix and billing limitations](CUSTOM_ARTWORK_AVAILABILITY_FIX.md).
+
 **September 27 artwork follow-up:** The owner’s real sign-in/subscription-linked Trump request succeeded and was privately saved at 01:07:22 UTC after the server fix. Build 114 remains current. See the [artwork rejection fix and its measured limits](CUSTOM_ARTWORK_REJECTION_FIX.md); earlier activation and inherited backend evidence below are historical.
 
 **Animal vs Animal 2.0 (114) is available in internal TestFlight.** At **2026-09-27 00:15:50 UTC**, Apple reported the exact candidate `VALID`, `INTERNAL_ONLY` and `IN_BETA_TESTING`, present in the existing `self` group; its English testing notes matched on read-back. Update to **114** to retry fighter-account sign-in. Owner installation and live account acceptance remain unverified.

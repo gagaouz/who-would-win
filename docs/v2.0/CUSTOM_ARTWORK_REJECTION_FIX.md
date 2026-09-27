@@ -1,5 +1,7 @@
 # Custom artwork rejection incident — September 27, 2026
 
+> Later follow-up: the Moon Knight refusal exhausted conservative budget holds; creation was restored by an audited provisional reconciliation. See the [availability fix](CUSTOM_ARTWORK_AVAILABILITY_FIX.md) for the current deployment and remaining provider limitations.
+
 This server patch addresses the rejected requests reported from TestFlight 2.0 (114). The installed native app and its public API contract are unchanged. The server fix is live, and the owner’s actual Trump request reached `ready` with a privately saved original and runtime sheet at **01:07:22 UTC**. Final deployment `eb4a0a53-8645-46cf-ab35-062c277c1496` from `00f3f1eb2237457d60e4dc1eba61fd79603a77a0` was verified successful at **01:23:45 UTC**. Health/privacy/status and Apple challenge checks passed; unauthenticated library access remains 401. See [the incident evidence](evidence/custom-artwork-rejection-fix.json).
 
 ## What the live records establish
