@@ -69,7 +69,7 @@ after(async () => { await pool?.end(); await Promise.all(poolClientClosures); aw
 beforeEach(async () => {
   delete process.env.SPRITE_BETA_BUDGET_USD; delete process.env.SPRITE_MONTHLY_ALLOWANCE; delete process.env.SPRITE_ALLOW_PRODUCTION;
   process.env.SPRITE_ALLOW_SANDBOX = 'true';
-  await pool.query('TRUNCATE custom_fighter_jobs,custom_fighter_assets,custom_fighter_reports,custom_fighter_quotas,custom_fighter_budgets,custom_fighter_accounts,custom_fighter_subscriptions');
+  await pool.query('TRUNCATE custom_fighter_jobs,custom_fighter_assets,custom_fighter_reports,custom_fighter_quotas,custom_fighter_budgets,custom_fighter_accounts,custom_fighter_subscriptions CASCADE');
   owner = await newOwner();
 });
 
