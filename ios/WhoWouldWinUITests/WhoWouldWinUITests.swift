@@ -413,8 +413,24 @@ final class RetroScreenUITests: XCTestCase {
             endAction = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Read it to me!")).firstMatch
         }
         XCTAssertTrue(endAction.exists)
-        for _ in 0..<30 where !endAction.isHittable { readingSwipeUp() }
+        let controlTop = app.frame.minY + (app.frame.width > 600 ? 40 : 80)
+        let controlBottom = app.frame.maxY - 40
+        for _ in 0..<30 {
+            let before = endAction.frame
+            if endAction.isHittable && before.minY >= controlTop && before.maxY <= controlBottom { break }
+            if before.minY < controlTop {
+                readingDrag(-min(app.frame.height * 0.18, controlTop + 8 - before.minY))
+            } else {
+                readingDrag(min(app.frame.height * 0.18, max(30, before.maxY - controlBottom + 8)))
+            }
+            if abs(endAction.frame.minY - before.minY) < 1 { break }
+        }
         XCTAssertTrue(endAction.isHittable, "The real action after the complete prose must remain reachable")
+        XCTAssertGreaterThanOrEqual(endAction.frame.minY, controlTop)
+        XCTAssertLessThanOrEqual(endAction.frame.maxY, controlBottom,
+                                "A partially visible tappable button is insufficient; show its complete label and bounds")
+        XCTAssertGreaterThanOrEqual(endAction.frame.minX, app.frame.minX)
+        XCTAssertLessThanOrEqual(endAction.frame.maxX, app.frame.maxX)
         captureReadingImage(screen + suffix + "-end-action")
         app.terminate()
     }
