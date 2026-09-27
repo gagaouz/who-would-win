@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "version": "2.0",
+  "build": "118",
+  "sourceCommit": "9f172a75abd96e56ce85a4bc44cf8991c0533cff",
+  "recordedAt": "2026-09-27T18:23:20.265623+00:00",
+  "status": "available-internal-testflight",
+  "appleBuildID": "4f742b16-2a60-4d6f-b879-aa83b27f96b8",
+  "appleCheckedAt": "2026-09-27T18:23:08.093686+00:00",
+  "processingState": "VALID",
+  "buildAudienceType": "INTERNAL_ONLY",
+  "internalBuildState": "IN_BETA_TESTING",
+  "internalGroup": "self",
+  "exactTestingNotesVerified": true,
+  "invitationsSent": false,
+  "externalGroupChanged": false,
+  "ownerDeviceInstallVerified": false,
+  "qa": {
+    "priorSourceNativeExecutions": 129,
+    "freshNativeExecutions": 3,
+    "acceptedNativeExecutions": 132,
+    "distinctMethods": 110,
+    "defaultUIImagesReviewed": 218,
+    "fullShareExportsReviewed": 8,
+    "reviewedVideoRecordings": 3,
+    "publicReleaseEligible": false
+  },
+  "archive": "/Users/home/WWW/who-would-win-v2.0/ios/build/runs/20260927T181327Z-archive-2.0-118-9f172a75-ff7159/WhoWouldWin.xcarchive",
+  "ipa": "/Users/home/WWW/who-would-win-v2.0/ios/build/leo-tribute/export-118/Export/WhoWouldWin.ipa",
+  "ipaSHA256": "0261c259b5a10f475723e89b16d0d2c76146b0f8b5a3f05a45bc2ab61bc29253",
+  "appDsymUUIDMatches": true,
+  "artifacts": [
+    {
+      "path": "ios/build/QA-2.0-118-9f172a75-final.json",
+      "sha256": "94e5f1615070cf2ca586c42f0b24b04f7f230ae0f5dd0a48de7be87bd716909e"
+    },
+    {
+      "path": "ios/build/leo-tribute/independent-final-qa-review.json",
+      "sha256": "576bca55168bac7b4ff3aad1c4e767406495e459effc103358ed2c79a4411ffc"
+    },
+    {
+      "path": "ios/build/leo-tribute/tribute-temporal-review.json",
+      "sha256": "6122c4885488ca9c7c4bda6e611a1a7bb16edbe5156d1ee72b31df10a940db80"
+    },
+    {
+      "path": "ios/build/leo-tribute/motion-review-final.json",
+      "sha256": "fd930af621a597f34ea94db6bacfc8023a6831a0b5054aceecb42077b37fea74"
+    },
+    {
+      "path": "ios/build/leo-tribute/compatibility-review-current.json",
+      "sha256": "9da7c94826630b0e7c440c65207ab2bd04a417d4c71a440b06a8932945cbde1d"
+    },
+    {
+      "path": "ios/build/leo-tribute/corrected-test-build-proof.json",
+      "sha256": "32c6678bb736b0c607a9a14f2066ff3c94bdf3976f8500de0aeaffbf9e82e668"
+    },
+    {
+      "path": "/Users/home/WWW/who-would-win-v2.0/ios/build/runs/20260927T181327Z-archive-2.0-118-9f172a75-ff7159/run.json",
+      "sha256": "df2c7fb01d87f7bca01558f2aff9aa1162c54e65d4bab92669b06325f7881cfc"
+    },
+    {
+      "path": "ios/build/leo-tribute/export-118/export-evidence.json",
+      "sha256": "c71700688cc083956b81e98def597bff12a9937793dd5134f5c1d3ac52ce8e2e"
+    },
+    {
+      "path": "ios/build/leo-tribute/release-inspection-118.json",
+      "sha256": "4403c0dae68cebbdffa64232df24e803ae7cca2e63ef7d728db55675325de6f2"
+    },
+    {
+      "path": "ios/build/leo-tribute/upload-118/before-upload.json",
+      "sha256": "1ca760cd537a0bce5b781f28ab5a6f1bd5f53524e850724ce65d4f4011b5d695"
+    },
+    {
+      "path": "ios/build/leo-tribute/upload-118/upload-evidence.json",
+      "sha256": "9e51997dad4e5b81133ac47bf4b9a987364fb052fc0db4563d970af02c58b61c"
+    },
+    {
+      "path": "ios/build/leo-tribute/apple-118-available.json",
+      "sha256": "9c8174be28c1dbfee0b568df6898f2d16066993bfb544793476daae5e13b2aef"
+    },
+    {
+      "path": "ios/build/leo-tribute/maintenance-118-test-only-preupload-20260927T180412Z.json",
+      "sha256": "445bd79a3e426170e91873e379f33dd8dc80c0faa659a64dc359d61368731f95"
+    },
+    {
+      "path": "ios/build/leo-tribute/railway-118-preupload-20260927T175224Z.json",
+      "sha256": "b36d6d69da37d206029b6b9838f52afc4f31b169cc248dabb44e096d4f45ed09"
+    },
+    {
+      "path": "ios/build/leo-tribute/backend-live-118-preupload-20260927T175224Z.json",
+      "sha256": "e6a239691383244eda9860059b1c014b916374d99ed5f092a888bf7c4f2031c7"
+    },
+    {
+      "path": "ios/build/leo-tribute/owned-simulator-shutdown-118.json",
+      "sha256": "1b682272a119388d33febaf1c609648e7fac09ce9decc9e44b09707a956b79c1"
+    },
+    {
+      "path": "docs/v2.0/TESTFLIGHT_NOTES_118.txt",
+      "sha256": "f347c3bdcfb463b6e34079bcb9d1458d06ec1aaf6933d7ead57c36c66ec313de"
+    },
+    {
+      "path": "ios/build/leo-tribute/final-phone/run.json",
+      "sha256": "69543de1bba22aba04fe3c645426f218da5e60c9a180f8dc178c816cbd59f9c9"
+    },
+    {
+      "path": "ios/build/leo-tribute/final-phone/visual-review.json",
+      "sha256": "ef1fbc74f73990f80240bb67c705ba9eb2d7086944adafd7a6df5683e4671a60"
+    },
+    {
+      "path": "ios/build/leo-tribute/final-tablet/run.json",
+      "sha256": "4fda7896979e38f1a14d8589b2542b86447d268329713c6d73e48dec255330ef"
+    },
+    {
+      "path": "ios/build/leo-tribute/final-tablet/visual-review.json",
+      "sha256": "c3a653d6aa7554e4f4fa44afaaac246cb01c6be88c3cc9ba2fed171e5557980f"
+    },
+    {
+      "path": "ios/build/leo-tribute/tribute-phone-normal-r2/run.json",
+      "sha256": "c0cadbd5d02155bd71dfaac12c0f945666cc364f4eaa67ed620060287f4065b7"
+    },
+    {
+      "path": "ios/build/leo-tribute/tribute-phone-reduced-r2/run.json",
+      "sha256": "d9b38d3760b11952d780db88d71f84f2499e99153f792e9704d674dc275d6f54"
+    },
+    {
+      "path": "ios/build/leo-tribute/tribute-tablet-normal-r2/run.json",
+      "sha256": "cc1003ddd833213d36cf92b0a33a2cb4f3ba39b9e3b665e605999033f5586aab"
+    }
+  ],
+  "limitations": [
+    "Original full runs/images remain at1a18; exact production app identity and fresh corrected-method runs justify the one UI-test change at9f.",
+    "117 AX3,116 persistence/ambient and145 backend tests are scoped carry-forward, not rerun.",
+    "Physical performance, actual owner progress and live account/provider flows remain owner checks."
+  ]
+}
