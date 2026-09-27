@@ -194,8 +194,13 @@ final class LeoTributeUITests: XCTestCase {
         let rematch = app.buttons["battle.rematch"]
         reveal(rematch)
         rematch.tap()
-        XCTAssertTrue(app.buttons["battle.cheer1"].waitForExistence(timeout: 10))
-        XCTAssertFalse(tribute.exists, "The tribute belongs to the result, not the active battle")
+        if !expectsReducedMotion {
+            XCTAssertTrue(app.buttons["battle.cheer1"].waitForExistence(timeout: 10))
+            XCTAssertFalse(tribute.exists, "The tribute belongs to the result, not the active battle")
+        }
+        // Reduce Motion reveals the accepted result after 0.45 seconds, before
+        // XCTest may observe the arena. Both paths must still prove a fresh
+        // winner state with the initial message and zero tribute taps.
         try waitForEligibleWinner()
         capture("solo_rematch_reset")
         tribute.tap()
