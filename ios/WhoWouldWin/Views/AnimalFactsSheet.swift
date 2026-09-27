@@ -25,7 +25,7 @@ struct AnimalFactsSheet: View {
                     }
                     .padding(.horizontal, 16).padding(.top, 10)
 
-                    FighterPortrait(animal: animal, size: 140, ringColor: Kids.sun)
+                    FighterPortrait(animal: animal, size: 140, ringColor: Kids.sun, mood: .idle)
 
                     StickerWord(text: animal.name.uppercased(), fill: Kids.sun,
                                 fontSize: 28, tilt: -2)
@@ -104,6 +104,7 @@ struct AnimalFactsSheet: View {
                 }
             }
         }
+        .arcadeMotionViewport()
         .onDisappear { speech.stopSpeaking() }
     }
 

@@ -12,7 +12,6 @@ struct TournamentCompleteView: View {
     @ObservedObject private var settings = UserSettings.shared
     @State private var didResolveGC = false
     @State private var grandChampionPayout: Int = 0
-    @State private var confettiShowing = true
     @State private var showShareSheet = false
     @State private var shareImage: UIImage? = nil
     @State private var appeared = false
@@ -29,9 +28,7 @@ struct TournamentCompleteView: View {
         ZStack {
             SkyBG(variant: .sunset)
 
-            if confettiShowing && !reduceMotion {
-                ConfettiView().ignoresSafeArea().allowsHitTesting(false)
-            }
+            ConfettiView().ignoresSafeArea().allowsHitTesting(false)
 
             ScrollView {
                 HStack(spacing: 0) {
@@ -63,7 +60,7 @@ struct TournamentCompleteView: View {
                                     .scaleEffect(appeared ? 1 : 0.3)
                             }
 
-                            FighterPortrait(animal: c, size: isIPad ? 220 : 150, ringColor: Kids.peach)
+                            FighterPortrait(animal: c, size: isIPad ? 220 : 150, ringColor: Kids.peach, mood: .winner)
                                 .scaleEffect(appeared ? 1 : 0.4)
                         } else {
                             Text("Final not decided")
@@ -120,6 +117,7 @@ struct TournamentCompleteView: View {
                     Spacer(minLength: 0)
                 }
             }
+            .arcadeMotionViewport(active: !showShareSheet)
         }
         .navigationBarBackButtonHidden(true)
         .onAppear {
@@ -154,9 +152,6 @@ struct TournamentCompleteView: View {
             withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) { appeared = true }
             HapticsService.shared.success()
 
-            DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
-                withAnimation { confettiShowing = false }
-            }
         }
         .sheet(isPresented: $showShareSheet) {
             if let img = shareImage {

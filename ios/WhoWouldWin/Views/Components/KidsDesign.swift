@@ -388,12 +388,16 @@ struct KidButton: View {
 
 struct KidButtonPressStyle: ButtonStyle {
     var y: CGFloat = 0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .offset(y: configuration.isPressed ? 3 : 0)
+            .offset(y: configuration.isPressed && !reduceMotion ? 3 : 0)
             .compositingGroup()
             .shadow(color: Kids.shadow.opacity(configuration.isPressed ? 0.10 : 0.28),
                     radius: 0, x: 0, y: configuration.isPressed ? 1 : 4)
+            .animation(reduceMotion ? nil : .easeOut(duration: 0.1), value: configuration.isPressed)
+            .transaction { if reduceMotion { $0.animation = nil; $0.disablesAnimations = true } }
     }
 }
 
@@ -620,8 +624,10 @@ struct StickerWord: View {
 
 struct KidToggle: View {
     @Binding var isOn: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
-        Button { withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { isOn.toggle() } } label: {
+        Button { withAnimation(reduceMotion ? nil : .easeOut(duration: 0.12)) { isOn.toggle() } } label: {
             ZStack(alignment: isOn ? .trailing : .leading) {
                 RetroPanelShape()
                     .fill(isOn ? Kids.grass : Kids.creamDeep)
@@ -637,6 +643,7 @@ struct KidToggle: View {
             }
         }
         .buttonStyle(.plain)
+        .transaction { if reduceMotion { $0.animation = nil; $0.disablesAnimations = true } }
         .accessibilityValue(isOn ? "On" : "Off")
         .frame(minWidth: 54, minHeight: 44)
     }
@@ -727,7 +734,11 @@ struct CoinChip: View {
     let count: Int
     var action: (() -> Void)? = nil
     @State private var pop: CGFloat = 1
+    @State private var popTask: Task<Void, Never>?
+    @State private var isVisible = false
     @Environment(\.horizontalSizeClass) private var sizeClass
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
     private var isIPad: Bool { sizeClass == .regular }
     var body: some View {
         Button {
@@ -744,18 +755,39 @@ struct CoinChip: View {
                 StickerShape(shape: RetroPanelShape(), fill: Kids.sun, strokeWidth: 1.25)
             )
             .compositingGroup().shadow(color: Kids.shadow.opacity(0.10), radius: 3, x: 0, y: 2)
-            .scaleEffect(pop)
+            .scaleEffect(reduceMotion || scenePhase != .active ? 1 : pop)
         }
         .buttonStyle(.plain)
         .frame(minHeight: 44)
         .contentShape(Rectangle())
         .accessibilityLabel("\(count) coins. Opens the coin shop.")
+        .onAppear { isVisible = true }
         .onChange(of: count) { _ in
-            withAnimation(.spring(response: 0.25, dampingFraction: 0.55)) { pop = 1.18 }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) { pop = 1 }
+            cancelPop()
+            guard isVisible, !reduceMotion, scenePhase == .active else { return }
+            withAnimation(.easeOut(duration: 0.1)) { pop = 1.06 }
+            popTask = Task { @MainActor in
+                do { try await Task.sleep(nanoseconds: 120_000_000) }
+                catch { return }
+                guard !Task.isCancelled else { return }
+                withAnimation(.easeOut(duration: 0.15)) { pop = 1 }
+                popTask = nil
             }
         }
+        .onChange(of: reduceMotion) { if $0 { cancelPop() } }
+        .onChange(of: scenePhase) { if $0 != .active { cancelPop() } }
+        .onDisappear { isVisible = false; cancelPop() }
+        .transaction {
+            if reduceMotion || scenePhase != .active { $0.animation = nil; $0.disablesAnimations = true }
+        }
+    }
+
+    private func cancelPop() {
+        popTask?.cancel()
+        popTask = nil
+        var transaction = Transaction(animation: nil)
+        transaction.disablesAnimations = true
+        withTransaction(transaction) { pop = 1 }
     }
 }
 
@@ -806,7 +838,7 @@ struct ConfettiView: View {
         let rotationEnd: Double
     }
 
-    private let pieces: [Piece] = {
+    @State private var pieces: [Piece] = {
         let colors: [Color] = [
             Theme.gold, Theme.orange, Theme.purple, Theme.cyan, Theme.teal, Theme.red, .white,
             Kids.peach, Kids.grass, Kids.sky
@@ -826,33 +858,63 @@ struct ConfettiView: View {
     }()
 
     @State private var isAnimating = false
+    @State private var didConsumeCelebration = false
+    @State private var finished = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
+
+    private var canAnimate: Bool { !reduceMotion && scenePhase == .active }
 
     var body: some View {
-        GeometryReader { geo in
-            ForEach(pieces) { piece in
-                RetroPanelShape(cornerRadius: 2)
-                    .fill(piece.color)
-                    .frame(width: piece.size.width, height: piece.size.height)
-                    .rotationEffect(.degrees(isAnimating ? piece.rotationEnd : piece.rotationStart))
-                    .position(
-                        x: piece.xFraction * geo.size.width,
-                        y: isAnimating ? geo.size.height + 30 : -20
-                    )
-                    .opacity(isAnimating ? 0 : 0.9)
-                    .animation(
-                        .easeIn(duration: piece.fallDuration).delay(piece.delay),
-                        value: isAnimating
-                    )
+        Group {
+            if canAnimate && !finished {
+                GeometryReader { geo in
+                    ForEach(pieces) { piece in
+                        RetroPanelShape(cornerRadius: 2)
+                            .fill(piece.color)
+                            .frame(width: piece.size.width, height: piece.size.height)
+                            .rotationEffect(.degrees(isAnimating ? piece.rotationEnd : piece.rotationStart))
+                            .position(
+                                x: piece.xFraction * geo.size.width,
+                                y: isAnimating ? geo.size.height + 30 : -20
+                            )
+                            .opacity(isAnimating ? 0 : 0.9)
+                            .animation(
+                                .easeIn(duration: piece.fallDuration).delay(piece.delay),
+                                value: isAnimating
+                            )
+                    }
+                }
+            } else {
+                Color.clear
             }
         }
-        .onAppear {
-            // Respect Reduce Motion — a screenful of falling, spinning pieces is
-            // exactly the large-area motion that setting exists to suppress.
-            guard !UIAccessibility.isReduceMotionEnabled else { return }
-            // Small delay before triggering so SwiftUI renders positions first
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                isAnimating = true
-            }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+        .task(id: canAnimate) {
+            guard !didConsumeCelebration else { return }
+            didConsumeCelebration = true
+            guard canAnimate else { finishCelebration(); return }
+            // Render the starting positions, then run this presentation once.
+            do { try await Task.sleep(nanoseconds: 50_000_000) }
+            catch { return }
+            guard !Task.isCancelled else { return }
+            isAnimating = true
+            do { try await Task.sleep(nanoseconds: 5_000_000_000) }
+            catch { return }
+            guard !Task.isCancelled else { return }
+            finishCelebration()
+        }
+        .onChange(of: canAnimate) { if !$0 { finishCelebration() } }
+        .onDisappear { finishCelebration() }
+    }
+
+    private func finishCelebration() {
+        var transaction = Transaction(animation: nil)
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            didConsumeCelebration = true
+            finished = true
         }
     }
 }

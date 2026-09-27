@@ -1,0 +1,7 @@
+Animal vs Animal 2.0 (116)
+
+A quieter layer of arcade personality: featured creatures and fact-card heroes breathe gently, winners settle into a proud pose and occasionally sparkle, and buttons have a short, softer release. Coin rewards, toggles and the sticker book use more restrained feedback.
+
+Ambient motion pauses when hidden, covered or in the background, and respects Reduce Motion. Shared cards stay still. The Miami arcade theme and swipe-to-battle home remain.
+
+Please try solo, team and tournament wins; swipe home matchups; open and close sheets; scroll away and return; and compare with Reduce Motion. Verify existing progress, Sandbox purchases/restore, custom saved fighters and offline play after installing over your current build. Physical-device performance and real account/restore checks remain yours to confirm.

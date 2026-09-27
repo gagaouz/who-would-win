@@ -249,7 +249,7 @@ private struct ResultContent: View {
                 // MVP portrait
                 if let mvp = mvpAnimal {
                     VStack(spacing: 6) {
-                        FighterPortrait(animal: mvp, size: isIPad ? 170 : 130, ringColor: Kids.sun)
+                        FighterPortrait(animal: mvp, size: isIPad ? 170 : 130, ringColor: Kids.sun, mood: .winner)
                             .scaleEffect(appeared ? 1 : 0.4)
                         Text("MVP · \(mvp.name.uppercased())")
                             .font(Kids.fredoka(isIPad ? 16 : 13, weight: .bold))
@@ -341,6 +341,7 @@ private struct ResultContent: View {
                 .padding(.bottom, 40)
             }
         }
+        .arcadeMotionViewport(active: !showShareSheet)
         .sheet(isPresented: $showShareSheet) {
             if let img = shareImage {
                 // Roster-based caption — "Team A" means nothing to someone

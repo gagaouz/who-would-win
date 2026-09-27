@@ -29,8 +29,14 @@ extension Color {
 // MARK: - Pressable Button Style
 
 struct PressableButtonStyle: ButtonStyle {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label.offset(y: configuration.isPressed ? 1 : 0)
+        configuration.label
+            .offset(y: configuration.isPressed && !reduceMotion ? 1 : 0)
+            .opacity(configuration.isPressed && reduceMotion ? 0.8 : 1)
+            .animation(reduceMotion ? nil : .easeOut(duration: 0.1), value: configuration.isPressed)
+            .transaction { if reduceMotion { $0.animation = nil; $0.disablesAnimations = true } }
     }
 }
 

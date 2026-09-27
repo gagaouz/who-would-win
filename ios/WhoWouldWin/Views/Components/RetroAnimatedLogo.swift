@@ -5,25 +5,15 @@ import SwiftUI
 struct RetroAnimatedLogo: View {
     let isIPad: Bool
 
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.scenePhase) private var scenePhase
-    @State private var isVisible = false
-    @State private var animationStart = Date()
-
     init(isIPad: Bool = false) {
         self.isIPad = isIPad
-    }
-
-    private var isAnimating: Bool {
-        isVisible && !reduceMotion && scenePhase == .active
     }
 
     var body: some View {
         GeometryReader { geometry in
             let scale = min(geometry.size.width / 288, geometry.size.height / 136)
 
-            TimelineView(.animation(minimumInterval: 1.0 / 24, paused: !isAnimating)) { timeline in
-                let time = isAnimating ? timeline.date.timeIntervalSince(animationStart) : 0
+            ArcadeMotionClock { time in
                 logo(time: time)
                     .scaleEffect(scale)
                     .frame(width: geometry.size.width, height: geometry.size.height)
@@ -37,11 +27,6 @@ struct RetroAnimatedLogo: View {
         .accessibilityLabel("Animal versus Animal")
         .accessibilityAddTraits(.isHeader)
         .allowsHitTesting(false)
-        .onAppear {
-            animationStart = Date()
-            isVisible = true
-        }
-        .onDisappear { isVisible = false }
     }
 
     private func logo(time: TimeInterval) -> some View {

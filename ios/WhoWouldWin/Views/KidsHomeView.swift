@@ -41,6 +41,12 @@ struct KidsHomeView: View {
     @State private var heroPairs = QuickMatchups.previewDeck()
     @State private var pairIndex = 0
 
+    private var homeMotionActive: Bool {
+        !showMyFighters && !showSettings && !showTournament && !showBook && !showHallOfFame
+            && !goToPicker && !showCoinShop && !showMeleeUnlock && !goToMelee && !goToQuickBattle
+            && mysteryReveal == nil && !showMysteryCoins && !showHowToPlay && !showWelcome && !showPaywall
+    }
+
     private var matchupNameHeight: CGFloat {
         dynamicTypeSize.isAccessibilitySize ? matchupHeaderHeight * 1.5 : matchupHeaderHeight
     }
@@ -117,6 +123,7 @@ struct KidsHomeView: View {
                     .frame(maxWidth: isIPad ? 650 : 520)
                     .frame(maxWidth: .infinity)
                 }
+                .arcadeMotionViewport(active: homeMotionActive)
             }
             .navigationBarHidden(true)
             .navigationDestination(isPresented: $goToPicker) {
@@ -223,7 +230,7 @@ struct KidsHomeView: View {
             // Each page is a real button: the captured pair is the pair we launch.
             TabView(selection: $pairIndex) {
                 ForEach(heroPairs.indices, id: \.self) { index in
-                    matchupCard(heroPairs[index])
+                    matchupCard(heroPairs[index], selected: index == pairIndex)
                         .padding(.horizontal, 3)
                         .accessibilityHidden(index != pairIndex)
                         .tag(index)
@@ -265,7 +272,7 @@ struct KidsHomeView: View {
         .shadow(color: Kids.ink.opacity(0.22), radius: 0, x: 0, y: 5)
     }
 
-    private func matchupCard(_ fighters: (Animal, Animal)) -> some View {
+    private func matchupCard(_ fighters: (Animal, Animal), selected: Bool) -> some View {
         Button {
             startFeaturedBattle(fighters)
         } label: {
@@ -285,9 +292,9 @@ struct KidsHomeView: View {
                     ZStack(alignment: .bottom) {
                         RetroHomeLandscape()
                         HStack(alignment: .bottom) {
-                            RetroCreatureArtwork(animal: fighters.0, size: min(geo.size.width * 0.43, geo.size.height - 12, 180))
+                            LivingCreatureArtwork(animal: fighters.0, size: min(geo.size.width * 0.43, geo.size.height - 12, 180), enabled: selected)
                             Spacer(minLength: 4)
-                            RetroCreatureArtwork(animal: fighters.1, size: min(geo.size.width * 0.43, geo.size.height - 12, 180))
+                            LivingCreatureArtwork(animal: fighters.1, size: min(geo.size.width * 0.43, geo.size.height - 12, 180), enabled: selected, delay: 2.4)
                                 .scaleEffect(x: -1, y: 1)
                         }
                         .padding(.horizontal, 10)

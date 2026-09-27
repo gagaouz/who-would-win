@@ -128,8 +128,11 @@
 		EB2BEB515A2988E7A470732F /* ParentGateSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EA6C0C4ADBA108A1D00022C /* ParentGateSheet.swift */; };
 		EB364E78E826C3A2EDD21B6A /* AchievementFeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86B14074E0B7A67C41B08B9F /* AchievementFeed.swift */; };
 		EB5FFF3542C97E2AF8C197D6 /* MeleeFallbackStory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1923A8BB9FD223231A8789B7 /* MeleeFallbackStory.swift */; };
+		EB89168E1DC8A5E5863B02A9 /* ArcadeMotionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 219DC4C32C7346A3D786B607 /* ArcadeMotionTests.swift */; };
 		ECCC2E1DC26179A0BE2F48A7 /* OlympusUnlockSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32CF99CBC5B18F0DC78289F8 /* OlympusUnlockSheet.swift */; };
 		ED775EABD3A7C4E546964E07 /* CoinStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7D54F0635127B3ED49AA272 /* CoinStore.swift */; };
+		EF1F4102E74BADD424C9D81A /* ArcadeMotionUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C087D15ED25BB73D0CDAF20 /* ArcadeMotionUITests.swift */; };
+		EFCA90C04FF34C99AFE8365B /* ArcadeMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = F661A7E806883FAD28EC0506 /* ArcadeMotion.swift */; };
 		F053C36F0B0A0C1DE392ED85 /* ParentalPIN.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAC5A52A3792082117A817E /* ParentalPIN.swift */; };
 		F1D23DAA8B62748754B940B0 /* Nunito.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6568C105456F10B0198878A1 /* Nunito.ttf */; };
 		F27C3D38A86DC144F1049B53 /* RetroButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FDCCDD0731E27BD7FC70E9C /* RetroButton.swift */; };
@@ -180,6 +183,7 @@
 		200A43EC7701E932D8E8B0CE /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
 		2013964C0C4484C38D998055 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		2062A4166604CA69BBF7A44F /* CustomFighterServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomFighterServiceTests.swift; sourceTree = "<group>"; };
+		219DC4C32C7346A3D786B607 /* ArcadeMotionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcadeMotionTests.swift; sourceTree = "<group>"; };
 		224A88953BD408F1E2D2C8F9 /* CustomFighterUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomFighterUITests.swift; sourceTree = "<group>"; };
 		2316BE8F76FC6C53FD7DEE60 /* MeleeShareCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeleeShareCard.swift; sourceTree = "<group>"; };
 		24BE273B4B6D57475785E1B2 /* MeleeSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeleeSetupView.swift; sourceTree = "<group>"; };
@@ -224,6 +228,7 @@
 		75B724AC8DB2196C8B54CF8C /* HowToPlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HowToPlayView.swift; sourceTree = "<group>"; };
 		77BDC18C0E579266056B7F5F /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
 		79EF313885DAC312CBB73B59 /* RatingsPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RatingsPrompt.swift; sourceTree = "<group>"; };
+		7C087D15ED25BB73D0CDAF20 /* ArcadeMotionUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcadeMotionUITests.swift; sourceTree = "<group>"; };
 		7D50FAF714B1D9B9C79FA477 /* RetroAtlases */ = {isa = PBXFileReference; lastKnownFileType = folder; name = RetroAtlases; path = WhoWouldWin/Resources/RetroAtlases; sourceTree = SOURCE_ROOT; };
 		7DF9E58829492F9ACE83B4ED /* Tournament.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tournament.swift; sourceTree = "<group>"; };
 		82FA69876315EBFFA80A7AD8 /* CoinBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinBadge.swift; sourceTree = "<group>"; };
@@ -299,6 +304,7 @@
 		F13D75F07E14359CDA1DE2E4 /* BattleShareCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BattleShareCard.swift; sourceTree = "<group>"; };
 		F2753D7BB4692AB3CB49BF67 /* KidsPreBattleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidsPreBattleView.swift; sourceTree = "<group>"; };
 		F4C08C75AAC24F278F4DDE22 /* BattleEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BattleEnvironment.swift; sourceTree = "<group>"; };
+		F661A7E806883FAD28EC0506 /* ArcadeMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcadeMotion.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -364,6 +370,7 @@
 		232F38CF4A0739DB8CFC81F6 /* WhoWouldWinTests */ = {
 			isa = PBXGroup;
 			children = (
+				219DC4C32C7346A3D786B607 /* ArcadeMotionTests.swift */,
 				150517DC8B8F3841C1A22A4C /* BattleServiceTests.swift */,
 				453EC1DD698BFB5130450D71 /* CustomFighterAccountTests.swift */,
 				8BE0E98C4BA246CF35515C61 /* CustomFighterLibraryTests.swift */,
@@ -379,6 +386,7 @@
 		37376401B5CBA6B10C35DE91 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				F661A7E806883FAD28EC0506 /* ArcadeMotion.swift */,
 				12CF19201B46E6369B66E3B7 /* BadgeToast.swift */,
 				82FA69876315EBFFA80A7AD8 /* CoinBadge.swift */,
 				E5CF747BEC37EED1BA4F0C79 /* KidsDesign.swift */,
@@ -431,6 +439,7 @@
 		692047AA13BF71AED1DFB87C /* WhoWouldWinUITests */ = {
 			isa = PBXGroup;
 			children = (
+				7C087D15ED25BB73D0CDAF20 /* ArcadeMotionUITests.swift */,
 				224A88953BD408F1E2D2C8F9 /* CustomFighterUITests.swift */,
 				4A215AAB713FEBF59D462E77 /* WhoWouldWinUITests.swift */,
 			);
@@ -794,6 +803,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EF1F4102E74BADD424C9D81A /* ArcadeMotionUITests.swift in Sources */,
 				23163592050A4667A4ECE606 /* CustomFighterUITests.swift in Sources */,
 				149CE35F92F84E2D610F742C /* WhoWouldWinUITests.swift in Sources */,
 			);
@@ -803,6 +813,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EB89168E1DC8A5E5863B02A9 /* ArcadeMotionTests.swift in Sources */,
 				406F5AC5F64DCAA7CDA6FCA9 /* BattleServiceTests.swift in Sources */,
 				2DE2017BA2124FA614FB14BF /* CustomFighterAccountTests.swift in Sources */,
 				5BB47A5A9C5ADBBCA3530B90 /* CustomFighterLibraryTests.swift in Sources */,
@@ -827,6 +838,7 @@
 				383B48E15780EBB442879E62 /* AnimalPickerViewModel.swift in Sources */,
 				717DBB0EC27751EF30F67CCB /* Animals.swift in Sources */,
 				D85EB650D06A2AF6862941E9 /* AppConfig.swift in Sources */,
+				EFCA90C04FF34C99AFE8365B /* ArcadeMotion.swift in Sources */,
 				D212B446A34306543F1E2E6E /* AudioManager.swift in Sources */,
 				2C16DD661566414A8A4A9872 /* BadgeToast.swift in Sources */,
 				4B1946B4516927DADEBD215A /* BattleEnvironment.swift in Sources */,

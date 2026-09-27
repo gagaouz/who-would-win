@@ -10,6 +10,7 @@ struct KidsStickerBookView: View {
     @ObservedObject private var collection = StickerCollection.shared
     @Environment(\.dismiss) private var dismiss
     @Environment(\.horizontalSizeClass) private var sizeClass
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     private var isIPad: Bool { sizeClass == .regular }
     @State private var appeared = false
     @State private var lockedSheet: AnimalCategory? = nil
@@ -74,14 +75,15 @@ struct KidsStickerBookView: View {
                         Spacer(minLength: 30)
                     }
                     .frame(maxWidth: isIPad ? 760 : .infinity)
-                    .scaleEffect(appeared ? 1 : 0.96)
-                    .opacity(appeared ? 1 : 0)
+                    .scaleEffect(appeared || reduceMotion ? 1 : 0.98)
+                    .opacity(appeared || reduceMotion ? 1 : 0)
+                    .transaction { if reduceMotion { $0.animation = nil; $0.disablesAnimations = true } }
                     Spacer(minLength: 0)
                 }
             }
         }
         .onAppear {
-            withAnimation(.spring(response: 0.45, dampingFraction: 0.7)) { appeared = true }
+            withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) { appeared = true }
         }
         .sheet(item: $lockedSheet) { cat in
             switch cat {

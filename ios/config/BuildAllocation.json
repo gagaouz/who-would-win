@@ -1,12 +1,12 @@
 {
   "version": "2.0",
-  "build": "115",
-  "ascVerifiedAt": "2026-09-27T09:34:37.906131+00:00",
-  "evidence": "docs/v2.0/evidence/asc-allocation-2026-09-27T093437Z.json",
+  "build": "116",
+  "ascVerifiedAt": "2026-09-27T10:52:45.930381+00:00",
+  "evidence": "docs/v2.0/evidence/asc-allocation-2026-09-27T105245Z.json",
   "distributionScope": "internal-testflight",
   "allocatedBranch": "develop/2.0",
-  "highestUploadedBuildAtCheck": 114,
+  "highestUploadedBuildAtCheck": 115,
   "maintenanceSourceBuild": "109",
-  "nextUnallocatedBuildAtCheck": 116,
-  "note": "Build115 allocated for Miami arcade presentation, animated logo and actionable matchup carousel. Recheck ASC before upload; no public submission or backend deployment."
+  "nextUnallocatedBuildAtCheck": 117,
+  "note": "Build116 allocated for restrained ambient creature motion, winner glints and control feedback. Recheck ASC before upload; internal TestFlight only."
 }

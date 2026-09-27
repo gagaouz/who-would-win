@@ -62,6 +62,7 @@ struct KidsBattleView: View {
                     environment: currentEnvironment,
                     arenaEffectsEnabled: currentArenaEffects,
                     cheeredFighter: cheeredFighter,
+                    motionActive: !showArenaSheet,
                     onRematch: { Task { await restart() } },
                     onTryNewArena: {
                         // Seed the sheet: keep the current arena for context and
@@ -526,6 +527,7 @@ private struct ResultContent: View {
     /// The fighter the kid cheered for during the build (their prediction), or
     /// nil if they didn't cheer. Drives the "did your pick win?" payoff.
     let cheeredFighter: Animal?
+    let motionActive: Bool
     let onRematch: () -> Void
     let onTryNewArena: () -> Void
     /// King-of-the-hill: keep the winner, queue a fresh challenger. Nil hides the CTA.
@@ -599,6 +601,7 @@ private struct ResultContent: View {
             }
 
             scrollContent
+                .arcadeMotionViewport(active: motionActive && !showShareSheet)
 
             // One-shot confetti celebration on a win.
             if winner != nil {
@@ -674,7 +677,7 @@ private struct ResultContent: View {
                         .scaleEffect(appeared ? 1 : 0.3)
 
                     // Catalog and custom creatures share the cached sprite artwork.
-                    FighterPortrait(animal: w, size: 150, ringColor: Kids.peach)
+                    FighterPortrait(animal: w, size: 150, ringColor: Kids.peach, mood: .winner)
                         .scaleEffect(appeared ? 1 : 0.4)
 
                     // Outcome summary — one tidy row of pills (your pick · how
@@ -1097,7 +1100,7 @@ struct KidsMiniButton: View {
             .compositingGroup()
             .shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 3)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(KidButtonPressStyle())
     }
 }
 
@@ -1107,9 +1110,16 @@ struct FighterPortrait: View {
     let animal: Animal
     var size: CGFloat = 150
     var ringColor: Color = Kids.peach
+    var mood: ArcadeCreatureMood? = nil
 
     var body: some View {
-        RetroCreatureArtwork(animal: animal, size: size - 22)
+        Group {
+            if let mood {
+                LivingCreatureArtwork(animal: animal, size: size - 22, mood: mood)
+            } else {
+                RetroCreatureArtwork(animal: animal, size: size - 22)
+            }
+        }
             .frame(width: size, height: size)
             .background(RetroPanelShape().fill(ringColor.opacity(0.24)))
             .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
