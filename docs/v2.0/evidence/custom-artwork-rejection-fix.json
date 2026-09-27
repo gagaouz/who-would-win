@@ -1,0 +1,437 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "00f3f1eb2237457d60e4dc1eba61fd79603a77a0",
+  "backendTree": "47eb2fae57297f1a84d909dbef9e06100392e5bb",
+  "nativeBuildUnchanged": "2.0 (114)",
+  "tests": {
+    "passed": 126,
+    "failed": 0,
+    "skipped": 0,
+    "logPath": "ios/build/release-tools/sprite-incident/backend-tests-final.log",
+    "logSHA256": "6d2c010cf1d6c564077c57c58cacbe580d11c89e9b7815668740b56c7ab553ed"
+  },
+  "live": {
+    "checkedAt": "2026-09-27T01:23:45.092Z",
+    "sourceCommit": "00f3f1eb2237457d60e4dc1eba61fd79603a77a0",
+    "deployments": {
+      "backend-v2": {
+        "id": "eb4a0a53-8645-46cf-ab35-062c277c1496",
+        "status": "SUCCESS",
+        "createdAt": "2026-09-27T01:21:06.648Z",
+        "message": "Verified custom artwork fix 00f3f1e: 126 tests, standard moderation, settled successful usage"
+      },
+      "backend": {
+        "id": "dfefd10c-edaf-4391-812d-27418c99c182",
+        "status": "SUCCESS",
+        "createdAt": "2026-09-24T02:13:10.546Z",
+        "message": "Compact creature inbox, complete temporary names, mobile pagination"
+      }
+    },
+    "probes": {
+      "/health": {
+        "status": 200
+      },
+      "/api/custom-fighters/status": {
+        "status": 200,
+        "body": {
+          "enabled": true,
+          "configured": true,
+          "monthlyAllowance": 3,
+          "requiresSubscription": true
+        }
+      },
+      "/api/custom-fighters/privacy": {
+        "status": 200
+      },
+      "/api/custom-fighters": {
+        "status": 401
+      },
+      "/api/battle": {
+        "status": 404
+      },
+      "challenge": {
+        "path": "/api/custom-fighters/auth/challenge",
+        "status": 200,
+        "shapeValid": true
+      }
+    },
+    "budget": [
+      {
+        "scope": "beta-lifetime-v1",
+        "reserved_microdollars": "4000000",
+        "actual_microdollars": "225639"
+      }
+    ],
+    "jobs": [
+      {
+        "state": "ready",
+        "error_code": null,
+        "count": 1
+      },
+      {
+        "state": "rejected",
+        "error_code": "quality_rejected",
+        "count": 5
+      }
+    ],
+    "quota": {
+      "used": 1,
+      "reserved": 0
+    },
+    "assets": 1
+  },
+  "maintenance": {
+    "checkedAt": "2026-09-27T01:23:38.959366+00:00",
+    "head": "107bf7327f1c82e85282101e2294fb6f9ded3639",
+    "statusSHA256": "a1fc5ca45e11abac1dc6133a62e4c61fe1ab9bfa859463ba7d82e8b1494ca42d",
+    "remoteMaintenanceHead": "107bf7327f1c82e85282101e2294fb6f9ded3639"
+  },
+  "operatorPilots": [
+    {
+      "subject": "Tree",
+      "runID": "3d00b8d2-e67c-44ac-8a30-f46a5e3fd901",
+      "sourceDigest": "b0e1677cb61cd312a38a093b090127c646412210be4ca98c7b8085c9bd468c28",
+      "compiledSourceHashes": {
+        "provider.js": "ce38a3f37d46071c7697a37f4bb9d0b6d308532acfd97e5d01bc48ab7f252cdb",
+        "png.js": "eb42a13fa707803a1b83dffa9e2a7c106904afa2e61966b94c218d8beb1ae6f5",
+        "config.js": "2f7f85e4aca945c807204c0cf43fe541394383aa9e94cc66099fc4fcefb0deeb",
+        "types.js": "7e9a902c03403a6f54385dc39e3495ed295af008941ec6c63d6ac66f8da62c31",
+        "style-reference.png": "fa119be2b6bceabca82597a5e458fd2530ca08b39d9c12a0c12aaf2f160f7bfb"
+      },
+      "state": "accepted",
+      "stage": "complete",
+      "diagnostic": {
+        "stage": "complete",
+        "accepted": true,
+        "complete": true,
+        "moderationPassed": true,
+        "knownMicrodollars": 29598,
+        "exposureMicrodollars": 100000,
+        "diagnosticModerationPassed": false,
+        "diagnosticModerationAttempted": false
+      },
+      "operations": [
+        "image",
+        "review"
+      ],
+      "usage": [
+        {
+          "operation": "image",
+          "inputTokens": 1939,
+          "outputTokens": 439,
+          "estimatedMicrodollars": 27428
+        },
+        {
+          "operation": "review",
+          "inputTokens": 2050,
+          "outputTokens": 60,
+          "estimatedMicrodollars": 916
+        }
+      ],
+      "completedAt": "2026-09-27T00:34:37.926Z",
+      "artifactDirectory": "ios/build/release-tools/sprite-incident/tree-pilot-1",
+      "publishedToCustomerLibrary": false,
+      "runtimeSHA256": "15bd74d4159be0a8f1667eafbad0ceba4293678822daca93a34fc4d16ad297ed"
+    },
+    {
+      "subject": "Sonic",
+      "runID": "40a7baf3-6cbe-48fc-8b7e-fc33c3c64027",
+      "sourceDigest": "b0e1677cb61cd312a38a093b090127c646412210be4ca98c7b8085c9bd468c28",
+      "compiledSourceHashes": {
+        "provider.js": "ce38a3f37d46071c7697a37f4bb9d0b6d308532acfd97e5d01bc48ab7f252cdb",
+        "png.js": "eb42a13fa707803a1b83dffa9e2a7c106904afa2e61966b94c218d8beb1ae6f5",
+        "config.js": "2f7f85e4aca945c807204c0cf43fe541394383aa9e94cc66099fc4fcefb0deeb",
+        "types.js": "7e9a902c03403a6f54385dc39e3495ed295af008941ec6c63d6ac66f8da62c31",
+        "style-reference.png": "fa119be2b6bceabca82597a5e458fd2530ca08b39d9c12a0c12aaf2f160f7bfb"
+      },
+      "state": "accepted",
+      "stage": "complete",
+      "diagnostic": {
+        "stage": "complete",
+        "accepted": true,
+        "complete": true,
+        "moderationPassed": true,
+        "knownMicrodollars": 29605,
+        "exposureMicrodollars": 100000,
+        "diagnosticModerationPassed": false,
+        "diagnosticModerationAttempted": false
+      },
+      "operations": [
+        "image",
+        "review"
+      ],
+      "usage": [
+        {
+          "operation": "image",
+          "inputTokens": 1940,
+          "outputTokens": 439,
+          "estimatedMicrodollars": 27433
+        },
+        {
+          "operation": "review",
+          "inputTokens": 2051,
+          "outputTokens": 59,
+          "estimatedMicrodollars": 915
+        }
+      ],
+      "completedAt": "2026-09-27T00:37:01.694Z",
+      "artifactDirectory": "ios/build/release-tools/sprite-incident/sonic-pilot-1",
+      "publishedToCustomerLibrary": false,
+      "runtimeSHA256": "7ae28601ff8d0293439993c6c9b39a8f3d271b8f92e5ebb81edd8343abe3fdc0"
+    },
+    {
+      "subject": "Trump",
+      "runID": "c9d739e1-ee8b-41f8-8a4a-dcb2a8f6842f",
+      "sourceDigest": "b0e1677cb61cd312a38a093b090127c646412210be4ca98c7b8085c9bd468c28",
+      "compiledSourceHashes": {
+        "provider.js": "ce38a3f37d46071c7697a37f4bb9d0b6d308532acfd97e5d01bc48ab7f252cdb",
+        "png.js": "eb42a13fa707803a1b83dffa9e2a7c106904afa2e61966b94c218d8beb1ae6f5",
+        "config.js": "2f7f85e4aca945c807204c0cf43fe541394383aa9e94cc66099fc4fcefb0deeb",
+        "types.js": "7e9a902c03403a6f54385dc39e3495ed295af008941ec6c63d6ac66f8da62c31",
+        "style-reference.png": "fa119be2b6bceabca82597a5e458fd2530ca08b39d9c12a0c12aaf2f160f7bfb"
+      },
+      "state": "rejected",
+      "stage": "image_validation",
+      "diagnostic": {
+        "code": "quality_rejected",
+        "stage": "image_validation",
+        "reason": "png_source_margin",
+        "accepted": false,
+        "complete": true,
+        "moderationPassed": false,
+        "knownMicrodollars": 28682,
+        "exposureMicrodollars": 100000,
+        "diagnosticModerationPassed": true,
+        "diagnosticModerationAttempted": true
+      },
+      "operations": [
+        "image"
+      ],
+      "usage": [
+        {
+          "operation": "image",
+          "inputTokens": 1939,
+          "outputTokens": 439,
+          "estimatedMicrodollars": 27428
+        }
+      ],
+      "completedAt": "2026-09-27T00:37:43.260Z",
+      "artifactDirectory": "ios/build/release-tools/sprite-incident/trump-pilot-1",
+      "publishedToCustomerLibrary": false
+    },
+    {
+      "subject": "Trump",
+      "runID": "c6fae236-e122-4ffd-a9ea-534c9325a4ea",
+      "sourceDigest": "92e74f0eed7ea141c9406293db33b00f8f873362ba77dbb891ebce992a1be0b8",
+      "compiledSourceHashes": {
+        "provider.js": "cf4699414269326c2b9083b828b971bb60c2a1daba0377be1461d95d8a05df84",
+        "png.js": "da3670517f8ab70717c0ff62a6d1aa7f27b9e0c477fc3c1816f9fe7d0ff2ee46",
+        "config.js": "2f7f85e4aca945c807204c0cf43fe541394383aa9e94cc66099fc4fcefb0deeb",
+        "types.js": "7e9a902c03403a6f54385dc39e3495ed295af008941ec6c63d6ac66f8da62c31",
+        "style-reference.png": "fa119be2b6bceabca82597a5e458fd2530ca08b39d9c12a0c12aaf2f160f7bfb"
+      },
+      "state": "rejected",
+      "stage": "artwork_review",
+      "diagnostic": {
+        "code": "quality_rejected",
+        "stage": "artwork_review",
+        "reason": "review_wrong_subject",
+        "accepted": false,
+        "complete": true,
+        "moderationPassed": true,
+        "knownMicrodollars": 915,
+        "exposureMicrodollars": 100000,
+        "diagnosticModerationPassed": false,
+        "diagnosticModerationAttempted": false
+      },
+      "operations": [
+        "review"
+      ],
+      "usage": [
+        {
+          "operation": "review",
+          "inputTokens": 2050,
+          "outputTokens": 59,
+          "estimatedMicrodollars": 915
+        }
+      ],
+      "completedAt": "2026-09-27T00:49:03.098Z",
+      "artifactDirectory": "ios/build/release-tools/sprite-incident/trump-revalidation-1",
+      "publishedToCustomerLibrary": false,
+      "reusedOriginalSHA256": "5e5d8479b3fbbf5d48cfc37360eaf8a759963136fc627b32cf8c71ecb8b21e0a",
+      "runtimeSHA256": "ce57cf77b9736b1bb31a35372b9ad415a4b3737895b21a2b10becaf735559230"
+    },
+    {
+      "subject": "Trump",
+      "runID": "d8953e13-f634-488c-a63c-e71d57b1806d",
+      "sourceDigest": "ea05f2d3cc3c254803c80b98b1deac0459830823f28c1c9c81a2cddcdef8d628",
+      "compiledSourceHashes": {
+        "provider.js": "93961cdb6be1239380b6c6f2661f03e62f60e61b03dec98c99d00eedd68eb721",
+        "png.js": "da3670517f8ab70717c0ff62a6d1aa7f27b9e0c477fc3c1816f9fe7d0ff2ee46",
+        "config.js": "2f7f85e4aca945c807204c0cf43fe541394383aa9e94cc66099fc4fcefb0deeb",
+        "types.js": "7e9a902c03403a6f54385dc39e3495ed295af008941ec6c63d6ac66f8da62c31",
+        "style-reference.png": "fa119be2b6bceabca82597a5e458fd2530ca08b39d9c12a0c12aaf2f160f7bfb"
+      },
+      "state": "accepted",
+      "stage": "complete",
+      "diagnostic": {
+        "stage": "complete",
+        "accepted": true,
+        "complete": true,
+        "moderationPassed": true,
+        "knownMicrodollars": 957,
+        "exposureMicrodollars": 100000,
+        "diagnosticModerationPassed": false,
+        "diagnosticModerationAttempted": false
+      },
+      "operations": [
+        "review"
+      ],
+      "usage": [
+        {
+          "operation": "review",
+          "inputTokens": 2155,
+          "outputTokens": 59,
+          "estimatedMicrodollars": 957
+        }
+      ],
+      "completedAt": "2026-09-27T00:51:32.767Z",
+      "artifactDirectory": "ios/build/release-tools/sprite-incident/trump-revalidation-2",
+      "publishedToCustomerLibrary": false,
+      "reusedOriginalSHA256": "5e5d8479b3fbbf5d48cfc37360eaf8a759963136fc627b32cf8c71ecb8b21e0a",
+      "runtimeSHA256": "ce57cf77b9736b1bb31a35372b9ad415a4b3737895b21a2b10becaf735559230"
+    },
+    {
+      "subject": "Pikachu",
+      "runID": "65b72c4b-8696-4c3a-88ef-d900c5785018",
+      "sourceDigest": "b0e1677cb61cd312a38a093b090127c646412210be4ca98c7b8085c9bd468c28",
+      "compiledSourceHashes": {
+        "provider.js": "ce38a3f37d46071c7697a37f4bb9d0b6d308532acfd97e5d01bc48ab7f252cdb",
+        "png.js": "eb42a13fa707803a1b83dffa9e2a7c106904afa2e61966b94c218d8beb1ae6f5",
+        "config.js": "2f7f85e4aca945c807204c0cf43fe541394383aa9e94cc66099fc4fcefb0deeb",
+        "types.js": "7e9a902c03403a6f54385dc39e3495ed295af008941ec6c63d6ac66f8da62c31",
+        "style-reference.png": "fa119be2b6bceabca82597a5e458fd2530ca08b39d9c12a0c12aaf2f160f7bfb"
+      },
+      "state": "rejected",
+      "stage": "image_generation",
+      "diagnostic": {
+        "code": "content_rejected",
+        "stage": "image_generation",
+        "reason": "provider_safety_refusal",
+        "accepted": false,
+        "complete": false,
+        "moderationPassed": false,
+        "knownMicrodollars": 0,
+        "exposureMicrodollars": 1000000,
+        "diagnosticModerationPassed": false,
+        "diagnosticModerationAttempted": false
+      },
+      "operations": [
+        "image"
+      ],
+      "usage": [],
+      "completedAt": "2026-09-27T00:35:37.785Z",
+      "artifactDirectory": "ios/build/release-tools/sprite-incident/pikachu-pilot-1",
+      "publishedToCustomerLibrary": false
+    },
+    {
+      "subject": "Pikachu",
+      "runID": "1b55ef3b-8ce5-45f3-970b-9c324db06a44",
+      "sourceDigest": "ca650fd09f361b1e69ff117f899a468e7a3cc48a7d72e99b817af63d47d27e1b",
+      "compiledSourceHashes": {
+        "provider.js": "93961cdb6be1239380b6c6f2661f03e62f60e61b03dec98c99d00eedd68eb721",
+        "png.js": "da3670517f8ab70717c0ff62a6d1aa7f27b9e0c477fc3c1816f9fe7d0ff2ee46",
+        "config.js": "2f7f85e4aca945c807204c0cf43fe541394383aa9e94cc66099fc4fcefb0deeb",
+        "types.js": "7e9a902c03403a6f54385dc39e3495ed295af008941ec6c63d6ac66f8da62c31",
+        "style-reference.png": "fa119be2b6bceabca82597a5e458fd2530ca08b39d9c12a0c12aaf2f160f7bfb"
+      },
+      "state": "rejected",
+      "stage": "image_generation",
+      "diagnostic": {
+        "code": "content_rejected",
+        "stage": "image_generation",
+        "reason": "provider_safety_refusal_output",
+        "accepted": false,
+        "complete": false,
+        "moderationPassed": false,
+        "knownMicrodollars": 0,
+        "exposureMicrodollars": 1000000,
+        "diagnosticModerationPassed": false,
+        "diagnosticModerationAttempted": false
+      },
+      "operations": [
+        "image"
+      ],
+      "usage": [],
+      "completedAt": "2026-09-27T00:52:25.507Z",
+      "artifactDirectory": "ios/build/release-tools/sprite-incident/pikachu-pilot-2",
+      "publishedToCustomerLibrary": false
+    }
+  ],
+  "successfulCustomerRequest": {
+    "subject": "Trump",
+    "createdAt": "2026-09-27T01:06:55.112Z",
+    "readyAt": "2026-09-27T01:07:22.277Z",
+    "runtimeSHA256": "68a66075e1ba528da88d40b9a52cdb7664ba998a3a3ad294ee21515082d7d5e5",
+    "originalBytes": 1313178,
+    "runtimeBytes": 937716,
+    "promptVersion": "custom-art-v2",
+    "normalizerVersion": "complete-poses-v2",
+    "generationModeration": "auto",
+    "acceptedModeration": true,
+    "acceptedSemanticReview": true,
+    "physicalDeviceDownloadAndPlaybackVerified": false
+  },
+  "budgetAdjustments": [
+    {
+      "completedAt": "2026-09-27T00:31:23.115Z",
+      "auditId": "455a804f-1f2e-4772-945e-21ac06714924",
+      "before": {
+        "reserved_microdollars": "4000000",
+        "actual_microdollars": "80624"
+      },
+      "after": {
+        "reserved_microdollars": "1300000",
+        "actual_microdollars": "80624"
+      },
+      "releasedUnusedReservationsMicrodollars": 2700000,
+      "applicationBudgetUSD": 5,
+      "customerCreditsUnchanged": true,
+      "providerRefusalReservationUnchanged": true
+    },
+    {
+      "checkedAt": "2026-09-27T00:48:51.250Z",
+      "auditId": "35996580-756b-4b9d-a470-6f00fecc48c6",
+      "before": {
+        "reserved_microdollars": "3600000",
+        "actual_microdollars": "195382"
+      },
+      "after": {
+        "reserved_microdollars": "2700000",
+        "actual_microdollars": "195382"
+      }
+    },
+    {
+      "checkedAt": "2026-09-27T01:22:55.553Z",
+      "auditId": "b4aa5695-a1ec-4a1e-9a2d-ef483929c156",
+      "sourceCommit": "00f3f1eb2237457d60e4dc1eba61fd79603a77a0",
+      "before": {
+        "reserved_microdollars": "4900000",
+        "actual_microdollars": "225639"
+      },
+      "after": {
+        "reserved_microdollars": "4000000",
+        "actual_microdollars": "225639"
+      },
+      "customerCreditConsumed": 1,
+      "successfulAssetPreserved": true
+    }
+  ],
+  "limits": [
+    "Pikachu remained refused by provider output moderation; no substitution or moderation bypass.",
+    "Tree and Sonic first semantic reviews preceded the final component extractor; exact originals passed final extraction offline.",
+    "Operator artifacts are not customer library assets; owner Trump publication is separately verified.",
+    "Failed requests do not automatically rerun.",
+    "Application budget remains USD5, not a provider-enforced cap; three unknown-charge refusals retain USD1 each."
+  ]
+}

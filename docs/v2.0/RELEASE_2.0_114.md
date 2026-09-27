@@ -1,5 +1,7 @@
 # Animal vs Animal 2.0 (114) — Fighter account sign-in fix
 
+**September 27 artwork follow-up:** The owner’s real sign-in/subscription-linked Trump request succeeded and was privately saved at 01:07:22 UTC after the server fix. Build 114 remains current. See the [artwork rejection fix and its measured limits](CUSTOM_ARTWORK_REJECTION_FIX.md); earlier activation and inherited backend evidence below are historical.
+
 **Animal vs Animal 2.0 (114) is available in internal TestFlight.** At **2026-09-27 00:15:50 UTC**, Apple reported the exact candidate `VALID`, `INTERNAL_ONLY` and `IN_BETA_TESTING`, present in the existing `self` group; its English testing notes matched on read-back. Update to **114** to retry fighter-account sign-in. Owner installation and live account acceptance remain unverified.
 
 Build 113 sent fighter-account authentication requests to the legacy battle backend, where those routes return 404. That response appeared as “Your fighter library is temporarily unavailable.” Build 114 sends challenge, Apple token exchange, sign-out and account-deletion requests to the dedicated private artwork service. Saved account credentials now use the same service origin and app-bundle namespace in Keychain. The game, artwork, private-library interface and backend implementation are otherwise unchanged.
