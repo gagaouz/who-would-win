@@ -1,5 +1,7 @@
 # Animal vs Animal 2.0 (113) — My Fighters and private subscriber artwork
 
+**Authentication fix supersedes this build:** use [2.0 (114)](RELEASE_2.0_114.md) to retry Sign in with Apple. Build 113 sends fighter-account requests to the legacy battle origin and receives 404. The historical delivery/activation evidence below is preserved.
+
 **Animal vs Animal 2.0 (113) is available in internal TestFlight. At 2026-09-26 22:05:23 UTC, Apple reported VALID, INTERNAL_ONLY and IN_BETA_TESTING; the exact candidate is present in the existing self group and its English testing notes were read back.** Owner installation and physical-device acceptance remain pending.
 
 My Fighters adds a private account library with four-pose previews, saved-fighter selection and restoration. It is accessible from home, settings, solo, team and tournament selection. Existing typed-name local avatars remain available. Selecting downloaded artwork does not spend another custom-creation charge, and downloaded fighters remain usable after Premium expires or a network session needs sign-in again. An explicit sign-out hides that owner's local library.

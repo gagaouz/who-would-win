@@ -1,0 +1,182 @@
+{
+  "recordedAt": "2026-09-27T00:17:21.115242+00:00",
+  "version": "2.0",
+  "build": "114",
+  "sourceCommit": "4eb736ee41fca8d6e678e629a515bb3f92b3e81b",
+  "bundleID": "com.whowouldin.WhoWouldWin",
+  "purpose": "Correct fighter-account requests and session storage to use the isolated artwork service after build113 sign-in returned404 from the legacy game backend.",
+  "availableInInternalTestFlight": true,
+  "apple": {
+    "checkedAt": "2026-09-27T00:15:50.041129+00:00",
+    "buildID": "e8661d5a-ac0c-4cd7-9109-8d82473414de",
+    "processingState": "VALID",
+    "audience": "INTERNAL_ONLY",
+    "internalState": "IN_BETA_TESTING",
+    "externalState": "NOT_APPLICABLE",
+    "uploadedDate": "2026-09-26T17:13:14-07:00",
+    "expirationDate": "2026-12-25T16:13:14-08:00",
+    "selfGroupHasExactBuild": true,
+    "notesWrittenAndReadBackExactly": true,
+    "invitationsSent": false,
+    "externalGroupChanged": false,
+    "ownerDeviceInstallVerified": false
+  },
+  "validation": {
+    "qaRecord": {
+      "path": "ios/build/QA-2.0-114-4eb736ee.json",
+      "sha256": "8552f8925eb977072f1a097c8c954a30c4745f2ed929f937d9d6aa4fbcdfa032"
+    },
+    "phone": {
+      "unitPassed": 76,
+      "uiPassed": 14,
+      "totalPassed": 90,
+      "failed": 0,
+      "skipped": 0
+    },
+    "tablet": {
+      "accountUnitPassed": 6,
+      "customLibraryUIPassed": 5,
+      "totalPassed": 11,
+      "failed": 0,
+      "skipped": 0
+    },
+    "totalNativeExecutions": 101,
+    "freshSyntheticUpgradeCases": 2,
+    "progressPreferencesDocumentsAndPINPreserved": true,
+    "postUpgradeHomeAccepted": true,
+    "freshTabletScreenshotsAccepted": 6,
+    "authRoutingReview": {
+      "path": "ios/build/release-tools/auth-routing-review-114.json",
+      "sha256": "43ed3b069a755e04322c05a8b442fe212122b9aa55c07995664fb256123cc37b"
+    },
+    "freshTabletVisualReview": {
+      "path": "ios/build/release-tools/visual-114-tablet/visual-review.json",
+      "sha256": "cc032aa54d3a29e6cba293545ba131b40b661869c9a8dbc7f578507c69ad525e"
+    },
+    "unchangedBackendTestsCarriedFrom113": 80,
+    "unchangedVisualCapturesCarriedFrom113": 45,
+    "backendTestsRerun": false,
+    "carryForwardScope": "Exact backend and presentation/resource/model/view tree identity and retained artifact hashes checked by QA; no inheritance of successful real account behavior.",
+    "excludedAttempts": [
+      {
+        "path": "ios/build/runs/20260926T235517Z-test-2.0-114-4eb736ee-369726",
+        "reason": "Host ENOSPC; incomplete run excluded from acceptance."
+      },
+      {
+        "path": "ios/build/runs/20260926T235517Z-test-2.0-114-4eb736ee-be24c3",
+        "reason": "Host ENOSPC; incomplete run excluded from acceptance."
+      },
+      {
+        "runSuffix": "5d6af4",
+        "reason": "Upgrade interrupted by ENOSPC before cases; excluded from acceptance."
+      },
+      {
+        "path": "ios/build/runs/20260927T000143Z-upgrade-639de6",
+        "reason": "Infrastructure setup: requested reuse run itself reused another baseline and had no local baseline DerivedData app. No successful cases claimed; replaced with verified original fixture app."
+      }
+    ]
+  },
+  "artifacts": {
+    "archive": "/Users/home/WWW/who-would-win-v2.0/ios/build/runs/20260927T000843Z-archive-2.0-114-4eb736ee-87ca10/WhoWouldWin.xcarchive",
+    "ipa": "/Users/home/WWW/who-would-win-v2.0/ios/build/release-tools/export-114-4eb736ee/Export/WhoWouldWin.ipa",
+    "retainedLocalIPASHA256": "77911a71f1966b2e70c60fd74210be47458d660b76b5279de96b97281f68e7e0",
+    "export": {
+      "path": "ios/build/release-tools/export-114-4eb736ee/export-evidence.json",
+      "sha256": "39850c96d7d744fb6108f7ec0488da517e4b09205feae023f02332d7760149d4"
+    },
+    "upload": {
+      "path": "ios/build/release-tools/upload-114-4eb736ee/upload-evidence.json",
+      "sha256": "051d8638ff9e5aed074214c4c96b98ff9954ab5948cd92f9d345b2cd5759b06e"
+    },
+    "appleReadback": {
+      "path": "ios/build/release-tools/testflight-2.0-114-final.json",
+      "sha256": "561411d6f5d9978ca1ff803a03494bce1251e21a2d27ead4e893fe4105078668"
+    }
+  },
+  "liveService": {
+    "checkedAt": "2026-09-26T23:57:12.892134+00:00",
+    "baseURL": "https://backend-v2-production-7a34.up.railway.app",
+    "checks": [
+      {
+        "path": "/health",
+        "status": 200
+      },
+      {
+        "path": "/api/custom-fighters/status",
+        "status": 200,
+        "body": {
+          "enabled": true,
+          "configured": true,
+          "monthlyAllowance": 3,
+          "requiresSubscription": true
+        }
+      },
+      {
+        "path": "/api/custom-fighters/privacy",
+        "status": 200,
+        "sha256": "0d36e38ddbc43c2133cc56013a4eb16b0d557739e68d8c30e830028716465fe1"
+      },
+      {
+        "path": "/api/custom-fighters/",
+        "status": 401
+      },
+      {
+        "path": "/api/battle",
+        "status": 404
+      }
+    ],
+    "paidProviderRequests": 0,
+    "liveGenerationVerified": false,
+    "liveAppleSignInVerified": false,
+    "databaseChallengeCheck": {
+      "checkedAt": "2026-09-26T23:51:19.894500+00:00",
+      "status": 200,
+      "hasChallengeID": true,
+      "hasNonce": true,
+      "hasExpiry": true
+    }
+  },
+  "diagnosedDefect": {
+    "recordedAt": "2026-09-27T00:01:23.817056+00:00",
+    "sourceCommit": "4eb736ee41fca8d6e678e629a515bb3f92b3e81b",
+    "reportedBuild": "2.0 (113)",
+    "candidateBuild": "2.0 (114)",
+    "reportedError": "Your fighter library is temporarily unavailable. Please try again shortly.",
+    "rootCause": "CustomFighterAccount used the legacy battle backend for the challenge request; that deployment has no custom authentication route and responds404.",
+    "reproductionEvidence": "ios/build/release-tools/account-origin-reproduction-114.json",
+    "fix": "Account endpoints and Keychain namespace select the dedicated custom-fighter backend.",
+    "review": "ios/build/release-tools/auth-routing-review-114.json",
+    "realAppleSignInVerified": false,
+    "liveGeneratedArtworkVerified": false,
+    "applicationSourceFilesChanged": [
+      "ios/WhoWouldWin/Services/CustomFighterAccount.swift"
+    ],
+    "regressionTestsAdded": 3,
+    "backendChanged": false,
+    "paidProviderRequests": 0
+  },
+  "maintenance": {
+    "checkedAt": "2026-09-27T00:10:45.135401+00:00",
+    "head": "107bf7327f1c82e85282101e2294fb6f9ded3639",
+    "remoteMaintenanceHead": "107bf7327f1c82e85282101e2294fb6f9ded3639",
+    "headUnchanged": true,
+    "statusSHA256": "a1fc5ca45e11abac1dc6133a62e4c61fe1ab9bfa859463ba7d82e8b1494ca42d",
+    "statusUnchanged": true
+  },
+  "uploadWarnings": [
+    "warning: exportArchive Upload Symbols Failed. The archive did not include a dSYM for the GoogleMobileAds.framework with the UUIDs [DF7A0C09-33C6-3012-835C-8973EA480BB3]. Ensure that the archive's dSYM folder includes a DWARF file for GoogleMobileAds.framework with the expected UUIDs.",
+    "warning: exportArchive Upload Symbols Failed. The archive did not include a dSYM for the UserMessagingPlatform.framework with the UUIDs [4AF29395-84A0-34ED-87C2-BDFD9A39C638]. Ensure that the archive's dSYM folder includes a DWARF file for UserMessagingPlatform.framework with the expected UUIDs."
+  ],
+  "limitations": [
+    "Fixtures and URL regressions do not establish successful real Apple identity or a paid generated pack.",
+    "Sandbox generation is configured and the pilot already authorized; physical account/receipt/provider acceptance remains pending.",
+    "Inherited45 captures are build113 static visuals, not fresh114 captures or playback proof.",
+    "Fresh synthetic upgrade is isolated simulator installation, not owner physical App Store/TestFlight upgrade.",
+    "Canonical signing, IPA inspection, upload and exact Apple availability are separate root-controlled gates."
+  ],
+  "publicReleaseEligible": false,
+  "productionCreationAvailable": false,
+  "liveAppleSignInVerified": false,
+  "liveGenerationVerified": false,
+  "paidProviderRequestsByThisFix": 0
+}
