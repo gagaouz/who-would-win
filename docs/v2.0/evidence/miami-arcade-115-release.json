@@ -1,0 +1,90 @@
+{
+  "version": "2.0",
+  "build": "115",
+  "sourceCommit": "72d542c7b973072b55f273ec76c4b4519c7738ae",
+  "branch": "develop/2.0",
+  "availabilityCheckedAt": "2026-09-27T10:21:45.749939+00:00",
+  "ascBuildID": "32381f30-cf55-49f8-aed1-bfd8c06bc96e",
+  "processingState": "VALID",
+  "buildAudienceType": "INTERNAL_ONLY",
+  "internalBuildState": "IN_BETA_TESTING",
+  "testerGroup": "self",
+  "candidatePresentInTesterGroup": true,
+  "testNotesReadBack": true,
+  "ownerDeviceInstallVerified": false,
+  "publicReleaseEligible": false,
+  "nativeTests": {
+    "phone": {
+      "unit": 76,
+      "ui": 16
+    },
+    "tablet": {
+      "ui": 16
+    },
+    "totalExecutions": 108,
+    "distinctMethods": 92,
+    "failures": 0,
+    "skips": 0
+  },
+  "visualReview": {
+    "finalUIAttachments": 110,
+    "completeShareExports": 8,
+    "blockingDefects": 0
+  },
+  "upgrade": {
+    "baseline": "1.1.7",
+    "cases": [
+      "settled",
+      "pending"
+    ],
+    "bothPassed": true,
+    "scope": "Isolated simulator fixtures using original persistence code; physical upgrade remains an owner check."
+  },
+  "backend": {
+    "testsPassed": 145,
+    "rerunFor115": false,
+    "testedRuntimeCommit": "72aeef18f117572068a1c71f6adeea5c9b48e687",
+    "trackedFilesIdentical": 90,
+    "paidProviderRequests": 0
+  },
+  "artwork": {
+    "catalog": 143,
+    "localCustomBases": 12,
+    "distinctPosesPerFighter": 4,
+    "totalPoseCrops": 620
+  },
+  "archive": "/Users/home/WWW/who-would-win-v2.0/ios/build/runs/20260927T101544Z-archive-2.0-115-72d542c7-c7acc4/WhoWouldWin.xcarchive",
+  "ipaSHA256": "0f2a2ca41de705c4c7716bc8a87a70ca32cbe3160dd15f65cbc6a8d5dc050f66",
+  "evidence": {
+    "qa": {
+      "path": "ios/build/QA-2.0-115-72d542c7-final.json",
+      "sha256": "6e659337f02a42b5f8d56dd48aa31d26e06a6460a64b41c1c6e120590e38cc55"
+    },
+    "export": {
+      "path": "ios/build/release-tools/export-115-72d542c7/export-evidence.json",
+      "sha256": "7b95aef67109aa45a302f0bd65e5a3bb3c2c6eb80e1830d3223d2e7c7102f397"
+    },
+    "upload": {
+      "path": "ios/build/release-tools/upload-115-72d542c7/upload-evidence.json",
+      "sha256": "bdc580ca0e185f4b80df1a16783b1189893b950b8c55c31e1afc5ba16d7f15c4"
+    },
+    "appleAvailability": {
+      "path": "ios/build/release-tools/asc-115-72d542c7-available.json",
+      "sha256": "7ac229ffff3c91543839109f6e2a9809210c160909f2b565972a152781bc922e"
+    },
+    "homePreview": {
+      "path": "docs/v2.0/evidence/miami-home-115.png",
+      "sha256": "1ccf8a0e1bad4bc9c6a09e1228254c9ebac347990446d6e538034d2fc69843a4"
+    }
+  },
+  "warnings": [
+    "Same non-blocking missing third-party GoogleMobileAds and UserMessagingPlatform dSYM upload warnings as114. The app dSYM is present; Apple accepted and validated the build."
+  ],
+  "physicalOwnerChecks": [
+    "Install 2.0 (115) over the existing app without erasing or reinstalling; verify coins, collections, parental PIN and interrupted tournaments.",
+    "Verify real Sandbox purchase/restore, current Premium entitlement and the existing saved fighter library on a physical device.",
+    "Verify iCloud/Game Center and device permissions, including real microphone/narration behavior where enabled.",
+    "Check VoiceOver, larger text, Reduce Motion and readable controls on a physical iPhone and iPad.",
+    "Check sustained battle animation, memory, background/resume and offline saved-fighter playback on physical hardware."
+  ]
+}
