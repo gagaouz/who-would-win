@@ -1,0 +1,178 @@
+{
+  "version": "2.0",
+  "build": "116",
+  "sourceCommit": "86478923c819ca03608727ecfbe94c28b639e549",
+  "branch": "develop/2.0",
+  "availabilityCheckedAt": "2026-09-27T11:54:30.571224+00:00",
+  "ascBuildID": "fdf1d2a3-6e74-4d62-90f5-71dff1a5b881",
+  "processingState": "VALID",
+  "buildAudienceType": "INTERNAL_ONLY",
+  "internalBuildState": "IN_BETA_TESTING",
+  "testerGroup": "self",
+  "candidatePresentInTesterGroup": true,
+  "testNotesReadBack": true,
+  "ownerDeviceInstallVerified": false,
+  "publicReleaseEligible": false,
+  "nativeTests": {
+    "phone": {
+      "unit": 84,
+      "ui": 17
+    },
+    "tablet": {
+      "ui": 17
+    },
+    "totalExecutions": 118,
+    "distinctMethods": 101,
+    "failures": 0,
+    "skips": 0
+  },
+  "visualReview": {
+    "finalUIAttachments": 138,
+    "completeShareExports": 8,
+    "blockingDefects": 0
+  },
+  "motionReview": {
+    "status": "accepted",
+    "scenarioRecordings": 8,
+    "timedFrames": 56,
+    "additionalHeldButtonRecording": 1,
+    "normalAndReducedChampionCapturedOnBothDevices": true,
+    "observedClockSequences": {
+      "phone": {
+        "sceneInactive": 3,
+        "covered": 3,
+        "clipping": 3
+      },
+      "tablet": {
+        "sceneInactive": 3,
+        "covered": 3,
+        "clippingLogoOnly": 1
+      }
+    },
+    "physicalDevicePerformanceVerified": false
+  },
+  "upgrade": {
+    "baseline": "1.1.7",
+    "cases": [
+      "settled",
+      "pending"
+    ],
+    "bothPassed": true,
+    "scope": "Isolated simulator fixture using original persistence code; physical owner upgrade is pending."
+  },
+  "backend": {
+    "testsPassed": 145,
+    "rerunFor116": false,
+    "testedRuntimeCommit": "72aeef18f117572068a1c71f6adeea5c9b48e687",
+    "trackedFilesIdentical": 90,
+    "paidProviderRequests": 0
+  },
+  "artwork": {
+    "catalog": 143,
+    "localCustomBases": 12,
+    "distinctPosesPerFighter": 4,
+    "totalPoseCrops": 620
+  },
+  "archive": "/Users/home/WWW/who-would-win-v2.0/ios/build/runs/20260927T114742Z-archive-2.0-116-86478923-8b16bb/WhoWouldWin.xcarchive",
+  "ipaSHA256": "9284654ca2af99d9c92680386fb54a11760ff2eeca958e4d86a4dd1d8f171e0a",
+  "evidence": [
+    {
+      "path": "ios/build/QA-2.0-116-86478923-final.json",
+      "sha256": "a82e3d050677053cf3b3c82f2556f614cc9f4c08a2fe3d4c4f339c98ab2009e6"
+    },
+    {
+      "path": "ios/build/subtle-motion/motion-review-116-r2.json",
+      "sha256": "b8e5ae81d9a6d973f7c49ee9cc7d5b07a6f116a63faf62bc266233984a1a87d1"
+    },
+    {
+      "path": "ios/build/subtle-motion/lifecycle-review-r2-independent.json",
+      "sha256": "08dd38986853aa583845c5ceb1f827d16d707b7cde13d08f6d88ddbe2f6f8baf"
+    },
+    {
+      "path": "ios/build/subtle-motion/temporal/tablet-r2/temporal-observations.json",
+      "sha256": "b5f68c96036ecedae95d710fa91be75270a19e08fa7eb5ebd1ba883a14c6158e"
+    },
+    {
+      "path": "ios/build/subtle-motion/temporal/phone-r2-held-controls-observations.json",
+      "sha256": "23d7fe4d2758834d199c443e3930fbaf910445b6fcca63162aee9307f1b6326e"
+    },
+    {
+      "path": "ios/build/subtle-motion/archive-116-independent-inspection.json",
+      "sha256": "98102d694c8278274f2350df660033aafe1d8c6e204a2fa8d1c1379038fee175"
+    },
+    {
+      "path": "ios/build/subtle-motion/export-116/export-evidence.json",
+      "sha256": "fc56cf92c7514912a68a3cf2303f47900abbbd1c4c6f38dbbdbb51b4b9c73004"
+    },
+    {
+      "path": "ios/build/subtle-motion/upload-116/upload-evidence.json",
+      "sha256": "9960d1f2ecd2db7ec642734a1575e104e9c8b18a9842e10cf53a4e3d72d29159"
+    },
+    {
+      "path": "ios/build/subtle-motion/asc-116-available-notes.json",
+      "sha256": "e21e9b23435e880aa923ed7f451b10e172246bbc09e42f220898be02ff4652de"
+    },
+    {
+      "path": "/Users/home/WWW/who-would-win-v2.0/ios/build/runs/20260927T114742Z-archive-2.0-116-86478923-8b16bb/run.json",
+      "sha256": "79f9d85a74437a86abf39da1f9bb8967944f487d994baf1d00b6023097567c50"
+    },
+    {
+      "path": "ios/build/subtle-motion/readiness-116-preupload-summary-20260927.json",
+      "sha256": "60d3f4bb3cb293ca915e1877f44aecc5b53ea24a838a558370f2d98deda2803e"
+    },
+    {
+      "path": "docs/v2.0/TESTFLIGHT_NOTES_116.txt",
+      "sha256": "21a61f2900883a37436c75f50363970466538496a80d0731ec30edd7a180b5a5"
+    },
+    {
+      "path": "ios/build/subtle-motion/final-phone-r2/run.json",
+      "sha256": "79a015e795cbc6e76e8be939e73411ab9ae19a5da5b9931a427611e77ae4aa59"
+    },
+    {
+      "path": "ios/build/subtle-motion/final-phone-r2/visual-review.json",
+      "sha256": "a4864e2434d5550824a303d880528e2b01b1be1f8767b20847e6928fc1d7d41b"
+    },
+    {
+      "path": "ios/build/subtle-motion/temporal/phone-r2/capture-manifest.json",
+      "sha256": "061eda640315a9ffe6642b19e2eb23f09a90c75b171cb4d44f6e0c7334f6b0ab"
+    },
+    {
+      "path": "ios/build/subtle-motion/lifecycle-observations-r2-phone.json",
+      "sha256": "f627e905208d63fcb6fd8e49f906baaebcbfedae3a6bde81dfb7b1e09e8b38b4"
+    },
+    {
+      "path": "ios/build/subtle-motion/final-tablet-r2/run.json",
+      "sha256": "be9e0e3599d6c669ac866c9be4042c055f543c8580cc5ff832e02c242a5efffc"
+    },
+    {
+      "path": "ios/build/subtle-motion/final-tablet-r2/visual-review.json",
+      "sha256": "ab04f92396c6690d7d6f0b9cefb3697c7f6551e58c41b3a1319d9f15be006fef"
+    },
+    {
+      "path": "ios/build/subtle-motion/temporal/tablet-r2/capture-manifest.json",
+      "sha256": "1131332b98072c97a3116c31a98cb5c409cacbaf09c0621dc1650c1baf2c6a02"
+    },
+    {
+      "path": "ios/build/subtle-motion/lifecycle-observations-r2-tablet.json",
+      "sha256": "5961aac407d709f2e93779c763d99125cf402645ac700f457194d29bbb933197"
+    },
+    {
+      "path": "ios/build/runs/20260927T113235Z-upgrade-e84268/upgrade-report.json",
+      "sha256": "933bc138765f1330ab450101414bd92bb409757ed2285b35dc430674919fde65"
+    },
+    {
+      "path": "ios/build/runs/20260927T113235Z-upgrade-e84268/post-upgrade-home-review.json",
+      "sha256": "fc8a3755401d18dd5432b91d9d575aabb8115272bf1a99a2725d0b171a088e45"
+    }
+  ],
+  "warnings": [
+    "The same non-blocking missing GoogleMobileAds/UserMessagingPlatform framework dSYM upload warnings as115 recur. The app dSYM matches its Release binary. Apple accepted and validated this build."
+  ],
+  "physicalOwnerChecks": [
+    "Install 2.0 (116) over the existing app without erasing or reinstalling; verify coins, collections, parental PIN and interrupted tournaments.",
+    "Verify real Sandbox purchase/restore, current Premium entitlement and the existing saved fighter library on a physical device.",
+    "Verify iCloud/Game Center and device permissions, including real microphone/narration behavior where enabled.",
+    "Check VoiceOver, larger text, Reduce Motion and readable controls on a physical iPhone and iPad.",
+    "Check the subtle featured/facts/winner effects and control feedback, sustained battle animation, memory, background/resume and offline saved-fighter playback on physical hardware."
+  ]
+}
