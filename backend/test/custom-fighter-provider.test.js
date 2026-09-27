@@ -50,7 +50,7 @@ test('image adapter extracts the single returned image and preserves pinned paid
   assert.equal(form.get('size'), '1024x1024');
   assert.equal(form.get('n'), '1');
   assert.equal(form.get('background'), 'transparent');
-  assert.equal(form.get('moderation'), 'low');
+  assert.equal(form.get('moderation'), 'auto');
   assert.equal(form.get('output_format'), 'png');
   assert.equal(form.get('image[]').type, 'image/png');
   assert.equal(usage.length, 1);
@@ -98,7 +98,7 @@ test('provider refusal diagnostics retain only documented stage values and never
       return true;
     });
     assert.equal(requests.length, 1);
-    assert.equal(requests[0].request.body.get('moderation'), 'low');
+    assert.equal(requests[0].request.body.get('moderation'), 'auto');
   }
 });
 

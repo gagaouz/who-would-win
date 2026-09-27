@@ -127,11 +127,9 @@ class OpenAISpriteProvider {
         form.set('quality', 'medium');
         form.set('background', 'transparent');
         form.set('output_format', 'png');
-        // The supported low preset reduces extra age-appropriateness filtering for benign subjects.
-        // Provider policy still applies; the game's separate input, whole-sheet/pose moderation,
-        // and strict semantic safety review remain mandatory before anything reaches a library.
-        // https://developers.openai.com/api/docs/guides/image-generation#content-moderation
-        form.set('moderation', 'low');
+        // Keep the provider's standard filtering as well as the game's separate input,
+        // whole-sheet/pose moderation and strict semantic safety review before publication.
+        form.set('moderation', 'auto');
         form.set('image[]', new Blob([new Uint8Array(reference)], { type: 'image/png' }), 'style-reference.png');
         const response = await this.request('images/edits', form, true);
         const usage = response.usage ?? {};

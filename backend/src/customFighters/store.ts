@@ -283,7 +283,7 @@ export class PostgresFighterStore implements FighterStore {
       await db.query('INSERT INTO custom_fighter_assets(id,owner_id,name,manifest,original_png,runtime_png,provenance) VALUES($1,$2,$3,$4::jsonb,$5,$6,$7::jsonb)',
         [manifest.assetID, row.owner_id, row.name, JSON.stringify(manifest), original, runtime,
           JSON.stringify({ jobID: job.id, promptVersion: 'custom-art-v2', normalizerVersion: 'complete-poses-v2', imageModel: IMAGE_MODEL, reviewModel: REVIEW_MODEL,
-            quality: 'medium', generationModeration: 'low', acceptedModeration: true, acceptedSemanticReview: true, consentVersion: 'custom-art-v1' })]);
+            quality: 'medium', generationModeration: 'auto', acceptedModeration: true, acceptedSemanticReview: true, consentVersion: 'custom-art-v1' })]);
       await db.query('UPDATE custom_fighter_quotas SET reserved=GREATEST(0,reserved-1),used=used+1 WHERE owner_id=$1 AND environment=$2 AND period_key=$3', [row.owner_id, row.environment, row.period_key]);
       await db.query("UPDATE custom_fighter_jobs SET state='ready',asset_id=$2,quota_reserved=FALSE,worker_token=NULL,lease_until=NULL,updated_at=NOW() WHERE id=$1", [job.id, manifest.assetID]);
       return true;
