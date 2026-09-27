@@ -1,12 +1,12 @@
 {
   "version": "2.0",
-  "build": "118",
-  "ascVerifiedAt": "2026-09-27T17:13:40.666982+00:00",
-  "evidence": "docs/v2.0/evidence/asc-allocation-2026-09-27T171340Z.json",
+  "build": "119",
+  "ascVerifiedAt": "2026-09-27T19:53:12.653512+00:00",
+  "evidence": "docs/v2.0/evidence/asc-allocation-2026-09-27T195312Z.json",
   "distributionScope": "internal-testflight",
   "allocatedBranch": "develop/2.0",
-  "highestUploadedBuildAtCheck": 117,
+  "highestUploadedBuildAtCheck": 118,
   "maintenanceSourceBuild": "109",
-  "nextUnallocatedBuildAtCheck": 119,
-  "note": "Build 118 allocated for Leonidas\u2019s winning Great Dane tribute. Recheck ASC before upload; internal TestFlight only."
+  "nextUnallocatedBuildAtCheck": 120,
+  "note": "Build 119 allocated for the home Fact of the Day card layout correction. Recheck ASC before upload; internal TestFlight only."
 }

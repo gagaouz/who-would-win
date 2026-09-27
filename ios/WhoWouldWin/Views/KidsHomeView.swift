@@ -483,38 +483,45 @@ struct KidsHomeView: View {
     private var factOfTheDayCard: some View {
         let a = factOfTheDayAnimal
         let fact = AnimalFacts.facts(for: a.id)
-        return HStack(spacing: 12) {
-            ZStack {
-                RetroPanelShape(cornerRadius: 12, style: .continuous)
-                    .fill(Kids.sky)
-                    .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).fill(Kids.sheen))
-                    .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
-                CreatureIcon(animal: a, size: 34)
+        return VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .center, spacing: 12) {
+                ZStack {
+                    RetroPanelShape(cornerRadius: 12, style: .continuous)
+                        .fill(Kids.sky)
+                        .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
+                    CreatureIcon(animal: a, size: 44)
+                }
+                .frame(width: 56, height: 56)
+                .accessibilityHidden(true)
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("FACT OF THE DAY")
+                        .font(Kids.pixel(8))
+                        .foregroundColor(Kids.inkSoft)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text(a.name)
+                        .font(Kids.pixel(12))
+                        .foregroundColor(Kids.ink)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .frame(width: 44, height: 44)
-            VStack(alignment: .leading, spacing: 1) {
-                Text("FACT OF THE DAY")
-                    .font(Kids.fredoka(10, weight: .bold))
-                    .foregroundColor(Kids.inkSoft)
-                // Name the creature, so the fact (written as "It is…") always
-                // says what it's about.
-                Text(a.name)
-                    .font(Kids.fredoka(13, weight: .bold))
-                    .foregroundColor(Kids.ink)
-                    .lineLimit(1).minimumScaleFactor(0.8)
-                Text(fact?.coolFact ?? "")
-                    .readingText(.callout)
-                    .foregroundColor(Kids.inkSoft)
-            }
-            Spacer(minLength: 0)
+            // Let the fact use the card's full width instead of squeezing
+            // scalable prose beside a small icon and two crowded headings.
+            Text(fact?.coolFact ?? "")
+                .readingText(.callout)
+                .foregroundColor(Kids.inkSoft)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(.horizontal, 12).padding(.vertical, 12)
+        .padding(16)
         .background(
             RetroPanelShape(cornerRadius: 18, style: .continuous)
                 .fill(Kids.cream)
                 .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
         .compositingGroup().shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 3)
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("home.dailyFact")
     }
 
     // MARK: - Daily Challenge card
