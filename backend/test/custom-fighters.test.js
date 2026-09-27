@@ -340,9 +340,125 @@ test('settled successful exposure preserves prior holds and bounds concurrent ne
  assert.ok(admitted.filter(x=>x.status==='rejected').every(x=>x.reason.code==='budget_exhausted'));
  assert.equal(Number((await budgetState()).reserved_microdollars),4900000);
 });
-test('failure with complete usage keeps full reservation and never runs successful settlement',async()=>{
+test('known review failure settles complete usage once, preserves history and returns the customer credit',async()=>{
  const {job,claim}=await publicationFixture();const before=await budgetState();
- await store.fail(claim,'rejected','quality_rejected',{stage:'artwork_review'});
- assert.deepEqual(await budgetState(),before);
- assert.equal(Number((await pool.query('SELECT budget_reserved FROM custom_fighter_jobs WHERE id=$1',[job.id])).rows[0].budget_reserved),1000000);
+ await Promise.all(Array.from({length:6},()=>store.fail(claim,'rejected','quality_rejected',{stage:'artwork_review'})));
+ const after=await budgetState();assert.equal(Number(after.reserved_microdollars),100000);assert.equal(after.actual_microdollars,before.actual_microdollars);
+ const row=(await pool.query('SELECT budget_reserved,usage,state FROM custom_fighter_jobs WHERE id=$1',[job.id])).rows[0];
+ assert.equal(Number(row.budget_reserved),100000);assert.deepEqual(row.usage,completeUsage());assert.equal(row.state,'rejected');
+ const allowance=await store.allowance(owner,proof());assert.equal(allowance.used,0);assert.equal(allowance.reserved,0);assert.equal(allowance.remaining,3);
+ assert.equal((await store.list(owner)).fighters.length,0);
+});
+test('known image-only mechanical failure settles atomically while preserving other holds and concurrent admission limit',async()=>{
+ const {job,claim}=await publicationFixture([completeUsage()[0]]);
+ await pool.query('UPDATE custom_fighter_budgets SET reserved_microdollars=4800000');
+ const before=await budgetState();await store.fail(claim,'rejected','quality_rejected',{stage:'image_validation'});
+ const after=await budgetState();assert.equal(Number(after.reserved_microdollars),3900000);assert.equal(after.actual_microdollars,before.actual_microdollars);
+ const row=(await pool.query('SELECT budget_reserved,usage FROM custom_fighter_jobs WHERE id=$1',[job.id])).rows[0];
+ assert.equal(Number(row.budget_reserved),100000);assert.deepEqual(row.usage,[completeUsage()[0]]);
+ const owners=await Promise.all(Array.from({length:8},()=>newOwner()));const attempts=await Promise.allSettled(owners.map(id=>enqueue(id)));
+ assert.equal(attempts.filter(x=>x.status==='fulfilled').length,1);assert.ok(attempts.filter(x=>x.status==='rejected').every(x=>x.reason.code==='budget_exhausted'));
+ assert.equal(Number((await budgetState()).reserved_microdollars),4900000);
+});
+test('uncertain failure and incomplete stage usage retain the full hold even when some completed usage exists',async()=>{
+ for(const scenario of [
+  {usage:completeUsage(),state:'reconciling',stage:'artwork_review'},
+  {usage:[completeUsage()[0]],state:'failed',stage:'artwork_review'},
+  {usage:[],state:'rejected',stage:'image_generation'},
+  {usage:completeUsage(),state:'failed',stage:undefined},
+ ]){
+  const {job,claim}=await publicationFixture(scenario.usage);const before=await budgetState();
+  await store.fail(claim,scenario.state,scenario.state==='reconciling'?'provider_uncertain':'quality_rejected',{stage:scenario.stage});
+  assert.deepEqual(await budgetState(),before);
+  assert.equal(Number((await pool.query('SELECT budget_reserved FROM custom_fighter_jobs WHERE id=$1',[job.id])).rows[0].budget_reserved),1000000);
+ }
+ assert.equal((await store.allowance(owner,proof())).remaining,3);
+});
+
+test('creation availability reads exact global reservation headroom without changing ledger or quota',async()=>{
+ assert.equal(await store.hasCreationBudget(),true);
+ assert.equal((await pool.query('SELECT COUNT(*)::int AS count FROM custom_fighter_budgets')).rows[0].count,0);
+ await pool.query("INSERT INTO custom_fighter_budgets(scope,reserved_microdollars,actual_microdollars) VALUES('beta-lifetime-v1',4000000,225639)");
+ assert.equal(await store.hasCreationBudget(),true);
+ await pool.query('UPDATE custom_fighter_budgets SET reserved_microdollars=4000001');
+ const before=await budgetState();assert.equal(await store.hasCreationBudget(),false);assert.deepEqual(await budgetState(),before);
+ await pool.query('UPDATE custom_fighter_budgets SET reserved_microdollars=0,actual_microdollars=4000001');
+ assert.equal(await store.hasCreationBudget(),false);
+ await pool.query('UPDATE custom_fighter_budgets SET actual_microdollars=4000000');
+ assert.equal(await store.hasCreationBudget(),true);
+ assert.equal((await store.allowance(owner,proof())).remaining,3);
+});
+test('public and authenticated status pause creation at budget limit but preserve two credits and library access',async()=>{
+ const {job,claim,pack}=await publicationFixture();await store.publish(claim,pack.original,pack.runtime,pack.manifest);
+ await pool.query('UPDATE custom_fighter_budgets SET reserved_microdollars=5000000');
+ const api=express();api.use(express.json());let proofChecks=0;
+ api.use('/api/custom-fighters',createCustomFighterRouter({store:()=>store,owner:(req,_res,next)=>{req.customFighterOwner={id:owner,libraryEpoch:1};next()},available:()=>{},
+ subscription:async()=>{proofChecks++;return proof()},status:()=>({enabled:true,configured:true,monthlyAllowance:3,requiresSubscription:true})}));
+ const server=api.listen(0,'127.0.0.1');await new Promise(resolve=>server.once('listening',resolve));
+ const base=`http://127.0.0.1:${server.address().port}/api/custom-fighters`;
+ try{
+  const before=await budgetState();const publicResponse=await fetch(base+'/status');assert.equal(publicResponse.status,200);assert.equal(publicResponse.headers.get('cache-control'),'no-store');
+  const publicStatus=await publicResponse.json();assert.equal(publicStatus.enabled,false);assert.equal(publicStatus.configured,true);assert.equal(publicStatus.featureEnabled,true);assert.equal(publicStatus.creationAvailable,false);assert.equal(publicStatus.unavailabilityCode,'budget_exhausted');assert.match(publicStatus.availabilityMessage,/credits are unchanged/);assert.equal(publicStatus.allowance,undefined);
+  const post=body=>fetch(base+'/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const authResponse=await post({signedTransaction:'fixture-proof'});assert.equal(authResponse.status,200);
+  const auth=await authResponse.json();assert.equal(auth.enabled,false);assert.equal(auth.activeSubscription,true);assert.deepEqual(auth.allowance,{limit:3,used:1,reserved:0,remaining:2,periodKey:new Date().toISOString().slice(0,7)});
+  const noProof=await (await post({})).json();assert.equal(noProof.enabled,false);assert.equal(noProof.activeSubscription,false);assert.equal(proofChecks,1);
+  const library=await (await fetch(base)).json();assert.equal(library.fighters.length,1);assert.equal(library.jobs[0].id,job.id);
+  const imageResponse=await fetch(base+'/'+library.fighters[0].id+'/sheet');assert.equal(imageResponse.status,200);
+  const newRequest=await fetch(base,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'Robot',idempotencyKey:randomUUID(),signedTransaction:'fixture-proof',consentVersion:'custom-art-v1'})});
+  assert.equal(newRequest.status,503);assert.equal((await newRequest.json()).code,'budget_exhausted');assert.deepEqual(await budgetState(),before);
+  // Simulate a separately audited reconciliation; status does not perform this mutation.
+  await pool.query('UPDATE custom_fighter_budgets SET reserved_microdollars=4000000');
+  const resumed=await (await post({signedTransaction:'fixture-proof'})).json();assert.equal(resumed.enabled,true);assert.equal(resumed.creationAvailable,true);assert.equal(resumed.unavailabilityCode,undefined);assert.equal(resumed.allowance.remaining,2);
+ }finally{await new Promise(resolve=>server.close(resolve));}
+});
+test('status fails closed for unavailable budget storage and avoids storage when feature is disabled',async()=>{
+ let feature=true,calls=0;const api=express();api.use(createCustomFighterRouter({store:()=>{calls++;throw Error('private database details')},status:()=>({enabled:feature,configured:true,monthlyAllowance:3,requiresSubscription:true})}));
+ const server=api.listen(0,'127.0.0.1');await new Promise(resolve=>server.once('listening',resolve));
+ const base=`http://127.0.0.1:${server.address().port}`;
+ try{
+  const response=await fetch(base+'/status');assert.equal(response.status,200);const value=await response.json();assert.equal(value.enabled,false);assert.equal(value.configured,true);assert.equal(value.unavailabilityCode,'provider_unavailable');assert.ok(!JSON.stringify(value).includes('private database'));
+  feature=false;const disabled=await(await fetch(base+'/status')).json();assert.equal(disabled.enabled,false);assert.equal(disabled.featureEnabled,false);assert.equal(disabled.unavailabilityCode,'feature_disabled');assert.equal(calls,1);
+ }finally{await new Promise(resolve=>server.close(resolve));}
+});
+
+const refusalMetadata = () => ({operation:'image',outcome:'http_refusal',responseReceived:true,responseComplete:true,
+ httpStatus:400,requestID:'req_fixture-refusal_1',moderationStage:'output',paid:true,billing:'unknown'});
+test('private provider facts preserve definite refusal separately from timeout without releasing either paid hold',async()=>{
+ const variants=[refusalMetadata(),{operation:'image',outcome:'timeout',responseReceived:false,responseComplete:false,paid:true,billing:'unknown'},
+  {operation:'review',outcome:'transport_error',responseReceived:true,responseComplete:false,httpStatus:200,requestID:'req_stream',paid:true,billing:'unknown'}];
+ for(const metadata of variants){
+  const {job}=await enqueue();const stage=metadata.operation==='review'?'artwork_review':'image_generation';
+  const fail=async()=>{throw new ProviderError(metadata.outcome==='http_refusal'?'content_rejected':'provider_uncertain','private provider prose','provider_fixture_failure',{...metadata,body:'private response',headers:{Authorization:'private credential'}})};
+  await processNextFighter(store,{...passingProvider(),...(stage==='artwork_review'?{review:fail}:{generate:fail})},noGuard);
+  const row=(await pool.query('SELECT failure_provider,budget_reserved FROM custom_fighter_jobs WHERE id=$1',[job.id])).rows[0];
+  assert.deepEqual(row.failure_provider,metadata);assert.equal(Number(row.budget_reserved),1000000);
+  const representations=[await store.job(owner,job.id),await store.list(owner)];
+  for(const dto of representations){const json=JSON.stringify(dto);for(const privateValue of ['failure_provider','responseReceived','requestID','req_fixture','private response','private credential'])assert.equal(json.includes(privateValue),false);}
+ }
+ assert.equal(Number((await budgetState()).reserved_microdollars),3000000);
+ assert.equal((await store.allowance(owner,proof())).remaining,3);
+});
+test('provider diagnostic persistence rejects malformed fields and contradictory billing instead of retaining provider data',async()=>{
+ const patches=[{operation:'arbitrary private name'},{operation:{toString:()=> 'image'}},{outcome:'unknown outcome'},
+  {responseReceived:'true'},{responseReceived:false,responseComplete:true},{httpStatus:999},{httpStatus:400.5},
+  {requestID:'private response text'},{requestID:'req_'+ 'x'.repeat(121)},{moderationStage:'private provider prose'},
+  {paid:false},{billing:'not_applicable'}];
+ for(const patch of patches){
+  const id=await newOwner();const {job}=await enqueue(id);const claim=await store.claim();
+  await store.fail(claim,'rejected','content_rejected',{stage:'name_moderation',provider:{...refusalMetadata(),...patch}});
+  assert.equal((await pool.query('SELECT failure_provider FROM custom_fighter_jobs WHERE id=$1',[job.id])).rows[0].failure_provider,null);
+ }
+ assert.equal(Number((await budgetState()).reserved_microdollars),0);
+});
+test('private provider diagnostics expire after ninety days and are erased with the account',async()=>{
+ const metadata={operation:'moderation',outcome:'safety_rejection',responseReceived:true,responseComplete:true,httpStatus:200,requestID:'req_moderation',paid:false,billing:'not_applicable'};
+ const {job}=await enqueue();const claim=await store.claim();
+ await store.fail(claim,'rejected','content_rejected',{stage:'name_moderation',reason:'moderation_flagged',provider:metadata});
+ assert.deepEqual((await pool.query('SELECT failure_provider FROM custom_fighter_jobs WHERE id=$1',[job.id])).rows[0].failure_provider,metadata);
+ await pool.query("UPDATE custom_fighter_jobs SET updated_at=NOW()-INTERVAL '91 days' WHERE id=$1",[job.id]);await store.recover();
+ assert.deepEqual((await pool.query('SELECT failure_stage,failure_reason,failure_provider FROM custom_fighter_jobs WHERE id=$1',[job.id])).rows[0],{failure_stage:null,failure_reason:null,failure_provider:null});
+ const fresh=await enqueue();await store.fail(await store.claim(),'rejected','content_rejected',{stage:'name_moderation',reason:'moderation_flagged',provider:metadata});
+ await store.eraseOwner(owner);
+ assert.deepEqual((await pool.query('SELECT failure_stage,failure_reason,failure_provider FROM custom_fighter_jobs WHERE id=$1',[fresh.job.id])).rows[0],{failure_stage:null,failure_reason:null,failure_provider:null});
 });

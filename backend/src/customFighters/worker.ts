@@ -40,7 +40,8 @@ export async function processNextFighter(store: FighterStore, provider: SpritePr
     // message while the private diagnostic preserves the actual failed safety stage.
     const code = providerCode === 'content_rejected' && stage !== 'name_moderation' ? 'quality_rejected' : providerCode;
     await store.fail(job, code === 'provider_uncertain' ? 'reconciling' : code === 'content_rejected' || code === 'quality_rejected' ? 'rejected' : 'failed', code,
-      { stage, reason: error instanceof ProviderError ? error.reason : undefined });
+      { stage, reason: error instanceof ProviderError ? error.reason : undefined,
+        provider: error instanceof ProviderError ? error.provider : undefined });
   }
   return true;
 }

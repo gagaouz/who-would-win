@@ -32,7 +32,30 @@ function createCustomFighterRouter(dependencies = {}) {
     const store = dependencies.store ?? store_1.getFighterStore;
     const subscription = dependencies.subscription ?? customFighterAuth_1.requireCustomFighterSubscription;
     const available = dependencies.available ?? config_1.requireGenerationAvailable;
-    const status = dependencies.status ?? (() => ({ enabled: (0, config_1.enabled)(), configured: (0, config_1.configured)(), monthlyAllowance: (0, config_1.monthlyAllowance)(), requiresSubscription: true }));
+    const configuration = dependencies.status ?? (() => ({ enabled: (0, config_1.enabled)(), configured: (0, config_1.configured)(), monthlyAllowance: (0, config_1.monthlyAllowance)(), requiresSubscription: true }));
+    const status = async () => {
+        const flags = configuration();
+        let unavailabilityCode;
+        if (!flags.enabled)
+            unavailabilityCode = 'feature_disabled';
+        else if (!flags.configured)
+            unavailabilityCode = 'provider_unavailable';
+        else {
+            try {
+                if (!await store().hasCreationBudget())
+                    unavailabilityCode = 'budget_exhausted';
+            }
+            catch {
+                unavailabilityCode = 'provider_unavailable';
+            }
+        }
+        // Build114 already gates Create on enabled. Preserve real account credits; this flag
+        // describes whether the service can admit work, not whether the customer spent credits.
+        return { ...flags, enabled: unavailabilityCode === undefined, featureEnabled: flags.enabled,
+            creationAvailable: unavailabilityCode === undefined,
+            ...(unavailabilityCode ? { unavailabilityCode,
+                availabilityMessage: 'New artwork is temporarily paused. Your artwork credits are unchanged, and saved fighters still work.' } : {}) };
+    };
     const owner = (req) => {
         const id = req.customFighterOwner?.id;
         if (!id)
@@ -49,22 +72,23 @@ function createCustomFighterRouter(dependencies = {}) {
             });
         });
     };
-    router.get('/status', (_req, res) => { res.json(status()); });
+    router.get('/status', wrap(async (_req, res) => { res.setHeader('Cache-Control', 'no-store'); res.json(await status()); }));
     router.get('/privacy', (_req, res) => {
         res.setHeader('Cache-Control', 'no-cache');
         res.sendFile((0, node_path_1.join)(__dirname, 'privacy.html'));
     });
     router.use(dependencies.owner ?? customFighterAuth_1.requireCustomFighterOwner);
     router.post('/status', wrap(async (req, res) => {
+        res.setHeader('Cache-Control', 'private, no-store');
         const signed = req.body?.signedTransaction;
         if (signed == null || signed === '') {
-            res.json({ ...status(), activeSubscription: false, allowance: { limit: (0, config_1.monthlyAllowance)(), used: 0, reserved: 0, remaining: 0, periodKey: new Date().toISOString().slice(0, 7) } });
+            res.json({ ...await status(), activeSubscription: false, allowance: { limit: (0, config_1.monthlyAllowance)(), used: 0, reserved: 0, remaining: 0, periodKey: new Date().toISOString().slice(0, 7) } });
             return;
         }
         if (typeof signed !== 'string' || signed.length > 20000)
             throw new types_1.FighterError('invalid_request', 400, 'Invalid subscription proof.');
         const proof = await subscription(owner(req), signed);
-        res.json({ ...status(), activeSubscription: true, allowance: await store().allowance(owner(req), proof) });
+        res.json({ ...await status(), activeSubscription: true, allowance: await store().allowance(owner(req), proof) });
     }));
     router.post('/', wrap(async (req, res) => {
         const name = validatedName(req.body?.name), key = validID(req.body?.idempotencyKey), id = owner(req);

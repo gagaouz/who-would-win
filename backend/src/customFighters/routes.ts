@@ -19,16 +19,33 @@ export function validatedName(raw: unknown): string {
   if (!result.ok || !result.value) throw new FighterError('name_not_allowed', 400, 'Choose a different, family-friendly fighter.');
   return result.value;
 }
+interface ServiceConfiguration { enabled: boolean; configured: boolean; monthlyAllowance: number; requiresSubscription: boolean }
 interface Dependencies {
   owner?: RequestHandler; subscription?: (owner: string, signed: string) => Promise<SubscriptionProof>;
-  store?: () => FighterStore; available?: () => void; status?: () => object;
+  store?: () => FighterStore; available?: () => void; status?: () => ServiceConfiguration;
 }
 export function createCustomFighterRouter(dependencies: Dependencies = {}): Router {
   const router = Router();
   const store = dependencies.store ?? getFighterStore;
   const subscription = dependencies.subscription ?? requireCustomFighterSubscription;
   const available = dependencies.available ?? requireGenerationAvailable;
-  const status = dependencies.status ?? (() => ({ enabled: enabled(), configured: configured(), monthlyAllowance: monthlyAllowance(), requiresSubscription: true }));
+  const configuration = dependencies.status ?? (() => ({ enabled: enabled(), configured: configured(), monthlyAllowance: monthlyAllowance(), requiresSubscription: true }));
+  const status = async () => {
+    const flags = configuration();
+    let unavailabilityCode: 'feature_disabled' | 'provider_unavailable' | 'budget_exhausted' | undefined;
+    if (!flags.enabled) unavailabilityCode = 'feature_disabled';
+    else if (!flags.configured) unavailabilityCode = 'provider_unavailable';
+    else {
+      try { if (!await store().hasCreationBudget()) unavailabilityCode = 'budget_exhausted'; }
+      catch { unavailabilityCode = 'provider_unavailable'; }
+    }
+    // Build114 already gates Create on enabled. Preserve real account credits; this flag
+    // describes whether the service can admit work, not whether the customer spent credits.
+    return { ...flags, enabled: unavailabilityCode === undefined, featureEnabled: flags.enabled,
+      creationAvailable: unavailabilityCode === undefined,
+      ...(unavailabilityCode ? { unavailabilityCode,
+        availabilityMessage: 'New artwork is temporarily paused. Your artwork credits are unchanged, and saved fighters still work.' } : {}) };
+  };
   const owner = (req: Request): string => {
     const id = (req as Request & { customFighterOwner?: { id: string } }).customFighterOwner?.id;
     if (!id) throw new FighterError('unauthorized', 401, 'Sign in to use your fighter library.');
@@ -44,20 +61,21 @@ export function createCustomFighterRouter(dependencies: Dependencies = {}): Rout
       });
     });
   };
-  router.get('/status', (_req, res) => { res.json(status()); });
+  router.get('/status', wrap(async (_req, res) => { res.setHeader('Cache-Control', 'no-store'); res.json(await status()); }));
   router.get('/privacy', (_req, res) => {
     res.setHeader('Cache-Control', 'no-cache');
     res.sendFile(join(__dirname, 'privacy.html'));
   });
   router.use(dependencies.owner ?? requireCustomFighterOwner);
   router.post('/status', wrap(async (req, res) => {
+    res.setHeader('Cache-Control', 'private, no-store');
     const signed = req.body?.signedTransaction;
     if (signed == null || signed === '') {
-      res.json({ ...status(), activeSubscription: false, allowance: { limit: monthlyAllowance(), used: 0, reserved: 0, remaining: 0, periodKey: new Date().toISOString().slice(0, 7) } }); return;
+      res.json({ ...await status(), activeSubscription: false, allowance: { limit: monthlyAllowance(), used: 0, reserved: 0, remaining: 0, periodKey: new Date().toISOString().slice(0, 7) } }); return;
     }
     if (typeof signed !== 'string' || signed.length > 20_000) throw new FighterError('invalid_request', 400, 'Invalid subscription proof.');
     const proof = await subscription(owner(req), signed);
-    res.json({ ...status(), activeSubscription: true, allowance: await store().allowance(owner(req), proof) });
+    res.json({ ...await status(), activeSubscription: true, allowance: await store().allowance(owner(req), proof) });
   }));
   router.post('/', wrap(async (req, res) => {
     const name = validatedName(req.body?.name), key = validID(req.body?.idempotencyKey), id = owner(req);

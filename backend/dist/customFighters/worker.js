@@ -47,7 +47,8 @@ async function processNextFighter(store, provider, available = config_1.requireG
         // user's name was inappropriate. Existing clients show the credit-returned artwork
         // message while the private diagnostic preserves the actual failed safety stage.
         const code = providerCode === 'content_rejected' && stage !== 'name_moderation' ? 'quality_rejected' : providerCode;
-        await store.fail(job, code === 'provider_uncertain' ? 'reconciling' : code === 'content_rejected' || code === 'quality_rejected' ? 'rejected' : 'failed', code, { stage, reason: error instanceof types_1.ProviderError ? error.reason : undefined });
+        await store.fail(job, code === 'provider_uncertain' ? 'reconciling' : code === 'content_rejected' || code === 'quality_rejected' ? 'rejected' : 'failed', code, { stage, reason: error instanceof types_1.ProviderError ? error.reason : undefined,
+            provider: error instanceof types_1.ProviderError ? error.provider : undefined });
     }
     return true;
 }

@@ -15,6 +15,37 @@ const jobDTO = (row) => ({ id: row.id, state: row.state, name: row.name ?? '',
 const fighterDTO = (row) => ({ id: row.id, name: row.name, createdAt: iso(row.created_at),
     appearance: { schemaVersion: 1, assetID: row.id, version: 1, sha256: row.manifest.sha256 },
     manifest: row.manifest, sheetPath: `/api/custom-fighters/${row.id}/sheet` });
+/** Reconstruct a private bounded record; never persist arbitrary provider response fields. */
+function privateProviderFailure(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value))
+        return null;
+    const item = value;
+    if (typeof item.operation !== 'string' || !['moderation', 'image', 'review'].includes(item.operation)
+        || typeof item.outcome !== 'string' || !['http_refusal', 'http_error', 'timeout', 'transport_error', 'invalid_response', 'safety_rejection', 'quality_rejection'].includes(item.outcome)
+        || typeof item.responseReceived !== 'boolean' || typeof item.responseComplete !== 'boolean'
+        || (item.responseComplete && !item.responseReceived))
+        return null;
+    const paid = item.operation !== 'moderation';
+    if (item.paid !== paid || item.billing !== (paid ? 'unknown' : 'not_applicable'))
+        return null;
+    if (item.httpStatus !== undefined && (!item.responseReceived || !Number.isInteger(item.httpStatus)
+        || Number(item.httpStatus) < 100 || Number(item.httpStatus) > 599))
+        return null;
+    if (item.requestID !== undefined && (!item.responseReceived || typeof item.requestID !== 'string'
+        || !/^req_[A-Za-z0-9_-]{1,120}$/.test(item.requestID)))
+        return null;
+    if (item.moderationStage !== undefined && (typeof item.moderationStage !== 'string' || !['input', 'output', 'unknown'].includes(item.moderationStage)))
+        return null;
+    return {
+        operation: item.operation,
+        outcome: item.outcome,
+        responseReceived: item.responseReceived, responseComplete: item.responseComplete,
+        paid, billing: paid ? 'unknown' : 'not_applicable',
+        ...(item.httpStatus !== undefined ? { httpStatus: item.httpStatus } : {}),
+        ...(item.requestID !== undefined ? { requestID: item.requestID } : {}),
+        ...(item.moderationStage !== undefined ? { moderationStage: item.moderationStage } : {}),
+    };
+}
 class PostgresFighterStore {
     constructor(pool) {
         this.pool = pool;
@@ -56,6 +87,7 @@ class PostgresFighterStore {
       ALTER TABLE custom_fighter_jobs ADD COLUMN IF NOT EXISTS consent_version TEXT NOT NULL DEFAULT 'custom-art-v1';
       ALTER TABLE custom_fighter_jobs ADD COLUMN IF NOT EXISTS failure_stage TEXT;
       ALTER TABLE custom_fighter_jobs ADD COLUMN IF NOT EXISTS failure_reason TEXT;
+      ALTER TABLE custom_fighter_jobs ADD COLUMN IF NOT EXISTS failure_provider JSONB;
       ALTER TABLE custom_fighter_assets ADD COLUMN IF NOT EXISTS provenance JSONB;
     `).then(() => undefined).catch(error => { this.initialized = undefined; throw error; });
         return this.initialized;
@@ -99,6 +131,16 @@ class PostgresFighterStore {
         const result = await db.query('SELECT used, reserved FROM custom_fighter_quotas WHERE owner_id=$1 AND environment=$2 AND period_key=$3', [owner, environment, period]);
         const used = Number(result.rows[0]?.used ?? 0), reserved = Number(result.rows[0]?.reserved ?? 0), limit = (0, config_1.monthlyAllowance)();
         return { limit, used, reserved, remaining: Math.max(0, limit - used - reserved), periodKey: period };
+    }
+    /** Availability snapshot only; enqueue still reserves atomically under the shared ledger lock. */
+    async hasCreationBudget() {
+        await this.initialize();
+        const result = await this.pool.query("SELECT reserved_microdollars,actual_microdollars FROM custom_fighter_budgets WHERE scope='beta-lifetime-v1'");
+        const row = result.rows[0];
+        const amounts = [Number(row?.reserved_microdollars ?? 0), Number(row?.actual_microdollars ?? 0)];
+        if (!amounts.every(value => Number.isSafeInteger(value) && value >= 0))
+            return false;
+        return Math.max(...amounts) + config_1.JOB_RESERVATION_MICRODOLLARS <= (0, config_1.budgetMicrodollars)();
     }
     async allowance(owner, proof) {
         await this.initialize();
@@ -219,7 +261,7 @@ class PostgresFighterStore {
             const jobs = await db.query("SELECT * FROM custom_fighter_jobs WHERE owner_id=$1 AND state IN ('queued','generating','validating')", [owner]);
             for (const row of jobs.rows)
                 await this.release(db, row);
-            await db.query("UPDATE custom_fighter_jobs SET name=NULL,name_digest='',state='cancelled',error_code='deleted',asset_id=NULL,worker_token=NULL,lease_until=NULL,quota_reserved=FALSE,budget_reserved=0,usage='[]'::jsonb,updated_at=NOW() WHERE owner_id=$1", [owner]);
+            await db.query("UPDATE custom_fighter_jobs SET name=NULL,name_digest='',state='cancelled',error_code='deleted',asset_id=NULL,worker_token=NULL,lease_until=NULL,quota_reserved=FALSE,budget_reserved=0,usage='[]'::jsonb,failure_stage=NULL,failure_reason=NULL,failure_provider=NULL,updated_at=NOW() WHERE owner_id=$1", [owner]);
             // The auth layer increments library_epoch before this purge; other devices discard the previous local epoch.
             await db.query('DELETE FROM custom_fighter_assets WHERE owner_id=$1', [owner]);
             await db.query('DELETE FROM custom_fighter_reports WHERE owner_id=$1', [owner]);
@@ -238,7 +280,7 @@ class PostgresFighterStore {
                 }
             }
             await db.query("UPDATE custom_fighter_jobs SET name=NULL,name_digest='' WHERE state IN ('failed','rejected','cancelled','reconciling') AND updated_at < NOW() - INTERVAL '7 days'");
-            await db.query("UPDATE custom_fighter_jobs SET name=NULL,name_digest='',usage='[]'::jsonb,worker_token=NULL,lease_until=NULL WHERE state IN ('ready','failed','rejected','cancelled','reconciling') AND updated_at < NOW() - INTERVAL '90 days'");
+            await db.query("UPDATE custom_fighter_jobs SET name=NULL,name_digest='',usage='[]'::jsonb,worker_token=NULL,lease_until=NULL,failure_stage=NULL,failure_reason=NULL,failure_provider=NULL WHERE state IN ('ready','failed','rejected','cancelled','reconciling') AND updated_at < NOW() - INTERVAL '90 days'");
             // Keep idempotency tombstones and current quota to prevent erase/retry from generating paid duplicates.
             await db.query("DELETE FROM custom_fighter_quotas WHERE period_key < to_char(NOW() - INTERVAL '90 days','YYYY-MM')");
             await db.query("DELETE FROM custom_fighter_reports WHERE created_at < NOW() - INTERVAL '90 days'");
@@ -323,7 +365,20 @@ class PostgresFighterStore {
             await this.release(db, row);
             // Only bounded machine labels are retained, never provider prose, images, credentials or user input.
             const reason = diagnostic?.reason && /^[a-zA-Z][a-zA-Z0-9_]{0,63}$/.test(diagnostic.reason) ? diagnostic.reason : null;
-            await db.query('UPDATE custom_fighter_jobs SET state=$2,error_code=$3,quota_reserved=FALSE,budget_reserved=$4,failure_stage=$5,failure_reason=$6,worker_token=NULL,lease_until=NULL,updated_at=NOW() WHERE id=$1', [job.id, state, code, row.dispatched_at ? row.budget_reserved : 0, diagnostic?.stage ?? null, reason]);
+            const stage = diagnostic?.stage && ['name_moderation', 'dispatch', 'image_generation', 'image_validation', 'artwork_moderation', 'artwork_review', 'publication'].includes(diagnostic.stage) ? diagnostic.stage : null;
+            const provider = privateProviderFailure(diagnostic?.provider);
+            // A known terminal failure can settle only complete usage for every paid operation at its stage.
+            // Unknown/partial responses and reconciling jobs retain the full hold, regardless of HTTP status.
+            let retainedBudget = row.dispatched_at ? row.budget_reserved : '0';
+            const oldBudget = Number(row.budget_reserved);
+            const settled = row.dispatched_at && state !== 'reconciling' ? (0, cost_1.failedWorkflowCostBound)(row.usage, stage ?? undefined) : null;
+            if (settled !== null && Number.isSafeInteger(oldBudget) && oldBudget >= 0) {
+                const adjusted = await db.query("UPDATE custom_fighter_budgets SET reserved_microdollars=reserved_microdollars+$1 WHERE scope='beta-lifetime-v1' AND reserved_microdollars >= $2 AND reserved_microdollars+$1>=0 RETURNING scope", [settled - oldBudget, oldBudget]);
+                if (adjusted.rows.length !== 1)
+                    throw new Error('Custom artwork budget invariant failed');
+                retainedBudget = String(settled);
+            }
+            await db.query('UPDATE custom_fighter_jobs SET state=$2,error_code=$3,quota_reserved=FALSE,budget_reserved=$4,failure_stage=$5,failure_reason=$6,failure_provider=$7,worker_token=NULL,lease_until=NULL,updated_at=NOW() WHERE id=$1', [job.id, state, code, retainedBudget, stage, reason, provider]);
         });
     }
 }
