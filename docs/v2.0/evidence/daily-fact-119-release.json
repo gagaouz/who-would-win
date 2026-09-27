@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "version": "2.0",
+  "build": "119",
+  "sourceCommit": "0c00051403b15540546a2da5dcfaac9174480fea",
+  "recordedAt": "2026-09-27T20:14:18.128352+00:00",
+  "status": "available-internal-testflight",
+  "appleBuildID": "82cdc9df-b78e-4600-9f5b-fcb2e4db4e75",
+  "appleCheckedAt": "2026-09-27T20:14:00.851089+00:00",
+  "processingState": "VALID",
+  "buildAudienceType": "INTERNAL_ONLY",
+  "internalBuildState": "IN_BETA_TESTING",
+  "internalGroup": "self",
+  "exactTestingNotesVerified": true,
+  "invitationsSent": false,
+  "externalGroupChanged": false,
+  "ownerDeviceInstallVerified": false,
+  "freshNativeExecutions": 8,
+  "freshDistinctMethods": 3,
+  "reviewedImages": 20,
+  "reviewedCardStates": 4,
+  "historical118NativeExecutionsCarried": 132,
+  "freshWholeAppSuite": false,
+  "freshUpgradeExecuted": false,
+  "backendTestsRerun": false,
+  "archive": "/Users/home/WWW/who-would-win-v2.0/ios/build/runs/20260927T200713Z-archive-2.0-119-0c000514-24cf9c/WhoWouldWin.xcarchive",
+  "ipa": "/Users/home/WWW/who-would-win-v2.0/ios/build/daily-fact/export-119/Export/WhoWouldWin.ipa",
+  "ipaSHA256": "abc13373148255824937338ec517b505d2a2218d752934c88c0a4f0a4bd20ea5",
+  "appDsymUUIDMatches": true,
+  "artifacts": [
+    {
+      "path": "ios/build/QA-2.0-119-0c000514-final.json",
+      "sha256": "feb2d6cd4d7653492512b5978253190b751938278fb464def4fea94c0e8d032c"
+    },
+    {
+      "path": "ios/build/daily-fact/source-carry-119-0c000514.json",
+      "sha256": "794d9e08bc5e8622046ebb5029e8dd90404ecd89278283183c788d2df7673272"
+    },
+    {
+      "path": "ios/build/daily-fact/visual-review.json",
+      "sha256": "5b9401fc3331b4aa604502b3397f36d43c60ae77e48ffff7fdd2b4e33d29b3d9"
+    },
+    {
+      "path": "ios/build/daily-fact/independent-visual-review-119.json",
+      "sha256": "d36e588ddc69af9ce7589c923d3e589586c8be7f07f1b2d5908460d540b3ff86"
+    },
+    {
+      "path": "/Users/home/WWW/who-would-win-v2.0/ios/build/runs/20260927T200713Z-archive-2.0-119-0c000514-24cf9c/run.json",
+      "sha256": "090b002bfd48800af7e2e992df9b82d73d95eeefb59553e9da3177d66f76cc49"
+    },
+    {
+      "path": "ios/build/daily-fact/export-119/export-evidence.json",
+      "sha256": "e2a3e68a7a563b20b326596475cfa0156bbeabe50691ff774c9ed692025fa16b"
+    },
+    {
+      "path": "ios/build/daily-fact/release-inspection-119.json",
+      "sha256": "fcc874e2ac0af44cb39a866bffa4dac6842adfb6e50b9bdc92d832b6ea66a906"
+    },
+    {
+      "path": "ios/build/daily-fact/upload-119/before-upload.json",
+      "sha256": "d1ff262ed0c2133f89bfa12e578b0bc8c1696922deb258c678fda1195032b777"
+    },
+    {
+      "path": "ios/build/daily-fact/upload-119/upload-evidence.json",
+      "sha256": "bb9cae1b8e8a0dfd77c931c777382bbcbdb822cb4e830fdfacb41371b2650e84"
+    },
+    {
+      "path": "ios/build/daily-fact/apple-119-available.json",
+      "sha256": "abef5934ec4527fee644c897e5be0d3780ff9afbb821974a06625881126f997a"
+    },
+    {
+      "path": "ios/build/daily-fact/maintenance-119-frozen-0c000514.json",
+      "sha256": "b6305fda63645f2f412d63ad1b7c6288ddce0bfa9219ca317a72841463649cd9"
+    },
+    {
+      "path": "ios/build/daily-fact/railway-119-frozen-0c000514.json",
+      "sha256": "cd62f63a88130d69ef979fd46c59b882ede0baf7b22280ec629ef53062302e30"
+    },
+    {
+      "path": "ios/build/daily-fact/backend-live-119-frozen-0c000514.json",
+      "sha256": "a496347438d780698e66161c0dbd66e887e39393e5d36b9d6d736c6a091cbe1f"
+    },
+    {
+      "path": "ios/build/daily-fact/owned-simulator-shutdown-119.json",
+      "sha256": "29c80857a154a22ade3f8f95d9ecedec9a8b3f3bda33db869b94e28cad9f6c68"
+    },
+    {
+      "path": "docs/v2.0/TESTFLIGHT_NOTES_119.txt",
+      "sha256": "4fc432e1a8d391c782432c89432d177f8f661e6d4ef4653785f42f2a950756a8"
+    },
+    {
+      "path": "ios/build/daily-fact/normal-phone/run.json",
+      "sha256": "85634099a646fc1e1b4e69f9b980fd9cc104c4bb54331eba7d07386e72cef93e"
+    },
+    {
+      "path": "ios/build/daily-fact/normal-phone/capture-provenance.json",
+      "sha256": "0c4750c37cdbbc1ee65384592e28c2d4cb719e52987f76115c51c86054c3abe6"
+    },
+    {
+      "path": "ios/build/daily-fact/normal-phone/content-size-restoration.json",
+      "sha256": "86fc7f2eebb9619e20333c013f0cf5d27bc42a4216e5e566eac260522f06e4c6"
+    },
+    {
+      "path": "ios/build/daily-fact/normal-tablet/run.json",
+      "sha256": "c9f201b61340fad37430b1e7faa17a8dba59231d6e8a41674d5aefc9530a3371"
+    },
+    {
+      "path": "ios/build/daily-fact/normal-tablet/capture-provenance.json",
+      "sha256": "8fa430636e00e651e62faf588155e2be0246780913c0b0eb576a63bf84dd78f2"
+    },
+    {
+      "path": "ios/build/daily-fact/normal-tablet/content-size-restoration.json",
+      "sha256": "4f10a04b9191f08246c3551116f623da742134ec67a7eb48f8652849dbd4f288"
+    },
+    {
+      "path": "ios/build/daily-fact/ax3-phone/run.json",
+      "sha256": "7f36ae318059a7407403a1ac546557cfe8172a325762fd1092f2b4da4f23af8a"
+    },
+    {
+      "path": "ios/build/daily-fact/ax3-phone/capture-provenance.json",
+      "sha256": "f539720e6960e71d1a785497c8af8801bb69601a53e70cbf7527fb415955c356"
+    },
+    {
+      "path": "ios/build/daily-fact/ax3-phone/content-size-restoration.json",
+      "sha256": "4b4101c167e77e9d30dc875bf2bcdb83529dd246b09e50624753917e55620980"
+    },
+    {
+      "path": "ios/build/daily-fact/ax3-tablet/run.json",
+      "sha256": "20cd28c28f5a673114730eb5c7c3f6d67d302ac9efa8b85b0f677040e6980b26"
+    },
+    {
+      "path": "ios/build/daily-fact/ax3-tablet/capture-provenance.json",
+      "sha256": "7f4aea1f85c5a66176e2ed8e1f4db876f073e50026e699a1c0ab39a7b1e67bbf"
+    },
+    {
+      "path": "ios/build/daily-fact/ax3-tablet/content-size-restoration.json",
+      "sha256": "f766d972596e3c2bfc2773ca663234444f6cd19f6eaddafdc78b2051a9c4eab0"
+    }
+  ],
+  "limitations": [
+    "Only the changed daily card received fresh default/AX3 visual acceptance; unrelated existing AX3 truncation remains explicitly excluded.",
+    "118 whole-app and tribute checks,117 paragraph AX3 checks,116 strict persistence upgrades and145 backend tests retain their original source and scope.",
+    "Actual owner-device install, performance and account/cloud/provider flows remain owner checks."
+  ]
+}
