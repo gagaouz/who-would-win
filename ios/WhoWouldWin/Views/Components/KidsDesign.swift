@@ -394,6 +394,7 @@ struct KidButton: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.horizontal, 18 * scale) // keep text away from the rounded corners
+            .padding(.vertical, 12 * scale)
             .frame(maxWidth: .infinity)
             .frame(minHeight: h)
             .background(

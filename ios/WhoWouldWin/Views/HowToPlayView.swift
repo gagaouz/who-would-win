@@ -60,6 +60,7 @@ struct HowToPlayView: View {
                 }
                 .tabViewStyle(.page(indexDisplayMode: .always))
                 .frame(maxWidth: isIPad ? 560 : .infinity)
+                .clipped()
 
                 KidButton(title: page < steps.count - 1 ? "NEXT" : "LET'S PLAY!",
                           icon: page < steps.count - 1 ? "👉" : "⚡",
@@ -103,8 +104,12 @@ struct HowToPlayView: View {
                     Spacer()
                 }
                 .frame(maxWidth: .infinity)
-                .frame(minHeight: geometry.size.height)
+                .frame(minHeight: max(0, geometry.size.height - 40))
             }
+            // Keep the native page control in its own band, below the
+            // scrolling prose and clear of the persistent header.
+            .frame(height: max(0, geometry.size.height - 40))
+            .clipped()
         }
     }
 }
