@@ -183,7 +183,7 @@ struct TournamentCompleteView: View {
 
     private var card: some View {
         RetroPanelShape(cornerRadius: 20, style: .continuous)
-            .fill(.white)
+            .fill(Kids.panel)
             .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
     }
 

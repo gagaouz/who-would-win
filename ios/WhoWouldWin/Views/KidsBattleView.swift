@@ -210,7 +210,7 @@ private struct BattleContent: View {
         VStack(spacing: 0) {
             // Top bar: close + (optional) arena pill
             HStack {
-                KidIconBtn(icon: "✕", fill: .white) { onClose() }
+                KidIconBtn(icon: "✕", fill: Kids.panel) { onClose() }
                 Spacer()
                 if arenaEffectsEnabled {
                     HStack(spacing: 6) {
@@ -221,7 +221,7 @@ private struct BattleContent: View {
                     }
                     .padding(.horizontal, 12).padding(.vertical, 6)
                     .background(
-                        RetroPanelShape().fill(.white)
+                        RetroPanelShape().fill(Kids.panel)
                             .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                     )
                     .compositingGroup()
@@ -307,7 +307,7 @@ private struct BattleContent: View {
             .padding(.vertical, 12).padding(.horizontal, 14)
             .background(
                 RetroPanelShape(cornerRadius: 20, style: .continuous)
-                    .fill(.white)
+                    .fill(Kids.panel)
                     .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
             )
             .compositingGroup()
@@ -460,7 +460,7 @@ struct JudgingIndicator: View {
                 }
                 .padding(.horizontal, 18).padding(.vertical, 11)
                 .background(
-                    RetroPanelShape().fill(.white)
+                    RetroPanelShape().fill(Kids.panel)
                         .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                 )
                 .compositingGroup()
@@ -656,7 +656,7 @@ private struct ResultContent: View {
             VStack(spacing: 14) {
                 HStack {
                     Spacer()
-                    KidIconBtn(icon: "✕", fill: .white) { proceed(onClose) }
+                    KidIconBtn(icon: "✕", fill: Kids.panel) { proceed(onClose) }
                 }
                 .padding(.horizontal, 16).padding(.top, 10)
 
@@ -809,7 +809,7 @@ private struct ResultContent: View {
                                 .underline()
                         }
                         .padding(.horizontal, 12).padding(.vertical, 7)
-                        .background(RetroPanelShape().fill(.white.opacity(0.7)))
+                        .background(RetroPanelShape().fill(Kids.panel.opacity(0.7)))
                     }
                     .buttonStyle(.plain)
                     .padding(.top, 8)
@@ -891,6 +891,7 @@ private struct ResultContent: View {
             Text(text)
                 .accessibilityIdentifier(tag == "BATTLE STORY" ? "battle.narration" : "battle.info.\(tag)")
                 .font(Kids.nunito(13, weight: .bold))
+                .lineSpacing(4)
                 .foregroundColor(Kids.ink)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -898,7 +899,7 @@ private struct ResultContent: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RetroPanelShape(cornerRadius: 20, style: .continuous)
-                .fill(.white)
+                .fill(Kids.panel)
                 .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
         .compositingGroup()

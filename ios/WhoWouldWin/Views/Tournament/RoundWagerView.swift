@@ -245,7 +245,7 @@ struct RoundWagerView: View {
         .padding(isIPad ? 18 : 12)
         .background(
             RetroPanelShape(cornerRadius: 16, style: .continuous)
-                .fill(.white)
+                .fill(Kids.panel)
                 .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.sun, lineWidth: 2.5))
         )
         .compositingGroup().shadow(color: Kids.shadow.opacity(0.06), radius: 4, x: 0, y: 3)
@@ -402,7 +402,7 @@ struct RoundWagerView: View {
             .padding(isIPad ? 18 : 12)
             .background(
                 RetroPanelShape(cornerRadius: 16, style: .continuous)
-                    .fill(.white)
+                    .fill(Kids.panel)
                     .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.sun, lineWidth: 2.5))
             )
             .compositingGroup().shadow(color: Kids.shadow.opacity(0.06), radius: 4, x: 0, y: 3)
@@ -420,7 +420,7 @@ struct RoundWagerView: View {
 
     private var card: some View {
         RetroPanelShape(cornerRadius: 16, style: .continuous)
-            .fill(Color.white)
+            .fill(Kids.panel)
             .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
     }
 }
@@ -628,7 +628,7 @@ private struct MatchupWagerSheet: View {
             .padding(.vertical, isIPad ? 18 : 12)
             .background(
                 RetroPanelShape(cornerRadius: 16, style: .continuous)
-                    .fill(picked == a.id ? Kids.sun : Color.white)
+                    .fill(picked == a.id ? Kids.sun : Kids.panel)
                     .overlay(picked == a.id ? RetroPanelShape(cornerRadius: 16, style: .continuous).fill(Kids.sheen) : nil)
                     .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(picked == a.id ? Kids.grassDeep : Kids.outline, lineWidth: picked == a.id ? 2 : 1.25))
             )
@@ -639,7 +639,7 @@ private struct MatchupWagerSheet: View {
 
     private var card: some View {
         RetroPanelShape(cornerRadius: 16, style: .continuous)
-            .fill(Color.white)
+            .fill(Kids.panel)
             .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
     }
 }
@@ -732,7 +732,7 @@ private struct SwapPickCard: View {
         Button(action: onTap) {
             ZStack(alignment: .topTrailing) {
                 RetroPanelShape(cornerRadius: 14, style: .continuous)
-                    .fill(selected ? Kids.grape : Color.white)
+                    .fill(selected ? Kids.grape : Kids.panel)
                     .overlay(selected ? RetroPanelShape(cornerRadius: 14, style: .continuous).fill(Kids.sheen) : nil)
                     .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                     .aspectRatio(1, contentMode: .fit)

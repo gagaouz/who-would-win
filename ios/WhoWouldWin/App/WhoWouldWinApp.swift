@@ -23,6 +23,9 @@ struct WhoWouldWinApp: App {
     var body: some Scene {
         WindowGroup {
             rootContent
+                .font(Kids.nunito(16))
+                .lineSpacing(4)
+                .tint(Kids.grapeDeep)
                 .preferredColorScheme(.light)
                 .overlay(alignment: .bottomLeading) {
                     #if DEBUG

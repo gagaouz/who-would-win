@@ -14,7 +14,7 @@ struct MythicUnlockSheet: View {
                 title: "MYTHIC BEASTS",
                 emoji: "⚡",
                 color: Kids.sun,
-                darkAccent: Color(hex: "#7A6600"),
+                darkAccent: Kids.sunDeep,
                 blurb: "12 legendary creatures from ancient myth — thunderbirds, manticores and more!",
                 preview: [("🦅","Thunderbird"),("🦁","Manticore"),("🐦","Roc"),("🐍","Basilisk"),("🦊","Kitsune")],
                 coinCost: CoinStore.shared.mythicCost,

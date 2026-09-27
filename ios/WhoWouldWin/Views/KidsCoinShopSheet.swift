@@ -52,7 +52,7 @@ struct KidsCoinShopSheet: View {
                         Spacer()
                         Button { isPresented = false } label: {
                             ZStack {
-                                RetroPanelShape().fill(.white)
+                                RetroPanelShape().fill(Kids.panel)
                                     .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                                     .frame(width: 44, height: 44)
                                 Image(systemName: "xmark")
@@ -93,7 +93,7 @@ struct KidsCoinShopSheet: View {
                     .padding(.vertical, 16)
                     .background(
                         RetroPanelShape(cornerRadius: 22, style: .continuous)
-                            .fill(.white)
+                            .fill(Kids.panel)
                             .overlay(RetroPanelShape(cornerRadius: 22, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                     )
                     .compositingGroup().shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 4)
@@ -123,7 +123,7 @@ struct KidsCoinShopSheet: View {
                     .padding(14)
                     .background(
                         RetroPanelShape(cornerRadius: 22, style: .continuous)
-                            .fill(.white)
+                            .fill(Kids.panel)
                             .overlay(RetroPanelShape(cornerRadius: 22, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                     )
                     .compositingGroup().shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 3)
@@ -155,7 +155,7 @@ struct KidsCoinShopSheet: View {
                     .padding(14)
                     .background(
                         RetroPanelShape(cornerRadius: 22, style: .continuous)
-                            .fill(.white)
+                            .fill(Kids.panel)
                             .overlay(RetroPanelShape(cornerRadius: 22, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                     )
                     .compositingGroup().shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 3)
@@ -200,7 +200,7 @@ struct KidsCoinShopSheet: View {
                         .padding(14)
                         .background(
                             RetroPanelShape(cornerRadius: 22, style: .continuous)
-                                .fill(.white)
+                                .fill(Kids.panel)
                                 .overlay(RetroPanelShape(cornerRadius: 22, style: .continuous).stroke(Kids.sun, lineWidth: 2))
                         )
                         .compositingGroup().shadow(color: Kids.shadow.opacity(0.09), radius: 4, x: 0, y: 4)

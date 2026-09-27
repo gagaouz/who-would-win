@@ -77,7 +77,7 @@ struct TournamentCreaturePickerView: View {
                     .font(Kids.fredoka(isIPad ? 26 : 20, weight: .bold))
                     .foregroundColor(Kids.ink)
                     .frame(width: isIPad ? 50 : 44, height: isIPad ? 50 : 44)
-                    .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
+                    .background(RetroPanelShape().fill(Kids.panel).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
             }
             .buttonStyle(.plain)
             Spacer()
@@ -127,7 +127,7 @@ struct TournamentCreaturePickerView: View {
         .padding(.horizontal, isIPad ? 16 : 12).padding(.vertical, isIPad ? 13 : 9)
         .background(
             RetroPanelShape(cornerRadius: 16, style: .continuous)
-                .fill(Color.white)
+                .fill(Kids.panel)
                 .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
         .compositingGroup().shadow(color: Kids.shadow.opacity(0.06), radius: 4, x: 0, y: 2)
@@ -153,7 +153,7 @@ struct TournamentCreaturePickerView: View {
                         }
                         .padding(.horizontal, isIPad ? 14 : 10).padding(.vertical, isIPad ? 9 : 6)
                         .background(
-                            RetroPanelShape().fill(selectedCategory == cat ? categoryColor(cat) : .white)
+                            RetroPanelShape().fill(selectedCategory == cat ? categoryColor(cat) : Kids.panel)
                                 .overlay(selectedCategory == cat ? RetroPanelShape().fill(Kids.sheen) : nil)
                                 .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                         )
@@ -395,7 +395,7 @@ struct TournamentCreaturePickerView: View {
         .padding(14)
         .background(
             RetroPanelShape(cornerRadius: 18, style: .continuous)
-                .fill(.white)
+                .fill(Kids.panel)
                 .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.sun, lineWidth: 2))
         )
         .compositingGroup().shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 3)
@@ -407,7 +407,7 @@ struct TournamentCreaturePickerView: View {
         KidButton(
             title: mode == .manual ? "ROLL BRACKET (\(selected.count)/\(targetCount))" : "ROLL BRACKET",
             icon: "🎲",
-            color: continueEnabled ? Kids.grass : Color(hex: "#CDC3E0"),
+            color: continueEnabled ? Kids.grass : Kids.creamDeep,
             size: .lg
         ) {
             HapticsService.shared.tap()
@@ -507,7 +507,7 @@ private struct TournamentPickCard: View {
         Button(action: onTap) {
             ZStack(alignment: .topTrailing) {
                 RetroPanelShape(cornerRadius: 18, style: .continuous)
-                    .fill(selected ? cardColor : .white)
+                    .fill(selected ? cardColor : Kids.panel)
                     .overlay(selected ? RetroPanelShape(cornerRadius: 18, style: .continuous).fill(Kids.sheen) : nil)
                     .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                     .aspectRatio(1, contentMode: .fit)

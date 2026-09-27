@@ -90,7 +90,7 @@ struct RoundResultsView: View {
 
     private var card: some View {
         RetroPanelShape(cornerRadius: 20, style: .continuous)
-            .fill(Color.white)
+            .fill(Kids.panel)
             .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
     }
 

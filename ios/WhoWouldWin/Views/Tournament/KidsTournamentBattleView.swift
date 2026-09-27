@@ -183,7 +183,7 @@ private struct BuildContent: View {
                             .foregroundColor(Kids.ink)
                     }
                     .padding(.horizontal, 10).padding(.vertical, 5)
-                    .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
+                    .background(RetroPanelShape().fill(Kids.panel).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
                     .compositingGroup()
                     .shadow(color: Kids.shadow.opacity(0.06), radius: 4, x: 0, y: 2)
                 }
@@ -240,7 +240,7 @@ private struct BuildContent: View {
             .padding(14)
             .background(
                 RetroPanelShape(cornerRadius: 20, style: .continuous)
-                    .fill(.white)
+                    .fill(Kids.panel)
                     .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
             )
             .compositingGroup()
@@ -351,6 +351,7 @@ private struct ResultPanel: View {
                     Text(result.narration.withoutEmoji)
                         .accessibilityIdentifier("battle.narration")
                         .font(Kids.nunito(isIPad ? 16 : 12, weight: .bold))
+                        .lineSpacing(4)
                         .foregroundColor(Kids.ink)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -358,7 +359,7 @@ private struct ResultPanel: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(
                     RetroPanelShape(cornerRadius: 18, style: .continuous)
-                        .fill(.white)
+                        .fill(Kids.panel)
                         .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                 )
                 .compositingGroup()

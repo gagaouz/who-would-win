@@ -22,7 +22,7 @@ struct KidsChampionView: View {
         ZStack {
             // Radial sunburst gradient
             RadialGradient(
-                colors: [Kids.sun, Color(hex: "#FF8AC5"), Color(hex: "#4A2E7A")],
+                colors: [Kids.sun, Kids.pink, Kids.grapeDeep],
                 center: .init(x: 0.5, y: 0.3),
                 startRadius: 30, endRadius: 600
             ).ignoresSafeArea()
@@ -50,8 +50,8 @@ struct KidsChampionView: View {
                     .foregroundColor(Kids.sun)
                     .padding(.horizontal, 18).padding(.vertical, 7)
                     .background(
-                        Capsule().fill(Kids.ink)
-                            .overlay(Capsule().stroke(Kids.sun, lineWidth: 3))
+                        RetroPanelShape().fill(Kids.ink)
+                            .overlay(RetroPanelShape().stroke(Kids.sun, lineWidth: 3))
                     )
                     .shadow(color: Kids.ink.opacity(0.21), radius: 0, x: 0, y: 5)
                     .rotationEffect(.degrees(-2))
@@ -81,9 +81,9 @@ struct KidsChampionView: View {
                         // Lion bubble with double ring
                         ZStack {
                             Circle().fill(Kids.sun).frame(width: isIPad ? 230 : 180, height: isIPad ? 230 : 180)
-                            Circle().fill(.white).frame(width: isIPad ? 215 : 168, height: isIPad ? 215 : 168)
+                            Circle().fill(Kids.panel).frame(width: isIPad ? 215 : 168, height: isIPad ? 215 : 168)
                             Circle()
-                                .fill(LinearGradient(colors: [.white, Color(hex: "#FFE89A")],
+                                .fill(LinearGradient(colors: [Kids.panel, Kids.sun],
                                                      startPoint: .top, endPoint: .bottom))
                                 .frame(width: isIPad ? 195 : 150, height: isIPad ? 195 : 150)
                                 .overlay(Circle().stroke(Kids.ink, lineWidth: isIPad ? 6 : 5))
@@ -166,7 +166,7 @@ struct KidsChampionView: View {
                                 .font(Kids.fredoka(isIPad ? 16 : 13, weight: .bold))
                                 .foregroundColor(Kids.grass)
                             ZStack(alignment: .topTrailing) {
-                                Circle().fill(Color(hex: "#F6F0FF"))
+                                Circle().fill(Kids.creamDeep)
                                     .overlay(Circle().stroke(Kids.ink, lineWidth: 2))
                                     .frame(width: isIPad ? 40 : 32, height: isIPad ? 40 : 32)
                                 Text(a.emoji).font(.system(size: isIPad ? 20 : 16))
@@ -190,9 +190,9 @@ struct KidsChampionView: View {
                 .padding(.vertical, 12).padding(.horizontal, 14)
                 .frame(maxWidth: .infinity)
                 .background(
-                    RoundedRectangle(cornerRadius: 22, style: .continuous)
-                        .fill(.white)
-                        .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(Kids.ink, lineWidth: 4))
+                    RetroPanelShape(cornerRadius: 22, style: .continuous)
+                        .fill(Kids.panel)
+                        .overlay(RetroPanelShape(cornerRadius: 22, style: .continuous).stroke(Kids.ink, lineWidth: 4))
                 )
                 .shadow(color: Kids.ink.opacity(0.15), radius: 0, x: 0, y: 8)
                 .padding(.horizontal, 18)

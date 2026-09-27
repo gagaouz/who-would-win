@@ -21,7 +21,7 @@ struct AnimalFactsSheet: View {
                 VStack(spacing: 16) {
                     HStack {
                         Spacer()
-                        KidIconBtn(icon: "✕", fill: .white) { dismiss() }
+                        KidIconBtn(icon: "✕", fill: Kids.panel) { dismiss() }
                     }
                     .padding(.horizontal, 16).padding(.top, 10)
 
@@ -59,6 +59,7 @@ struct AnimalFactsSheet: View {
                                 .background(RetroPanelShape().fill(Kids.grass).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
                             Text(f.coolFact)
                                 .font(Kids.nunito(14, weight: .bold))
+                                .lineSpacing(4)
                                 .foregroundColor(Kids.ink)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
@@ -66,7 +67,7 @@ struct AnimalFactsSheet: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(
                             RetroPanelShape(cornerRadius: 20, style: .continuous)
-                                .fill(.white)
+                                .fill(Kids.panel)
                                 .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                         )
                         .padding(.horizontal, 18)
@@ -125,7 +126,7 @@ struct AnimalFactsSheet: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RetroPanelShape(cornerRadius: 16, style: .continuous)
-                .fill(.white)
+                .fill(Kids.panel)
                 .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
     }

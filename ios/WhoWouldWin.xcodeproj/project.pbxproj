@@ -39,6 +39,7 @@
 		2DC2FA260A778B58B9BDB75E /* AnimalFactsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF94B3CCBECC3B83B3DB7B65 /* AnimalFactsSheet.swift */; };
 		2DE2017BA2124FA614FB14BF /* CustomFighterAccountTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 453EC1DD698BFB5130450D71 /* CustomFighterAccountTests.swift */; };
 		343F90299F8A5833458CFE88 /* CustomFighterLibraryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57D63CE44B66EEE210AE8BA0 /* CustomFighterLibraryStore.swift */; };
+		35334D228618F999E5B452E4 /* RetroAnimatedLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABEF28B119C677C30AD7CB5 /* RetroAnimatedLogo.swift */; };
 		383B48E15780EBB442879E62 /* AnimalPickerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA55931F58BC53049F17E6A2 /* AnimalPickerViewModel.swift */; };
 		3BDE7BAFD4DDFD88A3726E62 /* CoinBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82FA69876315EBFFA80A7AD8 /* CoinBadge.swift */; };
 		3D819B5B25E010E78FDE8165 /* charge.wav in Resources */ = {isa = PBXBuildFile; fileRef = DA92F6056F5482C747E734AE /* charge.wav */; };
@@ -255,6 +256,7 @@
 		B23F388DF03DA529D022D471 /* custom_fighter_interop.spritepack */ = {isa = PBXFileReference; path = custom_fighter_interop.spritepack; sourceTree = "<group>"; };
 		BA51E39CE6F71550794C76C6 /* KidsCoinShopSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidsCoinShopSheet.swift; sourceTree = "<group>"; };
 		BA8AA9999D7727D2E9E33E1C /* PressStart2P-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PressStart2P-Regular.ttf"; sourceTree = "<group>"; };
+		BABEF28B119C677C30AD7CB5 /* RetroAnimatedLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroAnimatedLogo.swift; sourceTree = "<group>"; };
 		BC1C2AE423ACF8EF3FE4DC17 /* BracketPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BracketPreviewView.swift; sourceTree = "<group>"; };
 		BEB63ED8CF17AB5BE777BA82 /* RetroAssetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroAssetTests.swift; sourceTree = "<group>"; };
 		BFE10C0E201FCE77649E60AE /* RetroAssetStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroAssetStore.swift; sourceTree = "<group>"; };
@@ -381,6 +383,7 @@
 				82FA69876315EBFFA80A7AD8 /* CoinBadge.swift */,
 				E5CF747BEC37EED1BA4F0C79 /* KidsDesign.swift */,
 				6EA6C0C4ADBA108A1D00022C /* ParentGateSheet.swift */,
+				BABEF28B119C677C30AD7CB5 /* RetroAnimatedLogo.swift */,
 				6FDCCDD0731E27BD7FC70E9C /* RetroButton.swift */,
 				BFF1E5BEC8F153AE60380B12 /* TaleOfTheTapeView.swift */,
 				06B0DB01FF4CB9EB1BC1D6FA /* Theme.swift */,
@@ -888,6 +891,7 @@
 				13C57AA65EFBBA00384FB41B /* PrehistoricUnlockSheet.swift in Sources */,
 				077CCCED0A2B2527AA368AE1 /* QuickMatchups.swift in Sources */,
 				95A3995DDB724B2974062CCB /* RatingsPrompt.swift in Sources */,
+				35334D228618F999E5B452E4 /* RetroAnimatedLogo.swift in Sources */,
 				BE8EADCD0D877B6D517BBDBD /* RetroArenaArtwork.swift in Sources */,
 				2853D491587ACCADB09883F8 /* RetroAssetStore.swift in Sources */,
 				DB0972ED43821AF60295E9E1 /* RetroBattleLifecycle.swift in Sources */,

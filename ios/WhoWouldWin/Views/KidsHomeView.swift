@@ -33,13 +33,17 @@ struct KidsHomeView: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
     private var isIPad: Bool { sizeClass == .regular }
 
-    // Stable gameplay IDs, shared with the roster and the retro asset provider.
-    private let heroPairs: [(String, String)] = [
-        ("lion", "gorilla"), ("grizzly_bear", "wolf"),
-        ("great_white_shark", "octopus"), ("dragon", "unicorn")
-    ]
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @ScaledMetric(relativeTo: .headline) private var matchupHeaderHeight: CGFloat = 42
+    @ScaledMetric(relativeTo: .headline) private var matchupActionHeight: CGFloat = 47
+    // Keep the displayed fighters stable until the player changes the page.
+    @State private var heroPairs = QuickMatchups.previewDeck()
     @State private var pairIndex = 0
-    @State private var pairTimer: Timer?
+
+    private var matchupNameHeight: CGFloat {
+        dynamicTypeSize.isAccessibilitySize ? matchupHeaderHeight * 1.5 : matchupHeaderHeight
+    }
 
     var body: some View {
         NavigationStack {
@@ -51,7 +55,7 @@ struct KidsHomeView: View {
                         homeWordmark
                         heroConsole
                         VStack(spacing: 12) {
-                            KidButton(title: "LET'S BATTLE!", icon: "▶", color: Kids.grass, size: .lg) {
+                            KidButton(title: "PICK YOUR FIGHTERS", icon: "▶", color: Kids.pink, size: .lg) {
                                 HapticsService.shared.tap()
                                 selectedSavedFighter = nil
                                 goToPicker = true
@@ -79,7 +83,7 @@ struct KidsHomeView: View {
                             Label("My Fighters", systemImage: "person.3.fill")
                                 .font(Kids.fredoka(17)).foregroundColor(Kids.grassDeep)
                                 .frame(maxWidth: .infinity, minHeight: 48)
-                                .background(.white, in: RoundedRectangle(cornerRadius: 14))
+                                .background(StickerShape(shape: RetroPanelShape(), fill: Kids.panel))
                         }.accessibilityIdentifier("home.myFighters")
                         if settings.currentStreak >= 1 {
                             StreakPill(days: settings.currentStreak)
@@ -134,11 +138,10 @@ struct KidsHomeView: View {
             }
         }
         .onAppear {
-            startRotation()
+            refreshUnavailableMatchups()
             maybeOfferHowToPlay()
             maybeShowPaywall()
         }
-        .onDisappear { pairTimer?.invalidate() }
         .sheet(isPresented: $showMyFighters, onDismiss: {
             if selectedSavedFighter != nil { goToPicker = true }
         }) {
@@ -201,100 +204,155 @@ struct KidsHomeView: View {
     }
 
     private var homeWordmark: some View {
-        VStack(spacing: 10) {
-            ViewThatFits(in: .horizontal) {
-                HStack(spacing: 8) {
-                    Text("ANIMAL").foregroundColor(Kids.ink)
-                    Text("vs").foregroundColor(Kids.grassDeep)
-                    Text("ANIMAL").foregroundColor(Kids.ink)
-                }.font(Kids.pixel(isIPad ? 20 : 14))
-                VStack(spacing: 7) {
-                    Text("ANIMAL").foregroundColor(Kids.ink)
-                    Text("vs ANIMAL").foregroundColor(Kids.grassDeep)
-                }.font(Kids.pixel(18))
-            }
-            Text("BIG MATCHUPS. LITTLE PIXELS.")
-                .font(Kids.nunito(10, weight: .heavy)).tracking(2)
-                .foregroundColor(Kids.inkSoft)
-        }
-        .padding(.vertical, 10)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Animal versus Animal. Big matchups, little pixels.")
-    }
-
-    private var heroFighters: (Animal, Animal) {
-        let pair = heroPairs[pairIndex]
-        let left = Animals.all.first(where: { $0.id == pair.0 }) ?? Animals.all[0]
-        let right = Animals.all.first(where: { $0.id == pair.1 }) ?? Animals.all[1]
-        return (left, right)
+        RetroAnimatedLogo(isIPad: isIPad)
+            .padding(.vertical, 2)
     }
 
     private var heroConsole: some View {
-        let fighters = heroFighters
-        return VStack(spacing: 0) {
+        VStack(spacing: 0) {
             HStack(spacing: 8) {
-                Rectangle().fill(Kids.grassDeep).frame(width: 6, height: 6)
-                Text("ANIMAL ARENA").font(Kids.pixel(9))
+                Rectangle().fill(Kids.sky).frame(width: 6, height: 6)
+                Text("INSTANT BATTLE").font(Kids.pixel(9))
                 Spacer()
-                Text("READY").font(Kids.nunito(10, weight: .heavy)).tracking(1.5)
+                Text("READY!").font(Kids.pixel(8)).foregroundColor(Kids.sun)
             }
-            .foregroundColor(Kids.ink)
-            .padding(.horizontal, 13).padding(.vertical, 14)
+            .foregroundColor(Kids.panel)
+            .padding(.horizontal, 13).padding(.vertical, 13)
+
+            // Native paging lets horizontal swipes coexist with the home scroll.
+            // Each page is a real button: the captured pair is the pair we launch.
+            TabView(selection: $pairIndex) {
+                ForEach(heroPairs.indices, id: \.self) { index in
+                    matchupCard(heroPairs[index])
+                        .padding(.horizontal, 3)
+                        .accessibilityHidden(index != pairIndex)
+                        .tag(index)
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .frame(height: (isIPad ? 200 : 170) + matchupNameHeight + matchupActionHeight)
+
+            HStack(spacing: 8) {
+                matchupArrow("chevron.left", label: "Previous matchup", identifier: "home.previousMatchup", step: -1)
+                Spacer(minLength: 0)
+                VStack(spacing: 7) {
+                    HStack(spacing: 7) {
+                        ForEach(heroPairs.indices, id: \.self) { index in
+                            Rectangle().fill(index == pairIndex ? Kids.pink : Kids.outlineStrong.opacity(0.45))
+                                .frame(width: index == pairIndex ? 20 : 7, height: 5)
+                        }
+                    }.accessibilityHidden(true)
+                    Text("SWIPE TO FIND A MATCH")
+                        .font(Kids.pixel(7)).foregroundColor(Kids.panel)
+                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Matchup")
+                .accessibilityValue("\(pairIndex + 1) of \(heroPairs.count)")
+                .accessibilityIdentifier("home.matchupPage")
+                .accessibilityAdjustableAction { direction in
+                    switch direction {
+                    case .increment: moveMatchup(1)
+                    case .decrement: moveMatchup(-1)
+                    @unknown default: break
+                    }
+                }
+                Spacer(minLength: 0)
+                matchupArrow("chevron.right", label: "Next matchup", identifier: "home.nextMatchup", step: 1)
+            }
+            .padding(.horizontal, 6).padding(.vertical, 3)
+        }
+        .background(StickerShape(shape: RetroPanelShape(), fill: Kids.console, strokeWidth: 2))
+        .shadow(color: Kids.ink.opacity(0.22), radius: 0, x: 0, y: 5)
+    }
+
+    private func matchupCard(_ fighters: (Animal, Animal)) -> some View {
+        Button {
+            startFeaturedBattle(fighters)
+        } label: {
             VStack(spacing: 0) {
-                HStack(alignment: .center) {
+                HStack(alignment: .center, spacing: 8) {
                     Text(fighters.0.name.uppercased()).frame(maxWidth: .infinity, alignment: .leading)
                     Text("VS").font(Kids.pixel(12)).foregroundColor(Kids.sun)
                     Text(fighters.1.name.uppercased()).frame(maxWidth: .infinity, alignment: .trailing)
                 }
-                .font(Kids.nunito(11, weight: .heavy))
-                .foregroundColor(Kids.cream)
-                .padding(12)
+                .font(Kids.pixel(8))
+                .fixedSize(horizontal: false, vertical: true)
+                .foregroundColor(Kids.panel)
+                .padding(.horizontal, 11)
+                .frame(height: matchupNameHeight)
                 .background(Kids.console)
                 GeometryReader { geo in
                     ZStack(alignment: .bottom) {
                         RetroHomeLandscape()
                         HStack(alignment: .bottom) {
-                            RetroCreatureArtwork(animal: fighters.0, size: min(geo.size.width * 0.43, 180))
+                            RetroCreatureArtwork(animal: fighters.0, size: min(geo.size.width * 0.43, geo.size.height - 12, 180))
                             Spacer(minLength: 4)
-                            RetroCreatureArtwork(animal: fighters.1, size: min(geo.size.width * 0.43, 180))
+                            RetroCreatureArtwork(animal: fighters.1, size: min(geo.size.width * 0.43, geo.size.height - 12, 180))
                                 .scaleEffect(x: -1, y: 1)
                         }
                         .padding(.horizontal, 10)
-                        .padding(.bottom, 16)
+                        .padding(.bottom, 12)
                     }
                 }
-                .frame(height: isIPad ? 220 : 174)
-                HStack(alignment: .top, spacing: 10) {
-                    Image(systemName: "play.fill").font(.system(size: 9, weight: .bold)).padding(.top, 4)
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("THE MATCHUP").font(Kids.pixel(8)).foregroundColor(Kids.grassDeep)
-                        Text("Every creature has a story. Who will win yours?")
-                            .font(Kids.nunito(15, weight: .heavy)).foregroundColor(Kids.ink)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
+                .frame(height: isIPad ? 200 : 170)
+                HStack(spacing: 10) {
+                    Image(systemName: "play.fill").font(.system(size: 12, weight: .black))
+                    Text("TAP TO BATTLE").font(Kids.pixel(11))
+                    Image(systemName: "play.fill").font(.system(size: 12, weight: .black))
                 }
-                .foregroundColor(Kids.grassDeep)
-                .padding(14)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Kids.panel)
+                .foregroundColor(Kids.ink)
+                .frame(maxWidth: .infinity, minHeight: matchupActionHeight)
+                .background(Kids.sky)
             }
-            .clipShape(RetroPanelShape(cornerRadius: 8))
-            .overlay(RetroPanelShape(cornerRadius: 8).strokeBorder(Kids.outline, lineWidth: 1))
-            .padding(.horizontal, 10)
-            HStack {
-                Text("143 CREATURES")
-                Spacer()
-                HStack(spacing: 5) {
-                    ForEach(0..<5, id: \.self) { _ in Rectangle().fill(Kids.outline).frame(width: 14, height: 3) }
-                }.accessibilityHidden(true)
-                Spacer()
-                Text("LET'S PLAY")
-            }
-            .font(Kids.nunito(8, weight: .heavy)).tracking(1)
-            .foregroundColor(Kids.inkSoft).padding(12)
+            .contentShape(Rectangle())
         }
-        .background(StickerShape(shape: RetroPanelShape(cornerRadius: 12), fill: Kids.panel))
-        .compositingGroup().shadow(color: Kids.shadow.opacity(0.13), radius: 12, x: 0, y: 5)
+        .buttonStyle(.plain)
+        .accessibilityLabel("Start featured battle")
+        .accessibilityValue("\(fighters.0.name) versus \(fighters.1.name)")
+        .accessibilityHint("Starts a battle with these two fighters. Swipe left or right for more matchups.")
+        .accessibilityIdentifier("home.heroBattle")
+    }
+
+    private func matchupArrow(_ symbol: String, label: String, identifier: String, step: Int) -> some View {
+        Button { moveMatchup(step) } label: {
+            Image(systemName: symbol).font(.system(size: 15, weight: .black))
+                .foregroundColor(Kids.sky)
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(label)
+        .accessibilityIdentifier(identifier)
+    }
+
+    private func moveMatchup(_ step: Int) {
+        guard !heroPairs.isEmpty else { return }
+        HapticsService.shared.tap()
+        withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) {
+            pairIndex = (pairIndex + step + heroPairs.count) % heroPairs.count
+        }
+    }
+
+    private func refreshUnavailableMatchups() {
+        // An expired entitlement can remove a featured fighter while a sheet is
+        // open. Refresh on return, preserving all existing battle/unlock rules.
+        if heroPairs.isEmpty || heroPairs.contains(where: { !settings.isAvailable($0.0) || !settings.isAvailable($0.1) }) {
+            heroPairs = QuickMatchups.previewDeck()
+            pairIndex = 0
+        }
+    }
+
+    private func startFeaturedBattle(_ pair: (Animal, Animal)) {
+        guard !goToQuickBattle else { return }
+        guard settings.isAvailable(pair.0), settings.isAvailable(pair.1) else {
+            refreshUnavailableMatchups()
+            return
+        }
+        quickFighters = pair
+        homeMatchupToken = UUID()
+        HapticsService.shared.tap()
+        SoundService.shared.play(.whoosh)
+        goToQuickBattle = true
     }
 
     private func claimMysterySticker() {
@@ -562,20 +620,6 @@ struct KidsHomeView: View {
         }
     }
 
-    private func startRotation() {
-        pairTimer?.invalidate()
-        #if DEBUG
-        // Keep native screenshot fixtures between carousel transitions.
-        guard !(AppConfig.isUITesting && AppConfig.isIsolatedTestBuild) else { return }
-        #endif
-        guard !UIAccessibility.isReduceMotionEnabled else { return }
-        pairTimer = Timer.scheduledTimer(withTimeInterval: 7.0, repeats: true) { _ in
-            withAnimation(.easeOut(duration: 0.12)) {
-                pairIndex = (pairIndex + 1) % heroPairs.count
-            }
-        }
-    }
-
     // Returns the *next* battle-threshold pack the player can earn for free.
     private func nextPackProgress() -> (name: String, emoji: String, threshold: Int, color: Color)? {
         if !settings.isPrehistoricUnlocked {
@@ -669,32 +713,44 @@ private struct CounterBar: View {
 }
 
 
-/// Quiet pixel landscape for the home preview; no timer, gameplay or assets.
+/// A sunset arcade stage: original sprite assets stay sharp over a quiet grid.
 private struct RetroHomeLandscape: View {
     var body: some View {
         Canvas { context, size in
-            context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(Color(hex: "#BCE9F7")))
-            let unit: CGFloat = 5
-            let horizon = (size.height * 0.55 / unit).rounded() * unit
-            for row in 0..<4 {
-                let base = horizon + CGFloat(row) * 16
-                let color = ["#BAE7CF", "#92D8B2", "#64BB93", "#379975"][row]
-                for x in stride(from: CGFloat.zero, to: size.width, by: unit) {
-                    let lift = CGFloat(Int(sin(Double(x / 49 + CGFloat(row))) * 4)) * unit
-                    context.fill(Path(CGRect(x: x, y: base + lift, width: unit, height: size.height - base - lift)), with: .color(Color(hex: color)))
-                }
+            let bounds = CGRect(origin: .zero, size: size)
+            context.fill(Path(bounds), with: .linearGradient(
+                Gradient(colors: [Color(hex: "#4E306C"), Color(hex: "#BE6689"), Kids.peach]),
+                startPoint: .zero, endPoint: CGPoint(x: 0, y: size.height)))
+            let sunSide = min(size.height * 0.63, 112)
+            let sunRect = CGRect(x: (size.width - sunSide) / 2, y: 8, width: sunSide, height: sunSide)
+            var sunset = context
+            sunset.clip(to: Path(ellipseIn: sunRect))
+            sunset.fill(Path(sunRect), with: .linearGradient(
+                Gradient(colors: [Kids.sun, Kids.peach, Kids.pink]),
+                startPoint: sunRect.origin, endPoint: CGPoint(x: sunRect.midX, y: sunRect.maxY)))
+            for row in 0..<5 {
+                let y = sunRect.midY + CGFloat(row) * 10
+                sunset.fill(Path(CGRect(x: sunRect.minX, y: y, width: sunSide, height: CGFloat(row + 1))),
+                            with: .color(Color(hex: "#965278")))
             }
-            let sunX = (size.width * 0.57 / unit).rounded() * unit
-            let sunY: CGFloat = 22
-            context.fill(Path(CGRect(x: sunX, y: sunY, width: 30, height: 30)), with: .color(Kids.sun))
-            context.fill(Path(CGRect(x: sunX + 5, y: sunY - 5, width: 20, height: 40)), with: .color(Kids.sun.opacity(0.7)))
-            context.fill(Path(CGRect(x: 18, y: 24, width: 55, height: 10)), with: .color(Kids.panel.opacity(0.8)))
-            context.fill(Path(CGRect(x: 28, y: 14, width: 30, height: 10)), with: .color(Kids.panel.opacity(0.8)))
-            context.fill(Path(CGRect(x: 0, y: size.height - 29, width: size.width, height: 29)), with: .color(Color(hex: "#EDD29B")))
-            context.fill(Path(CGRect(x: 0, y: size.height - 32, width: size.width, height: 5)), with: .color(Kids.grass))
-            for x in stride(from: CGFloat(8), to: size.width, by: 29) {
-                context.fill(Path(CGRect(x: x, y: size.height - 16, width: 5, height: 3)), with: .color(Kids.peachDeep.opacity(0.45)))
+            // Pixel skyline gives the stage a cabinet-game horizon.
+            let floorY = size.height - 24
+            for (index, x) in stride(from: CGFloat(0), to: size.width, by: 17).enumerated() {
+                let height = CGFloat([15, 27, 18, 36, 22, 12][index % 6])
+                context.fill(Path(CGRect(x: x, y: floorY - height, width: 13, height: height)),
+                             with: .color(Kids.console.opacity(0.28)))
             }
+            context.fill(Path(CGRect(x: 0, y: floorY, width: size.width, height: 24)), with: .color(Kids.console))
+            context.fill(Path(CGRect(x: 0, y: floorY, width: size.width, height: 3)), with: .color(Kids.sky))
+            var grid = Path()
+            for x in stride(from: CGFloat(-30), to: size.width + 30, by: 30) {
+                grid.move(to: CGPoint(x: size.width / 2 + (x - size.width / 2) * 0.88, y: floorY + 3))
+                grid.addLine(to: CGPoint(x: x, y: size.height))
+            }
+            for y in [floorY + 9, floorY + 19] {
+                grid.move(to: CGPoint(x: 0, y: y)); grid.addLine(to: CGPoint(x: size.width, y: y))
+            }
+            context.stroke(grid, with: .color(Kids.pink.opacity(0.6)), lineWidth: 1)
         }
         .accessibilityHidden(true)
     }

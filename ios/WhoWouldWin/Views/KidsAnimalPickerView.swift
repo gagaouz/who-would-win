@@ -155,7 +155,7 @@ struct KidsAnimalPickerView: View {
 
     private var topBar: some View {
         HStack {
-            KidIconBtn(icon: "←", fill: .white) { dismiss() }
+            KidIconBtn(icon: "←", fill: Kids.panel) { dismiss() }
             Spacer()
             Text("PICK YOUR BUDDIES")
                 .font(Kids.fredoka(isIPad ? 28 : 20, weight: .bold))
@@ -178,7 +178,7 @@ struct KidsAnimalPickerView: View {
         .padding(.horizontal, isIPad ? 14 : 8).padding(.vertical, isIPad ? 14 : 10)
         .background(
             RetroPanelShape(cornerRadius: 26, style: .continuous)
-                .fill(.white)
+                .fill(Kids.panel)
                 .overlay(RetroPanelShape(cornerRadius: 26, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
         .compositingGroup().shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 4)
@@ -223,7 +223,7 @@ struct KidsAnimalPickerView: View {
                 }
             } label: {
                 ZStack {
-                    RetroPanelShape().fill(speech.isListening ? Kids.pink : Color.white)
+                    RetroPanelShape().fill(speech.isListening ? Kids.pink : Kids.panel)
                         .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                         .frame(width: isIPad ? 40 : 30, height: isIPad ? 40 : 30)
                     Image(systemName: speech.isListening ? "mic.fill" : "mic")
@@ -235,7 +235,7 @@ struct KidsAnimalPickerView: View {
         .padding(.horizontal, isIPad ? 18 : 12).padding(.vertical, isIPad ? 13 : 9)
         .background(
             RetroPanelShape(cornerRadius: 16, style: .continuous)
-                .fill(Color.white)
+                .fill(Kids.panel)
                 .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
         .compositingGroup().shadow(color: Kids.shadow.opacity(0.06), radius: 4, x: 0, y: 2)
@@ -454,7 +454,7 @@ struct KidsAnimalPickerView: View {
         .padding(isIPad ? 16 : 12)
         .background(
             RetroPanelShape(cornerRadius: 18, style: .continuous)
-                .fill(.white)
+                .fill(Kids.panel)
                 .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
         .padding(.horizontal, isIPad ? 20 : 14)
@@ -539,7 +539,7 @@ struct KidsAnimalPickerView: View {
         .padding(isIPad ? 16 : 12)
         .background(
             RetroPanelShape(cornerRadius: 18, style: .continuous)
-                .fill(.white)
+                .fill(Kids.panel)
                 .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.sun, lineWidth: 2))
         )
         .compositingGroup().shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 3)
@@ -578,7 +578,7 @@ struct KidsAnimalPickerView: View {
                         .foregroundColor(Kids.ink)
                 }
                 .padding(.horizontal, isIPad ? 20 : 14).padding(.vertical, isIPad ? 12 : 9)
-                .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
+                .background(RetroPanelShape().fill(Kids.panel).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
                 .compositingGroup().shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 3)
             }
         }
@@ -654,7 +654,7 @@ private struct KidsFighterSlot: View {
                 ZStack {
                     RetroPanelShape()
                         .strokeBorder(Kids.outlineStrong, style: StrokeStyle(lineWidth: 1.5, dash: [6, 4]))
-                        .background(RetroPanelShape().fill(Color.white.opacity(0.5)))
+                        .background(RetroPanelShape().fill(Kids.panel.opacity(0.5)))
                         .frame(width: bubbleSize, height: bubbleSize)
                     Text("?").font(Kids.fredoka(isIPad ? 44 : 32, weight: .bold)).foregroundColor(Kids.ink.opacity(0.4))
                 }
@@ -662,7 +662,7 @@ private struct KidsFighterSlot: View {
                     .font(Kids.nunito(isIPad ? 13 : 10, weight: .heavy)).tracking(1)
                     .foregroundColor(Kids.inkSoft)
                     .padding(.horizontal, isIPad ? 11 : 8).padding(.vertical, isIPad ? 5 : 3)
-                    .background(RetroPanelShape().fill(Color.white.opacity(0.7)))
+                    .background(RetroPanelShape().fill(Kids.panel.opacity(0.7)))
             }
         }
         .frame(maxWidth: .infinity)
@@ -688,7 +688,7 @@ private struct KidsCategoryPill: View {
         .padding(.horizontal, isIPad ? 16 : 11)
         .frame(height: isIPad ? 48 : 38)
         .background(
-            RetroPanelShape().fill(locked ? Kids.panel : (active ? color : .white))
+            RetroPanelShape().fill(locked ? Kids.panel : (active ? color : Kids.panel))
                 .overlay(active && !locked ? RetroPanelShape().fill(Kids.sheen) : nil)
                 .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
         )
@@ -725,7 +725,7 @@ private struct KidsAnimalCard: View {
     var body: some View {
         ZStack(alignment: .topTrailing) {
             RetroPanelShape(cornerRadius: 20, style: .continuous)
-                .fill(locked ? Kids.panel : (selected ? cardColor : .white))
+                .fill(locked ? Kids.panel : (selected ? cardColor : Kids.panel))
                 .overlay(
                     Group {
                         if selected { RetroPanelShape(cornerRadius: 20, style: .continuous).fill(Kids.sheen) }

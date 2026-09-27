@@ -16,7 +16,7 @@ struct FantasyUnlockSheet: View {
                 title: "FANTASY PACK",
                 emoji: "🧚",
                 color: Kids.grape,
-                darkAccent: Color(hex: "#4A2E7A"),
+                darkAccent: Kids.grapeDeep,
                 blurb: "12 magical creatures await — dragons, unicorns, phoenix and more!",
                 preview: [("🐉","Dragon"),("🦄","Unicorn"),("🐙","Kraken"),("🔥","Phoenix"),("🐲","Hydra")],
                 coinCost: CoinStore.shared.fantasyCost,

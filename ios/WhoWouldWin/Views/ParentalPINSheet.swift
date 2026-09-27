@@ -101,7 +101,7 @@ struct ParentalPINSheet: View {
         return HStack(spacing: isIPad ? 18 : 14) {
             ForEach(0..<4, id: \.self) { i in
                 RetroPanelShape()
-                    .fill(i < active ? Kids.ink : Color.white)
+                    .fill(i < active ? Kids.ink : Kids.panel)
                     .frame(width: isIPad ? 22 : 18, height: isIPad ? 22 : 18)
                     .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                     .scaleEffect(i < active ? 1.0 : 0.85)
@@ -139,7 +139,7 @@ struct ParentalPINSheet: View {
                 .foregroundColor(Kids.ink)
                 .frame(width: keySize, height: keySize)
                 .background(
-                    RetroPanelShape().fill(.white)
+                    RetroPanelShape().fill(Kids.panel)
                         .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                 )
                 .compositingGroup().shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 3)

@@ -156,7 +156,7 @@ struct TournamentSetupView: View {
 
     private var card: some View {
         RetroPanelShape(cornerRadius: 20, style: .continuous)
-            .fill(Color.white)
+            .fill(Kids.panel)
             .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
     }
 }
@@ -184,7 +184,7 @@ private struct SizeChoiceChip: View {
             .padding(.vertical, isIPad ? 18 : 12)
             .background(
                 RetroPanelShape(cornerRadius: 14, style: .continuous)
-                    .fill(isSelected ? Kids.sun : Color.white)
+                    .fill(isSelected ? Kids.sun : Kids.panel)
                     .overlay(isSelected ? RetroPanelShape(cornerRadius: 14, style: .continuous).fill(Kids.sheen) : nil)
                     .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(isSelected ? Kids.grassDeep : Kids.outline, lineWidth: isSelected ? 2 : 1.25))
             )
@@ -229,7 +229,7 @@ private struct ModeRow: View {
                 Spacer()
                 ZStack {
                     RetroPanelShape()
-                        .fill(isSelected ? Kids.grass : Color.white)
+                        .fill(isSelected ? Kids.grass : Kids.panel)
                         .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                         .frame(width: isIPad ? 34 : 26, height: isIPad ? 34 : 26)
                     if isSelected {

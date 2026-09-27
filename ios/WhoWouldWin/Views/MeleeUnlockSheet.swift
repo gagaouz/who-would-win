@@ -14,7 +14,7 @@ struct MeleeUnlockSheet: View {
                 title: "MELEE",
                 emoji: "⚔️",
                 color: Kids.grape,
-                darkAccent: Color(hex: "#3A1F66"),
+                darkAccent: Kids.grapeDeep,
                 blurb: "Team battles! 2v1, 3v2, 4v4 — pick your squad and clash!",
                 preview: [("🦁","Lion"),("🐉","Dragon"),("🦈","Shark"),("🦅","Eagle"),("🦖","T-Rex")],
                 coinCost: CoinStore.shared.meleeCost,

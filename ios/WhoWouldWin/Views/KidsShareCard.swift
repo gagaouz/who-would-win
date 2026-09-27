@@ -51,7 +51,7 @@ struct KidsShareCard: View {
                     Image(systemName: "sparkle").foregroundColor(Kids.sun)
                 }
                 .padding(.horizontal, 14).padding(.vertical, 6)
-                .background(RetroPanelShape().fill(Kids.ink).overlay(RetroPanelShape().stroke(.white, lineWidth: 2)))
+                .background(RetroPanelShape().fill(Kids.ink).overlay(RetroPanelShape().stroke(Kids.panel, lineWidth: 2)))
                 .padding(.top, 24)
 
                 Text("who would win?")
@@ -104,7 +104,7 @@ struct KidsShareCard: View {
                     }
                     .padding(.horizontal, 12).padding(.vertical, 5)
                     .background(
-                        RetroPanelShape().fill(.white)
+                        RetroPanelShape().fill(Kids.panel)
                             .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                     )
                     .padding(.bottom, 10)
@@ -142,7 +142,7 @@ struct KidsShareCard: View {
                     .foregroundColor(Kids.ink.opacity(0.7))
                     .tracking(1)
                     .padding(.horizontal, 8).padding(.vertical, 3)
-                    .background(RetroPanelShape().fill(Color.white.opacity(0.7)).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1)))
+                    .background(RetroPanelShape().fill(Kids.panel.opacity(0.7)).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1)))
             } else {
                 Color.clear.frame(height: 20)
             }
@@ -169,7 +169,7 @@ struct KidsShareCard: View {
         .padding(.horizontal, 4)
         .background(
             RetroPanelShape(cornerRadius: 22, style: .continuous)
-                .fill(Color.white.opacity(isWinner ? 0.85 : 0.55))
+                .fill(Kids.panel.opacity(isWinner ? 0.85 : 0.55))
                 .overlay(
                     RetroPanelShape(cornerRadius: 22, style: .continuous)
                         .stroke(isWinner ? Kids.grassDeep : Kids.outline, lineWidth: isWinner ? 2 : 1)
@@ -227,7 +227,7 @@ struct KidsShareCard: View {
                 .lineLimit(1).minimumScaleFactor(0.6)
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    RetroPanelShape().fill(Color.white.opacity(0.5))
+                    RetroPanelShape().fill(Kids.panel.opacity(0.5))
                         .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1))
                     RetroPanelShape()
                         .fill(accent)
@@ -262,7 +262,7 @@ struct KidsShareCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RetroPanelShape(cornerRadius: 14, style: .continuous)
-                .fill(Color.white)
+                .fill(Kids.panel)
                 .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
     }
@@ -285,7 +285,7 @@ struct KidsShareCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RetroPanelShape(cornerRadius: 14, style: .continuous)
-                .fill(Color.white)
+                .fill(Kids.panel)
                 .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
     }
@@ -300,7 +300,7 @@ struct KidsShareCard: View {
                     .resizable()
                     .frame(width: 52, height: 52)
                     .padding(5)
-                    .background(RetroPanelShape(cornerRadius: 10).fill(.white))
+                    .background(RetroPanelShape(cornerRadius: 10).fill(Kids.panel))
                     .overlay(RetroPanelShape(cornerRadius: 10).stroke(Kids.outline, lineWidth: 1.25))
             }
             VStack(alignment: .leading, spacing: 4) {

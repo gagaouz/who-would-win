@@ -32,7 +32,7 @@ struct ParentGateSheet: View {
                         isPresented = false
                     } label: {
                         ZStack {
-                            RetroPanelShape().fill(.white)
+                            RetroPanelShape().fill(Kids.panel)
                                 .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                                 .frame(width: 44, height: 44)
                             Image(systemName: "xmark")

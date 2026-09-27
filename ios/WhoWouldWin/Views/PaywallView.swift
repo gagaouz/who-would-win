@@ -31,7 +31,7 @@ struct PaywallView: View {
                         Button { dismiss() } label: {
                             Text("✕").font(Kids.fredoka(16, weight: .bold)).foregroundColor(Kids.ink)
                                 .frame(width: 44, height: 44)
-                                .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
+                                .background(RetroPanelShape().fill(Kids.panel).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
                         }.buttonStyle(.plain)
                     }
                     .padding(.horizontal, 16).padding(.top, 10)
@@ -48,7 +48,7 @@ struct PaywallView: View {
                     .padding(16)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(
-                        RetroPanelShape(cornerRadius: 20, style: .continuous).fill(.white)
+                        RetroPanelShape(cornerRadius: 20, style: .continuous).fill(Kids.panel)
                             .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                     )
                     .padding(.horizontal, 20)
@@ -83,7 +83,7 @@ struct PaywallView: View {
                                     .font(Kids.nunito(10, weight: .bold)).foregroundColor(Kids.inkSoft)
                             }
                             .frame(maxWidth: .infinity).padding(.vertical, 11)
-                            .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
+                            .background(RetroPanelShape().fill(Kids.panel).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
                         }
                         .buttonStyle(.plain)
                         .padding(.horizontal, 30)

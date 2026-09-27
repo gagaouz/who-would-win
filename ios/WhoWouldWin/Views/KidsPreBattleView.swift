@@ -22,7 +22,7 @@ struct KidsPreBattleView: View {
 
             VStack(spacing: 0) {
                 // Handle
-                RetroPanelShape().fill(Color.white.opacity(0.4))
+                RetroPanelShape().fill(Kids.panel.opacity(0.4))
                     .frame(width: 44, height: 5)
                     .padding(.top, 10)
 
@@ -134,7 +134,7 @@ private struct ArenaTile: View {
     var body: some View {
         ZStack(alignment: .topTrailing) {
             RetroPanelShape(cornerRadius: 18, style: .continuous)
-                .fill(locked ? Kids.creamDeep : Color.white)
+                .fill(locked ? Kids.creamDeep : Kids.panel)
                 .overlay(
                     RetroPanelShape(cornerRadius: 18, style: .continuous)
                         .stroke(selected ? Kids.grassDeep : Kids.outline, lineWidth: selected ? 2 : 1.25)

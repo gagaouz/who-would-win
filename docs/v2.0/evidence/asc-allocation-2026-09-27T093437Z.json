@@ -1,0 +1,13 @@
+{
+  "checkedAt": "2026-09-27T09:34:37.906131+00:00",
+  "version": "2.0",
+  "build": "115",
+  "matchingBuildCount": 0,
+  "buildNumberCountAcrossVersions": 0,
+  "buildLookupComplete": true,
+  "readOnly": true,
+  "highestUploadedBuildAtCheck": 114,
+  "maintenanceVersion": "1.1.7",
+  "maintenanceSourceBuild": "109",
+  "scope": "Internal TestFlight; no public release or backend deployment."
+}

@@ -35,8 +35,11 @@ struct CustomFighterAccountView: View {
                         Button {
                             Task { await account.beginSignIn(); if account.isSignedIn { onSignedIn?(); dismiss() } }
                         } label: {
-                            Label("Sign in with Apple", systemImage: "apple.logo")
-                                .font(.system(size: 18, weight: .semibold))
+                            Label {
+                                Text("Sign in with Apple").font(Kids.fredoka(18))
+                            } icon: {
+                                Image(systemName: "apple.logo").font(.system(size: 18, weight: .semibold))
+                            }
                                 .frame(maxWidth: .infinity).frame(height: 50)
                                 .foregroundColor(.white).background(.black, in: RoundedRectangle(cornerRadius: 10))
                         }.disabled(account.isWorking).accessibilityIdentifier("customFighters.signIn")
@@ -47,10 +50,17 @@ struct CustomFighterAccountView: View {
                             .font(Kids.nunito(15, weight: .bold)).foregroundColor(Kids.grassDeep)
                     }
                     if let error = account.errorMessage { Text(error).font(Kids.nunito(14, weight: .semibold)).foregroundColor(.red).accessibilityIdentifier("customFighters.accountError") }
-                }.padding(24)
+                }.font(Kids.nunito(16)).padding(24)
             }
             .background(Kids.cream).navigationTitle("Fighter library").navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Done") { dismiss() } } }
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Fighter library").font(Kids.fredoka(17))
+                }
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Done") { dismiss() }.font(Kids.nunito(15))
+                }
+            }
             .confirmationDialog("Delete your private fighter library?", isPresented: $confirmingDelete, titleVisibility: .visible) {
                 Button("Delete library", role: .destructive) { Task { await account.deleteAccount() } }
             } message: {

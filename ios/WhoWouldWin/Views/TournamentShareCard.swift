@@ -131,7 +131,7 @@ struct TournamentShareCard: View {
         .padding(.vertical, 14)
         .background(
             RetroPanelShape(cornerRadius: 24, style: .continuous)
-                .fill(Color.white.opacity(0.9))
+                .fill(Kids.panel.opacity(0.9))
                 .overlay(RetroPanelShape(cornerRadius: 24, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
         .compositingGroup().shadow(color: Kids.shadow.opacity(0.11), radius: 4, x: 0, y: 5)
@@ -152,18 +152,26 @@ struct TournamentShareCard: View {
                     .foregroundColor(Kids.inkSoft)
                     .tracking(1)
             }
-            HStack(alignment: .top, spacing: 6) {
+            VStack(alignment: .leading, spacing: 12) {
                 ForEach(Array(tournament.bracket.rounds.enumerated()), id: \.offset) { (roundIdx, round) in
-                    VStack(spacing: 5) {
+                    VStack(alignment: .leading, spacing: 6) {
                         Text(roundLabel(roundIdx))
-                            .lineLimit(1).minimumScaleFactor(0.6)
                             .font(Kids.fredoka(8, weight: .bold))
                             .foregroundColor(Kids.ink)
                             .tracking(1)
                             .padding(.horizontal, 5).padding(.vertical, 2)
                             .background(RetroPanelShape().fill(Kids.sun).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1)))
-                        ForEach(round) { matchup in
-                            matchupMiniCard(matchup)
+                        // Two cards per row preserve complete names in the
+                        // fixed-width export; four skinny round columns cannot.
+                        ForEach(Array(stride(from: 0, to: round.count, by: 2)), id: \.self) { row in
+                            HStack(alignment: .top, spacing: 8) {
+                                matchupMiniCard(round[row]).frame(maxWidth: .infinity)
+                                if row + 1 < round.count {
+                                    matchupMiniCard(round[row + 1]).frame(maxWidth: .infinity)
+                                } else {
+                                    Color.clear.frame(maxWidth: .infinity).frame(height: 1)
+                                }
+                            }
                         }
                     }
                     .frame(maxWidth: .infinity)
@@ -173,7 +181,7 @@ struct TournamentShareCard: View {
         .padding(12)
         .background(
             RetroPanelShape(cornerRadius: 18, style: .continuous)
-                .fill(.white)
+                .fill(Kids.panel)
                 .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
         .compositingGroup().shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 4)
@@ -202,7 +210,7 @@ struct TournamentShareCard: View {
                 .font(Kids.nunito(9, weight: .bold))
                 .foregroundColor(isWinner ? Kids.ink : Kids.inkSoft)
                 .lineLimit(2)
-                .minimumScaleFactor(0.65)
+                .lineSpacing(3)
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
             if isWinner {
@@ -238,7 +246,7 @@ struct TournamentShareCard: View {
         .padding(.vertical, 10)
         .background(
             RetroPanelShape(cornerRadius: 14, style: .continuous)
-                .fill(.white)
+                .fill(Kids.panel)
                 .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(color, lineWidth: 2.5))
         )
         .compositingGroup().shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 3)
@@ -254,7 +262,7 @@ struct TournamentShareCard: View {
                     .resizable()
                     .frame(width: 52, height: 52)
                     .padding(5)
-                    .background(RetroPanelShape(cornerRadius: 10).fill(.white))
+                    .background(RetroPanelShape(cornerRadius: 10).fill(Kids.panel))
                     .overlay(RetroPanelShape(cornerRadius: 10).stroke(Kids.outline, lineWidth: 1.25))
             }
             VStack(alignment: .leading, spacing: 4) {

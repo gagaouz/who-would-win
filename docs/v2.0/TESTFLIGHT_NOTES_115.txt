@@ -1,0 +1,14 @@
+Animal vs Animal 2.0 (115)
+
+The Miami arcade update brings a sunset pink, turquoise, gold and plum theme, sharper arcade controls, consistent retro lettering, and the animated home logo.
+
+Swipe the main matchup card to browse five randomly chosen pairs. Tap a card to start a battle with exactly those two fighters. “Pick Your Fighters” opens the regular picker, and Surprise Me still starts a random battle.
+
+Please test:
+- Swipe both ways, use the arrows, and tap the featured matchup. Check that the displayed fighters enter the battle.
+- Browse the picker, sticker book, facts, settings, shops and custom fighter library. Check longer names and larger text.
+- Play a normal battle, Next Challenger, a tournament and a team battle; try sharing a result.
+- Verify the logo with Reduce Motion enabled and disabled.
+- Install over your existing app without deleting it; check your coins, saved progress, collections, parental PIN and any interrupted tournament.
+
+Existing custom artwork, saved fighters and Sandbox Premium behavior are preserved. No new subscription or artwork credit is needed for the new home matchups. Real purchase/restore, iCloud, device permissions and sustained performance still need your physical-device check.

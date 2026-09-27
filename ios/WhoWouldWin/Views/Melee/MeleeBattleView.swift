@@ -75,7 +75,7 @@ private struct BattleContent: View {
         VStack(spacing: 0) {
             // Top bar
             HStack {
-                KidIconBtn(icon: "✕", fill: .white) { onClose() }
+                KidIconBtn(icon: "✕", fill: Kids.panel) { onClose() }
                 Spacer()
                 Color.clear.frame(width: 44, height: 44)
             }
@@ -131,7 +131,7 @@ private struct BattleContent: View {
             .padding(14)
             .background(
                 RetroPanelShape(cornerRadius: 20, style: .continuous)
-                    .fill(.white)
+                    .fill(Kids.panel)
                     .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
             )
             .compositingGroup()
@@ -231,7 +231,7 @@ private struct ResultContent: View {
             VStack(spacing: 14) {
                 HStack {
                     Spacer()
-                    KidIconBtn(icon: "✕", fill: .white) { onClose() }
+                    KidIconBtn(icon: "✕", fill: Kids.panel) { onClose() }
                 }
                 .padding(.horizontal, 16).padding(.top, 10)
 
@@ -377,6 +377,7 @@ private struct ResultContent: View {
             Text(body)
                 .accessibilityIdentifier(title == "BATTLE STORY" ? "battle.narration" : "battle.info.\(title)")
                 .font(Kids.nunito(13, weight: .bold))
+                .lineSpacing(4)
                 .foregroundColor(Kids.ink)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -384,7 +385,7 @@ private struct ResultContent: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RetroPanelShape(cornerRadius: 20, style: .continuous)
-                .fill(.white)
+                .fill(Kids.panel)
                 .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
         .compositingGroup()

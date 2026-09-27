@@ -57,20 +57,20 @@ struct NarrationLabView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     Text(availabilityText)
-                        .font(.subheadline.weight(.semibold))
+                        .font(Kids.nunito(15, weight: .semibold))
                         .foregroundColor(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
                     // Experiment flag toggle (so you can flip the live path here too)
                     Toggle("Use on-device for real battles", isOn: $settings.onDeviceNarrationEnabled)
-                        .font(.subheadline.weight(.semibold))
+                        .font(Kids.nunito(15, weight: .semibold))
 
                     // Matchup pickers
                     GroupBox("Matchup") {
                         fighterPicker("Fighter 1", selection: $f1)
                         fighterPicker("Fighter 2", selection: $f2)
                         HStack {
-                            Text("Arena").font(.subheadline)
+                            Text("Arena").font(Kids.nunito(15))
                             Spacer()
                             Menu(env?.name ?? "No Arena (vacuum)") {
                                 Button("No Arena (vacuum)") { env = nil }
@@ -90,7 +90,7 @@ struct NarrationLabView: View {
                         HStack {
                             if running { ProgressView().tint(.white) }
                             Text(running ? "Generating…" : "Compare")
-                                .fontWeight(.bold)
+                                .font(Kids.fredoka(17))
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
@@ -103,13 +103,17 @@ struct NarrationLabView: View {
                     outcomeCard("📱 On-Device (Apple)", outcome: onDevice, tint: .blue)
                     outcomeCard("☁️ Cloud (Claude)", outcome: cloud, tint: .purple)
                 }
+                .font(Kids.nunito(16))
                 .padding()
             }
             .navigationTitle("Narration Lab")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Narration Lab").font(Kids.fredoka(17))
+                }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") { dismiss() }
+                    Button("Done") { dismiss() }.font(Kids.nunito(15))
                 }
             }
         }
@@ -118,7 +122,7 @@ struct NarrationLabView: View {
     @ViewBuilder
     private func fighterPicker(_ label: String, selection: Binding<Animal>) -> some View {
         HStack {
-            Text(label).font(.subheadline)
+            Text(label).font(Kids.nunito(15))
             Spacer()
             Menu("\(selection.wrappedValue.emoji) \(selection.wrappedValue.name)") {
                 ForEach(pool) { a in
@@ -134,9 +138,9 @@ struct NarrationLabView: View {
             if let o = outcome {
                 VStack(alignment: .leading, spacing: 6) {
                     HStack {
-                        Text(title).font(.headline).foregroundColor(tint)
+                        Text(title).font(Kids.fredoka(17)).foregroundColor(tint)
                         Spacer()
-                        Text("\(o.ms) ms").font(.caption.monospaced()).foregroundColor(.secondary)
+                        Text("\(o.ms) ms").font(Kids.nunito(12)).foregroundColor(.secondary)
                         // Copy the full result to the clipboard.
                         Button {
                             let text = o.error.map { "[\(o.winnerName)] ERROR: \($0)" }
@@ -148,19 +152,19 @@ struct NarrationLabView: View {
                         .buttonStyle(.borderless)
                     }
                     if let e = o.error {
-                        Text(e).font(.callout).foregroundColor(.orange)
+                        Text(e).font(Kids.nunito(16)).foregroundColor(.orange)
                             .textSelection(.enabled)
                     } else {
-                        Text("Winner: \(o.winnerName)").font(.subheadline.weight(.bold))
-                        Text(o.narration).font(.body).textSelection(.enabled)
-                        Text(o.funFact).font(.callout).foregroundColor(.secondary)
+                        Text("Winner: \(o.winnerName)").font(Kids.fredoka(15))
+                        Text(o.narration).font(Kids.nunito(17)).lineSpacing(4).textSelection(.enabled)
+                        Text(o.funFact).font(Kids.nunito(16)).foregroundColor(.secondary)
                             .textSelection(.enabled)
                             .padding(.top, 2)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             } else {
-                Text(title).font(.headline).foregroundColor(tint)
+                Text(title).font(Kids.fredoka(17)).foregroundColor(tint)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }

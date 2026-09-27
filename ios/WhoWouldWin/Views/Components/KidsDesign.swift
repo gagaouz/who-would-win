@@ -3,40 +3,42 @@ import SwiftUI
 // Native retro UI. Existing component names remain stable so every game flow
 // shares one presentation without changing its state, commerce or navigation.
 enum Kids {
-    // Bright adventure colors. Light accents take dark labels; their deeper
-    // partners remain readable as text on the warm, near-white surfaces.
-    static let sun = Color(hex: "#FFD363")
-    static let sunDeep = Color(hex: "#98630D")
-    static let sky = Color(hex: "#79CEF4")
-    static let skyDeep = Color(hex: "#176C9D")
-    static let pink = Color(hex: "#FFAA92")
-    static let pinkDeep = Color(hex: "#AE493D")
-    static let grass = Color(hex: "#58D3B0")
-    static let grassDeep = Color(hex: "#08756B")
-    static let grape = Color(hex: "#BEB6F3")
-    static let grapeDeep = Color(hex: "#66509A")
-    static let peach = Color(hex: "#FFD19A")
-    static let peachDeep = Color(hex: "#995F2C")
-    static let cream = Color(hex: "#FFFBF0")
-    static let creamDeep = Color(hex: "#F1EAD8")
-    static let panel = Color(hex: "#FFFDF7")
-    static let console = Color(hex: "#20566A")
-    static let ink = Color(hex: "#163E4D")
-    static let inkSoft = Color(hex: "#496774")
-    static let outline = Color(hex: "#A8C7C6")
-    static let outlineStrong = Color(hex: "#639C9D")
-    static let shadow = Color(hex: "#236373")
-    static let skyMist = Color(hex: "#D6F2FC")
-    static let mintMist = Color(hex: "#DCF5E8")
-    static let coralMist = Color(hex: "#FFE8D7")
+    // Miami arcade: sunset pink, turquoise and gold against plum ink.
+    // Deep variants are text-safe on the warm card surfaces; bright accents
+    // always carry dark labels. These tokens are shared by every game mode.
+    static let sun = Color(hex: "#FFD166")
+    static let sunDeep = Color(hex: "#754500")
+    static let sky = Color(hex: "#69DDD9")
+    static let skyDeep = Color(hex: "#0F585F")
+    static let pink = Color(hex: "#FF8CB8")
+    static let pinkDeep = Color(hex: "#902559")
+    static let grass = Color(hex: "#78DBC6")
+    static let grassDeep = Color(hex: "#145D56")
+    static let grape = Color(hex: "#C5ACF0")
+    static let grapeDeep = Color(hex: "#593A7B")
+    static let peach = Color(hex: "#FFB08B")
+    static let peachDeep = Color(hex: "#7E3B24")
+    static let cream = Color(hex: "#FFF1E6")
+    static let creamDeep = Color(hex: "#E9D5DE")
+    static let panel = Color(hex: "#FFF8EE")
+    static let console = Color(hex: "#302046")
+    static let ink = Color(hex: "#281E48")
+    static let inkSoft = Color(hex: "#584766")
+    static let outline = Color(hex: "#BDA6C5")
+    static let outlineStrong = Color(hex: "#765C89")
+    static let shadow = Color(hex: "#302046")
+    static let skyMist = Color(hex: "#E9BADA")
+    static let mintMist = Color(hex: "#A5DEDC")
+    static let coralMist = Color(hex: "#FFBEA3")
 
-    // The legacy helper name is preserved for callers; small headings remain
-    // readable, dynamically scaled text. Pixel type is reserved for display.
+    // Keep the existing call sites' nominal sizes while accounting for the
+    // pixel font's wider glyphs. Its single native weight stays crisp; the
+    // compatibility weight argument no longer adds synthetic bolding.
     static func fredoka(_ size: CGFloat, weight: Font.Weight = .bold) -> Font {
-        .custom("Nunito", size: size, relativeTo: .headline).weight(weight)
+        .custom("PressStart2P-Regular", size: max(8, size * 0.66), relativeTo: .headline)
     }
     static func nunito(_ size: CGFloat, weight: Font.Weight = .bold) -> Font {
-        .custom("Nunito", size: size, relativeTo: .body).weight(weight)
+        .custom("PressStart2P-Regular", size: max(8, size * 0.66), relativeTo: .body)
     }
     static func pixel(_ size: CGFloat) -> Font {
         .custom("PressStart2P-Regular", size: size, relativeTo: .headline)
@@ -53,8 +55,8 @@ enum Kids {
     static let sheen = LinearGradient(colors: [.clear, .clear], startPoint: .top, endPoint: .bottom)
 }
 
-/// Compact, gently rounded panels keep the sprite artwork in focus. The public
-/// shape API is shared by existing cards, buttons, selection rings and exports.
+/// Cut corners echo arcade cabinets without the soft pill silhouette. The
+/// existing radius argument controls the small diagonal corner cut.
 struct RetroPanelShape: InsettableShape {
     var cornerRadius: CGFloat = 10
     var style: RoundedCornerStyle = .continuous
@@ -66,8 +68,18 @@ struct RetroPanelShape: InsettableShape {
     }
     func path(in rect: CGRect) -> Path {
         let r = rect.insetBy(dx: insetAmount, dy: insetAmount)
-        let radius = max(0, min(12, cornerRadius) - insetAmount)
-        return RoundedRectangle(cornerRadius: radius, style: style).path(in: r)
+        let cut = max(0, min(6, cornerRadius, min(r.width, r.height) / 2) - insetAmount)
+        var path = Path()
+        path.move(to: CGPoint(x: r.minX + cut, y: r.minY))
+        path.addLine(to: CGPoint(x: r.maxX - cut, y: r.minY))
+        path.addLine(to: CGPoint(x: r.maxX, y: r.minY + cut))
+        path.addLine(to: CGPoint(x: r.maxX, y: r.maxY - cut))
+        path.addLine(to: CGPoint(x: r.maxX - cut, y: r.maxY))
+        path.addLine(to: CGPoint(x: r.minX + cut, y: r.maxY))
+        path.addLine(to: CGPoint(x: r.minX, y: r.maxY - cut))
+        path.addLine(to: CGPoint(x: r.minX, y: r.minY + cut))
+        path.closeSubpath()
+        return path
     }
     func inset(by amount: CGFloat) -> some InsettableShape {
         var copy = self
@@ -187,7 +199,7 @@ extension View {
 struct StickerShape<S: Shape>: View {
     let shape: S
     var fill: Color
-    var strokeWidth: CGFloat = 1.25
+    var strokeWidth: CGFloat = 1.5
     var body: some View {
         shape
             .fill(fill)
@@ -200,16 +212,16 @@ struct StickerShape<S: Shape>: View {
     }
 }
 
-// MARK: - SkyBG — a still, airy landscape behind warm paper cards
+// MARK: - SkyBG — static sunset and arcade horizon, shared across screens
 
 struct SkyBG: View {
     enum Variant { case day, sunset, meadow }
     var variant: Variant = .day
     private var colors: [Color] {
         switch variant {
-        case .day: return [Kids.skyMist, Kids.cream, Kids.mintMist]
-        case .sunset: return [Kids.coralMist, Kids.cream, Kids.mintMist]
-        case .meadow: return [Kids.mintMist, Kids.cream, Kids.skyMist]
+        case .day: return [Kids.skyMist, Kids.coralMist, Kids.mintMist]
+        case .sunset: return [Kids.coralMist, Kids.skyMist, Kids.mintMist]
+        case .meadow: return [Kids.mintMist, Kids.skyMist, Kids.coralMist]
         }
     }
     var body: some View {
@@ -221,20 +233,28 @@ struct SkyBG: View {
                     .init(color: colors[2], location: 1)
                 ], startPoint: .topLeading, endPoint: .bottomTrailing)
                 Canvas { context, size in
-                    // A few quiet pixel stars and clouds, kept behind controls.
-                    // Static artwork also respects Reduce Motion automatically.
+                    // Restrained pixel stars and a perspective grid. No motion
+                    // behind reading surfaces, and no flashing neon effects.
                     for point in [CGPoint(x: 0.08, y: 0.13), CGPoint(x: 0.91, y: 0.22),
                                   CGPoint(x: 0.04, y: 0.57), CGPoint(x: 0.96, y: 0.73)] {
                         let x = size.width * point.x, y = size.height * point.y
                         var sparkle = Path(CGRect(x: x - 2, y: y - 6, width: 4, height: 12))
                         sparkle.addRect(CGRect(x: x - 6, y: y - 2, width: 12, height: 4))
-                        context.fill(sparkle, with: .color(Kids.skyDeep.opacity(0.10)))
+                        context.fill(sparkle, with: .color(Kids.grapeDeep.opacity(0.16)))
                     }
+                    let horizon = size.height * 0.77
+                    var grid = Path()
+                    for i in -5...5 {
+                        grid.move(to: CGPoint(x: size.width * 0.5 + CGFloat(i) * 13, y: horizon))
+                        grid.addLine(to: CGPoint(x: size.width * 0.5 + CGFloat(i) * size.width * 0.23, y: size.height))
+                    }
+                    for fraction in [0.0, 0.12, 0.3, 0.55, 0.9] {
+                        let y = horizon + (size.height - horizon) * fraction
+                        grid.move(to: CGPoint(x: 0, y: y))
+                        grid.addLine(to: CGPoint(x: size.width, y: y))
+                    }
+                    context.stroke(grid, with: .color(Kids.grapeDeep.opacity(0.12)), lineWidth: 1)
                 }
-                Cloud(w: min(220, geo.size.width * 0.45), h: 42)
-                    .opacity(0.38).position(x: geo.size.width * 0.14, y: geo.size.height * 0.09)
-                Cloud(w: min(260, geo.size.width * 0.54), h: 48)
-                    .opacity(0.30).position(x: geo.size.width * 0.94, y: geo.size.height * 0.30)
             }
         }
         .ignoresSafeArea()
@@ -370,10 +390,10 @@ struct KidButtonPressStyle: ButtonStyle {
     var y: CGFloat = 0
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .offset(y: configuration.isPressed ? 1 : 0)
+            .offset(y: configuration.isPressed ? 3 : 0)
             .compositingGroup()
-            .shadow(color: Kids.shadow.opacity(configuration.isPressed ? 0.06 : 0.13),
-                    radius: configuration.isPressed ? 1 : 3, x: 0, y: configuration.isPressed ? 1 : 3)
+            .shadow(color: Kids.shadow.opacity(configuration.isPressed ? 0.10 : 0.28),
+                    radius: 0, x: 0, y: configuration.isPressed ? 1 : 4)
     }
 }
 

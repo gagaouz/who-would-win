@@ -19,6 +19,17 @@ struct SeededRNG {
 /// Only ever pairs animals the player has actually unlocked.
 enum QuickMatchups {
 
+    /// A stable deck for the home carousel. Build once per home session so a
+    /// balance/setting update cannot silently change the matchup under a tap.
+    /// Shuffling the unlocked pool also keeps both sides distinct.
+    static func previewDeck(count: Int = 5) -> [(Animal, Animal)] {
+        let roster = pool().shuffled()
+        let pairCount = min(max(0, count), roster.count / 2)
+        return (0..<pairCount).map { index in
+            (roster[index * 2], roster[index * 2 + 1])
+        }
+    }
+
     /// Unlocked, non-custom roster.
     static func pool() -> [Animal] {
         let p = Animals.all.filter { !$0.isCustom && UserSettings.shared.isAvailable($0) }

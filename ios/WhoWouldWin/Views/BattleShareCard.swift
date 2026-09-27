@@ -102,7 +102,7 @@ struct BattleShareCard: View {
                 .padding(.bottom, 4)
 
                 Text("Who Would Win?")
-                    .font(.system(size: 9, weight: .semibold, design: .rounded))
+                    .font(Kids.nunito(9, weight: .semibold))
                     .foregroundColor(.white.opacity(0.32))
                     .tracking(1.5)
                     .padding(.bottom, 18)
@@ -147,7 +147,7 @@ struct BattleShareCard: View {
 
                 // ── NARRATION ────────────────────────────────────
                 Text("\u{201C}\(excerpt)\u{201D}")
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .font(Kids.nunito(12, weight: .medium))
                     .foregroundColor(.white.opacity(0.55))
                     .multilineTextAlignment(.center)
                     .lineSpacing(4)
@@ -159,7 +159,7 @@ struct BattleShareCard: View {
                     Text("✨")
                         .font(.system(size: 11))
                     Text(result.funFact)
-                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                        .font(Kids.nunito(11, weight: .medium))
                         .foregroundColor(.white.opacity(0.5))
                         .lineSpacing(3)
                         .lineLimit(3)
@@ -326,7 +326,7 @@ struct BattleShareCard: View {
     private var winnerBanner: some View {
         VStack(spacing: 4) {
             Text("🏆  WINNER")
-                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .font(Kids.nunito(11, weight: .bold))
                 .foregroundColor(gold.opacity(0.75))
                 .tracking(3)
 

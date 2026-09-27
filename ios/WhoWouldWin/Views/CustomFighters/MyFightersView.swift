@@ -33,7 +33,7 @@ struct MyFightersView: View {
                     HStack {
                         Text("MY FIGHTERS").font(Kids.fredoka(25)).foregroundColor(Kids.ink)
                         Spacer()
-                        KidIconBtn(icon: "✕", fill: .white, a11yLabel: "Close My Fighters") { dismiss() }
+                        KidIconBtn(icon: "✕", fill: Kids.panel, a11yLabel: "Close My Fighters") { dismiss() }
                             .accessibilityIdentifier("myFighters.close")
                     }
                     Text("Keep your own creatures ready for the arena.")
@@ -41,7 +41,7 @@ struct MyFightersView: View {
                     #if DEBUG
                     if service.isUITestFixture {
                         Text("TEST artwork requests: \(service.fixtureCreateCount)")
-                            .font(.system(size: 11, design: .monospaced))
+                            .font(Kids.nunito(11))
                             .accessibilityIdentifier("myFighters.fixtureRequestCount")
                     }
                     #endif
@@ -50,7 +50,7 @@ struct MyFightersView: View {
                     if let message = service.message {
                         Text(message).font(Kids.nunito(14, weight: .bold)).foregroundColor(Kids.ink)
                             .padding(14).frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Kids.sun.opacity(0.28), in: RoundedRectangle(cornerRadius: 14))
+                            .background(Kids.sun.opacity(0.28), in: RetroPanelShape(cornerRadius: 14))
                             .accessibilityIdentifier("myFighters.message")
                     }
                     if service.hasUnconfirmedRequest {
@@ -79,7 +79,7 @@ struct MyFightersView: View {
                         Text(account.isSignedIn ? "No saved artwork yet. Your existing typed-name creatures still work in the fighter picker." : "Sign in with a grown-up to restore saved artwork or create a new fighter. Existing typed-name creatures still work in the picker.")
                             .font(Kids.nunito(15)).foregroundColor(Kids.inkSoft)
                             .padding(16).frame(maxWidth: .infinity, alignment: .leading)
-                            .background(.white, in: RoundedRectangle(cornerRadius: 16))
+                            .background(Kids.panel, in: RetroPanelShape(cornerRadius: 16))
                             .accessibilityIdentifier("myFighters.empty")
                     }
                     ForEach(library.fighters) { fighter in installedRow(fighter) }
@@ -129,7 +129,7 @@ struct MyFightersView: View {
                 Spacer()
                 Image(systemName: "chevron.right")
             }.foregroundColor(Kids.ink).padding(16)
-                .background(.white, in: RoundedRectangle(cornerRadius: 16))
+                .background(Kids.panel, in: RetroPanelShape(cornerRadius: 16))
         }.buttonStyle(.plain).accessibilityIdentifier("myFighters.account")
     }
 
@@ -151,7 +151,7 @@ struct MyFightersView: View {
                 .font(Kids.nunito(16)).foregroundColor(Kids.ink)
                 .textInputAutocapitalization(.words).autocorrectionDisabled()
                 .focused($nameFocused).submitLabel(.done).onSubmit { nameFocused = false }
-                .padding(12).background(.white, in: RoundedRectangle(cornerRadius: 10))
+                .padding(12).background(Kids.panel, in: RetroPanelShape(cornerRadius: 10))
                 .accessibilityIdentifier("myFighters.name")
             Text("1–24 characters. Typing does not send a request.")
                 .font(Kids.nunito(12)).foregroundColor(Kids.inkSoft)
@@ -171,7 +171,7 @@ struct MyFightersView: View {
             }
             Text("A grown-up confirms before the name is sent to OpenAI. You can close this screen while a request finishes.")
                 .font(Kids.nunito(12)).foregroundColor(Kids.inkSoft)
-        }.padding(16).background(Kids.mintMist, in: RoundedRectangle(cornerRadius: 16))
+        }.padding(16).background(Kids.mintMist, in: RetroPanelShape(cornerRadius: 16))
     }
 
     private var jobsSection: some View {
@@ -189,7 +189,7 @@ struct MyFightersView: View {
                         }
                     }
                     Spacer(minLength: 0)
-                }.padding(12).background(.white, in: RoundedRectangle(cornerRadius: 12))
+                }.padding(12).background(Kids.panel, in: RetroPanelShape(cornerRadius: 12))
                 .accessibilityIdentifier("myFighters.job.\(job.state)")
             }
         }
@@ -211,11 +211,11 @@ struct MyFightersView: View {
             if onSelect != nil {
                 Button(unavailableIDs.contains(fighter.animal.id) ? "Already selected" : "Use fighter") { choose(fighter) }
                     .font(Kids.nunito(15, weight: .heavy)).frame(maxWidth: .infinity, minHeight: 44)
-                    .background(Kids.grass, in: RoundedRectangle(cornerRadius: 10)).foregroundColor(Kids.ink)
+                    .background(Kids.grass, in: RetroPanelShape(cornerRadius: 10)).foregroundColor(Kids.ink)
                     .disabled(unavailableIDs.contains(fighter.animal.id))
                     .accessibilityIdentifier("myFighters.use.\(fighter.id)")
             }
-        }.padding(14).background(.white, in: RoundedRectangle(cornerRadius: 16))
+        }.padding(14).background(Kids.panel, in: RetroPanelShape(cornerRadius: 16))
     }
 
     private func downloadRow(_ remote: RemoteCustomFighter) -> some View {
@@ -235,7 +235,7 @@ struct MyFightersView: View {
                 Image(systemName: "ellipsis.circle").font(.system(size: 21)).frame(width: 44, height: 44)
                     .foregroundColor(Kids.grassDeep)
             }.accessibilityLabel("Manage \(remote.name)")
-        }.padding(14).background(.white, in: RoundedRectangle(cornerRadius: 16))
+        }.padding(14).background(Kids.panel, in: RetroPanelShape(cornerRadius: 16))
     }
     private func gate(_ action: @escaping () -> Void) { gatedAction = action; showParentGate = true }
     private func choose(_ fighter: CustomFighter) {
@@ -264,7 +264,7 @@ private struct CustomFighterDetailView: View {
                     HStack {
                         Text(fighter.name).font(Kids.fredoka(25)).foregroundColor(Kids.ink)
                         Spacer()
-                        KidIconBtn(icon: "✕", fill: .white, a11yLabel: "Close fighter preview") { dismiss() }
+                        KidIconBtn(icon: "✕", fill: Kids.panel, a11yLabel: "Close fighter preview") { dismiss() }
                     }
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 14) {
                         ForEach(RetroPose.allCases, id: \.rawValue) { pose in
@@ -275,7 +275,7 @@ private struct CustomFighterDetailView: View {
                                     Image(systemName: "photo").frame(height: 125).accessibilityLabel("Artwork unavailable")
                                 }
                                 Text(pose.rawValue.capitalized).font(Kids.nunito(14, weight: .bold)).foregroundColor(Kids.ink)
-                            }.padding(12).frame(maxWidth: .infinity).background(.white, in: RoundedRectangle(cornerRadius: 14))
+                            }.padding(12).frame(maxWidth: .infinity).background(Kids.panel, in: RetroPanelShape(cornerRadius: 14))
                         }
                     }.accessibilityIdentifier("myFighters.fourPoses")
                     if canSelect { KidButton(title: "USE FIGHTER", icon: "▶", color: Kids.grass, size: .md) { dismiss(); onSelect() } }

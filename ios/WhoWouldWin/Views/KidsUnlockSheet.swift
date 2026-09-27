@@ -64,7 +64,7 @@ struct KidsUnlockSheet: View {
                     Spacer()
                     Button { isPresented = false } label: {
                         ZStack {
-                            RetroPanelShape().fill(.white)
+                            RetroPanelShape().fill(Kids.panel)
                                 .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                                 .frame(width: 44, height: 44)
                             Image(systemName: "xmark")
@@ -211,7 +211,7 @@ struct KidsUnlockSheet: View {
                 let (emoji, name) = config.preview[i]
                 VStack(spacing: 4) {
                     ZStack {
-                        RetroPanelShape().fill(.white)
+                        RetroPanelShape().fill(Kids.panel)
                             .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                             .frame(width: isIPad ? 56 : 44, height: isIPad ? 56 : 44)
                             .compositingGroup().shadow(color: Kids.shadow.opacity(0.10), radius: 4, x: 0, y: 2)
@@ -266,7 +266,7 @@ struct KidsUnlockSheet: View {
         .padding(isIPad ? 18 : 14)
         .background(
             RetroPanelShape(cornerRadius: 18, style: .continuous)
-                .fill(.white)
+                .fill(Kids.panel)
                 .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
         .compositingGroup().shadow(color: Kids.shadow.opacity(0.10), radius: 4, x: 0, y: 4)
@@ -300,7 +300,7 @@ struct KidsUnlockSheet: View {
             .padding(isIPad ? 16 : 12)
             .background(
                 RetroPanelShape(cornerRadius: 18, style: .continuous)
-                    .fill(.white)
+                    .fill(Kids.panel)
                     .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
             )
             .compositingGroup().shadow(color: Kids.shadow.opacity(0.08), radius: 4, x: 0, y: 4)

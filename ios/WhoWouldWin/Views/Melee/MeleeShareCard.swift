@@ -47,7 +47,7 @@ struct MeleeShareCard: View {
                     RetroSymbol("⚔️", size: 12, color: Kids.sun)
                 }
                 .padding(.horizontal, 14).padding(.vertical, 6)
-                .background(RetroPanelShape().fill(Kids.ink).overlay(RetroPanelShape().stroke(.white, lineWidth: 2)))
+                .background(RetroPanelShape().fill(Kids.ink).overlay(RetroPanelShape().stroke(Kids.panel, lineWidth: 2)))
                 .padding(.top, 24)
 
                 Text("who would win? team battle")
@@ -158,7 +158,7 @@ struct MeleeShareCard: View {
                         .foregroundColor(Kids.ink.opacity(0.7))
                         .tracking(1)
                         .padding(.horizontal, 8).padding(.vertical, 3)
-                        .background(RetroPanelShape().fill(Color.white.opacity(0.7)).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1)))
+                        .background(RetroPanelShape().fill(Kids.panel.opacity(0.7)).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1)))
                 }
                 Spacer(minLength: 0)
                 Text("\(healthPct)%")
@@ -181,7 +181,7 @@ struct MeleeShareCard: View {
         .padding(10)
         .background(
             RetroPanelShape(cornerRadius: 18, style: .continuous)
-                .fill(Color.white.opacity(isWinner ? 0.92 : 0.55))
+                .fill(Kids.panel.opacity(isWinner ? 0.92 : 0.55))
                 .overlay(
                     RetroPanelShape(cornerRadius: 18, style: .continuous)
                         .stroke(isWinner ? Kids.grassDeep : Kids.outline, lineWidth: isWinner ? 2 : 1)
@@ -206,7 +206,7 @@ struct MeleeShareCard: View {
     private func healthBar(pct: Int, accent: Color) -> some View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
-                RetroPanelShape().fill(Color.white.opacity(0.65))
+                RetroPanelShape().fill(Kids.panel.opacity(0.65))
                     .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1))
                 RetroPanelShape()
                     .fill(accent)
@@ -236,7 +236,7 @@ struct MeleeShareCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RetroPanelShape(cornerRadius: 14, style: .continuous)
-                .fill(Color.white)
+                .fill(Kids.panel)
                 .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
     }
@@ -259,7 +259,7 @@ struct MeleeShareCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RetroPanelShape(cornerRadius: 14, style: .continuous)
-                .fill(Color.white)
+                .fill(Kids.panel)
                 .overlay(RetroPanelShape(cornerRadius: 14, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
     }
@@ -274,7 +274,7 @@ struct MeleeShareCard: View {
                     .resizable()
                     .frame(width: 52, height: 52)
                     .padding(5)
-                    .background(RetroPanelShape(cornerRadius: 10).fill(.white))
+                    .background(RetroPanelShape(cornerRadius: 10).fill(Kids.panel))
                     .overlay(RetroPanelShape(cornerRadius: 10).stroke(Kids.outline, lineWidth: 1.25))
             }
             VStack(alignment: .leading, spacing: 4) {

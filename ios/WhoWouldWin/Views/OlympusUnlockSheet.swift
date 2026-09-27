@@ -13,8 +13,8 @@ struct OlympusUnlockSheet: View {
             config: .init(
                 title: "OLYMPUS",
                 emoji: "🔱",
-                color: Color(hex: "#E0B040"),
-                darkAccent: Color(hex: "#5C3A00"),
+                color: Kids.sun,
+                darkAccent: Kids.sunDeep,
                 blurb: "The mighty gods of Olympus — Zeus, Poseidon, Hades and more!",
                 preview: [("⚡","Zeus"),("🔱","Poseidon"),("💀","Hades"),("🏹","Apollo"),("🦉","Athena")],
                 coinCost: CoinStore.shared.olympusCost,

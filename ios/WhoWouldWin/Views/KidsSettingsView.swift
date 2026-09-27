@@ -133,7 +133,7 @@ struct KidsSettingsView: View {
 
     private var header: some View {
         HStack {
-            KidIconBtn(icon: "←", fill: .white) { dismiss() }
+            KidIconBtn(icon: "←", fill: Kids.panel) { dismiss() }
             Spacer()
             Text("Settings")
                 .font(Kids.fredoka(isIPad ? 32 : 24, weight: .bold))
@@ -454,7 +454,7 @@ struct KidsShopView: View {
 
     private var header: some View {
         HStack {
-            KidIconBtn(icon: "✕", fill: .white) { dismiss() }
+            KidIconBtn(icon: "✕", fill: Kids.panel) { dismiss() }
             Spacer()
             Text("Shop & Unlocks")
                 .font(Kids.fredoka(isIPad ? 30 : 22, weight: .bold))
@@ -591,7 +591,7 @@ struct KidsShopView: View {
             .padding(isIPad ? 18 : 14)
             .background(
                 RetroPanelShape(cornerRadius: 20, style: .continuous)
-                    .fill(.white)
+                    .fill(Kids.panel)
                     .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.sun, lineWidth: 2))
             )
             .compositingGroup().shadow(color: Kids.shadow.opacity(0.10), radius: 4, x: 0, y: 4)
@@ -814,7 +814,7 @@ struct KidsShopView: View {
             HStack(spacing: isIPad ? 12 : 10) {
                 ZStack {
                     RetroPanelShape(cornerRadius: 12, style: .continuous)
-                        .fill(.white)
+                        .fill(Kids.panel)
                         .overlay(RetroPanelShape(cornerRadius: 12, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                         .frame(width: isIPad ? 50 : 40, height: isIPad ? 50 : 40)
                     Image(systemName: "arrow.clockwise").foregroundColor(Kids.ink).font(.system(size: isIPad ? 20 : 16, weight: .bold))
@@ -869,7 +869,7 @@ struct KidsShopView: View {
 struct KidsSettingsCard: View {
     var body: some View {
         RetroPanelShape(cornerRadius: 20, style: .continuous)
-            .fill(Color.white)
+            .fill(Kids.panel)
             .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
     }
 }
@@ -900,7 +900,7 @@ struct KidsNavRow: View {
                 Text(subtitle)
                     .font(Kids.nunito(isIPad ? 13 : 11, weight: .bold))
                     .foregroundColor(Kids.inkSoft)
-                    .lineLimit(1).minimumScaleFactor(0.8)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             Spacer()
             Image(systemName: lock ? "lock.fill" : "chevron.right")
@@ -983,6 +983,7 @@ private struct SettingRow: View {
                 Text(label)
                     .font(Kids.fredoka(15, weight: .bold))
                     .foregroundColor(Kids.ink)
+                    .fixedSize(horizontal: false, vertical: true)
                 Text(value)
                     .font(Kids.nunito(11, weight: .bold))
                     .foregroundColor(Kids.inkSoft)
@@ -993,7 +994,7 @@ private struct SettingRow: View {
         .padding(.horizontal, 12).padding(.vertical, 10)
         .background(
             RetroPanelShape(cornerRadius: 16, style: .continuous)
-                .fill(.white)
+                .fill(Kids.panel)
                 .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
         .compositingGroup().shadow(color: Kids.shadow.opacity(0.06), radius: 4, x: 0, y: 2)

@@ -47,7 +47,7 @@ struct HowToPlayView: View {
                             .font(Kids.fredoka(15, weight: .bold))
                             .foregroundColor(Kids.inkSoft)
                             .padding(.horizontal, 14).padding(.vertical, 7)
-                            .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
+                            .background(RetroPanelShape().fill(Kids.panel).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
                     }
                     .buttonStyle(.plain)
                 }

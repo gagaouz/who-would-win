@@ -261,7 +261,7 @@ struct TournamentRootView: View {
                     KidsGoldCoin(size: isIPad ? 18 : 14)
                 }
                 .padding(.horizontal, isIPad ? 20 : 14).padding(.vertical, isIPad ? 10 : 7)
-                .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
+                .background(RetroPanelShape().fill(Kids.panel).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
 
                 VStack(spacing: isIPad ? 14 : 10) {
                     Button {

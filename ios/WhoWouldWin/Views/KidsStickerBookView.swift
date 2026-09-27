@@ -108,7 +108,7 @@ struct KidsStickerBookView: View {
 
     private var header: some View {
         HStack {
-            KidIconBtn(icon: "←", fill: .white) { dismiss() }
+            KidIconBtn(icon: "←", fill: Kids.panel) { dismiss() }
             Spacer()
             Text("MY STICKER BOOK")
                 .font(Kids.fredoka(isIPad ? 24 : 18, weight: .bold))
@@ -143,7 +143,7 @@ struct KidsStickerBookView: View {
         .frame(maxWidth: .infinity)
         .background(
             RetroPanelShape(cornerRadius: 20, style: .continuous)
-                .fill(.white)
+                .fill(Kids.panel)
                 .overlay(RetroPanelShape(cornerRadius: 20, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
         .compositingGroup().shadow(color: Kids.shadow.opacity(0.07), radius: 4, x: 0, y: 3)
@@ -265,6 +265,7 @@ private struct StickerTile: View {
     let collected: Bool
     let lockedPack: Bool
     var isIPad: Bool = false
+    @ScaledMetric(relativeTo: .headline) private var labelHeight: CGFloat = 32
 
     var body: some View {
         let tileSize: CGFloat = isIPad ? 80 : 64
@@ -272,7 +273,7 @@ private struct StickerTile: View {
         VStack(spacing: isIPad ? 6 : 4) {
             ZStack {
                 RetroPanelShape(cornerRadius: 16, style: .continuous)
-                    .fill(collected ? .white : (lockedPack ? Kids.creamDeep : Color.white.opacity(0.5)))
+                    .fill(collected ? Kids.panel : (lockedPack ? Kids.creamDeep : Kids.panel.opacity(0.5)))
                     .overlay(
                         RetroPanelShape(cornerRadius: 16, style: .continuous)
                             .stroke(
@@ -292,15 +293,18 @@ private struct StickerTile: View {
                         .opacity(0.6)
                 } else {
                     Text("?")
-                        .font(.system(size: isIPad ? 34 : 28))
+                        .font(Kids.fredoka(isIPad ? 34 : 28))
                         .foregroundColor(Kids.inkSoft.opacity(0.5))
                 }
             }
             Text(collected ? animal.name : (lockedPack ? "Locked" : "???"))
                 .font(Kids.fredoka(isIPad ? 12 : 10, weight: .bold))
                 .foregroundColor(collected ? Kids.ink : Kids.inkSoft)
-                .lineLimit(1).minimumScaleFactor(0.7)
-                .frame(width: tileSize)
+                .multilineTextAlignment(.center)
+                .lineSpacing(3)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(width: tileSize + 16, alignment: .top)
+                .frame(minHeight: labelHeight, alignment: .top)
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(collected ? animal.name : (lockedPack ? "Locked creature" : "Uncollected creature"))

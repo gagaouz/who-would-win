@@ -54,7 +54,7 @@ struct CoinBadge: View {
                             .frame(width: size == .compact ? 60 : size == .regular ? 80 : 110)
 
                             Text(pack.name)
-                                .font(.system(size: size == .large ? 10 : 9, weight: .semibold, design: .rounded))
+                                .font(Kids.nunito(size == .large ? 10 : 9, weight: .semibold))
                                 .foregroundColor(Kids.ink.opacity(0.4))
                         }
                     }
@@ -128,7 +128,7 @@ struct CoinsHubSheet: View {
                                 .contentTransition(.numericText())
                                 .animation(.spring(response: 0.4), value: coinStore.balance)
                             Text("Battle Coins")
-                                .font(.system(size: 14, weight: .medium, design: .rounded))
+                                .font(Kids.nunito(14, weight: .medium))
                                 .foregroundColor(Kids.ink.opacity(0.4))
                         }
                         .padding(.top, 8)
@@ -138,11 +138,11 @@ struct CoinsHubSheet: View {
                             VStack(spacing: 10) {
                                 HStack {
                                     Text("Next: \(pack.name) Pack")
-                                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                                        .font(Kids.nunito(14, weight: .bold))
                                         .foregroundColor(Kids.ink.opacity(0.8))
                                     Spacer()
                                     Text("\(coinStore.balance) / \(pack.cost)")
-                                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                                        .font(Kids.nunito(13, weight: .semibold))
                                         .foregroundColor(gold.opacity(0.7))
                                 }
 
@@ -160,13 +160,13 @@ struct CoinsHubSheet: View {
 
                                 if coinStore.canAfford(pack.cost) {
                                     Text("✅ You can afford this pack! Open a pack to spend your coins.")
-                                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                                        .font(Kids.nunito(12, weight: .medium))
                                         .foregroundColor(gold.opacity(0.7))
                                         .multilineTextAlignment(.center)
                                 } else {
                                     let battlesLeft = max(0, pack.cost - coinStore.balance)
                                     Text("~\(Int(ceil(Double(battlesLeft) / Double(coinStore.coinsPerBattle)))) battles to go")
-                                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                                        .font(Kids.nunito(12, weight: .medium))
                                         .foregroundColor(Kids.ink.opacity(0.35))
                                 }
                             }
@@ -179,7 +179,7 @@ struct CoinsHubSheet: View {
                             )
                         } else {
                             Text("You've unlocked all packs!")
-                                .font(.system(size: 15, weight: .bold, design: .rounded))
+                                .font(Kids.nunito(15, weight: .bold))
                                 .foregroundColor(gold)
                         }
 
@@ -208,10 +208,10 @@ struct CoinsHubSheet: View {
                                         Text(isWatchingAd ? "Starting ad…" :
                                              isNotReady  ? "Loading ad…" :
                                              "Watch Ad — Earn +\(coinStore.coinsPerAd)")
-                                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                                            .font(Kids.nunito(15, weight: .bold))
                                         if adReady && !isWatchingAd {
                                             Text("\(coinStore.adsRemainingToday) of \(coinStore.maxDailyAds) remaining today")
-                                                .font(.system(size: 11, weight: .medium, design: .rounded))
+                                                .font(Kids.nunito(11, weight: .medium))
                                                 .opacity(0.6)
                                         }
                                     }
@@ -260,9 +260,9 @@ struct CoinsHubSheet: View {
                                 }
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(isBuyingCoins ? "Purchasing…" : "Buy 1,000 Coins")
-                                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                                        .font(Kids.nunito(15, weight: .bold))
                                     Text(storeKit.coins1000Product?.displayPrice ?? "$1.99")
-                                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                                        .font(Kids.nunito(11, weight: .medium))
                                         .opacity(0.6)
                                 }
                                 Spacer()
@@ -325,9 +325,12 @@ struct CoinsHubSheet: View {
             .navigationTitle("Battle Coins")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Battle Coins").font(Kids.fredoka(17))
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") { dismiss() }
-                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                        .font(Kids.nunito(15, weight: .semibold))
                         .foregroundColor(gold)
                 }
             }
@@ -362,12 +365,12 @@ struct CoinsHubSheet: View {
         HStack {
             RetroSymbol(icon, size: 14)
             Text(label)
-                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .font(Kids.nunito(13, weight: .medium))
                 .foregroundColor(Kids.ink.opacity(0.6))
             Spacer()
             HStack(spacing: 4) {
                 Text(value)
-                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .font(Kids.nunito(13, weight: .bold))
                     .foregroundColor(gold.opacity(0.8))
                 GoldCoin(size: 13)
             }
@@ -416,7 +419,7 @@ struct BuyCoinsButton: View {
                         .padding(.horizontal, isIPad ? 10 : 7)
                         .padding(.vertical, isIPad ? 5 : 3)
                         .background(
-                            RetroPanelShape().fill(.white)
+                            RetroPanelShape().fill(Kids.panel)
                                 .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1))
                         )
                 }

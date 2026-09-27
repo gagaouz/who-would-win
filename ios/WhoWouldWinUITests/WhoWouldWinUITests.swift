@@ -64,6 +64,123 @@ final class WhoWouldWinUITests: XCTestCase {
     }
 }
 
+/// Exercises the real home carousel and navigation with local battle responses.
+/// Matchups may be random; assertions follow the displayed names rather than a seed.
+final class HomeMatchupUITests: XCTestCase {
+    private let app = XCUIApplication()
+    private var hero: XCUIElement { app.buttons["home.heroBattle"] }
+    private var page: XCUIElement {
+        app.descendants(matching: .any).matching(identifier: "home.matchupPage").firstMatch
+    }
+
+    override func setUpWithError() throws { continueAfterFailure = false }
+
+    private func launchHome() {
+        app.launchArguments = ["--uitesting", "--reset-test-data"]
+        app.launchEnvironment = ["AVA_UI_TESTING": "1", "AVA_BLOCK_EXTERNAL_SERVICES": "1",
+                                 "AVA_FIXTURE_SCENARIO": "battle-success"]
+        app.launch()
+        XCTAssertTrue(app.staticTexts["uitest.fixtureMode"].waitForExistence(timeout: 10))
+        XCTAssertTrue(hero.waitForExistence(timeout: 10))
+        XCTAssertTrue(hero.isHittable)
+        waitForPage(1)
+    }
+
+    private func waitForPage(_ index: Int) {
+        let expected = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "value == %@", "\(index) of 5"), object: page)
+        XCTAssertEqual(XCTWaiter.wait(for: [expected], timeout: 5), .completed,
+                       "The page indicator must follow the user-selected matchup")
+    }
+
+    private func displayedNames() throws -> [String] {
+        let value = try XCTUnwrap(hero.value as? String)
+        let names = value.components(separatedBy: " versus ")
+        XCTAssertEqual(names.count, 2, "Expose both displayed fighters in left-to-right order")
+        XCTAssertFalse(names.contains(where: { $0.trimmingCharacters(in: .whitespaces).isEmpty }))
+        XCTAssertNotEqual(names.first, names.last, "A fighter must face a different opponent")
+        return names
+    }
+
+    private func capture(_ name: String) {
+        let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
+    func testSwipeThenTapStartsExactlyTheDisplayedMatchup() throws {
+        launchHome()
+        let first = try displayedNames()
+        capture("home_matchup_first")
+        hero.swipeLeft()
+        waitForPage(2)
+        let second = try displayedNames()
+        XCTAssertFalse(app.buttons["battle.cheer1"].exists, "Swiping must not launch a battle")
+        capture("home_matchup_swiped")
+
+        hero.swipeRight()
+        waitForPage(1)
+        XCTAssertEqual(try displayedNames(), first, "Returning to a page must retain its fighters")
+        hero.swipeLeft()
+        waitForPage(2)
+        XCTAssertEqual(try displayedNames(), second)
+        hero.tap()
+
+        let left = app.buttons["battle.cheer1"]
+        let right = app.buttons["battle.cheer2"]
+        XCTAssertTrue(left.waitForExistence(timeout: 10))
+        XCTAssertEqual(left.label, "Cheer for \(second[0])")
+        XCTAssertEqual(right.label, "Cheer for \(second[1])")
+        capture("home_matchup_exact_battle")
+        let narration = app.staticTexts["battle.narration"]
+        XCTAssertTrue(narration.waitForExistence(timeout: 25))
+        XCTAssertEqual(narration.label, "Fixture battle completed.")
+        XCTAssertFalse(app.descendants(matching: .any)["battle.offlineIndicator"].exists)
+    }
+
+    func testCarouselArrowsWrapAndNormalPickerStillSelectsAFighter() throws {
+        launchHome()
+        let first = try displayedNames()
+        let previous = app.buttons["home.previousMatchup"]
+        let next = app.buttons["home.nextMatchup"]
+        XCTAssertTrue(previous.isHittable)
+        XCTAssertTrue(next.isHittable)
+        previous.tap()
+        waitForPage(5)
+        _ = try displayedNames()
+        next.tap()
+        waitForPage(1)
+        XCTAssertEqual(try displayedNames(), first)
+        for index in 2...5 {
+            next.tap()
+            waitForPage(index)
+            _ = try displayedNames()
+        }
+        next.tap()
+        waitForPage(1)
+        XCTAssertEqual(try displayedNames(), first)
+        XCTAssertFalse(app.buttons["battle.cheer1"].exists)
+
+        let picker = app.buttons["home.pickFighters"]
+        for _ in 0..<5 where !picker.isHittable { app.swipeUp() }
+        XCTAssertTrue(picker.isHittable)
+        picker.tap()
+        let search = app.textFields["Search or create ANY creature..."]
+        XCTAssertTrue(search.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["picker.myFighters"].exists)
+        capture("home_matchup_normal_picker")
+        search.tap()
+        search.typeText("Lion")
+        let lion = app.buttons.matching(NSPredicate(format: "label == %@", "Lion")).firstMatch
+        XCTAssertTrue(lion.waitForExistence(timeout: 5))
+        lion.tap()
+        let selected = app.buttons.matching(NSPredicate(format: "label == %@ AND value == %@", "Lion", "Selected")).firstMatch
+        XCTAssertTrue(selected.waitForExistence(timeout: 5), "The normal roster selection must remain functional")
+        capture("home_matchup_picker_selected")
+    }
+}
+
 /// Native arena composition and lifecycle checks with local answers. These
 /// fixtures use the production stage, view models, result views and rematch.
 final class RetroBattleUITests: XCTestCase {
@@ -240,6 +357,7 @@ final class RetroScreenUITests: XCTestCase {
         capture("ui-parent")
         capture("ui-pin")
         capture("ui-grownups", scroll: true)
+        capture("ui-help", scroll: true)
     }
 
     func testTournamentAndExports() {

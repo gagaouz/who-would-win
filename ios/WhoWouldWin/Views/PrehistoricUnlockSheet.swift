@@ -14,7 +14,7 @@ struct PrehistoricUnlockSheet: View {
                 title: "DINO PACK",
                 emoji: "🦖",
                 color: Kids.sun,
-                darkAccent: Color(hex: "#8B5A0A"),
+                darkAccent: Kids.sunDeep,
                 blurb: "13 ancient titans — T-Rex, Megalodon, Mammoth and more!",
                 preview: [("🦖","T-Rex"),("🦕","Therizino"),("🦣","Mammoth"),("🐉","Raptor"),("🐊","Spinosaurus")],
                 coinCost: CoinStore.shared.prehistoricCost,

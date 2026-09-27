@@ -75,7 +75,7 @@ struct MeleeSetupView: View {
                     .font(Kids.fredoka(isIPad ? 26 : 20, weight: .bold))
                     .foregroundColor(Kids.ink)
                     .frame(width: isIPad ? 50 : 44, height: isIPad ? 50 : 44)
-                    .background(RetroPanelShape().fill(.white).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
+                    .background(RetroPanelShape().fill(Kids.panel).overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25)))
             }
             .buttonStyle(.plain)
             Spacer()
@@ -136,7 +136,7 @@ struct MeleeSetupView: View {
                 .foregroundColor(Kids.ink)
                 .frame(width: isIPad ? 34 : 28, height: isIPad ? 34 : 28)
                 .background(
-                    RetroPanelShape().fill(.white)
+                    RetroPanelShape().fill(Kids.panel)
                         .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                 )
         }
@@ -238,7 +238,7 @@ struct MeleeSetupView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RetroPanelShape(cornerRadius: 16, style: .continuous)
-                .fill(.white)
+                .fill(Kids.panel)
                 .overlay(RetroPanelShape(cornerRadius: 16, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
         )
         .compositingGroup().shadow(color: Kids.shadow.opacity(0.06), radius: 4, x: 0, y: 2)
@@ -270,7 +270,7 @@ struct MeleeSetupView: View {
                 .foregroundColor(Kids.ink)
                 .padding(.horizontal, isIPad ? 14 : 10).padding(.vertical, isIPad ? 8 : 5)
                 .background(
-                    RetroPanelShape().fill(selected ? tint : .white)
+                    RetroPanelShape().fill(selected ? tint : Kids.panel)
                         .overlay(selected ? RetroPanelShape().fill(Kids.sheen) : nil)
                         .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                 )
@@ -299,7 +299,7 @@ struct MeleeSetupView: View {
                         }
                         .padding(.horizontal, isIPad ? 14 : 10).padding(.vertical, isIPad ? 9 : 6)
                         .background(
-                            RetroPanelShape().fill(selectedCategory == cat ? categoryColor(cat) : .white)
+                            RetroPanelShape().fill(selectedCategory == cat ? categoryColor(cat) : Kids.panel)
                                 .overlay(selectedCategory == cat ? RetroPanelShape().fill(Kids.sheen) : nil)
                                 .overlay(RetroPanelShape().stroke(Kids.outline, lineWidth: 1.25))
                         )
@@ -343,7 +343,7 @@ struct MeleeSetupView: View {
         KidButton(
             title: "FIGHT!",
             icon: "⚔️",
-            color: canFight ? Kids.grass : Color(hex: "#CDC3E0"),
+            color: canFight ? Kids.grass : Kids.creamDeep,
             size: .lg
         ) {
             HapticsService.shared.tap()
@@ -486,7 +486,7 @@ private struct MeleePickCard: View {
         Button(action: onTap) {
             ZStack(alignment: .topTrailing) {
                 RetroPanelShape(cornerRadius: 18, style: .continuous)
-                    .fill(inActive ? activeTint : .white)
+                    .fill(inActive ? activeTint : Kids.panel)
                     .overlay(inActive ? RetroPanelShape(cornerRadius: 18, style: .continuous).fill(Kids.sheen) : nil)
                     .overlay(RetroPanelShape(cornerRadius: 18, style: .continuous).stroke(Kids.outline, lineWidth: 1.25))
                     .aspectRatio(1, contentMode: .fit)

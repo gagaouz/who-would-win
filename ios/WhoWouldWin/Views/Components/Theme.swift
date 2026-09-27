@@ -118,7 +118,7 @@ struct Theme {
     }
 
 
-    static func bungee(_ size: CGFloat) -> Font { size >= 26 ? Kids.pixel(size * 0.66) : Kids.fredoka(size) }
+    static func bungee(_ size: CGFloat) -> Font { Kids.fredoka(size) }
     static func lilita(_ size: CGFloat) -> Font { Kids.fredoka(size) }
     static func display(_ size: CGFloat) -> Font { Kids.pixel(max(10, size * 0.66)) }
     static func headline(_ size: CGFloat) -> Font { Kids.fredoka(size) }
