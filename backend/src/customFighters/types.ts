@@ -22,11 +22,15 @@ export interface ClaimedJob {
   environment: SubscriptionEnvironment; periodKey: string;
 }
 export interface ProviderUsage { operation: string; requestId?: string; inputTokens?: number; outputTokens?: number; estimatedMicrodollars?: number }
+export interface FailureDiagnostic {
+  stage: 'name_moderation' | 'dispatch' | 'image_generation' | 'image_validation' | 'artwork_moderation' | 'artwork_review' | 'publication';
+  reason?: string;
+}
 export class FighterError extends Error {
   constructor(public readonly code: string, public readonly status: number, message: string) { super(message); this.name = 'FighterError'; }
 }
 export class ProviderError extends Error {
-  constructor(public readonly code: 'content_rejected' | 'provider_unavailable' | 'provider_uncertain' | 'quality_rejected', message: string) {
+  constructor(public readonly code: 'content_rejected' | 'provider_unavailable' | 'provider_uncertain' | 'quality_rejected', message: string, public readonly reason?: string) {
     super(message); this.name = 'ProviderError';
   }
 }

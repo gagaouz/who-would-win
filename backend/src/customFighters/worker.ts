@@ -3,7 +3,7 @@ import { configured, enabled, requireGenerationAvailable } from './config';
 import { validateAndPackSheet } from './png';
 import { OpenAISpriteProvider, SpriteProvider } from './provider';
 import { FighterStore, getFighterStore } from './store';
-import { ProviderError } from './types';
+import { FailureDiagnostic, ProviderError } from './types';
 
 /** One claim does at most one image request. Uncertain paid outcomes never get automatic retries. */
 export async function processNextFighter(store: FighterStore, provider: SpriteProvider, available: () => void = requireGenerationAvailable): Promise<boolean> {
@@ -11,24 +11,36 @@ export async function processNextFighter(store: FighterStore, provider: SpritePr
   await store.recover();
   const job = await store.claim();
   if (!job) return false;
+  let stage: FailureDiagnostic['stage'] = 'name_moderation';
   try {
     available();
     await provider.moderate(job.name);
     available();
+    stage = 'dispatch';
     if (!await store.markDispatched(job)) {
-      await store.fail(job, 'failed', 'subscription_expired'); return true;
+      await store.fail(job, 'failed', 'subscription_expired', { stage }); return true;
     }
     const usage = (value: Parameters<FighterStore['usage']>[1]) => store.usage(job, value);
+    stage = 'image_generation';
     const original = await provider.generate(job.name, usage);
     if (!await store.markValidating(job)) return true; // Account deletion/cancellation won the race.
+    stage = 'image_validation';
     const pack = await validateAndPackSheet(original, randomUUID());
+    stage = 'artwork_moderation';
     await provider.moderate(job.name, [pack.original, ...pack.poses]);
     available();
+    stage = 'artwork_review';
     pack.manifest.archetype = await provider.review(job.name, pack.runtime, usage);
+    stage = 'publication';
     await store.publish(job, pack.original, pack.runtime, pack.manifest);
   } catch (error) {
-    const code = error instanceof ProviderError ? error.code : 'provider_unavailable';
-    await store.fail(job, code === 'provider_uncertain' ? 'reconciling' : code === 'content_rejected' || code === 'quality_rejected' ? 'rejected' : 'failed', code);
+    const providerCode = error instanceof ProviderError ? error.code : 'provider_unavailable';
+    // Once the subject passed screening, an image/refusal does not establish that the
+    // user's name was inappropriate. Existing clients show the credit-returned artwork
+    // message while the private diagnostic preserves the actual failed safety stage.
+    const code = providerCode === 'content_rejected' && stage !== 'name_moderation' ? 'quality_rejected' : providerCode;
+    await store.fail(job, code === 'provider_uncertain' ? 'reconciling' : code === 'content_rejected' || code === 'quality_rejected' ? 'rejected' : 'failed', code,
+      { stage, reason: error instanceof ProviderError ? error.reason : undefined });
   }
   return true;
 }

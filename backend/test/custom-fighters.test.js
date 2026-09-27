@@ -18,6 +18,7 @@ const { createCustomFighterRouter, validatedName } = require('../dist/customFigh
 const { IMAGE_MODEL } = require('../dist/customFighters/config');
 
 let database, pool, store, directory, image, owner;
+const poolClientClosures = [];
 const proof = () => ({ environment: 'Sandbox', periodKey: 'Sandbox:arbitrary-renewal', expiresAt: new Date(Date.now() + 3600000).toISOString() });
 const noGuard = () => {};
 async function newOwner() {
@@ -58,12 +59,13 @@ before(async () => {
   await database.initialise(); await database.start();
   const client = database.getPgClient();
   pool = new Pool({ host:'127.0.0.1',port,user:client.user,password:client.password,database:'postgres',max:8 });
+  pool.on('connect', client => poolClientClosures.push(new Promise(resolve => client.once('end', resolve))));
   await pool.query(`CREATE TABLE custom_fighter_accounts(id UUID PRIMARY KEY, deleted_at TIMESTAMPTZ, library_epoch BIGINT NOT NULL DEFAULT 1);
     CREATE TABLE custom_fighter_subscriptions(original_id TEXT PRIMARY KEY,owner_id UUID,environment TEXT,expires_at TIMESTAMPTZ,revoked BOOLEAN);`);
   store = new PostgresFighterStore(pool); await store.initialize();
   image = await fakeSheet();
 });
-after(async () => { await pool?.end(); await database?.stop(); if (directory) await rm(directory,{recursive:true,force:true}); });
+after(async () => { await pool?.end(); await Promise.all(poolClientClosures); await database?.stop(); if (directory) await rm(directory,{recursive:true,force:true}); });
 beforeEach(async () => {
   delete process.env.SPRITE_BETA_BUDGET_USD; delete process.env.SPRITE_MONTHLY_ALLOWANCE; delete process.env.SPRITE_ALLOW_PRODUCTION;
   process.env.SPRITE_ALLOW_SANDBOX = 'true';
@@ -128,6 +130,30 @@ test('bad output and semantic rejection never publish incomplete/unsafe fighters
   assert.equal(reviews,0); assert.equal((await store.list(owner)).fighters.length,0);
   await enqueue(); await processNextFighter(store,{...passingProvider(),review:async()=>{throw new ProviderError('quality_rejected','poses wrong')}},noGuard);
   assert.equal((await store.list(owner)).fighters.length,0); assert.equal((await store.allowance(owner,proof())).used,0);
+});
+test('failure diagnostics distinguish provider, PNG and review errors without exposing details in the public job',async()=>{
+  const cases=[
+    {stage:'image_generation',reason:'provider_safety_refusal',provider:{...passingProvider(),generate:async()=>{throw new ProviderError('content_rejected','provider text','provider_safety_refusal')}}},
+    {stage:'image_validation',reason:'png_source_format',provider:{...passingProvider(),generate:async()=>Buffer.from('notpng')}},
+    {stage:'artwork_review',reason:'review_fourDistinctPoses',provider:{...passingProvider(),review:async()=>{throw new ProviderError('quality_rejected','provider text','review_fourDistinctPoses')}}},
+  ];
+  for(const item of cases){
+    const {job}=await enqueue();await processNextFighter(store,item.provider,noGuard);
+    const row=(await pool.query('SELECT failure_stage,failure_reason FROM custom_fighter_jobs WHERE id=$1',[job.id])).rows[0];
+    assert.deepEqual(row,{failure_stage:item.stage,failure_reason:item.reason});
+    const publicJob=(await store.job(owner,job.id)).job;
+    assert.equal(publicJob.errorCode,'quality_rejected');
+    assert.equal(publicJob.failure_stage,undefined);assert.equal(publicJob.failure_reason,undefined);
+    assert.equal(JSON.stringify(publicJob).includes('provider text'),false);
+  }
+  assert.equal((await store.allowance(owner,proof())).remaining,3);
+  assert.equal((await store.list(owner)).fighters.length,0);
+});
+test('diagnostic storage rejects provider prose instead of retaining private details',async()=>{
+  const {job}=await enqueue();
+  await processNextFighter(store,{...passingProvider(),moderate:async()=>{throw new ProviderError('content_rejected','private message','private name and arbitrary provider prose')}},noGuard);
+  const row=(await pool.query('SELECT failure_stage,failure_reason FROM custom_fighter_jobs WHERE id=$1',[job.id])).rows[0];
+  assert.deepEqual(row,{failure_stage:'name_moderation',failure_reason:null});
 });
 test('revocation while queued prevents paid dispatch',async()=>{
   await enqueue();await pool.query('UPDATE custom_fighter_subscriptions SET revoked=TRUE WHERE owner_id=$1',[owner]);let generated=false;

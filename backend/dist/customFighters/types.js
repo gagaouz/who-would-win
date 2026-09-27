@@ -12,9 +12,10 @@ class FighterError extends Error {
 }
 exports.FighterError = FighterError;
 class ProviderError extends Error {
-    constructor(code, message) {
+    constructor(code, message, reason) {
         super(message);
         this.code = code;
+        this.reason = reason;
         this.name = 'ProviderError';
     }
 }

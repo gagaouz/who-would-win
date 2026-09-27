@@ -53,6 +53,8 @@ class PostgresFighterStore {
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), PRIMARY KEY(asset_id, owner_id, reason)
       );
       ALTER TABLE custom_fighter_jobs ADD COLUMN IF NOT EXISTS consent_version TEXT NOT NULL DEFAULT 'custom-art-v1';
+      ALTER TABLE custom_fighter_jobs ADD COLUMN IF NOT EXISTS failure_stage TEXT;
+      ALTER TABLE custom_fighter_jobs ADD COLUMN IF NOT EXISTS failure_reason TEXT;
       ALTER TABLE custom_fighter_assets ADD COLUMN IF NOT EXISTS provenance JSONB;
     `).then(() => undefined).catch(error => { this.initialized = undefined; throw error; });
         return this.initialized;
@@ -293,21 +295,23 @@ class PostgresFighterStore {
             if (!row || !row.quota_reserved)
                 return false;
             await db.query('INSERT INTO custom_fighter_assets(id,owner_id,name,manifest,original_png,runtime_png,provenance) VALUES($1,$2,$3,$4::jsonb,$5,$6,$7::jsonb)', [manifest.assetID, row.owner_id, row.name, JSON.stringify(manifest), original, runtime,
-                JSON.stringify({ jobID: job.id, promptVersion: 'custom-art-v1', imageModel: config_1.IMAGE_MODEL, reviewModel: config_1.REVIEW_MODEL,
-                    quality: 'medium', acceptedModeration: true, acceptedSemanticReview: true, consentVersion: 'custom-art-v1' })]);
+                JSON.stringify({ jobID: job.id, promptVersion: 'custom-art-v2', normalizerVersion: 'complete-poses-v2', imageModel: config_1.IMAGE_MODEL, reviewModel: config_1.REVIEW_MODEL,
+                    quality: 'medium', generationModeration: 'low', acceptedModeration: true, acceptedSemanticReview: true, consentVersion: 'custom-art-v1' })]);
             await db.query('UPDATE custom_fighter_quotas SET reserved=GREATEST(0,reserved-1),used=used+1 WHERE owner_id=$1 AND environment=$2 AND period_key=$3', [row.owner_id, row.environment, row.period_key]);
             await db.query("UPDATE custom_fighter_jobs SET state='ready',asset_id=$2,quota_reserved=FALSE,worker_token=NULL,lease_until=NULL,updated_at=NOW() WHERE id=$1", [job.id, manifest.assetID]);
             return true;
         }, job.ownerId);
     }
-    async fail(job, state, code) {
+    async fail(job, state, code, diagnostic) {
         await this.transaction(async (db) => {
             const result = await db.query("SELECT * FROM custom_fighter_jobs WHERE id=$1 AND worker_token=$2 AND state IN ('generating','validating')", [job.id, job.workerToken]);
             const row = result.rows[0];
             if (!row)
                 return;
             await this.release(db, row);
-            await db.query('UPDATE custom_fighter_jobs SET state=$2,error_code=$3,quota_reserved=FALSE,budget_reserved=$4,worker_token=NULL,lease_until=NULL,updated_at=NOW() WHERE id=$1', [job.id, state, code, row.dispatched_at ? row.budget_reserved : 0]);
+            // Only bounded machine labels are retained, never provider prose, images, credentials or user input.
+            const reason = diagnostic?.reason && /^[a-zA-Z][a-zA-Z0-9_]{0,63}$/.test(diagnostic.reason) ? diagnostic.reason : null;
+            await db.query('UPDATE custom_fighter_jobs SET state=$2,error_code=$3,quota_reserved=FALSE,budget_reserved=$4,failure_stage=$5,failure_reason=$6,worker_token=NULL,lease_until=NULL,updated_at=NOW() WHERE id=$1', [job.id, state, code, row.dispatched_at ? row.budget_reserved : 0, diagnostic?.stage ?? null, reason]);
         });
     }
 }

@@ -16,6 +16,7 @@ test('Real PostgreSQL account lifecycle, replay protection, deletion serializati
   const database = new EmbeddedPostgres({ databaseDir: path.join(directory, 'data'), port, user: 'auth_test', password: crypto.randomUUID(),
     persistent: false, createPostgresUser: false, postgresFlags: ['-h','127.0.0.1','-k',directory], onLog:()=>{}, onError:()=>{} });
   let pool, server;
+  const poolClientClosures = [];
   const realFetch = global.fetch;
   const dbModule = require('../dist/services/database'); const originalPool = dbModule.getDbPool;
   const { SignedDataVerifier } = require('@apple/app-store-server-library');
@@ -24,6 +25,12 @@ test('Real PostgreSQL account lifecycle, replay protection, deletion serializati
     await database.initialise(); await database.start();
     const client = database.getPgClient();
     pool = new Pool({ host:'127.0.0.1',port,user:client.user,password:client.password,database:'postgres',max:10 });
+    // pg-pool can resolve end() after removing idle clients from its bookkeeping,
+    // before their sockets actually close. Track the public client end events so
+    // stopping the disposable server cannot race those outstanding connections.
+    pool.on('connect', client => {
+      poolClientClosures.push(new Promise(resolve => client.once('end', resolve)));
+    });
     dbModule.getDbPool = () => pool;
     const auth = require('../dist/services/customFighterAuth');
     await auth.initCustomFighterAuth(); await auth.initCustomFighterAuth();
@@ -133,6 +140,7 @@ test('Real PostgreSQL account lifecycle, replay protection, deletion serializati
   } finally {
     global.fetch=realFetch; dbModule.getDbPool=originalPool; SignedDataVerifier.prototype.verifyAndDecodeTransaction=originalVerifier;
     if(server) await new Promise(r=>server.close(r));
-    await pool?.end(); await database.stop(); await rm(directory,{recursive:true,force:true});
+    await pool?.end(); await Promise.all(poolClientClosures);
+    await database.stop(); await rm(directory,{recursive:true,force:true});
   }
 });
